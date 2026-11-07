@@ -1,0 +1,38 @@
+# Bağımlılıklar
+node_modules/
+
+# Ortam değişkenleri
+.env
+.env.*
+!.env.example
+
+# Derleme çıktıları
+.next/
+out/
+dist/
+build/
+web-build/
+.expo/
+.turbo/
+*.tsbuildinfo
+
+# Expo / native
+ios/
+android/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Supabase yerel
+supabase/.branches/
+supabase/.temp/
+
+# İşletim sistemi / editör
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+npm-debug.log*
