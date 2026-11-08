@@ -10,6 +10,7 @@ Kendi sunucumuzda (Coolify, `lykiva-supabase` servisi): https://api.lykiva.ismai
 | `20261108000000_kayit_ve_kurallar.sql` | Profil tetikleyicisi, aktivite/rota/takip kuralları, `kaydet_aktivite`, `aktivite_detay`, `aktivite_ozetleri` | uygulandı (8 Kasım 2026) |
 | `20261109000000_giris.sql` | Hesap devri: `devir_kodu_al`, `hesabi_devral` (geçici hesaptaki kayıtları asıl hesaba taşır) | **henüz uygulanmadı** |
 | `20261109010000_rotalar.sql` | `kaydet_rota`, `aktiviteden_rota`, `rota_ozetleri`; aktiviteye `route_id` | uygulandı (8 Kasım 2026) |
+| `20261109020000_paylasim.sql` | `aktivite_noktalari` (GPX dışa aktarımı; yalnızca sahibi nokta alır) | **henüz uygulanmadı** |
 
 Gruplar, etkinlikler, mesajlar ve canlı konum tablolarının kuralları henüz yok — istemciden kapalılar.
 

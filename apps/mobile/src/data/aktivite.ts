@@ -34,6 +34,8 @@ type Ham = {
   stops: Mola[];
   ownerName?: string;
   mine?: boolean;
+  visibility?: Activity['visibility'];
+  hideEndpoints?: boolean;
 };
 
 const saat = (ms: number) => new Date(ms).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
@@ -111,6 +113,8 @@ function goruntuyeCevir(h: Ham): Activity {
     stopTotal: formatDuration(molaS),
     hasElevation: altli.length > 1,
     mine: h.mine,
+    visibility: h.visibility,
+    hideEndpoints: h.hideEndpoints,
   };
 }
 
@@ -147,6 +151,8 @@ async function sunucudan(id: string): Promise<Activity> {
     stops: detay.stops.map((s) => ({ start: Date.parse(s.started_at), end: Date.parse(s.ended_at), distanceAt: s.distance_at_m, lng: s.lng, lat: s.lat, note: s.note })),
     ownerName: o.owner_name,
     mine: !!oturum.session && oturum.session.user.id === o.owner_id,
+    visibility: o.visibility,
+    hideEndpoints: o.hide_endpoints,
   });
 }
 
@@ -176,6 +182,8 @@ async function yerelden(clientId: string): Promise<Activity | null> {
     route: p.points.map((pt) => [pt.lng, pt.lat] as LngLat),
     profile,
     stops: p.stops.map((s) => ({ start: s.startT, end: s.endT, distanceAt: s.distanceAtM, lng: s.lng, lat: s.lat })),
+    visibility: p.visibility,
+    hideEndpoints: p.hide_endpoints,
   });
 }
 
@@ -314,4 +322,24 @@ export function haftaOzeti(satirlar: AktiviteSatiri[], simdi = new Date()) {
   const son = new Date(bit.getTime() - 86400000);
   const aralik = `${bas.getDate()} ${bas.getMonth() !== son.getMonth() ? AYLAR[bas.getMonth()] + ' ' : ''}– ${son.getDate()} ${AYLAR[son.getMonth()]}`;
   return { gunler, km, sn, m, aralik };
+}
+
+export type GpxNoktasi = { t: number; lat: number; lng: number; alt: number | null };
+
+/** GPX için ham noktalar: telefondaki kayıttan ya da (yalnızca sahibine) sunucudan */
+export async function aktiviteNoktalari(id: string): Promise<GpxNoktasi[]> {
+  if (id.startsWith('yerel-')) {
+    const p = await yereldekiPaket(id.slice(6));
+    return (p?.points ?? []).map((pt) => ({ t: pt.t, lat: pt.lat, lng: pt.lng, alt: pt.alt ?? null }));
+  }
+  if (id === 'ornek') return kasKalkan.route.map(([lng, lat], i) => ({ t: Date.parse('2026-11-07T05:12:00Z') + i * 600000, lat, lng, alt: kasKalkan.elevation[i] ?? null }));
+  const { data, error } = await supabase.rpc('aktivite_noktalari', { aktivite: id });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as GpxNoktasi[];
+}
+
+/** Sahibi için: görünürlük ve başlangıç/bitiş gizliliği */
+export async function aktiviteAyarla(id: string, ayar: { visibility?: Activity['visibility']; hide_endpoints?: boolean }) {
+  const { error } = await supabase.from('activities').update(ayar).eq('id', id);
+  if (error) throw new Error(error.message);
 }
