@@ -79,6 +79,10 @@ export type Activity = {
   hasElevation?: boolean;
   /** Giriş yapan kullanıcının kendi aktivitesi mi (sunucudaki) */
   mine?: boolean;
+  /** 3B görünüm için yükseklikli iz [boylam, enlem, yükseklik | null] */
+  iz3b?: [number, number, number | null][];
+  /** Mesafeye göre hız (km/sa): 3B sayfasında imlecin altındaki hız */
+  hizProfili?: { d: number; v: number }[];
   /** Lykiva'da kimler görür */
   visibility?: 'private' | 'followers' | 'groups' | 'public';
   /** Başkalarına gösterilen izde başlangıç/bitiş gizli mi */

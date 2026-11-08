@@ -30,6 +30,8 @@ type Ham = {
   max: number;
   min: number;
   route: LngLat[];
+  /** Yükseklikli iz (3B); yoksa route'tan yüksekliksiz üretilir */
+  iz3b?: [number, number, number | null][];
   profile: ProfilNoktasi[];
   stops: Mola[];
   ownerName?: string;
@@ -103,6 +105,8 @@ function goruntuyeCevir(h: Ham): Activity {
     maxSpeed: formatSpeedKmh(h.max),
     minSpeed: formatSpeedKmh(h.min),
     route: h.route,
+    iz3b: h.iz3b ?? h.route.map((c) => [c[0], c[1], null] as [number, number, number | null]),
+    hizProfili: hizli.length > 1 ? hizli.map((x) => ({ d: x.d, v: (x.speed as number) * 3.6 })) : undefined,
     elevation,
     speed,
     stops,
@@ -131,6 +135,9 @@ async function sunucudan(id: string): Promise<Activity> {
     profile: ProfilNoktasi[];
   };
   const coords = (o.track_geojson?.coordinates ?? []) as number[][];
+  // Sunucu yüksekliği bilinmeyen noktaları Z = 0 olarak saklar; izde başka yükseklik varsa 0'lar eksik sayılır
+  const zVar = coords.some((c) => c.length > 2 && c[2] !== 0);
+  const iz3b = coords.map((c) => [c[0], c[1], zVar && c.length > 2 && c[2] !== 0 ? c[2] : null] as [number, number, number | null]);
   return goruntuyeCevir({
     id: o.id,
     title: o.title,
@@ -147,6 +154,7 @@ async function sunucudan(id: string): Promise<Activity> {
     max: o.max_speed_mps ?? 0,
     min: o.min_moving_speed_mps ?? 0,
     route: coords.map((c) => [c[0], c[1]] as LngLat),
+    iz3b,
     profile: detay.profile,
     stops: detay.stops.map((s) => ({ start: Date.parse(s.started_at), end: Date.parse(s.ended_at), distanceAt: s.distance_at_m, lng: s.lng, lat: s.lat, note: s.note })),
     ownerName: o.owner_name,
@@ -180,6 +188,7 @@ async function yerelden(clientId: string): Promise<Activity | null> {
     max: p.max_speed_mps,
     min: p.min_moving_speed_mps,
     route: p.points.map((pt) => [pt.lng, pt.lat] as LngLat),
+    iz3b: p.points.map((pt) => [pt.lng, pt.lat, pt.alt ?? null] as [number, number, number | null]),
     profile,
     stops: p.stops.map((s) => ({ start: s.startT, end: s.endT, distanceAt: s.distanceAtM, lng: s.lng, lat: s.lat })),
     visibility: p.visibility,
