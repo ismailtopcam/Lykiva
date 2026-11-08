@@ -102,6 +102,8 @@ export const gruptanAyril = (id: string) => rpc<void>('gruptan_ayril', { g: id }
 export const uyeCikar = (id: string, kullanici: string) => rpc<void>('uye_cikar', { g: id, kullanici });
 export const uyeRoluDegistir = (id: string, kullanici: string, yonetici: boolean) => rpc<void>('uye_rolu_degistir', { g: id, kullanici, yonetici });
 export const davetKoduYenile = (id: string) => rpc<string>('davet_kodu_yenile', { g: id });
+/** Grubun şu an canlı konum paylaşan üye sayısı */
+export const grupCanliSayisi = (id: string) => rpc<number>('grup_canli_sayisi', { g: id });
 export const okunduIsaretle = (id: string) => rpc<void>('okundu_isaretle', { g: id });
 export const rotayiGrubaPaylas = (rota: string, grup: string, notu?: string) => rpc<string>('rotayi_gruba_paylas', { rota, g: grup, notu: notu ?? null });
 

@@ -117,6 +117,7 @@ function GercekSohbet({ id }: { id: string }) {
             {grup ? <Txt variant="small">{uyeSayisi(grup.member_count)}</Txt> : null}
           </View>
         </Pressable>
+        <IconButton icon="pin" label="Canlı haritayı aç" onPress={() => router.push({ pathname: '/canli-harita', params: { grup: id } })} />
       </View>
 
       <ScrollView ref={kaydirma} contentContainerStyle={{ padding: 12, gap: 6 }}>

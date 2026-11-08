@@ -11,6 +11,9 @@ import { TopoMap } from '@/components/map/TopoMap';
 import { Txt } from '@/components/Txt';
 import { Button } from '@/components/ui';
 import { rotaGetir, rotalarim, type Rota } from '@/data/rota';
+import { gruplarim, type GrupOzeti } from '@/grup/gruplar';
+import type { PaylasimGrubu } from '@/kayit/canliPaylasim';
+import { supabaseHazir } from '@/lib/supabase';
 import { baslat, IzinHatasi, konumOnizlemeBaslat, useKayit } from '@/kayit/kaydedici';
 import { colors, fontFamily, radius, space } from '@/theme';
 
@@ -42,6 +45,10 @@ export default function KayitBaslatScreen() {
   const [rota, setRota] = useState<Rota | null>(null);
   const [rotaListesi, setRotaListesi] = useState<Rota[] | null>(null);
   const [secimAcik, setSecimAcik] = useState(false);
+  // Canlı konum: varsayılan kapalı; kullanıcı açıkça bir grup seçer
+  const [paylasim, setPaylasim] = useState<PaylasimGrubu | null>(null);
+  const [gruplar, setGruplar] = useState<GrupOzeti[] | null>(null);
+  const [paylasimAcik, setPaylasimAcik] = useState(false);
 
   useEffect(() => konumOnizlemeBaslat(), []);
 
@@ -78,7 +85,7 @@ export default function KayitBaslatScreen() {
     setIzinHatasi(false);
     setBasliyor(true);
     try {
-      await baslat(type, rota ? { id: rota.id, name: rota.name, points: rota.points } : null);
+      await baslat(type, rota ? { id: rota.id, name: rota.name, points: rota.points } : null, paylasim);
       router.replace('/kayit/canli');
     } catch (e) {
       setIzinHatasi(e instanceof IzinHatasi);
@@ -162,6 +169,53 @@ export default function KayitBaslatScreen() {
             ))}
             {rotaListesi && rotaListesi.length === 0 ? <Txt variant="small">Henüz rotan yok. Profil &gt; Rotalarım’dan çizebilirsin.</Txt> : null}
           </ScrollView>
+        ) : null}
+
+        {supabaseHazir ? (
+          <>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ expanded: paylasimAcik }}
+              onPress={async () => {
+                const ac = !paylasimAcik;
+                setPaylasimAcik(ac);
+                if (ac && !gruplar) setGruplar(await gruplarim().catch(() => []));
+              }}
+              style={styles.rotaRow}>
+              <Icon name="users" color={paylasim ? colors.sea : colors.inkMuted} />
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Txt variant="small">Canlı konum</Txt>
+                <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }} numberOfLines={1}>
+                  {paylasim ? `${paylasim.ad} grubuyla paylaşılacak` : 'Paylaşılmıyor'}
+                </Txt>
+              </View>
+              <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: colors.seaInk }}>{paylasimAcik ? 'Kapat' : 'Değiştir'}</Txt>
+            </Pressable>
+            {paylasimAcik ? (
+              <ScrollView style={{ maxHeight: 180 }} contentContainerStyle={{ gap: 4 }}>
+                <Pressable accessibilityRole="radio" accessibilityState={{ checked: !paylasim }} onPress={() => { setPaylasim(null); setPaylasimAcik(false); }} style={styles.secenek}>
+                  <Txt style={{ fontFamily: paylasim ? fontFamily.body : fontFamily.bodyBold, fontSize: 14 }}>Paylaşma</Txt>
+                </Pressable>
+                {(gruplar ?? []).map((g) => (
+                  <Pressable
+                    key={g.id}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: paylasim?.id === g.id }}
+                    onPress={() => {
+                      setPaylasim({ id: g.id, ad: g.name });
+                      setPaylasimAcik(false);
+                    }}
+                    style={styles.secenek}>
+                    <Txt style={{ fontFamily: paylasim?.id === g.id ? fontFamily.bodyBold : fontFamily.body, fontSize: 14 }} numberOfLines={1}>
+                      {g.name} · {g.member_count} üye
+                    </Txt>
+                  </Pressable>
+                ))}
+                {gruplar && gruplar.length === 0 ? <Txt variant="small">Konum paylaşmak için önce bir gruba katıl.</Txt> : null}
+                <Txt variant="small">Yalnızca seçtiğin grubun üyeleri, kayıt sürerken son konumunu görür. Kayıt bitince paylaşım kapanır.</Txt>
+              </ScrollView>
+            ) : null}
+          </>
         ) : null}
 
         <Txt variant="small">Ekran kapalıyken de kaydetmesi için konum iznini “Her zaman” olarak ver.</Txt>
