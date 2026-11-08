@@ -79,6 +79,10 @@ export type Activity = {
   hasElevation?: boolean;
   /** Giriş yapan kullanıcının kendi aktivitesi mi (sunucudaki) */
   mine?: boolean;
+  /** Lykiva'da kimler görür */
+  visibility?: 'private' | 'followers' | 'groups' | 'public';
+  /** Başkalarına gösterilen izde başlangıç/bitiş gizli mi */
+  hideEndpoints?: boolean;
 };
 
 export const kasKalkan: Activity = {

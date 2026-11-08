@@ -1,24 +1,20 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import * as Sharing from 'expo-sharing';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useRef, useState } from 'react';
+import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, View, type HostInstance } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Circle, Ellipse, G, Path } from 'react-native-svg';
 
 import { Header } from '@/components/Header';
 import { Icon, type IconName } from '@/components/Icon';
+import { KART_SABLONLARI, PaylasimKarti, type KartIstatistigi } from '@/components/PaylasimKarti';
 import { Txt } from '@/components/Txt';
 import { Chip, Label, ToggleRow } from '@/components/ui';
-import { kasKalkan } from '@/data/ornek';
+import { aktiviteAyarla, aktiviteNoktalari, useAktivite } from '@/data/aktivite';
+import type { Activity } from '@/data/ornek';
+import { dosyaAdi, gpxPaylas } from '@/lib/gpx';
 import { colors, fontFamily, space } from '@/theme';
 
-const looks = [
-  { name: 'Gece', bg: '#16201B', fg: '#F2EDE3', route: '#E07A4A', contour: '#33413A' },
-  { name: 'Kireçtaşı', bg: '#F2EDE3', fg: '#16201B', route: '#B04E25', contour: '#D3C7B0' },
-  { name: 'Deniz', bg: '#0B6A6A', fg: '#FFFFFF', route: '#F6D9A8', contour: '#2A8282' },
-  { name: 'Kaya', bg: '#B04E25', fg: '#FFFFFF', route: '#FBF8F2', contour: '#C26A44' },
-];
-
-const statDefs = [
+const statDefs: [KartIstatistigi, string][] = [
   ['mesafe', 'Mesafe'],
   ['sure', 'Süre'],
   ['tirmanis', 'Tırmanış'],
@@ -26,31 +22,98 @@ const statDefs = [
   ['ort', 'Ort. hız'],
   ['mola', 'Molalar'],
   ['kisiler', 'Birlikte yaptıklarım'],
-] as const;
+];
 
-const targets: { label: string; icon: IconName; bg: string; fg: string }[] = [
-  { label: 'Hikâye', icon: 'image', bg: colors.ink, fg: colors.ground },
-  { label: 'WhatsApp', icon: 'chat', bg: colors.sea, fg: '#FFFFFF' },
-  { label: 'Lykiva akışı', icon: 'home', bg: colors.terra, fg: '#FFFFFF' },
-  { label: 'Bağlantı', icon: 'link', bg: colors.sand, fg: colors.ink },
-  { label: 'GPX / Görsel', icon: 'download', bg: colors.sand, fg: colors.ink },
+const GORUNURLUK: { id: NonNullable<Activity['visibility']>; label: string }[] = [
+  { id: 'private', label: 'Sadece ben' },
+  { id: 'followers', label: 'Takipçiler' },
+  { id: 'public', label: 'Herkese açık' },
+];
+
+type Hedef = { id: 'hikaye' | 'whatsapp' | 'akis' | 'baglanti' | 'gpx'; label: string; icon: IconName; bg: string; fg: string };
+
+const targets: Hedef[] = [
+  { id: 'hikaye', label: 'Hikâye', icon: 'image', bg: colors.ink, fg: colors.ground },
+  { id: 'whatsapp', label: 'WhatsApp', icon: 'chat', bg: colors.sea, fg: '#FFFFFF' },
+  { id: 'akis', label: 'Lykiva akışı', icon: 'home', bg: colors.terra, fg: '#FFFFFF' },
+  { id: 'baglanti', label: 'Bağlantı', icon: 'link', bg: colors.sand, fg: colors.ink },
+  { id: 'gpx', label: 'GPX', icon: 'download', bg: colors.sand, fg: colors.ink },
 ];
 
 export default function PaylasimStudyosuScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { a, hata } = useAktivite(id);
   const insets = useSafeAreaInsets();
   const [look, setLook] = useState(0);
-  const [hide, setHide] = useState(true);
-  const [on, setOn] = useState<Record<string, boolean>>({ mesafe: true, sure: true, tirmanis: true, maks: true, kisiler: true });
-  const a = kasKalkan;
-  const L = looks[look];
+  const [hideYerel, setHide] = useState<boolean | null>(null);
+  const [gorunurlukYerel, setGorunurluk] = useState<Activity['visibility'] | null>(null);
+  const [on, setOn] = useState<Partial<Record<KartIstatistigi, boolean>>>({ mesafe: true, sure: true, tirmanis: true, maks: true, kisiler: true });
+  const [mesaj, setMesaj] = useState<string | null>(null);
+  const [mesgul, setMesgul] = useState<Hedef['id'] | null>(null);
+  const buyukKart = useRef<HostInstance>(null);
 
-  const cardStats = [
-    on.sure && ['Süre', '1:38'],
-    on.tirmanis && ['Tırmanış', `${a.climbM} m`],
-    on.maks && ['Maks.', a.maxSpeed],
-    on.ort && ['Ort.', a.avgSpeed],
-    on.mola && ['Mola', String(a.stops.length)],
-  ].filter(Boolean).slice(0, 3) as [string, string][];
+  if (!a) {
+    return (
+      <View style={styles.root}>
+        <Header title="Paylaş" center />
+        <View style={{ padding: space.lg, alignItems: 'center' }}>{hata ? <Txt variant="muted">{hata}</Txt> : <ActivityIndicator color={colors.terra} />}</View>
+      </View>
+    );
+  }
+
+  // Kullanıcı değiştirmediyse aktivitedeki ayar geçerli
+  const hide = hideYerel ?? a.hideEndpoints ?? true;
+  const gorunurluk = gorunurlukYerel ?? a.visibility ?? 'followers';
+  const sunucuda = !!a.mine;
+
+  async function gorselUret(): Promise<string> {
+    // Önizlemedeki kartın büyüğü ekran dışında çizili; onu 1080 px genişlikte yakalıyoruz
+    const { captureRef } = await import('react-native-view-shot');
+    // RN 0.88'de View bir ana bileşen örneği döndürür; view-shot türleri henüz bunu tanımıyor
+    return captureRef(buyukKart as unknown as Parameters<typeof captureRef>[0], { format: 'png', quality: 1, width: 1080, height: 1653, result: 'tmpfile', fileName: dosyaAdi(a!.title) });
+  }
+
+  async function hedefSec(h: Hedef) {
+    setMesaj(null);
+    setMesgul(h.id);
+    try {
+      if (h.id === 'hikaye' || h.id === 'whatsapp') {
+        if (Platform.OS === 'web') throw new Error('Görsel paylaşımı telefonda çalışır');
+        const uri = await gorselUret();
+        await Sharing.shareAsync(uri, { mimeType: 'image/png', UTI: 'public.png', dialogTitle: 'Kartı paylaş' });
+      } else if (h.id === 'gpx') {
+        await gpxPaylas(a!.title, a!.type, await aktiviteNoktalari(a!.id));
+      } else if (h.id === 'akis') {
+        if (!sunucuda) throw new Error(a!.id.startsWith('yerel-') ? 'Kayıt henüz sunucuya gitmedi; internet gelince akışta paylaşabilirsin' : 'Yalnızca kendi aktiviteni akışta paylaşabilirsin');
+        const v = gorunurluk === 'private' ? 'followers' : gorunurluk;
+        await aktiviteAyarla(a!.id, { visibility: v, hide_endpoints: hide });
+        setGorunurluk(v);
+        setMesaj(v === 'public' ? 'Akışta herkese açık paylaşıldı' : 'Takipçilerinin akışında paylaşıldı');
+      } else if (h.id === 'baglanti') {
+        setMesaj('Paylaşım bağlantısı web sayfası hazır olunca gelecek');
+      }
+    } catch (e) {
+      setMesaj(e instanceof Error ? e.message : 'Paylaşılamadı');
+    } finally {
+      setMesgul(null);
+    }
+  }
+
+  async function gorunurlukSec(v: NonNullable<Activity['visibility']>) {
+    setGorunurluk(v);
+    if (!sunucuda) return;
+    try {
+      await aktiviteAyarla(a!.id, { visibility: v });
+      setMesaj(v === 'private' ? 'Artık yalnızca sen görüyorsun' : v === 'public' ? 'Herkese açık' : 'Takipçilerin görebilir');
+    } catch (e) {
+      setMesaj(e instanceof Error ? e.message : 'Kaydedilemedi');
+    }
+  }
+
+  async function gizlemeSec(v: boolean) {
+    setHide(v);
+    if (sunucuda) await aktiviteAyarla(a!.id, { hide_endpoints: v }).catch(() => undefined);
+  }
 
   return (
     <View style={styles.root}>
@@ -63,80 +126,82 @@ export default function PaylasimStudyosuScreen() {
           </Pressable>
         }
       />
-      <ScrollView contentContainerStyle={{ paddingBottom: 160 + insets.bottom }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 170 + insets.bottom }}>
         <View style={{ alignItems: 'center', paddingVertical: 10 }}>
-          <View style={[styles.card, { backgroundColor: L.bg }]} accessible accessibilityLabel={`Paylaşım kartı önizlemesi, ${L.name} şablonu`}>
-            <Svg width={164} height={120}>
-              <G fill="none" stroke={L.contour} strokeWidth={0.8}>
-                <Ellipse cx={110} cy={40} rx={45} ry={28} />
-                <Ellipse cx={110} cy={40} rx={28} ry={16} />
-                <Ellipse cx={36} cy={78} rx={28} ry={20} />
-              </G>
-              <Path d="M8 100 C 26 92, 36 78, 56 80 S 82 92, 96 74 S 118 50, 132 62 S 148 84, 158 78" fill="none" stroke={L.route} strokeWidth={3.5} strokeLinecap="round" />
-              {hide ? null : (
-                <>
-                  <Circle cx={8} cy={100} r={4} fill={L.route} />
-                  <Circle cx={158} cy={78} r={4} fill="none" stroke={L.route} strokeWidth={2} />
-                </>
-              )}
-            </Svg>
-            <View>
-              <Txt style={{ fontSize: 10, fontFamily: fontFamily.bodySemiBold, letterSpacing: 0.8, color: L.fg, opacity: 0.85 }}>BİSİKLET · KAŞ – KALKAN</Txt>
-              {on.mesafe ? (
-                <Txt style={{ fontFamily: fontFamily.displayHeavy, fontSize: 40, lineHeight: 44, color: L.fg, letterSpacing: -1.2 }}>{a.distanceKm} km</Txt>
-              ) : null}
-              <View style={{ flexDirection: 'row', gap: 10, marginTop: 6 }}>
-                {cardStats.map(([l, v]) => (
-                  <View key={l}>
-                    <Txt style={{ fontSize: 10, color: L.fg, opacity: 0.85 }}>{l}</Txt>
-                    <Txt style={{ fontSize: 13, fontFamily: fontFamily.bodyBold, color: L.fg }}>{v}</Txt>
-                  </View>
-                ))}
-              </View>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
-                <Txt style={{ fontSize: 10, fontFamily: fontFamily.bodySemiBold, color: L.fg }}>{on.kisiler ? '@mert · @deniz · @can' : ''}</Txt>
-                <Txt style={{ fontSize: 13, fontFamily: fontFamily.displayHeavy, color: L.fg }}>lykiva</Txt>
-              </View>
-            </View>
+          <View style={styles.shadow}>
+            <PaylasimKarti a={a} sablon={look} goster={on} uclariGizle={hide} />
           </View>
         </View>
 
         <View style={{ paddingHorizontal: space.lg }}>
           <Label>Şablon</Label>
           <View accessibilityRole="radiogroup" style={styles.row}>
-            {looks.map((l, i) => (
+            {KART_SABLONLARI.map((l, i) => (
               <Chip key={l.name} label={l.name} role="radio" selected={i === look} onPress={() => setLook(i)} />
             ))}
           </View>
 
           <Label>Kartta göster</Label>
           <View style={[styles.row, { flexWrap: 'wrap' }]}>
-            {statDefs.map(([k, label]) => (
-              <Chip key={k} label={label} role="checkbox" tone="sea" icon={on[k] ? undefined : 'plus'} selected={!!on[k]} onPress={() => setOn({ ...on, [k]: !on[k] })} />
-            ))}
+            {statDefs
+              .filter(([k]) => k !== 'kisiler' || a.with.length > 0)
+              .map(([k, label]) => (
+                <Chip key={k} label={label} role="checkbox" tone="sea" icon={on[k] ? undefined : 'plus'} selected={!!on[k]} onPress={() => setOn({ ...on, [k]: !on[k] })} />
+              ))}
           </View>
 
           <View style={{ borderTopWidth: 1, borderTopColor: colors.lineStrong, marginTop: 4 }}>
-            <ToggleRow title="Başlangıç ve bitişi gizle" subtitle="Evinin konumu haritada görünmez" value={hide} onChange={setHide} />
+            <ToggleRow title="Başlangıç ve bitişi gizle" subtitle="Evinin konumu haritada görünmez" value={hide} onChange={gizlemeSec} />
           </View>
+
+          {sunucuda ? (
+            <>
+              <Label>Lykiva’da kimler görsün</Label>
+              <View accessibilityRole="radiogroup" style={styles.row}>
+                {GORUNURLUK.map((g) => (
+                  <Chip key={g.id} label={g.label} role="radio" tone="sea" selected={g.id === gorunurluk} onPress={() => gorunurlukSec(g.id)} />
+                ))}
+              </View>
+            </>
+          ) : null}
         </View>
       </ScrollView>
 
+      {/* Görsel için büyük kart: ekran dışında çizilir, yalnızca yakalanır */}
+      <View style={styles.offscreen} pointerEvents="none" importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+        <PaylasimKarti ref={buyukKart} a={a} sablon={look} goster={on} uclariGizle={hide} genislik={360} />
+      </View>
+
       <View style={[styles.targets, { paddingBottom: insets.bottom + 12 }]}>
+        {mesaj ? (
+          <Txt accessibilityLiveRegion="polite" style={styles.mesaj}>
+            {mesaj}
+          </Txt>
+        ) : null}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          {targets.map((t) => (
-            <Pressable key={t.label} accessibilityRole="button" accessibilityLabel={`${t.label} ile paylaş`} style={styles.target}>
-              <View style={[styles.targetIcon, { backgroundColor: t.bg }]}>
-                <Icon name={t.icon} color={t.fg} />
-              </View>
-              <Txt style={{ fontSize: 11, fontFamily: fontFamily.bodySemiBold }} numberOfLines={1}>
-                {t.label}
-              </Txt>
-            </Pressable>
-          ))}
+          {targets.map((t) => {
+            const pasif = t.id === 'baglanti' || (t.id === 'akis' && !sunucuda);
+            return (
+              <Pressable
+                key={t.id}
+                accessibilityRole="button"
+                accessibilityLabel={`${t.label} ile paylaş`}
+                accessibilityState={{ disabled: pasif, busy: mesgul === t.id }}
+                disabled={!!mesgul}
+                onPress={() => hedefSec(t)}
+                style={[styles.target, pasif && { opacity: 0.45 }]}>
+                <View style={[styles.targetIcon, { backgroundColor: t.bg }]}>
+                  {mesgul === t.id ? <ActivityIndicator color={t.fg} /> : <Icon name={t.icon} color={t.fg} />}
+                </View>
+                <Txt style={{ fontSize: 11, fontFamily: fontFamily.bodySemiBold }} numberOfLines={1}>
+                  {t.label}
+                </Txt>
+              </Pressable>
+            );
+          })}
         </View>
         <Txt variant="small" style={{ textAlign: 'center', marginTop: 8 }}>
-          Diğer: Instagram gönderisi, X, Facebook, TikTok, Telegram…
+          Hikâye ve WhatsApp telefonun paylaşım menüsünü açar: Instagram, X, Facebook, Telegram…
         </Txt>
       </View>
     </View>
@@ -145,9 +210,11 @@ export default function PaylasimStudyosuScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
-  card: { width: 196, height: 300, borderRadius: 18, padding: 16, justifyContent: 'space-between', shadowColor: colors.ink, shadowOpacity: 0.18, shadowRadius: 20, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
+  shadow: { borderRadius: 18, shadowColor: colors.ink, shadowOpacity: 0.18, shadowRadius: 20, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
   row: { flexDirection: 'row', gap: 8, marginBottom: 14 },
+  offscreen: { position: 'absolute', left: -10000, top: 0 },
   targets: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.line, paddingHorizontal: 8, paddingTop: 12 },
+  mesaj: { textAlign: 'center', fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: colors.seaInk, marginBottom: 8 },
   target: { width: '20%', alignItems: 'center', gap: 6 },
   targetIcon: { width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
 });
