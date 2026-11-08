@@ -35,7 +35,16 @@ export type IconName =
   | 'layers'
   | 'lock'
   | 'shield'
-  | 'gauge';
+  | 'gauge'
+  | 'camera'
+  | 'download'
+  | 'link'
+  | 'send'
+  | 'rotate'
+  | 'video'
+  | 'undo'
+  | 'image'
+  | 'more';
 
 type Props = { name: IconName; size?: number; color?: string; strokeWidth?: number };
 
@@ -176,5 +185,46 @@ function render(name: IconName, p: Record<string, unknown>, color: string) {
       return <Path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" {...p} />;
     case 'gauge':
       return <Path d="M4 18a8 8 0 1 1 16 0M12 18l4-5" {...p} />;
+    case 'camera':
+      return (
+        <>
+          <Rect x={3} y={7} width={18} height={13} rx={2} {...p} />
+          <Circle cx={12} cy={13.5} r={3.5} {...p} />
+          <Path d="M8 7l2-3h4l2 3" {...p} />
+        </>
+      );
+    case 'download':
+      return <Path d="M12 4v11M7 10l5 5 5-5M5 20h14" {...p} />;
+    case 'link':
+      return <Path d="M10 14a4 4 0 0 0 6 0l3-3a4 4 0 0 0-6-6l-1 1M14 10a4 4 0 0 0-6 0l-3 3a4 4 0 0 0 6 6l1-1" {...p} />;
+    case 'send':
+      return <Path d="M4 12l16-8-6 16-3-6z" {...p} />;
+    case 'rotate':
+      return <Path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v4h-4" {...p} />;
+    case 'video':
+      return (
+        <>
+          <Rect x={3} y={6} width={13} height={12} rx={2} {...p} />
+          <Path d="M16 10l5-3v10l-5-3z" {...p} />
+        </>
+      );
+    case 'undo':
+      return <Path d="M9 6l-5 5 5 5M4 11h10a5 5 0 0 1 0 10h-4" {...p} />;
+    case 'image':
+      return (
+        <>
+          <Rect x={3} y={4} width={18} height={16} rx={2} {...p} />
+          <Circle cx={9} cy={10} r={2} {...p} />
+          <Path d="M21 16l-5-5-9 9" {...p} />
+        </>
+      );
+    case 'more':
+      return (
+        <>
+          <Circle cx={5} cy={12} r={1.8} fill={color} />
+          <Circle cx={12} cy={12} r={1.8} fill={color} />
+          <Circle cx={19} cy={12} r={1.8} fill={color} />
+        </>
+      );
   }
 }

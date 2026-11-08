@@ -36,6 +36,11 @@ npm run mobile
 
 Terminalde çıkan QR kodu telefondaki **Expo Go** uygulamasıyla okut. Telefon ve bilgisayar aynı ağda olmalı.
 
+> **Harita:** Gerçek harita MapLibre ile çizilir ve Expo Go'da çalışmaz. Expo Go'da haritanın yerinde
+> tasarımdaki stilize çizim görünür. Gerçek haritayı görmek için uygulamanın geliştirme derlemesi
+> (development build) gerekir: `npx eas-cli build --profile development`. Harita stili
+> `apps/mobile/.env` içindeki `EXPO_PUBLIC_MAP_STYLE_URL` ile değişir (örnek: `.env.example`).
+
 **Web (karşılama + yönetim paneli)**
 
 ```bash
@@ -53,5 +58,11 @@ npm run web:build   # web üretim derlemesi
 
 ## Aşamalar
 
-1. **İskelet + tasarım + gezinme** — proje yapısı, ortak tasarım dili, mobil alt menü ve tüm ekranların kabukları, web karşılama sayfası ve yönetim paneli kabuğu, veritabanı şema taslağı.
-2. Sırada: Supabase projesi, giriş/kayıt, güvenlik politikaları; ardından GPS kayıt çekirdeği.
+1. **İskelet + tasarım + gezinme** — proje yapısı, ortak tasarım dili, mobil alt menü ve tüm ekranların kabukları, web karşılama sayfası ve yönetim paneli kabuğu, veritabanı şeması.
+2. **Tasarımın koda dökülmesi** — 18 ekran örnek verilerle, MapLibre haritası, web için Dockerfile.
+3. Sırada: gerçek GPS kaydı, Supabase bağlantısı ve güvenlik kuralları.
+
+## Sunucu
+
+- Supabase (kendi sunucumuzda, Coolify): https://api.lykiva.ismailtopcam.dev
+- Web: https://lykiva.ismailtopcam.dev (Coolify, `apps/web/Dockerfile`)
