@@ -1,7 +1,8 @@
-import { router, Tabs } from 'expo-router';
+import { Redirect, router, Tabs } from 'expo-router';
 import { Pressable, StyleSheet, View, type ColorValue } from 'react-native';
 
 import { Icon, type IconName } from '@/components/Icon';
+import { useGirisGerekli } from '@/lib/giris';
 import { colors, fontFamily } from '@/theme';
 
 function tabIcon(name: IconName) {
@@ -23,6 +24,10 @@ function tabIcon(name: IconName) {
  * Ortadaki büyük buton bir sekme değil; kayıt başlatma ekranını açar.
  */
 export default function TabsLayout() {
+  // İlk açılışta giriş ekranı. Durum bilinene kadar sekmeler gösterilir (internetsiz açılışı bekletmemek için).
+  const girisGerekli = useGirisGerekli();
+  if (girisGerekli) return <Redirect href="/giris" />;
+
   return (
     <Tabs
       screenOptions={{

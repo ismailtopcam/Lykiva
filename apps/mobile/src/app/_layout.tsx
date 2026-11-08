@@ -54,6 +54,8 @@ export default function RootLayout() {
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.ground } }}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="giris" options={{ gestureEnabled: false, animation: 'fade' }} />
+        <Stack.Screen name="giris-donus" options={{ animation: 'none' }} />
         <Stack.Screen name="kayit/index" options={{ presentation: 'modal' }} />
         <Stack.Screen name="kayit/canli" options={{ gestureEnabled: false }} />
         <Stack.Screen name="kayit/duraklatildi" options={{ gestureEnabled: false, animation: 'fade' }} />

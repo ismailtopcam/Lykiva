@@ -1,0 +1,139 @@
+import * as AppleAuthentication from 'expo-apple-authentication';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { Icon, type IconName } from '@/components/Icon';
+import { Logo } from '@/components/Logo';
+import { Txt } from '@/components/Txt';
+import { Button } from '@/components/ui';
+import { appleIleGiris, appleKullanilabilir, GirisIptal, girisiAtla, googleIleGiris, type GirisSonucu } from '@/lib/giris';
+import { colors, fontFamily, radius, space } from '@/theme';
+
+const maddeler: [IconName, string][] = [
+  ['shield', 'Kayıtların hesabında saklanır; telefon değişse de kaybolmaz.'],
+  ['users', 'Arkadaşlarını takip et, gruplarla birlikte çık.'],
+  ['lock', 'Rotanın başı ve sonu (ev, iş) varsayılan olarak gizli.'],
+];
+
+/**
+ * Giriş: Apple (iOS) ve Google. Geçici hesapla başlanmışsa kayıtlar yeni hesaba bağlanır.
+ * Açılışta bir kez gösterilir; "Şimdilik geç" denirse profilden tekrar açılabilir.
+ */
+export default function GirisScreen() {
+  const [apple, setApple] = useState(false);
+  const [bekleyen, setBekleyen] = useState<'apple' | 'google' | null>(null);
+  const [hata, setHata] = useState<string | null>(null);
+
+  useEffect(() => {
+    void appleKullanilabilir().then(setApple);
+  }, []);
+
+  function bitti() {
+    if (router.canGoBack()) router.back();
+    else router.replace('/');
+  }
+
+  async function giris(tur: 'apple' | 'google') {
+    if (bekleyen) return;
+    setHata(null);
+    setBekleyen(tur);
+    try {
+      const sonuc: GirisSonucu = tur === 'apple' ? await appleIleGiris() : await googleIleGiris();
+      if (sonuc.tasinan > 0) {
+        Alert.alert('Hesabına giriş yapıldı', `Bu telefondaki ${sonuc.tasinan} kayıt hesabına taşındı.`);
+      }
+      bitti();
+    } catch (e) {
+      if (!(e instanceof GirisIptal)) setHata(hataMetni(e));
+    } finally {
+      setBekleyen(null);
+    }
+  }
+
+  async function atla() {
+    await girisiAtla();
+    bitti();
+  }
+
+  return (
+    <SafeAreaView style={styles.root}>
+      <View style={styles.ust}>
+        <Logo size={34} />
+      </View>
+
+      <View style={styles.orta}>
+        <Txt variant="display" accessibilityRole="header" style={{ fontSize: 34, lineHeight: 40 }}>
+          Patikada, yolda,{'\n'}dağda — hep yanında.
+        </Txt>
+        <View style={{ gap: space.md, marginTop: space.xl }}>
+          {maddeler.map(([ikon, metin]) => (
+            <View key={metin} style={styles.madde}>
+              <View style={styles.maddeIkon}>
+                <Icon name={ikon} size={18} color={colors.seaInk} />
+              </View>
+              <Txt style={{ flex: 1, fontSize: 15, lineHeight: 21 }}>{metin}</Txt>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.alt}>
+        {hata ? (
+          <View accessibilityLiveRegion="polite" style={styles.hata}>
+            <Txt style={{ color: colors.terraInk, fontSize: 13 }}>{hata}</Txt>
+          </View>
+        ) : null}
+
+        {apple ? (
+          <View>
+            <AppleAuthentication.AppleAuthenticationButton
+              buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+              cornerRadius={radius.lg}
+              style={[styles.dugme, bekleyen && { opacity: 0.55 }]}
+              onPress={() => void giris('apple')}
+            />
+            {bekleyen === 'apple' ? <ActivityIndicator style={StyleSheet.absoluteFill} color="#FFFFFF" /> : null}
+          </View>
+        ) : null}
+
+        <Button
+          variant="outline"
+          label={bekleyen === 'google' ? 'Google açılıyor…' : 'Google ile devam et'}
+          onPress={() => void giris('google')}
+          disabled={!!bekleyen}
+          style={{ borderRadius: radius.lg }}
+        />
+
+        <Pressable accessibilityRole="button" onPress={() => void atla()} disabled={!!bekleyen} hitSlop={8} style={styles.atla}>
+          <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: colors.inkMuted }}>Şimdilik geç</Txt>
+        </Pressable>
+        <Txt variant="small" style={{ textAlign: 'center' }}>
+          Giriş yapmadan da kayıt alabilirsin; kayıtlar bu telefondaki geçici hesapta durur.
+        </Txt>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+function hataMetni(e: unknown): string {
+  const m = e instanceof Error ? e.message : String(e);
+  if (/network|fetch|internet/i.test(m)) return 'İnternet bağlantısı yok gibi görünüyor. Bağlanınca tekrar dene.';
+  if (/provider is not enabled|Unsupported provider|provider_disabled/i.test(m)) return 'Bu giriş yöntemi sunucuda henüz açılmadı.';
+  if (/manual linking/i.test(m)) return 'Hesap bağlama sunucuda kapalı (yönetici ayarı gerekli).';
+  return `Giriş yapılamadı: ${m}`;
+}
+
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.ground, paddingHorizontal: space.xl },
+  ust: { paddingTop: space.lg },
+  orta: { flex: 1, justifyContent: 'center' },
+  madde: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  maddeIkon: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.seaSoft, alignItems: 'center', justifyContent: 'center' },
+  alt: { gap: space.md, paddingBottom: space.lg },
+  dugme: { height: 54, width: '100%' },
+  atla: { alignSelf: 'center', paddingVertical: space.sm, minHeight: 44, justifyContent: 'center' },
+  hata: { backgroundColor: colors.terraSoft, borderRadius: radius.md, padding: space.md },
+});

@@ -71,3 +71,8 @@ async function gonder(): Promise<number> {
   await AsyncStorage.setItem(KUYRUK, JSON.stringify(kalan));
   return kalan.length;
 }
+
+/** Çıkışta: bekleyen kayıtları ve client_id → sunucu id eşleşmelerini siler */
+export async function yerelKayitlariTemizle() {
+  await AsyncStorage.multiRemove([KUYRUK, GONDERILEN]).catch(() => undefined);
+}
