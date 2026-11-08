@@ -141,3 +141,16 @@ export function PaylasimKarti({ a, sablon, goster, uclariGizle, genislik = 196, 
     </View>
   );
 }
+
+/**
+ * Instagram / WhatsApp hikâyesi için 9:16 görsel: kart, şablon renginde dikey zeminin ortasında.
+ * 360 × 640 pt çizilir, 1080 × 1920 px yakalanır.
+ */
+export function HikayeGorseli({ ref, ...p }: Omit<Props, 'genislik'>) {
+  const L = KART_SABLONLARI[p.sablon];
+  return (
+    <View ref={ref} collapsable={false} style={{ width: 360, height: 640, backgroundColor: L.bg, alignItems: 'center', justifyContent: 'center' }}>
+      <PaylasimKarti {...p} genislik={316} />
+    </View>
+  );
+}

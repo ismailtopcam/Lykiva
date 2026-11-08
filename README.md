@@ -80,7 +80,8 @@ npm test -w @lykiva/shared   # GPS hesaplama testleri
 3. **Gerçek GPS kaydı** — ekran kapalıyken de kayıt (arka plan konum), duraklat/devam, mesafe/hız/tırmanış/mola hesapları (birim testli), çevrimdışı kuyruk, Supabase'e kaydetme, güvenlik kuralları (RLS), geçici (anonim) giriş, aktivite özeti ve hız/mola sayfası gerçek veriden.
 4. **Google / Apple girişi** — iOS'ta yerel Apple girişi, Google için tarayıcı (PKCE). Geçici hesaba kimlik bağlanır, kayıtlar kaybolmaz; o kimlik başka hesaptaysa kayıtlar oraya taşınır. Açılışta giriş ekranı ("Şimdilik geç" ile atlanabilir), ayarlarda hesap ve çıkış. Kod hazır; sunucu ve Google/Apple konsol ayarları bekliyor (bkz. `supabase/README.md`).
 5. **Rotalar** — haritaya dokunarak rota çizme (patikaya / yola yapışarak, BRouter), yer arama, mesafe/tırmanış/tahmini süre/zemin/zorluk, aktiviteyi rota olarak kaydetme, Rotalarım, rota detayı; rotayla kayıtta ilerleme çubuğu, kalan km, ortalama hıza göre varış süresi ve "rotadan çıktın" uyarısı.
-6. Sırada: paylaşım kartı (sosyal medya), sonra gruplar / mesajlaşma / etkinlikler / canlı konum.
+6. **Paylaşım** — gerçek izle paylaşım kartı (4 şablon, gösterilecek istatistikler), Instagram hikâyesi için 9:16 görsel ve kart görseli (telefonun paylaşım menüsü), başlangıç/bitişi gizleme, Lykiva akışında görünürlük, GPX dışa aktarımı.
+7. Sırada: 3B sayfası gerçek veriye, gruplar / mesajlaşma / etkinlikler / canlı konum.
 
 ## Sunucu
 
