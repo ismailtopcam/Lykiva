@@ -20,13 +20,37 @@ Tüm tabloların kuralları yazıldı (son: canlı konum, `20261109050000_canli_
 **Gizlilik:** Ham GPS noktalarını yalnızca sahibi okur. Başkalarına gösterilen iz, `hide_endpoints`
 açıksa baştan ve sondan 200 m kırpılır (ev / iş adresi görünmesin diye).
 
-## Yeni bir migration uygulamak
+## Migration'ları uygulamak
 
-Coolify > Terminal > `uygulama` sunucusu:
+Coolify > Terminal > `uygulama` sunucusu. Önce durumu gör (hiçbir şey değiştirmez):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ismailtopcam/Lykiva/main/supabase/uygula.sh | bash
+```
+
+Eksikleri uygula (her biri tek işlemde; hata olursa o migration geri alınır ve betik durur):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ismailtopcam/Lykiva/main/supabase/uygula.sh | bash -s -- uygula
+```
+
+Betik sonunda Realtime konteynerini ve `supabase_realtime` yayınındaki tabloları da gösterir.
+Yeni bir migration eklenince `uygula.sh` içindeki listeye (dosya + o migration'ın oluşturduğu bir fonksiyon) eklenmeli.
+
+Tek bir dosyayı elle uygulamak için:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ismailtopcam/Lykiva/main/supabase/migrations/<dosya>.sql \
   | docker exec -i supabase-db-nqyujqqkkjyba4flthzcf9uf psql -U postgres -v ON_ERROR_STOP=1 -1
+```
+
+## Sunucuyu Mac'ten kontrol etmek
+
+`apps/mobile/.env` içindeki anahtarla, yalnızca okuyarak: giriş ayarları (geçici hesap, Google, Apple),
+her migration'ın sunucuda olup olmadığı ve Realtime bağlantısı.
+
+```bash
+node scripts/sunucu-kontrol.mjs
 ```
 
 ## Giriş
