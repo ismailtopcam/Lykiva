@@ -1,4 +1,4 @@
-import { ACTIVITY_LABELS, formatDuration, formatKm, formatMeters, formatSpeedKmh } from '@lykiva/shared';
+import { ACTIVITY_LABELS, formatDuration, formatKm, formatMeters, formatSpeedKmh , OFF_ROUTE_M } from '@lykiva/shared';
 import { Redirect, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
@@ -11,14 +11,16 @@ import { TopoMap } from '@/components/map/TopoMap';
 import { Txt } from '@/components/Txt';
 import { Stat } from '@/components/ui';
 import { duraklat } from '@/kayit/kaydedici';
-import { useCanliVeri } from '@/kayit/istatistik';
+import { kisaSure, rotaBilgisi, useCanliVeri } from '@/kayit/istatistik';
 import { colors, fontFamily, space } from '@/theme';
 
 const n = colors.night;
 
 export default function CanliTakipScreen() {
   const insets = useSafeAreaInsets();
-  const { kayit, stats, anlikHiz, aktifS, iz, ben, gpsDogruluk } = useCanliVeri();
+  const veri = useCanliVeri();
+  const { kayit, stats, anlikHiz, aktifS, iz, ben, gpsDogruluk } = veri;
+  const rb = rotaBilgisi(veri);
   const [takip, setTakip] = useState(true);
 
   if (kayit.durum === 'bos') return <Redirect href="/kayit" />;
@@ -37,12 +39,18 @@ export default function CanliTakipScreen() {
       <StatusBar style="light" />
       <TopoMap
         dark
-        style={{ height: 340 }}
-        route={iz}
-        markers={ben ? [{ id: 'me', coord: ben, kind: 'me' }] : []}
+        style={{ height: rb ? 290 : 340 }}
+        route={kayit.rota ? kayit.rota.points.map((p) => [p.lng, p.lat] as [number, number]) : iz}
+        progress={rb ? Math.max(0.001, rb.kesir) : undefined}
+        markers={[
+          ...(kayit.rota && kayit.rota.points.length > 1
+            ? [{ id: 'end', coord: [kayit.rota.points[kayit.rota.points.length - 1].lng, kayit.rota.points[kayit.rota.points.length - 1].lat] as [number, number], kind: 'end' as const }]
+            : []),
+          ...(ben ? [{ id: 'me', coord: ben, kind: 'me' as const }] : []),
+        ]}
         follow={takip ? ben : null}
         padding={{ top: 110, bottom: 40 }}
-        accessibilityLabel="Canlı kayıt haritası: şimdiye kadar gidilen yol"
+        accessibilityLabel={rb ? `Canlı rota haritası: ${rb.ad}, tamamlanan ve kalan kısım` : 'Canlı kayıt haritası: şimdiye kadar gidilen yol'}
       />
       <FloatingHeader
         left={
@@ -65,7 +73,11 @@ export default function CanliTakipScreen() {
       />
 
       <View style={[styles.panel, { paddingBottom: insets.bottom + 24 }]}>
-        {!kayit.arkaPlan ? (
+        {rb && rb.sapmaM > OFF_ROUTE_M ? (
+          <View style={[styles.warn, { backgroundColor: '#3A1D17' }]} accessibilityRole="alert">
+            <Txt style={[styles.warnText, { color: n.accentSoft }]}>Rotadan {formatMeters(rb.sapmaM)} m uzaktasın</Txt>
+          </View>
+        ) : !kayit.arkaPlan ? (
           <View style={styles.warn} accessibilityRole="alert">
             <Txt style={styles.warnText}>Arka plan konum izni yok: uygulama açık ve ekran açıkken kaydediyor.</Txt>
           </View>
@@ -79,12 +91,38 @@ export default function CanliTakipScreen() {
           <Txt variant="label" color={n.textMuted}>
             Anlık hız
           </Txt>
-          <Txt style={styles.hero} accessibilityLabel={`Anlık hız ${hiz} kilometre/saat`}>
+          <Txt style={[styles.hero, rb && { fontSize: 60, lineHeight: 66 }]} accessibilityLabel={`Anlık hız ${hiz} kilometre/saat`}>
             {hiz}
             <Txt style={styles.heroUnit}> km/sa</Txt>
           </Txt>
         </View>
 
+        {rb ? (
+          <View style={{ marginTop: 12 }}>
+            <View style={styles.track} accessibilityLabel={`Rotanın yüzde ${Math.round(rb.kesir * 100)}'i tamamlandı`}>
+              <View style={[styles.fill, { width: `${Math.min(100, rb.kesir * 100)}%` }]} />
+            </View>
+            <View style={styles.trackLabels}>
+              <Txt variant="small" color={n.textMuted} numberOfLines={1} style={{ flex: 1 }}>
+                {rb.ad}
+              </Txt>
+              <Txt variant="small" color={n.textMuted}>
+                %{Math.round(rb.kesir * 100)}
+              </Txt>
+            </View>
+          </View>
+        ) : null}
+
+        {rb ? (
+          <View style={styles.grid}>
+            <View style={styles.cell}><Stat label="Yapılan" value={formatKm(stats.distanceM)} unit="km" size={28} color={n.text} muted={n.textMuted} /></View>
+            <View style={styles.cell}><Stat label="Kalan" value={formatKm(rb.kalanM)} unit="km" size={28} color={n.text} muted={n.textMuted} /></View>
+            <View style={styles.cell}><Stat label="Varışa" value={kisaSure(rb.varisS).value} unit={kisaSure(rb.varisS).unit} size={28} color={n.accentSoft} muted={n.textMuted} /></View>
+            <View style={styles.cell}><Stat label="Süre" value={formatDuration(aktifS)} size={28} color={n.text} muted={n.textMuted} /></View>
+            <View style={styles.cell}><Stat label="Ort. hız" value={formatSpeedKmh(stats.avgMovingSpeed)} size={28} color={n.text} muted={n.textMuted} /></View>
+            <View style={styles.cell}><Stat label="Tırmanış" value={formatMeters(stats.gainM)} unit="m" size={28} color={n.text} muted={n.textMuted} /></View>
+          </View>
+        ) : (
         <View style={styles.grid}>
           <View style={styles.cell}><Stat label="Yapılan" value={formatKm(stats.distanceM)} unit="km" size={28} color={n.text} muted={n.textMuted} /></View>
           <View style={styles.cell}><Stat label="Süre" value={formatDuration(aktifS)} size={28} color={n.accentSoft} muted={n.textMuted} /></View>
@@ -95,8 +133,11 @@ export default function CanliTakipScreen() {
             <Stat label="Rakım" value={kayit.sonKonum?.alt != null ? formatMeters(kayit.sonKonum.alt) : '–'} unit="m" size={28} color={n.text} muted={n.textMuted} />
           </View>
         </View>
+        )}
         <Txt variant="small" color={n.textMuted} style={{ marginTop: 10 }}>
-          Süre duraklatmaları içermez · ortalama yalnızca hareket hâlindeyken hesaplanır
+          {rb
+            ? `Varış süresi şu ana kadarki ortalama hızına göre${rb.varisSaati ? ` · Tahmini varış ${rb.varisSaati}` : ''}`
+            : 'Süre duraklatmaları içermez · ortalama yalnızca hareket hâlindeyken hesaplanır'}
         </Txt>
 
         <View style={styles.controls}>
@@ -119,6 +160,9 @@ const styles = StyleSheet.create({
   warnText: { fontFamily: fontFamily.bodySemiBold, fontSize: 12, color: n.paused },
   hero: { fontFamily: fontFamily.displayHeavy, fontSize: 72, lineHeight: 78, color: n.text, letterSpacing: -3 },
   heroUnit: { fontFamily: fontFamily.bodySemiBold, fontSize: 22, letterSpacing: 0, color: n.textMuted },
+  track: { height: 8, borderRadius: 4, backgroundColor: '#24302B', overflow: 'hidden' },
+  fill: { height: '100%', backgroundColor: n.accent, borderRadius: 4 },
+  trackLabels: { flexDirection: 'row', justifyContent: 'space-between', gap: 8, marginTop: 6 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: 14, marginTop: 12 },
   cell: { width: '33.33%' },
   controls: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 'auto', paddingTop: space.md },

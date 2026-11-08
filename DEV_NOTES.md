@@ -27,3 +27,18 @@ Aktivitenin hangi havada yapıldığı kaydedilecek ve gösterilecek.
 - Supabase Storage'daki dosyalar (fotoğraflar, MinIO) da yedeğe dahil edilmeli
 - Geri yükleme bir kez denenip doğrulanmalı
 - Gerçek kullanıcılar gelmeden önce yapılmalı
+
+### [ ] Kendi rota hesaplama ve yer arama sunucumuz
+Rota çizimi şu an herkese açık sunucuları kullanıyor: BRouter (brouter.de) ve Photon (photon.komoot.io).
+İkisi de ücretsiz ama "adil kullanım" ile sınırlı; kullanıcı sayısı artınca yetmez.
+
+- Uygulama sunucusuna BRouter kur (Java; Türkiye + çevresi için segment dosyaları birkaç yüz MB)
+- Photon ya da Nominatim kur (Türkiye verisiyle)
+- Mobilde adresler `.env` ile değişir: `EXPO_PUBLIC_BROUTER_URL`, `EXPO_PUBLIC_PHOTON_URL`
+- Gerçek kullanıcılar gelmeden önce yapılmalı
+
+### [ ] Giriş: Google ve Apple — sunucu ve konsol ayarı
+Kod hazır (4. aşama). Kalanlar `supabase/README.md` > Giriş bölümünde:
+- Kalıcı bundle ID kararı (şu an `app.lykiva.mobile`)
+- Coolify'da `supabase-auth` ortam değişkenleri, `20261109000000_giris.sql` migration'ının uygulanması
+- Google Cloud OAuth istemcisi, Apple Developer'da Sign in with Apple

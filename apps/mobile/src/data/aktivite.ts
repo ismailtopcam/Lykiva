@@ -33,6 +33,7 @@ type Ham = {
   profile: ProfilNoktasi[];
   stops: Mola[];
   ownerName?: string;
+  mine?: boolean;
 };
 
 const saat = (ms: number) => new Date(ms).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
@@ -109,11 +110,13 @@ function goruntuyeCevir(h: Ham): Activity {
     endClock: saat(h.ended),
     stopTotal: formatDuration(molaS),
     hasElevation: altli.length > 1,
+    mine: h.mine,
   };
 }
 
 async function sunucudan(id: string): Promise<Activity> {
-  const [{ data: o, error }, { data: d, error: e2 }] = await Promise.all([
+  const [{ data: oturum }, { data: o, error }, { data: d, error: e2 }] = await Promise.all([
+    supabase.auth.getSession(),
     supabase.from('aktivite_ozetleri').select('*').eq('id', id).maybeSingle(),
     supabase.rpc('aktivite_detay', { aktivite: id }),
   ]);
@@ -143,6 +146,7 @@ async function sunucudan(id: string): Promise<Activity> {
     profile: detay.profile,
     stops: detay.stops.map((s) => ({ start: Date.parse(s.started_at), end: Date.parse(s.ended_at), distanceAt: s.distance_at_m, lng: s.lng, lat: s.lat, note: s.note })),
     ownerName: o.owner_name,
+    mine: !!oturum.session && oturum.session.user.id === o.owner_id,
   });
 }
 

@@ -38,6 +38,10 @@ export type TopoMapProps = {
   padding?: { top?: number; right?: number; bottom?: number; left?: number };
   /** Verilirse kamera bu konumu takip eder (kayıt sırasında) */
   follow?: LngLat | null;
+  /** follow için yakınlaştırma (varsayılan 16) */
+  followZoom?: number;
+  /** Haritaya dokununca (yalnızca gerçek haritada) */
+  onPress?: (coord: LngLat) => void;
   accessibilityLabel: string;
 };
 
@@ -45,6 +49,9 @@ export const MAP_STYLE_URL = process.env.EXPO_PUBLIC_MAP_STYLE_URL || 'https://t
 
 // Expo Go ve web'de MapLibre'nin yerel modülü yok → stilize SVG harita
 const useFallback = Constants.executionEnvironment === ExecutionEnvironment.StoreClient || Platform.OS === 'web';
+
+/** Gerçek (MapLibre) harita mı — Expo Go ve web'de değil */
+export const gercekHarita = !useFallback;
 
 export function TopoMap(props: TopoMapProps) {
   return (
@@ -89,9 +96,10 @@ function NativeMap(props: TopoMapProps) {
       touchZoom={interactive}
       doubleTapZoom={interactive}
       touchRotate={false}
-      touchPitch={false}>
+      touchPitch={false}
+      onPress={props.onPress ? (e) => props.onPress?.([e.nativeEvent.lngLat[0], e.nativeEvent.lngLat[1]]) : undefined}>
       {props.follow ? (
-        <ML.Camera center={props.follow} zoom={16} duration={800} padding={{ top: 0, right: 0, left: 0, bottom: 0, ...padding }} />
+        <ML.Camera center={props.follow} zoom={props.followZoom ?? 16} duration={800} padding={{ top: 0, right: 0, left: 0, bottom: 0, ...padding }} />
       ) : bounds ? (
         <ML.Camera
           initialViewState={{
