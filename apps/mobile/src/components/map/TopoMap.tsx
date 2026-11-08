@@ -162,7 +162,8 @@ function NativeMap(props: TopoMapProps) {
           <ML.Layer
             id="isaret-yazi"
             type="symbol"
-            layout={{ 'text-field': ['get', 'text'], 'text-size': 11, 'text-allow-overlap': true }}
+            // Yazı tipi belirtilmezse "Open Sans" istenir; OpenFreeMap'te yok (404) ve numaralar görünmez
+            layout={{ 'text-field': ['get', 'text'], 'text-font': ['Noto Sans Bold'], 'text-size': 11, 'text-allow-overlap': true }}
             paint={{ 'text-color': '#FBF8F2' }}
           />
         </ML.GeoJSONSource>
