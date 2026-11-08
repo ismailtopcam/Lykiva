@@ -77,6 +77,8 @@ export type Activity = {
   stopTotal: string;
   /** Cihaz rakım verdi mi (vermediyse yükseklik bölümü gizlenir) */
   hasElevation?: boolean;
+  /** Giriş yapan kullanıcının kendi aktivitesi mi (sunucudaki) */
+  mine?: boolean;
 };
 
 export const kasKalkan: Activity = {

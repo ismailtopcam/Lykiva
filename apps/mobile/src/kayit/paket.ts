@@ -5,6 +5,7 @@ import { computeSegmentedStats, detectStops, type ActivityType, type TrackPoint,
 
 export type KayitPaketi = {
   client_id: string;
+  route_id?: string | null;
   title: string | null;
   activity: ActivityType;
   started_at: string;
@@ -47,6 +48,7 @@ export function paketOlustur(opts: {
   activity: ActivityType;
   segments: TrackPoint[][];
   title?: string;
+  routeId?: string | null;
 }): KayitPaketi | null {
   const segments = opts.segments.filter((s) => s.length > 0);
   const points = segments.flat();
@@ -70,6 +72,8 @@ export function paketOlustur(opts: {
   const start = new Date(points[0].t);
   return {
     client_id: opts.clientId,
+    // Örnek rota sunucuda yok; yalnızca gerçek rota id'si gönderilir
+    route_id: opts.routeId && opts.routeId !== 'ornek' ? opts.routeId : null,
     title: opts.title?.trim() || varsayilanBaslik(opts.activity, start),
     activity: opts.activity,
     started_at: start.toISOString(),

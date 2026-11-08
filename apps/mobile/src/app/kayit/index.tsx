@@ -1,7 +1,7 @@
-import { ACTIVITY_LABELS, ACTIVITY_TYPES, type ActivityType } from '@lykiva/shared';
-import { Redirect, router } from 'expo-router';
+import { ACTIVITY_LABELS, ACTIVITY_TYPES, formatKm, type ActivityType } from '@lykiva/shared';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Linking, Pressable, StyleSheet, View } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FloatingHeader } from '@/components/Header';
@@ -10,6 +10,7 @@ import { IconButton } from '@/components/IconButton';
 import { TopoMap } from '@/components/map/TopoMap';
 import { Txt } from '@/components/Txt';
 import { Button } from '@/components/ui';
+import { rotaGetir, rotalarim, type Rota } from '@/data/rota';
 import { baslat, IzinHatasi, konumOnizlemeBaslat, useKayit } from '@/kayit/kaydedici';
 import { colors, fontFamily, radius, space } from '@/theme';
 
@@ -37,8 +38,33 @@ export default function KayitBaslatScreen() {
   const [hata, setHata] = useState<string | null>(null);
   const [izinHatasi, setIzinHatasi] = useState(false);
   const [basliyor, setBasliyor] = useState(false);
+  const params = useLocalSearchParams<{ rota?: string }>();
+  const [rota, setRota] = useState<Rota | null>(null);
+  const [rotaListesi, setRotaListesi] = useState<Rota[] | null>(null);
+  const [secimAcik, setSecimAcik] = useState(false);
 
   useEffect(() => konumOnizlemeBaslat(), []);
+
+  // Rota sayfasından "Bu rotayı başlat" ile gelindiyse rotayı yükle
+  useEffect(() => {
+    if (!params.rota) return;
+    let iptal = false;
+    rotaGetir(params.rota)
+      .then((r) => {
+        if (iptal) return;
+        setRota(r);
+        setType(r.activity);
+      })
+      .catch(() => undefined);
+    return () => {
+      iptal = true;
+    };
+  }, [params.rota]);
+
+  async function secimiAc() {
+    setSecimAcik((a) => !a);
+    if (!rotaListesi) setRotaListesi(await rotalarim().catch(() => []));
+  }
 
   if (kayit.durum === 'kayitta') return <Redirect href="/kayit/canli" />;
   if (kayit.durum === 'duraklatildi') return <Redirect href="/kayit/duraklatildi" />;
@@ -52,7 +78,7 @@ export default function KayitBaslatScreen() {
     setIzinHatasi(false);
     setBasliyor(true);
     try {
-      await baslat(type);
+      await baslat(type, rota ? { id: rota.id, name: rota.name, points: rota.points } : null);
       router.replace('/kayit/canli');
     } catch (e) {
       setIzinHatasi(e instanceof IzinHatasi);
@@ -66,8 +92,9 @@ export default function KayitBaslatScreen() {
     <View style={styles.root}>
       <TopoMap
         style={StyleSheet.absoluteFill}
+        route={rota ? rota.points.map((p) => [p.lng, p.lat] as [number, number]) : undefined}
         markers={ben ? [{ id: 'me', coord: ben, kind: 'me' }] : []}
-        follow={ben}
+        follow={rota ? null : ben}
         padding={{ top: 110, bottom: 420 }}
         accessibilityLabel="Bulunduğun konumun haritası"
       />
@@ -102,9 +129,42 @@ export default function KayitBaslatScreen() {
           })}
         </View>
 
-        <Txt variant="small">
-          Ekran kapalıyken de kaydetmesi için konum iznini “Her zaman” olarak ver. Rota seçme ve grupla canlı paylaşım sonraki aşamada geliyor.
-        </Txt>
+        <Pressable accessibilityRole="button" accessibilityState={{ expanded: secimAcik }} onPress={secimiAc} style={styles.rotaRow}>
+          <Icon name="route" color={colors.terra} />
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Txt variant="small">Rota</Txt>
+            <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }} numberOfLines={1}>
+              {rota ? `${rota.name} · ${formatKm(rota.distanceM)} km` : 'Rotasız kaydet'}
+            </Txt>
+          </View>
+          <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: colors.seaInk }}>{secimAcik ? 'Kapat' : 'Değiştir'}</Txt>
+        </Pressable>
+        {secimAcik ? (
+          <ScrollView style={{ maxHeight: 180 }} contentContainerStyle={{ gap: 4 }}>
+            <Pressable accessibilityRole="radio" accessibilityState={{ checked: !rota }} onPress={() => { setRota(null); setSecimAcik(false); }} style={styles.secenek}>
+              <Txt style={{ fontFamily: rota ? fontFamily.body : fontFamily.bodyBold, fontSize: 14 }}>Rotasız kaydet</Txt>
+            </Pressable>
+            {(rotaListesi ?? []).map((r) => (
+              <Pressable
+                key={r.id}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: rota?.id === r.id }}
+                onPress={() => {
+                  setRota(r);
+                  setType(r.activity);
+                  setSecimAcik(false);
+                }}
+                style={styles.secenek}>
+                <Txt style={{ fontFamily: rota?.id === r.id ? fontFamily.bodyBold : fontFamily.body, fontSize: 14 }} numberOfLines={1}>
+                  {r.name} · {formatKm(r.distanceM)} km
+                </Txt>
+              </Pressable>
+            ))}
+            {rotaListesi && rotaListesi.length === 0 ? <Txt variant="small">Henüz rotan yok. Profil &gt; Rotalarım’dan çizebilirsin.</Txt> : null}
+          </ScrollView>
+        ) : null}
+
+        <Txt variant="small">Ekran kapalıyken de kaydetmesi için konum iznini “Her zaman” olarak ver.</Txt>
 
         {hata ? (
           <View style={styles.error} accessibilityRole="alert">
@@ -143,4 +203,6 @@ const styles = StyleSheet.create({
   tile: { width: '31.6%', height: 72, borderRadius: 16, backgroundColor: colors.ground, alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1.5, borderColor: 'transparent' },
   tileOn: { backgroundColor: colors.ink, borderColor: colors.ink },
   error: { padding: 12, borderRadius: 12, backgroundColor: '#F6E3D9' },
+  rotaRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 16, backgroundColor: colors.ground },
+  secenek: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 12, backgroundColor: colors.ground },
 });

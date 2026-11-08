@@ -9,14 +9,16 @@ import { Icon } from '@/components/Icon';
 import { Txt } from '@/components/Txt';
 import { Button, Stat } from '@/components/ui';
 import { bitir, devamEt, iptalEt } from '@/kayit/kaydedici';
-import { useCanliVeri } from '@/kayit/istatistik';
+import { rotaBilgisi, useCanliVeri } from '@/kayit/istatistik';
 import { colors, fontFamily } from '@/theme';
 
 const n = colors.night;
 
 export default function DuraklatildiScreen() {
   const insets = useSafeAreaInsets();
-  const { kayit, stats, aktifS, simdi } = useCanliVeri();
+  const veri = useCanliVeri();
+  const { kayit, stats, aktifS, simdi } = veri;
+  const rb = rotaBilgisi(veri);
   const [kaydediyor, setKaydediyor] = useState(false);
 
   if (kayit.durum === 'bos' && !kaydediyor) return <Redirect href="/kayit" />;
@@ -70,8 +72,9 @@ export default function DuraklatildiScreen() {
 
       <View style={styles.stats}>
         <Stat label="Yapılan" value={`${formatKm(stats.distanceM)} km`} color={n.text} muted={n.textMuted} />
+        {rb ? <Stat label="Kalan" value={`${formatKm(rb.kalanM)} km`} color={n.text} muted={n.textMuted} /> : null}
         <Stat label="Ort. hız" value={formatSpeedKmh(stats.avgMovingSpeed)} color={n.text} muted={n.textMuted} />
-        <Stat label="Maks. hız" value={formatSpeedKmh(stats.maxSpeed)} color={n.text} muted={n.textMuted} />
+        {rb ? null : <Stat label="Maks. hız" value={formatSpeedKmh(stats.maxSpeed)} color={n.text} muted={n.textMuted} />}
       </View>
 
       <Txt variant="small" color={n.textMuted} style={{ textAlign: 'center' }}>

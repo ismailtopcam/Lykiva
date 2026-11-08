@@ -8,7 +8,7 @@
  * - Duraklatma yeni bir "parça" başlatır; parçalar arası yol mesafeye eklenmez.
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { acceptPoint, type ActivityType, type TrackPoint } from '@lykiva/shared';
+import { acceptPoint, prepareRoute, trackOnRoute, type ActivityType, type PreparedRoute, type RouteProgress, type RoutePoint, type TrackPoint } from '@lykiva/shared';
 import { randomUUID } from 'expo-crypto';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
@@ -37,7 +37,13 @@ export type Kayit = {
   arkaPlan: boolean;
   /** Son gelen konum (kabul edilmese de) — GPS durumu ve harita için */
   sonKonum: TrackPoint | null;
+  /** Takip edilen rota (varsa) */
+  rota: KayitRotasi | null;
+  /** Rotadaki son ilerleme */
+  rotaIlerleme: RouteProgress | null;
 };
+
+export type KayitRotasi = { id: string; name: string; points: RoutePoint[] };
 
 const BOS: Kayit = {
   durum: 'bos',
@@ -49,7 +55,16 @@ const BOS: Kayit = {
   duraklamaToplam: 0,
   arkaPlan: false,
   sonKonum: null,
+  rota: null,
+  rotaIlerleme: null,
 };
+
+// Hazırlanmış rota (birikmiş mesafeler) — rota başına bir kez hesaplanır
+let hazirRota: { id: string; r: PreparedRoute } | null = null;
+function hazir(rota: KayitRotasi): PreparedRoute {
+  if (hazirRota?.id !== rota.id) hazirRota = { id: rota.id, r: prepareRoute(rota.points) };
+  return hazirRota.r;
+}
 
 let kayit: Kayit = BOS;
 let yuklendi = false;
@@ -114,11 +129,15 @@ function noktalarEkle(locs: Location.LocationObject[]) {
   }
   const segments = kayit.segments.length ? [...kayit.segments] : [[]];
   const seg = [...segments[segments.length - 1]];
+  let rotaIlerleme = kayit.rotaIlerleme;
   for (const p of yeni) {
-    if (acceptPoint(seg[seg.length - 1], p)) seg.push(p);
+    if (acceptPoint(seg[seg.length - 1], p)) {
+      seg.push(p);
+      if (kayit.rota) rotaIlerleme = trackOnRoute(hazir(kayit.rota), p, rotaIlerleme);
+    }
   }
   segments[segments.length - 1] = seg;
-  degistir({ segments, sonKonum });
+  degistir({ segments, sonKonum, rotaIlerleme });
 }
 
 // Arka plan görevi modül yüklenirken tanımlanmalı (kök düzende içe aktarılır)
@@ -178,7 +197,7 @@ async function izlemeyiDurdur() {
 
 export class IzinHatasi extends Error {}
 
-export async function baslat(activity: ActivityType) {
+export async function baslat(activity: ActivityType, rota: KayitRotasi | null = null) {
   const fg = await Location.requestForegroundPermissionsAsync();
   if (!fg.granted) throw new IzinHatasi('Konum izni verilmedi. Ayarlar > Lykiva > Konum bölümünden açabilirsin.');
   degistir({
@@ -189,6 +208,8 @@ export async function baslat(activity: ActivityType) {
     segments: [[]],
     baslangic: Date.now(),
     sonKonum: kayit.sonKonum,
+    rota,
+    rotaIlerleme: rota && kayit.sonKonum ? trackOnRoute(hazir(rota), kayit.sonKonum) : null,
   });
   const arkaPlan = await izlemeyiBaslat();
   degistir({ arkaPlan });
@@ -216,7 +237,7 @@ export async function devamEt() {
  */
 export async function bitir(title?: string): Promise<string | null> {
   await izlemeyiDurdur();
-  const paket = paketOlustur({ clientId: kayit.clientId, activity: kayit.activity, segments: kayit.segments, title });
+  const paket = paketOlustur({ clientId: kayit.clientId, activity: kayit.activity, segments: kayit.segments, title, routeId: kayit.rota?.id });
   const clientId = kayit.clientId;
   degistir({ ...BOS, sonKonum: kayit.sonKonum });
   if (!paket) return null;

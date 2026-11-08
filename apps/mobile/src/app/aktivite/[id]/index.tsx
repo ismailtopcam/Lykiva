@@ -1,5 +1,6 @@
 import { ACTIVITY_LABELS } from '@lykiva/shared';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -10,6 +11,7 @@ import { TopoMap } from '@/components/map/TopoMap';
 import { Txt } from '@/components/Txt';
 import { Button } from '@/components/ui';
 import { useAktivite } from '@/data/aktivite';
+import { aktivitedenRota } from '@/data/rota';
 import { people } from '@/data/ornek';
 import { colors, fontFamily, space } from '@/theme';
 
@@ -18,6 +20,7 @@ export default function AktiviteOzetiScreen() {
   const { a, yukleniyor, hata, bekliyor } = useAktivite(id);
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const [rotaDurumu, setRotaDurumu] = useState<'bos' | 'kaydediyor' | string>('bos');
 
   if (!a) {
     return (
@@ -115,6 +118,33 @@ export default function AktiviteOzetiScreen() {
           <Txt style={{ flex: 1, fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: colors.seaInk }}>İnişli çıkışlı haritada gör (3B)</Txt>
           <Icon name="chevron" size={18} color={colors.seaInk} strokeWidth={2} />
         </Pressable>
+        {a.mine ? (
+          <Pressable
+            accessibilityRole="button"
+            disabled={rotaDurumu === 'kaydediyor'}
+            onPress={async () => {
+              setRotaDurumu('kaydediyor');
+              try {
+                const rid = await aktivitedenRota(a.id, a.title);
+                setRotaDurumu('bos');
+                router.push({ pathname: '/rota/[id]', params: { id: rid } });
+              } catch (e) {
+                setRotaDurumu(e instanceof Error ? e.message : 'Kaydedilemedi');
+              }
+            }}
+            style={[styles.link3d, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, marginTop: space.sm }]}>
+            <Icon name="route" color={colors.terra} />
+            <Txt style={{ flex: 1, fontFamily: fontFamily.bodySemiBold, fontSize: 14 }}>
+              {rotaDurumu === 'kaydediyor' ? 'Rota kaydediliyor…' : 'Bu aktiviteyi rota olarak kaydet'}
+            </Txt>
+            <Icon name="chevron" size={18} color={colors.inkMuted} strokeWidth={2} />
+          </Pressable>
+        ) : null}
+        {rotaDurumu !== 'bos' && rotaDurumu !== 'kaydediyor' ? (
+          <Txt accessibilityRole="alert" style={{ color: colors.terra, fontSize: 13, paddingHorizontal: space.lg, marginTop: 6 }}>
+            {rotaDurumu}
+          </Txt>
+        ) : null}
       </ScrollView>
 
       <FloatingHeader />

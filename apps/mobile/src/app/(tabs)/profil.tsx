@@ -6,10 +6,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteThumb } from '@/components/charts';
 import { IconButton } from '@/components/IconButton';
 import { Txt } from '@/components/Txt';
-import { Avatar, Card } from '@/components/ui';
+import { Avatar, Card , Button } from '@/components/ui';
+import { rotalarim, type Rota } from '@/data/rota';
+import { ACTIVITY_LABELS, DIFFICULTY_LABELS , formatKm, formatMeters } from '@lykiva/shared';
 import { aktivitelerim, haftaOzeti, profilim, type AktiviteSatiri, type Profilim } from '@/data/aktivite';
 import { myActivities, people, weekKm } from '@/data/ornek';
-import { formatKm, formatMeters } from '@lykiva/shared';
 import { oturumuSagla, supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space } from '@/theme';
 
@@ -19,6 +20,7 @@ export default function ProfilScreen() {
   const [tab, setTab] = useState(0);
   const [liste, setListe] = useState<AktiviteSatiri[] | null>(null);
   const [profil, setProfil] = useState<Profilim | null>(null);
+  const [rotalar, setRotalar] = useState<Rota[] | null>(null);
 
   // Sekmeye her dönüşte yenile (yeni kayıt, gönderilen kuyruk)
   useFocusEffect(
@@ -26,10 +28,11 @@ export default function ProfilScreen() {
       let acik = true;
       (async () => {
         const uid = supabaseHazir ? await oturumuSagla().catch(() => null) : null;
-        const [l, pr] = await Promise.all([aktivitelerim(uid).catch(() => []), uid ? profilim(uid).catch(() => null) : null]);
+        const [l, pr, ro] = await Promise.all([aktivitelerim(uid).catch(() => []), uid ? profilim(uid).catch(() => null) : null, rotalarim().catch(() => [])]);
         if (acik) {
           setListe(l);
           setProfil(pr);
+          setRotalar(ro);
         }
       })();
       return () => {
@@ -150,6 +153,38 @@ export default function ProfilScreen() {
           ))}
         </View>
 
+        {tab === 1 ? (
+          <View style={{ padding: space.md, gap: space.sm }}>
+            <Button label="Yeni rota çiz" icon="route" variant="outline" href="/rota/olustur" />
+            {rotalar && rotalar.length === 0 ? (
+              <Txt variant="muted" style={{ textAlign: 'center', paddingVertical: space.lg }}>
+                Henüz rotan yok. Yeni bir rota çizebilir ya da bir aktiviteni rota olarak kaydedebilirsin.
+              </Txt>
+            ) : null}
+            {(rotalar ?? []).map((r) => (
+              <Pressable key={r.id} accessibilityRole="link" onPress={() => router.push({ pathname: '/rota/[id]', params: { id: r.id } })} style={styles.row}>
+                {r.points.length > 1 ? <RouteThumb route={r.points.map((p) => [p.lng, p.lat] as [number, number])} /> : <View style={{ width: 64, height: 64 }} />}
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }} numberOfLines={1}>
+                    {r.name}
+                  </Txt>
+                  <Txt variant="small">
+                    {ACTIVITY_LABELS[r.activity]}
+                    {r.difficulty ? ` · ${DIFFICULTY_LABELS[r.difficulty]}` : ''}
+                    {r.isLoop ? ' · Döngü' : ''}
+                  </Txt>
+                  <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 13, marginTop: 4 }}>
+                    {formatKm(r.distanceM)} km · ↑ {formatMeters(r.gainM)} m
+                  </Txt>
+                </View>
+              </Pressable>
+            ))}
+          </View>
+        ) : tab === 2 ? (
+          <Txt variant="muted" style={{ textAlign: 'center', padding: space.lg }}>
+            Gruplar sonraki aşamada geliyor.
+          </Txt>
+        ) : (
         <View style={{ padding: space.md, gap: space.sm }}>
           {liste && satirlar.length === 0 ? (
             <Txt variant="muted" style={{ textAlign: 'center', paddingVertical: space.lg }}>
@@ -169,6 +204,7 @@ export default function ProfilScreen() {
             </Pressable>
           ))}
         </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
