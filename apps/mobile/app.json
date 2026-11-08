@@ -15,7 +15,8 @@
         "UIBackgroundModes": [
           "location"
         ]
-      }
+      },
+      "usesAppleSignIn": true
     },
     "android": {
       "package": "app.lykiva.mobile",
@@ -51,7 +52,9 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 76
         }
-      ]
+      ],
+      "expo-web-browser",
+      "expo-apple-authentication"
     ]
   }
 }
