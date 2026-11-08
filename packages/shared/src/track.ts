@@ -110,6 +110,35 @@ export function smoothAltitudes(alts: number[], window = ELEVATION_SMOOTH_WINDOW
   });
 }
 
+/**
+ * Rakımdan tırmanış/iniş: telefon ve DEM rakımı gürültülü olduğu için önce hareketli ortalama,
+ * sonra eşikli (histerezis) toplam.
+ */
+export function elevationGainLoss(rawAlts: number[], window = ELEVATION_SMOOTH_WINDOW) {
+  const alts = smoothAltitudes(rawAlts, window);
+  let gainM = 0;
+  let lossM = 0;
+  let ref: number | null = null;
+  let maxAltM: number | null = null;
+  let minAltM: number | null = null;
+  for (const alt of alts) {
+    maxAltM = maxAltM == null ? alt : Math.max(maxAltM, alt);
+    minAltM = minAltM == null ? alt : Math.min(minAltM, alt);
+    if (ref == null) {
+      ref = alt;
+      continue;
+    }
+    if (alt - ref >= ELEVATION_HYSTERESIS_M) {
+      gainM += alt - ref;
+      ref = alt;
+    } else if (ref - alt >= ELEVATION_HYSTERESIS_M) {
+      lossM += ref - alt;
+      ref = alt;
+    }
+  }
+  return { gainM, lossM, maxAltM, minAltM };
+}
+
 export function computeStats(points: TrackPoint[]): TrackStats {
   const empty: TrackStats = {
     distanceM: 0,
@@ -141,28 +170,7 @@ export function computeStats(points: TrackPoint[]): TrackStats {
   const smooth = smoothSpeeds(pointSpeeds(points));
   const moving = smooth.filter((s) => s >= MOVING_SPEED);
 
-  // Telefon rakımı gürültülü: önce hareketli ortalama, sonra eşikli (histerezis) toplam
-  const alts = smoothAltitudes(points.map((p) => p.alt).filter((a): a is number => a != null));
-  let gainM = 0;
-  let lossM = 0;
-  let ref: number | null = null;
-  let maxAltM: number | null = null;
-  let minAltM: number | null = null;
-  for (const alt of alts) {
-    maxAltM = maxAltM == null ? alt : Math.max(maxAltM, alt);
-    minAltM = minAltM == null ? alt : Math.min(minAltM, alt);
-    if (ref == null) {
-      ref = alt;
-      continue;
-    }
-    if (alt - ref >= ELEVATION_HYSTERESIS_M) {
-      gainM += alt - ref;
-      ref = alt;
-    } else if (ref - alt >= ELEVATION_HYSTERESIS_M) {
-      lossM += ref - alt;
-      ref = alt;
-    }
-  }
+  const { gainM, lossM, maxAltM, minAltM } = elevationGainLoss(points.map((p) => p.alt).filter((a): a is number => a != null));
 
   return {
     distanceM,
