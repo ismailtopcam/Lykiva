@@ -18,3 +18,12 @@ Aktivitenin hangi havada yapıldığı kaydedilecek ve gösterilecek.
 - Tasarımda karşılığı henüz yok: Aktivite özeti, Akış kartı, Paylaşım stüdyosu,
   Rota detayı ve Etkinlik detayı ekranlarına eklenecek
 - Karar bekleyen: hangi hava durumu servisi kullanılacak (seçenekler araştırılacak)
+
+### [ ] Yedekleme
+Şu an Supabase veritabanının ve dosyalarının yedeği alınmıyor. Sunucu ya da disk kaybında veri geri gelmez.
+
+- Supabase veritabanını (`lykiva-supabase` servisindeki `supabase-db`) her gece yedekle
+- Yedekleri sunucu dışında tut (S3 uyumlu depolama: Contabo Object Storage, Backblaze B2, Cloudflare R2…)
+- Supabase Storage'daki dosyalar (fotoğraflar, MinIO) da yedeğe dahil edilmeli
+- Geri yükleme bir kez denenip doğrulanmalı
+- Gerçek kullanıcılar gelmeden önce yapılmalı
