@@ -6,11 +6,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteThumb } from '@/components/charts';
 import { IconButton } from '@/components/IconButton';
 import { Txt } from '@/components/Txt';
-import { Avatar, Card , Button } from '@/components/ui';
-import { rotalarim, type Rota } from '@/data/rota';
-import { ACTIVITY_LABELS, DIFFICULTY_LABELS , formatKm, formatMeters } from '@lykiva/shared';
+import { Avatar, Button, Card } from '@/components/ui';
 import { aktivitelerim, haftaOzeti, profilim, type AktiviteSatiri, type Profilim } from '@/data/aktivite';
 import { myActivities, people, weekKm } from '@/data/ornek';
+import { rotalarim, type Rota } from '@/data/rota';
+import { ACTIVITY_LABELS, DIFFICULTY_LABELS, formatKm, formatMeters } from '@lykiva/shared';
+import { useHesap } from '@/lib/giris';
 import { oturumuSagla, supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space } from '@/theme';
 
@@ -21,6 +22,7 @@ export default function ProfilScreen() {
   const [liste, setListe] = useState<AktiviteSatiri[] | null>(null);
   const [profil, setProfil] = useState<Profilim | null>(null);
   const [rotalar, setRotalar] = useState<Rota[] | null>(null);
+  const hesap = useHesap();
 
   // Sekmeye her dönüşte yenile (yeni kayıt, gönderilen kuyruk)
   useFocusEffect(
@@ -82,7 +84,7 @@ export default function ProfilScreen() {
     <SafeAreaView edges={['top']} style={styles.root}>
       <View style={styles.top}>
         <IconButton icon="share" label="Profili paylaş" />
-        <IconButton icon="layers" label="Ayarlar" />
+        <IconButton icon="more" label="Ayarlar" onPress={() => router.push('/ayarlar')} />
       </View>
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         <View style={styles.identity}>
@@ -103,6 +105,16 @@ export default function ProfilScreen() {
             </View>
           </View>
         </View>
+
+        {supabaseHazir && hesap?.gecici ? (
+          <Card style={styles.gecici}>
+            <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }}>Geçici hesaptasın</Txt>
+            <Txt variant="small" style={{ marginTop: 2, marginBottom: space.md }}>
+              Kayıtların şimdilik yalnızca bu telefona bağlı. Giriş yaparsan hesabında saklanır, telefon değişse de kaybolmaz.
+            </Txt>
+            <Button label="Google ya da Apple ile giriş yap" href="/giris" />
+          </Card>
+        ) : null}
 
         <Card dark style={styles.week}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -214,6 +226,7 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   top: { flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: space.sm },
   identity: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: space.lg, paddingBottom: 14 },
+  gecici: { marginHorizontal: space.md, padding: space.lg, marginBottom: 14 },
   week: { marginHorizontal: space.md, padding: space.lg, marginBottom: 14 },
   bars: { flexDirection: 'row', gap: 8, height: 76, alignItems: 'flex-end' },
   tabs: { flexDirection: 'row', marginHorizontal: space.lg, borderBottomWidth: 1, borderBottomColor: colors.lineStrong },

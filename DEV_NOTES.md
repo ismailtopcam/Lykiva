@@ -37,6 +37,8 @@ Rota çizimi şu an herkese açık sunucuları kullanıyor: BRouter (brouter.de)
 - Mobilde adresler `.env` ile değişir: `EXPO_PUBLIC_BROUTER_URL`, `EXPO_PUBLIC_PHOTON_URL`
 - Gerçek kullanıcılar gelmeden önce yapılmalı
 
-### [ ] Giriş: Google ve Apple
-En sona bırakıldı. Gerekenler: kalıcı bundle ID kararı (şu an `app.lykiva.mobile`), Apple Developer Program üyeliği,
-Google Cloud'da OAuth istemcileri. Anonim hesaplar `linkIdentity` ile Google/Apple'a bağlanacak, kayıtlar kaybolmayacak.
+### [ ] Giriş: Google ve Apple — sunucu ve konsol ayarı
+Kod hazır (4. aşama). Kalanlar `supabase/README.md` > Giriş bölümünde:
+- Kalıcı bundle ID kararı (şu an `app.lykiva.mobile`)
+- Coolify'da `supabase-auth` ortam değişkenleri, `20261109000000_giris.sql` migration'ının uygulanması
+- Google Cloud OAuth istemcisi, Apple Developer'da Sign in with Apple

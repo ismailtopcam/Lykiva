@@ -20,6 +20,8 @@ export const supabase = createClient(SUPABASE_URL, ANON_KEY || 'anahtar-eksik', 
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
+    // Google girişi tarayıcıda yapılır; dönüşte gelen kod telefonda saklanan doğrulayıcıyla oturuma çevrilir
+    flowType: 'pkce',
   },
 });
 
@@ -32,8 +34,8 @@ if (Platform.OS !== 'web') {
 }
 
 /**
- * Oturum yoksa geçici (anonim) hesap açar. Google / Apple girişi gelince
- * bu hesap onlara bağlanacak, kayıtlar kaybolmayacak.
+ * Oturum yoksa geçici (anonim) hesap açar. Google / Apple ile giriş yapılınca
+ * bu hesap onlara bağlanır, kayıtlar kaybolmaz (bkz. lib/giris.ts).
  */
 export async function oturumuSagla(): Promise<string> {
   const { data } = await supabase.auth.getSession();
