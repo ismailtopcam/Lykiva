@@ -82,7 +82,8 @@ npm test -w @lykiva/shared   # GPS hesaplama testleri
 5. **Rotalar** — haritaya dokunarak rota çizme (patikaya / yola yapışarak, BRouter), yer arama, mesafe/tırmanış/tahmini süre/zemin/zorluk, aktiviteyi rota olarak kaydetme, Rotalarım, rota detayı; rotayla kayıtta ilerleme çubuğu, kalan km, ortalama hıza göre varış süresi ve "rotadan çıktın" uyarısı.
 6. **Paylaşım** — gerçek izle paylaşım kartı (4 şablon, gösterilecek istatistikler), Instagram hikâyesi için 9:16 görsel ve kart görseli (telefonun paylaşım menüsü), başlangıç/bitişi gizleme, Lykiva akışında görünürlük, GPX dışa aktarımı.
 7. **3B görünüm** — aktivitenin gerçek izi gerçek yüksekliklerle: sürükleyerek döndür/eğ, yükseklik abartısı (1x gerçek, 3x, 10x), eğime göre renk, yükseklik profilinde imleçle konum/yükseklik/eğim/hız. İnternetsiz çalışır.
-8. Sırada: gruplar / mesajlaşma / etkinlikler / canlı konum, web paylaşım sayfası.
+8. **Gruplar** — özel grup (davet kodu / bağlantısı) ve açık topluluk (keşfet, doğrudan ya da onaylı katılım), üyeler ve yönetici işlemleri, gruba rota paylaşma, canlı grup sohbeti (Supabase Realtime) ve okunmamış sayısı; "Gruplarım" görünürlüğü.
+9. Sırada: etkinlikler, canlı konum, birlikte yapılan aktivite, web paylaşım sayfası.
 
 ## Sunucu
 

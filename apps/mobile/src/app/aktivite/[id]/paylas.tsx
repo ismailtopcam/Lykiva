@@ -27,6 +27,7 @@ const statDefs: [KartIstatistigi, string][] = [
 const GORUNURLUK: { id: NonNullable<Activity['visibility']>; label: string }[] = [
   { id: 'private', label: 'Sadece ben' },
   { id: 'followers', label: 'Takipçiler' },
+  { id: 'groups', label: 'Gruplarım' },
   { id: 'public', label: 'Herkese açık' },
 ];
 
@@ -109,7 +110,7 @@ export default function PaylasimStudyosuScreen() {
     if (!sunucuda) return;
     try {
       await aktiviteAyarla(a!.id, { visibility: v });
-      setMesaj(v === 'private' ? 'Artık yalnızca sen görüyorsun' : v === 'public' ? 'Herkese açık' : 'Takipçilerin görebilir');
+      setMesaj(v === 'private' ? 'Artık yalnızca sen görüyorsun' : v === 'public' ? 'Herkese açık' : v === 'groups' ? 'Gruplarındaki kişiler görebilir' : 'Takipçilerin görebilir');
     } catch (e) {
       setMesaj(e instanceof Error ? e.message : 'Kaydedilemedi');
     }
@@ -168,7 +169,7 @@ export default function PaylasimStudyosuScreen() {
             {sunucuda ? (
               <>
                 <Label>Lykiva’da kimler görsün</Label>
-                <View accessibilityRole="radiogroup" style={styles.row}>
+                <View accessibilityRole="radiogroup" style={[styles.row, { flexWrap: 'wrap' }]}>
                   {GORUNURLUK.map((g) => (
                     <Chip key={g.id} label={g.label} role="radio" tone="sea" selected={g.id === gorunurluk} onPress={() => gorunurlukSec(g.id)} />
                   ))}
