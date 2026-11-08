@@ -1,21 +1,102 @@
-import { ScreenShell } from '@/components/ScreenShell';
+import { router } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { ElevationProfile } from '@/components/charts';
+import { FloatingHeader } from '@/components/Header';
+import { Icon } from '@/components/Icon';
+import { TopoMap } from '@/components/map/TopoMap';
+import { Txt } from '@/components/Txt';
+import { Button } from '@/components/ui';
+import { kasKalkan, people } from '@/data/ornek';
+import { colors, fontFamily, space } from '@/theme';
 
 export default function AktiviteOzetiScreen() {
+  const a = kasKalkan;
+  const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const stopCoord = (at: number) => a.route[Math.round(at * (a.route.length - 1))];
+
+  const cells: [string, string, boolean?][] = [
+    ['Mesafe', `${a.distanceKm} km`],
+    ['Hareket', a.durationMoving],
+    ['Toplam süre', a.durationTotal],
+    ['Maks. hız', a.maxSpeed, true],
+    ['Ort. hız', a.avgSpeed],
+    ['Min. hız*', a.minSpeed],
+  ];
+
   return (
-    <ScreenShell
-      title="Aktivite özeti"
-      plan={[
-        'Yüksekliğe göre renklendirilmiş rota haritası, mola noktaları, en yüksek hız noktası',
-        'Mesafe, hareket süresi, toplam süre',
-        'Maksimum, ortalama ve minimum hız (minimum yalnızca hareketteyken)',
-        'Yükseklik profili (tırmanış / iniş / en yüksek nokta)',
-        'Birlikte yapılan kişiler',
-      ]}
-      links={[
-        { label: 'Hız & molalar', href: '/aktivite/ornek/hiz' },
-        { label: 'İnişli çıkışlı harita (3B)', href: '/aktivite/ornek/uc-boyut' },
-        { label: 'Paylaş', href: '/aktivite/ornek/paylas' },
-      ]}
-    />
+    <View style={styles.root}>
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
+        <TopoMap
+          style={{ height: 300 + insets.top }}
+          route={a.route}
+          markers={[
+            { id: 's', coord: a.route[0], kind: 'start' },
+            { id: 'e', coord: a.route[a.route.length - 1], kind: 'end' },
+            ...a.stops.map((s) => ({ id: 'm' + s.n, coord: stopCoord(s.at), kind: 'stop' as const, text: String(s.n) })),
+          ]}
+          padding={{ top: insets.top + 70, bottom: 30 }}
+          accessibilityLabel="Rota haritası, iki mola noktası işaretli"
+        />
+        <View style={{ padding: space.lg, paddingBottom: 0 }}>
+          <Txt variant="small">{a.when} · Bisiklet</Txt>
+          <Txt variant="display" style={{ fontSize: 25, marginVertical: 2 }} accessibilityRole="header">
+            {a.title}
+          </Txt>
+          <Txt variant="muted" style={{ fontSize: 13 }}>
+            {a.with.map((id) => people[id].short).join(', ').replace(/, ([^,]*)$/, ' ve $1')} ile birlikte
+          </Txt>
+        </View>
+
+        <View style={styles.grid}>
+          {cells.map(([l, v, hi]) => (
+            <View key={l} style={styles.cell}>
+              <Txt style={{ fontSize: 11, color: colors.inkMuted }}>{l}</Txt>
+              <Txt style={{ fontFamily: fontFamily.display, fontSize: 21, color: hi ? colors.terra : colors.ink }}>{v}</Txt>
+            </View>
+          ))}
+        </View>
+        <Txt variant="small" style={{ paddingHorizontal: space.lg, marginTop: 6 }}>
+          km/sa · *Min. hız yalnızca hareket hâlindeyken ölçülür
+        </Txt>
+
+        <View style={{ paddingHorizontal: space.lg, marginTop: space.md }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+            <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14 }}>Yükseklik</Txt>
+            <Txt variant="small">
+              ↑ {a.climbM} m · ↓ {a.descentM} m · en yüksek {a.maxElevationM} m
+            </Txt>
+          </View>
+          <ElevationProfile
+            values={a.elevation}
+            width={width - space.lg * 2}
+            markers={a.stops.map((s) => ({ at: s.at, n: s.n }))}
+            label={`Yükseklik profili, en yüksek nokta ${a.maxElevationM} metre`}
+          />
+        </View>
+
+        <Pressable accessibilityRole="link" onPress={() => router.push('/aktivite/ornek/uc-boyut')} style={styles.link3d}>
+          <Icon name="mountain" color={colors.seaInk} />
+          <Txt style={{ flex: 1, fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: colors.seaInk }}>İnişli çıkışlı haritada gör (3B)</Txt>
+          <Icon name="chevron" size={18} color={colors.seaInk} strokeWidth={2} />
+        </Pressable>
+      </ScrollView>
+
+      <FloatingHeader />
+      <View style={[styles.bottom, { paddingBottom: insets.bottom + 16 }]}>
+        <Button label="Hız & molalar" icon="gauge" variant="outline" href="/aktivite/ornek/hiz" style={{ flex: 1 }} />
+        <Button label="Paylaş" icon="share" href="/aktivite/ornek/paylas" style={{ flex: 1 }} />
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.ground },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: space.lg, marginTop: 14, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: colors.lineStrong, backgroundColor: colors.lineStrong, gap: 1 },
+  cell: { width: '33.1%', flexGrow: 1, backgroundColor: colors.surface, paddingHorizontal: 12, paddingVertical: 10 },
+  link3d: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: space.lg, marginTop: space.lg, padding: 14, borderRadius: 16, backgroundColor: colors.seaSoft },
+  bottom: { position: 'absolute', left: 0, right: 0, bottom: 0, flexDirection: 'row', gap: 10, paddingHorizontal: space.lg, paddingTop: 12, backgroundColor: colors.ground },
+});
