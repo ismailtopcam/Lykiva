@@ -1,20 +1,40 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ACTIVITY_LABELS, formatKm } from '@lykiva/shared';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useState, type ReactNode } from 'react';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FloatingHeader } from '@/components/Header';
 import { Icon, type IconName } from '@/components/Icon';
 import { IconButton } from '@/components/IconButton';
-import { TopoMap } from '@/components/map/TopoMap';
+import { TopoMap, type MapMarker } from '@/components/map/TopoMap';
+import { OrnekEtkinlik } from '@/components/OrnekEtkinlik';
 import { Txt } from '@/components/Txt';
-import { AvatarStack } from '@/components/ui';
-import { kasKalkanRoute, people } from '@/data/ornek';
+import { Avatar } from '@/components/ui';
+import type { LngLat } from '@/data/ornek';
+import {
+  bittiMi,
+  etkinlikDetayi,
+  etkinlikSil,
+  katilimBildir,
+  KATILIM_ADI,
+  paylasimMetni,
+  uzunTarih,
+  ZORLUK_ADI,
+  type EtkinlikDetayi,
+  type Katilim,
+} from '@/etkinlik/etkinlikler';
+import { basHarfler, grupRengi } from '@/grup/gruplar';
 import { colors, fontFamily, space } from '@/theme';
 
-const rsvps = ['Katılıyorum', 'Belki', 'Gelemem'];
+const uuidMi = (id: string | undefined) => !!id && /^[0-9a-f-]{36}$/i.test(id);
 
-function InfoRow({ icon, title, sub, onPress, right }: { icon: IconName; title: string; sub: string; onPress?: () => void; right?: React.ReactNode }) {
+export default function EtkinlikDetayScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  return uuidMi(id) ? <GercekEtkinlik id={id} /> : <OrnekEtkinlik />;
+}
+
+function Bilgi({ icon, title, sub, onPress, right }: { icon: IconName; title: string; sub?: string; onPress?: () => void; right?: ReactNode }) {
   return (
     <Pressable accessibilityRole={onPress ? 'link' : undefined} onPress={onPress} disabled={!onPress} style={styles.info}>
       <View style={styles.infoIcon}>
@@ -22,90 +42,212 @@ function InfoRow({ icon, title, sub, onPress, right }: { icon: IconName; title: 
       </View>
       <View style={{ flex: 1 }}>
         <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14 }}>{title}</Txt>
-        <Txt variant="small">{sub}</Txt>
+        {sub ? <Txt variant="small">{sub}</Txt> : null}
       </View>
       {right}
     </Pressable>
   );
 }
 
-export default function EtkinlikDetayScreen() {
+const SECENEKLER: { durum: Exclude<Katilim, 'waitlist'>; ad: string }[] = [
+  { durum: 'going', ad: 'Katılıyorum' },
+  { durum: 'maybe', ad: 'Belki' },
+  { durum: 'declined', ad: 'Gelemem' },
+];
+
+function GercekEtkinlik({ id }: { id: string }) {
   const insets = useSafeAreaInsets();
-  const [rsvp, setRsvp] = useState(0);
-  const going = rsvp === 0 ? 9 : 8;
+  const [e, setE] = useState<EtkinlikDetayi | null | undefined>(undefined);
+  const [hata, setHata] = useState<string | null>(null);
+  const [mesgul, setMesgul] = useState(false);
+  const [mesaj, setMesaj] = useState<string | null>(null);
+
+  const yukle = useCallback(async () => {
+    try {
+      setHata(null);
+      setE(await etkinlikDetayi(id));
+    } catch (err) {
+      setHata(err instanceof Error ? err.message : 'Etkinlik yüklenemedi');
+      setE((x) => (x === undefined ? null : x));
+    }
+  }, [id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void yukle();
+    }, [yukle]),
+  );
+
+  if (!e) {
+    return (
+      <View style={[styles.root, { alignItems: 'center', justifyContent: 'center', padding: space.lg }]}>
+        <FloatingHeader />
+        {e === undefined ? <ActivityIndicator color={colors.terra} /> : <Txt variant="muted">{hata ?? 'Etkinlik bulunamadı, iptal edilmiş ya da görme iznin yok.'}</Txt>}
+      </View>
+    );
+  }
+
+  const ev = e;
+  const bitti = bittiMi(ev.starts_at);
+  const katilabilir = ev.is_member || ev.visibility === 'public';
+  const rotaYolu: LngLat[] = (ev.route?.coordinates ?? []).map((c) => [c[0], c[1]] as LngLat);
+  const bulusma: LngLat | null = ev.meeting_lng != null && ev.meeting_lat != null ? [ev.meeting_lng, ev.meeting_lat] : null;
+  const isaretler: MapMarker[] = [
+    ...(rotaYolu.length > 1 ? [{ id: 's', coord: rotaYolu[0], kind: 'start' as const }] : []),
+    ...(bulusma ? [{ id: 'm', coord: bulusma, kind: 'meeting' as const }] : []),
+  ];
+  const katilanlar = ev.attendees.filter((a) => a.status === 'going');
+  const digerleri = ev.attendees.filter((a) => a.status !== 'going');
+
+  async function bildir(durum: Exclude<Katilim, 'waitlist'>) {
+    setMesgul(true);
+    setMesaj(null);
+    try {
+      const sonuc = await katilimBildir(ev.id, durum);
+      if (sonuc === 'waitlist') setMesaj('Kontenjan dolu: bekleme listesine alındın. Yer açılınca otomatik katılımcı olursun.');
+      await yukle();
+    } catch (err) {
+      setMesaj(err instanceof Error ? err.message : 'Kaydedilemedi');
+    } finally {
+      setMesgul(false);
+    }
+  }
+
+  function iptal() {
+    Alert.alert('Etkinlik iptal edilsin mi?', ev.group_id ? 'Etkinlik silinir; grubun sohbetine iptal notu düşer.' : 'Etkinlik ve katılım bilgileri silinir.', [
+      { text: 'Vazgeç', style: 'cancel' },
+      {
+        text: 'İptal et',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await etkinlikSil(ev.id);
+            router.back();
+          } catch (err) {
+            Alert.alert('İptal edilemedi', err instanceof Error ? err.message : String(err));
+          }
+        },
+      },
+    ]);
+  }
+
+  const ozellikler = [ev.route ? `${formatKm(ev.route.distance_m)} km` : null, ev.route?.elevation_gain_m != null ? `↑ ${Math.round(ev.route.elevation_gain_m)} m` : null, ev.difficulty ? `${ZORLUK_ADI[ev.difficulty]} seviye` : null]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <View style={styles.root}>
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
-        <TopoMap
-          style={{ height: 240 + insets.top }}
-          route={kasKalkanRoute}
-          markers={[{ id: 'm', coord: kasKalkanRoute[0], kind: 'meeting' }]}
-          padding={{ top: insets.top + 70, bottom: 24 }}
-          accessibilityLabel="Etkinlik rotası ve buluşma noktası haritası"
-        />
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}>
+        {rotaYolu.length > 1 || bulusma ? (
+          <TopoMap
+            style={{ height: 240 + insets.top }}
+            route={rotaYolu}
+            markers={isaretler}
+            padding={{ top: insets.top + 70, bottom: 24 }}
+            accessibilityLabel={`Etkinlik haritası${ev.route ? ': rota' : ''}${bulusma ? ' ve buluşma noktası' : ''}`}
+          />
+        ) : (
+          <View style={{ height: insets.top + 64, backgroundColor: colors.land }} />
+        )}
         <View style={{ padding: space.lg }}>
           <Txt variant="label" color={colors.sea}>
-            Pedal Kaş · Grup etkinliği
+            {[ev.group_name, ACTIVITY_LABELS[ev.activity], ev.visibility === 'public' ? 'Herkese açık' : 'Grup etkinliği'].filter(Boolean).join(' · ')}
           </Txt>
           <Txt variant="display" style={{ marginTop: 4, marginBottom: 12 }} accessibilityRole="header">
-            Gün doğumu sürüşü
+            {ev.title}
           </Txt>
           <View style={{ gap: 10, marginBottom: 14 }}>
-            <InfoRow
-              icon="calendar"
-              title="Cumartesi, 14 Kasım · 06:45"
-              sub="Tahmini dönüş 09:30"
-              right={
-                <Pressable accessibilityRole="button" style={styles.cal}>
-                  <Txt style={{ fontSize: 12, fontFamily: fontFamily.bodySemiBold }}>Takvime ekle</Txt>
-                </Pressable>
-              }
-            />
-            <InfoRow icon="pin" title="Kaş Cumhuriyet Meydanı" sub="Buluşma noktası" />
-            <InfoRow
-              icon="route"
-              title="32 km · ↑ 450 m · Orta seviye"
-              sub="Kaş – Kalkan sahil yolu, gidiş-dönüş"
-              onPress={() => router.push('/rota/ornek')}
-              right={<Icon name="chevron" size={18} color={colors.inkMuted} strokeWidth={2} />}
-            />
+            <Bilgi icon="calendar" title={uzunTarih(ev.starts_at)} sub={bitti ? 'Etkinlik sona erdi' : `${ev.creator_name} düzenliyor`} />
+            {ev.meeting_point_name || bulusma ? <Bilgi icon="pin" title={ev.meeting_point_name ?? 'Haritada işaretli nokta'} sub="Buluşma noktası" /> : null}
+            {ev.route ? (
+              <Bilgi
+                icon="route"
+                title={ozellikler || ev.route.name}
+                sub={`${ev.route.name}${ev.route.is_loop ? ', döngü' : ''}`}
+                onPress={() => router.push({ pathname: '/rota/[id]', params: { id: ev.route!.id } })}
+                right={<Icon name="chevron" size={18} color={colors.inkMuted} strokeWidth={2} />}
+              />
+            ) : ev.difficulty ? (
+              <Bilgi icon="mountain" title={`${ZORLUK_ADI[ev.difficulty]} seviye`} />
+            ) : null}
           </View>
+          {ev.description ? <Txt style={{ fontSize: 14, lineHeight: 21, marginBottom: 14 }}>{ev.description}</Txt> : null}
 
           <View style={styles.people}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
-              <AvatarStack items={[people.mert, people.deniz, people.can]} size={32} bg={colors.ground} />
-              <Txt style={{ fontSize: 13 }}>
-                <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 13 }}>{going} / 15</Txt> <Txt style={{ color: colors.inkMuted, fontSize: 13 }}>katılıyor</Txt>
+            <Txt style={{ fontSize: 14, flex: 1 }}>
+              <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14 }}>
+                {ev.going_count}
+                {ev.capacity ? ` / ${ev.capacity}` : ''}
+              </Txt>{' '}
+              <Txt style={{ color: colors.inkMuted, fontSize: 14 }}>
+                katılıyor{ev.maybe_count ? ` · ${ev.maybe_count} belki` : ''}
+                {ev.waitlist_count ? ` · ${ev.waitlist_count} bekleme listesinde` : ''}
               </Txt>
-            </View>
-            <Pressable accessibilityRole="link" onPress={() => router.push('/grup/ornek/sohbet')} hitSlop={8}>
-              <Txt style={{ fontSize: 13, fontFamily: fontFamily.bodySemiBold, color: colors.terra }}>Sohbete git</Txt>
-            </Pressable>
+            </Txt>
+            {ev.group_id && ev.is_member ? (
+              <Pressable accessibilityRole="link" onPress={() => router.push({ pathname: '/grup/[id]/sohbet', params: { id: ev.group_id! } })} hitSlop={8}>
+                <Txt style={{ fontSize: 13, fontFamily: fontFamily.bodySemiBold, color: colors.terra }}>Sohbete git</Txt>
+              </Pressable>
+            ) : null}
+          </View>
+          <View style={{ gap: 8, marginTop: 4 }}>
+            {[...katilanlar, ...digerleri].map((a) => (
+              <View key={a.user_id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Avatar initials={basHarfler(a.display_name)} tone={grupRengi(a.user_id)} size={32} />
+                <Txt style={{ flex: 1, fontSize: 14 }} numberOfLines={1}>
+                  {a.display_name}
+                  {a.user_id === ev.created_by ? ' · düzenleyen' : ''}
+                </Txt>
+                {a.status !== 'going' ? <Txt variant="small">{KATILIM_ADI[a.status]}</Txt> : null}
+              </View>
+            ))}
           </View>
 
-          <View style={styles.note}>
-            <Icon name="shield" size={20} color="#0B3F3F" />
-            <Txt style={{ flex: 1, fontSize: 13, color: '#0B3F3F' }}>Etkinlik başlayınca katılımcılar birbirini canlı haritada görür.</Txt>
-          </View>
+          {ev.can_manage && !bitti ? (
+            <Pressable accessibilityRole="button" onPress={iptal} style={{ marginTop: space.xl, alignSelf: 'center', padding: 8 }}>
+              <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: colors.terraInk }}>Etkinliği iptal et</Txt>
+            </Pressable>
+          ) : null}
         </View>
       </ScrollView>
 
-      <FloatingHeader right={<IconButton floating icon="share" label="Etkinliği paylaş" />} />
-      <View accessibilityRole="radiogroup" style={[styles.bottom, { paddingBottom: insets.bottom + 16 }]}>
-        {rsvps.map((r, i) => {
-          const on = i === rsvp;
-          return (
-            <Pressable
-              key={r}
-              accessibilityRole="radio"
-              accessibilityState={{ checked: on }}
-              onPress={() => setRsvp(i)}
-              style={[styles.rsvp, on && { backgroundColor: i === 0 ? colors.terra : colors.ink, borderColor: i === 0 ? colors.terra : colors.ink }]}>
-              <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 15, color: on ? '#FFFFFF' : colors.ink }}>{r}</Txt>
-            </Pressable>
-          );
-        })}
+      <FloatingHeader right={<IconButton floating icon="share" label="Etkinliği paylaş" onPress={() => void Share.share({ message: paylasimMetni(ev) }).catch(() => undefined)} />} />
+
+      <View style={[styles.bottom, { paddingBottom: insets.bottom + 16 }]}>
+        {mesaj ? (
+          <Txt accessibilityLiveRegion="polite" style={styles.mesaj}>
+            {mesaj}
+          </Txt>
+        ) : null}
+        {bitti ? (
+          <Txt variant="muted" style={{ textAlign: 'center', paddingVertical: 14 }}>
+            Etkinlik sona erdi.
+          </Txt>
+        ) : !katilabilir ? (
+          <Txt variant="muted" style={{ textAlign: 'center', paddingVertical: 14 }}>
+            Bu etkinliğe yalnızca grup üyeleri katılabilir.
+          </Txt>
+        ) : (
+          <View accessibilityRole="radiogroup" style={{ flexDirection: 'row', gap: 8 }}>
+            {SECENEKLER.map((s) => {
+              const on = ev.my_status === s.durum || (s.durum === 'going' && ev.my_status === 'waitlist');
+              const etiket = s.durum === 'going' && ev.my_status === 'waitlist' ? 'Bekleme listesi' : s.durum === 'going' && !on && ev.capacity != null && ev.going_count >= ev.capacity ? 'Listeye gir' : s.ad;
+              return (
+                <Pressable
+                  key={s.durum}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: on, disabled: mesgul }}
+                  disabled={mesgul}
+                  onPress={() => void bildir(s.durum)}
+                  style={[styles.rsvp, on && { backgroundColor: s.durum === 'going' ? colors.terra : colors.ink, borderColor: s.durum === 'going' ? colors.terra : colors.ink }]}>
+                  <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14, color: on ? '#FFFFFF' : colors.ink }} numberOfLines={1}>
+                    {etiket}
+                  </Txt>
+                </Pressable>
+              );
+            })}
+          </View>
+        )}
       </View>
     </View>
   );
@@ -115,9 +257,8 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   info: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   infoIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' },
-  cal: { height: 34, paddingHorizontal: 12, borderRadius: 17, borderWidth: 1, borderColor: colors.lineStrong, justifyContent: 'center' },
   people: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderTopWidth: 1, borderTopColor: colors.lineStrong },
-  note: { flexDirection: 'row', gap: 10, alignItems: 'center', padding: 12, borderRadius: 14, backgroundColor: colors.seaSoft },
-  bottom: { position: 'absolute', left: 0, right: 0, bottom: 0, flexDirection: 'row', gap: 8, paddingHorizontal: space.lg, paddingTop: 12, backgroundColor: colors.ground },
-  rsvp: { flex: 1, height: 54, borderRadius: 27, borderWidth: 1, borderColor: colors.lineStrong, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
+  bottom: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: space.lg, paddingTop: 12, backgroundColor: colors.ground, borderTopWidth: 1, borderTopColor: colors.line },
+  rsvp: { flex: 1, height: 54, borderRadius: 27, borderWidth: 1, borderColor: colors.lineStrong, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6 },
+  mesaj: { textAlign: 'center', fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: colors.seaInk, marginBottom: 8 },
 });

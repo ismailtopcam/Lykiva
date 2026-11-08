@@ -10,7 +10,8 @@ import { Icon, type IconName } from '@/components/Icon';
 import { IconButton } from '@/components/IconButton';
 import { OrnekGrup } from '@/components/OrnekGrup';
 import { Txt } from '@/components/Txt';
-import { Avatar, Button } from '@/components/ui';
+import { Avatar, Button, DateBadge } from '@/components/ui';
+import { grupEtkinlikleri, kisaTarih, tarihRozeti, type EtkinlikOzeti } from '@/etkinlik/etkinlikler';
 import {
   basHarfler,
   bekleyenIstekler,
@@ -46,7 +47,7 @@ export default function GrupScreen() {
   return uuidMi(id) ? <GercekGrup id={id} /> : <OrnekGrup />;
 }
 
-type Sekme = 'rotalar' | 'uyeler' | 'istekler';
+type Sekme = 'etkinlikler' | 'rotalar' | 'uyeler' | 'istekler';
 
 function GercekGrup({ id }: { id: string }) {
   const insets = useSafeAreaInsets();
@@ -55,7 +56,10 @@ function GercekGrup({ id }: { id: string }) {
   const [uyeler, setUyeler] = useState<Uye[]>([]);
   const [rotalar, setRotalar] = useState<GrupRotasi[]>([]);
   const [istekler, setIstekler] = useState<Istek[]>([]);
-  const [sekme, setSekme] = useState<Sekme>('rotalar');
+  const [etkinlikler, setEtkinlikler] = useState<EtkinlikOzeti[]>([]);
+  // Geçmiş etkinlikleri soluk göstermek için yükleme anı (render sırasında saat okunmaz)
+  const [yuklenme, setYuklenme] = useState(0);
+  const [sekme, setSekme] = useState<Sekme>('etkinlikler');
   const [hata, setHata] = useState<string | null>(null);
   const [mesgul, setMesgul] = useState(false);
 
@@ -67,10 +71,17 @@ function GercekGrup({ id }: { id: string }) {
       if (!d) return;
       const uye = !!d.my_role;
       const yonetici = d.my_role === 'owner' || d.my_role === 'admin';
-      const [u, r, i] = await Promise.all([grupUyeleri(id), uye ? grupRotalari(id) : Promise.resolve([]), yonetici ? bekleyenIstekler(id) : Promise.resolve([])]);
+      const [u, r, i, e] = await Promise.all([
+        grupUyeleri(id),
+        uye ? grupRotalari(id) : Promise.resolve([]),
+        yonetici ? bekleyenIstekler(id) : Promise.resolve([]),
+        uye ? grupEtkinlikleri(id).catch(() => []) : Promise.resolve([]),
+      ]);
       setUyeler(u);
       setRotalar(r);
       setIstekler(i);
+      setEtkinlikler(e);
+      setYuklenme(Date.now());
     } catch (e) {
       setHata(e instanceof Error ? e.message : 'Grup yüklenemedi');
       setG((x) => (x === undefined ? null : x));
@@ -174,13 +185,14 @@ function GercekGrup({ id }: { id: string }) {
   const kisayollar: { label: string; icon: IconName; onPress: () => void; dark?: boolean }[] = uye
     ? [
         { label: 'Sohbet', icon: 'chat', dark: true, onPress: () => router.push({ pathname: '/grup/[id]/sohbet', params: { id: grup.id } }) },
+        { label: 'Etkinlik', icon: 'calendar', onPress: () => router.push({ pathname: '/etkinlik/olustur', params: { grup: grup.id } }) },
         { label: 'Rota paylaş', icon: 'route', onPress: () => router.push({ pathname: '/grup/[id]/rota-paylas', params: { id: grup.id } }) },
         ...(yonetici ? [{ label: 'Davet et', icon: 'share' as IconName, onPress: () => void davetEt() }] : []),
       ]
     : [];
 
   const sekmeler: { id: Sekme; ad: string }[] = [
-    ...(uye ? [{ id: 'rotalar' as Sekme, ad: 'Rotalar' }] : []),
+    ...(uye ? [{ id: 'etkinlikler' as Sekme, ad: 'Etkinlikler' }, { id: 'rotalar' as Sekme, ad: 'Rotalar' }] : []),
     { id: 'uyeler', ad: `Üyeler (${grup.member_count})` },
     ...(yonetici && grup.pending_count > 0 ? [{ id: 'istekler' as Sekme, ad: `İstekler (${grup.pending_count})` }] : []),
   ];
@@ -249,7 +261,35 @@ function GercekGrup({ id }: { id: string }) {
       </View>
 
       <View style={{ padding: space.lg, gap: 10 }}>
-        {aktifSekme === 'rotalar' ? (
+        {aktifSekme === 'etkinlikler' ? (
+          etkinlikler.length === 0 ? (
+            <Txt variant="muted">Planlanmış etkinlik yok. “Etkinlik” ile bir buluşma ayarla.</Txt>
+          ) : (
+            etkinlikler.map((e) => {
+              const r = tarihRozeti(e.starts_at);
+              const gecmis = yuklenme > 0 && Date.parse(e.starts_at) < yuklenme - 3 * 3600_000;
+              return (
+                <Pressable key={e.id} accessibilityRole="link" onPress={() => router.push({ pathname: '/etkinlik/[id]', params: { id: e.id } })} style={[styles.card, gecmis && { opacity: 0.6 }]}>
+                  <DateBadge month={r.ay} day={r.gun} tone={gecmis ? 'sea' : 'terra'} />
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 15 }} numberOfLines={1}>
+                      {e.title}
+                    </Txt>
+                    <Txt variant="small">
+                      {kisaTarih(e.starts_at)} · {e.going_count}
+                      {e.capacity ? `/${e.capacity}` : ''} kişi
+                    </Txt>
+                  </View>
+                  {e.my_status === 'going' ? (
+                    <View style={[styles.rol, { backgroundColor: colors.terraSoft }]}>
+                      <Txt style={{ fontSize: 11, fontFamily: fontFamily.bodyBold, color: colors.terraInk }}>Gidiyorsun</Txt>
+                    </View>
+                  ) : null}
+                </Pressable>
+              );
+            })
+          )
+        ) : aktifSekme === 'rotalar' ? (
           rotalar.length === 0 ? (
             <Txt variant="muted">Gruba henüz rota paylaşılmadı. Kendi rotalarından birini “Rota paylaş” ile ekleyebilirsin.</Txt>
           ) : (
