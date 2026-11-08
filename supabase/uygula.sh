@@ -30,9 +30,11 @@ MIGRATIONLAR=(
   "20261109050000_canli_konum.sql|exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'canli_konum_gonder')"
 )
 
-sorgu() { docker exec -i "$DB" psql -U postgres -tAq -v ON_ERROR_STOP=1 -c "$1"; }
+# Betik "curl ... | bash" ile çalışırken kendi girdisi betiğin geri kalanıdır: sorgular girdi okumamalı,
+# yoksa docker exec -i betiğin kalanını yutar ve betik sessizce biter
+sorgu() { docker exec "$DB" psql -U postgres -tAq -v ON_ERROR_STOP=1 -c "$1" < /dev/null; }
 
-if ! docker ps --format '{{.Names}}' | grep -qx "$DB"; then
+if ! docker ps --format '{{.Names}}' < /dev/null | grep -qx "$DB"; then
   echo "Veritabanı konteyneri bulunamadı: $DB"
   echo "Bu betik 'uygulama' sunucusunda çalışmalı. Konteyner adı farklıysa: LYKIVA_DB=ad bash ..."
   exit 1
@@ -77,7 +79,7 @@ fi
 
 echo ""
 echo "Canlı sohbet (Realtime):"
-if docker ps --format '{{.Names}} {{.Status}}' | grep -i realtime; then
+if docker ps --format '{{.Names}} {{.Status}}' < /dev/null | grep -i realtime; then
   :
 else
   echo "  Realtime konteyneri çalışmıyor görünüyor — grup sohbeti canlı akmaz (sayfa yenilenince görünür)."
