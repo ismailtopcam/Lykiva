@@ -12,8 +12,9 @@ Kendi sunucumuzda (Coolify, `lykiva-supabase` servisi): https://api.lykiva.ismai
 | `20261109010000_rotalar.sql` | `kaydet_rota`, `aktiviteden_rota`, `rota_ozetleri`; aktiviteye `route_id` | uygulandı (8 Kasım 2026) |
 | `20261109020000_paylasim.sql` | `aktivite_noktalari` (GPX dışa aktarımı; yalnızca sahibi nokta alır) | **henüz uygulanmadı** |
 | `20261109030000_gruplar.sql` | Grup / üyelik / sohbet kuralları, davet kodu, katılma istekleri, okundu bilgisi, gruba rota paylaşma, "gruplar" görünürlüğü; `messages` Realtime yayınında | **henüz uygulanmadı** |
+| `20261109040000_etkinlikler.sql` | Etkinlik ve katılım kuralları, `etkinlik_olustur`, `etkinlik_detay`, `katilim_bildir` (kontenjan + bekleme listesi), `grup_etkinlikleri`, `yaklasan_etkinlikler`, `etkinlik_sil` | **henüz uygulanmadı** |
 
-Etkinlikler ve canlı konum tablolarının kuralları henüz yok — istemciden kapalılar. Gruplar ve mesajlar `20261109030000_gruplar.sql` ile açılır.
+Canlı konum tablosunun kuralları henüz yok — istemciden kapalı. Gruplar ve mesajlar `20261109030000_gruplar.sql` ile açılır.
 
 **Gizlilik:** Ham GPS noktalarını yalnızca sahibi okur. Başkalarına gösterilen iz, `hide_endpoints`
 açıksa baştan ve sondan 200 m kırpılır (ev / iş adresi görünmesin diye).

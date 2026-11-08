@@ -83,7 +83,8 @@ npm test -w @lykiva/shared   # GPS hesaplama testleri
 6. **Paylaşım** — gerçek izle paylaşım kartı (4 şablon, gösterilecek istatistikler), Instagram hikâyesi için 9:16 görsel ve kart görseli (telefonun paylaşım menüsü), başlangıç/bitişi gizleme, Lykiva akışında görünürlük, GPX dışa aktarımı.
 7. **3B görünüm** — aktivitenin gerçek izi gerçek yüksekliklerle: sürükleyerek döndür/eğ, yükseklik abartısı (1x gerçek, 3x, 10x), eğime göre renk, yükseklik profilinde imleçle konum/yükseklik/eğim/hız. İnternetsiz çalışır.
 8. **Gruplar** — özel grup (davet kodu / bağlantısı) ve açık topluluk (keşfet, doğrudan ya da onaylı katılım), üyeler ve yönetici işlemleri, gruba rota paylaşma, canlı grup sohbeti (Supabase Realtime) ve okunmamış sayısı; "Gruplarım" görünürlüğü.
-9. Sırada: etkinlikler, canlı konum, birlikte yapılan aktivite, web paylaşım sayfası.
+9. **Etkinlikler** — gruba bağlı ya da herkese açık etkinlik: tarih/saat, buluşma noktası, rota, seviye, kontenjan; Katılıyorum / Belki / Gelemem, dolunca bekleme listesi (yer açılınca otomatik), grup sohbetinde etkinlik kartı, grup sayfasında Etkinlikler, Gruplar sekmesinde yaklaşanlar.
+10. Sırada: canlı konum, birlikte yapılan aktivite, bildirimler, web paylaşım sayfası.
 
 ## Sunucu
 

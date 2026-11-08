@@ -9,7 +9,8 @@ import { Icon } from '@/components/Icon';
 import { IconButton } from '@/components/IconButton';
 import { OrnekSohbet } from '@/components/OrnekSohbet';
 import { Txt } from '@/components/Txt';
-import { Avatar } from '@/components/ui';
+import { Avatar, DateBadge } from '@/components/ui';
+import { grupEtkinlikleri, kisaTarih, tarihRozeti, type EtkinlikOzeti } from '@/etkinlik/etkinlikler';
 import { basHarfler, grupDetayi, grupRengi, grupRotalari, onizleme, uyeSayisi, type GrupDetayi, type GrupRotasi } from '@/grup/gruplar';
 import { useSohbet, type Mesaj } from '@/grup/sohbet';
 import { colors, fontFamily, space } from '@/theme';
@@ -37,6 +38,8 @@ function GercekSohbet({ id }: { id: string }) {
   const { mesajlar, hata, ben, dahaVar, eskileriYukle, gonder, sil } = useSohbet(id);
   const [grup, setGrup] = useState<GrupDetayi | null>(null);
   const [rotalar, setRotalar] = useState<Map<string, GrupRotasi>>(new Map());
+  const [etkinlikler, setEtkinlikler] = useState<Map<string, EtkinlikOzeti>>(new Map());
+  const [bilinmeyenEtkinlik, setBilinmeyenEtkinlik] = useState<Set<string>>(new Set());
   const [taslak, setTaslak] = useState('');
   const [gonderHatasi, setGonderHatasi] = useState<string | null>(null);
   const kaydirma = useRef<ScrollViewInstance>(null);
@@ -57,6 +60,20 @@ function GercekSohbet({ id }: { id: string }) {
       .then((l) => setRotalar(new Map(l.map((r) => [r.id, r]))))
       .catch(() => undefined);
   }, [eksikRota, id]);
+
+  // Etkinlik kartları için özetler (yeni etkinlik mesajı gelince tazelenir; silinmiş/eski olanlar bir kez denenir)
+  const etkinlikEkleri = useMemo(() => (mesajlar ?? []).filter((m) => m.attachment_type === 'event' && m.attachment_id).map((m) => m.attachment_id as string), [mesajlar]);
+  const eksikEtkinlik = etkinlikEkleri.some((e) => !etkinlikler.has(e) && !bilinmeyenEtkinlik.has(e));
+  useEffect(() => {
+    if (!eksikEtkinlik) return;
+    void grupEtkinlikleri(id)
+      .then((l) => {
+        const m = new Map(l.map((e) => [e.id, e]));
+        setEtkinlikler(m);
+        setBilinmeyenEtkinlik(new Set(etkinlikEkleri.filter((e) => !m.has(e))));
+      })
+      .catch(() => undefined);
+  }, [eksikEtkinlik, etkinlikEkleri, id]);
 
   // Yeni mesaj gelince en alta kaydır
   useEffect(() => {
@@ -121,6 +138,7 @@ function GercekSohbet({ id }: { id: string }) {
           const benim = m.sender_id === ben;
           const adGoster = !benim && (yeniGun || onceki?.sender_id !== m.sender_id);
           const rota = m.attachment_type === 'route' && m.attachment_id ? rotalar.get(m.attachment_id) : undefined;
+          const etkinlik = m.attachment_type === 'event' && m.attachment_id ? etkinlikler.get(m.attachment_id) : undefined;
           return (
             <View key={m.id}>
               {yeniGun ? (
@@ -130,7 +148,7 @@ function GercekSohbet({ id }: { id: string }) {
               ) : null}
               <Pressable
                 onLongPress={() => mesajSecenekleri(m)}
-                accessibilityLabel={`${benim ? 'Sen' : (m.ad ?? 'Üye')}, ${saat(m.created_at)}: ${m.attachment_type === 'route' ? 'rota paylaştı. ' : ''}${m.body ?? ''}`}
+                accessibilityLabel={`${benim ? 'Sen' : (m.ad ?? 'Üye')}, ${saat(m.created_at)}: ${m.attachment_type === 'route' ? 'rota paylaştı. ' : m.attachment_type === 'event' ? `etkinlik oluşturdu: ${etkinlik?.title ?? ''}. ` : ''}${m.body ?? ''}`}
                 style={[styles.satir, benim && { justifyContent: 'flex-end' }]}>
                 {!benim ? (
                   <View style={{ width: 28 }}>{adGoster ? <Avatar initials={basHarfler(m.ad ?? '?')} tone={grupRengi(m.sender_id)} size={28} /> : null}</View>
@@ -141,7 +159,25 @@ function GercekSohbet({ id }: { id: string }) {
                       {m.ad ?? 'Üye'}
                     </Txt>
                   ) : null}
-                  {m.attachment_type === 'route' ? (
+                  {m.attachment_type === 'event' ? (
+                    <Pressable
+                      accessibilityRole="link"
+                      onPress={() => m.attachment_id && router.push({ pathname: '/etkinlik/[id]', params: { id: m.attachment_id } })}
+                      style={[styles.balonGelen, { width: 250, flexDirection: 'row', gap: 10, alignItems: 'center' }, benim && { borderColor: colors.terra }]}>
+                      {etkinlik ? <DateBadge month={tarihRozeti(etkinlik.starts_at).ay} day={tarihRozeti(etkinlik.starts_at).gun} /> : <Icon name="calendar" color={colors.terra} />}
+                      <View style={{ flex: 1, minWidth: 0 }}>
+                        <Txt variant="small">Etkinlik</Txt>
+                        <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14 }} numberOfLines={2}>
+                          {etkinlik?.title ?? 'Etkinlik'}
+                        </Txt>
+                        {etkinlik ? (
+                          <Txt variant="small">
+                            {kisaTarih(etkinlik.starts_at)} · {etkinlik.going_count} kişi
+                          </Txt>
+                        ) : null}
+                      </View>
+                    </Pressable>
+                  ) : m.attachment_type === 'route' ? (
                     <Pressable
                       accessibilityRole="link"
                       onPress={() => m.attachment_id && router.push({ pathname: '/rota/[id]', params: { id: m.attachment_id } })}

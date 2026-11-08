@@ -6,7 +6,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Icon } from '@/components/Icon';
 import { OrnekGruplar } from '@/components/OrnekGruplar';
 import { Txt } from '@/components/Txt';
-import { Avatar, SectionHeader } from '@/components/ui';
+import { Avatar, Button, DateBadge, SectionHeader } from '@/components/ui';
+import { kisaTarih, tarihRozeti, yaklasanEtkinlikler, type EtkinlikOzeti } from '@/etkinlik/etkinlikler';
 import {
   basHarfler,
   davetleKatil,
@@ -31,13 +32,14 @@ export default function GruplarScreen() {
 
 function sonMesaj(g: GrupOzeti) {
   if (!g.last_message_at) return `${grupEtiketi(g)} · ${uyeSayisi(g.member_count)}${g.is_private ? ' · Özel' : ''}`;
-  const icerik = g.last_message_type === 'route' ? 'bir rota paylaştı' : (g.last_message ?? '');
+  const icerik = g.last_message_type === 'route' ? 'bir rota paylaştı' : g.last_message_type === 'event' ? 'bir etkinlik oluşturdu' : (g.last_message ?? '');
   return `${g.last_sender ? g.last_sender + ': ' : ''}${icerik}`;
 }
 
 function GercekGruplar() {
   const [benim, setBenim] = useState<GrupOzeti[] | null>(null);
   const [kesfet, setKesfet] = useState<KesfetGrubu[] | null>(null);
+  const [etkinlikler, setEtkinlikler] = useState<EtkinlikOzeti[]>([]);
   const [arama, setArama] = useState('');
   const [kod, setKod] = useState('');
   const [hata, setHata] = useState<string | null>(null);
@@ -46,9 +48,10 @@ function GercekGruplar() {
   const yukle = useCallback(async (q?: string) => {
     try {
       setHata(null);
-      const [b, k] = await Promise.all([gruplarim(), kesfetGruplar(q)]);
+      const [b, k, e] = await Promise.all([gruplarim(), kesfetGruplar(q), yaklasanEtkinlikler().catch(() => [])]);
       setBenim(b);
       setKesfet(k);
+      setEtkinlikler(e);
     } catch (e) {
       setHata(e instanceof Error ? e.message : 'Gruplar yüklenemedi');
       setBenim((x) => x ?? []);
@@ -134,6 +137,31 @@ function GercekGruplar() {
           </Txt>
         ) : null}
 
+        {etkinlikler.length ? (
+          <View style={{ marginBottom: space.lg }}>
+            <SectionHeader title="Yaklaşan etkinlikler" />
+            {etkinlikler.slice(0, 3).map((e) => {
+              const r = tarihRozeti(e.starts_at);
+              return (
+                <Pressable key={e.id} accessibilityRole="link" onPress={() => router.push({ pathname: '/etkinlik/[id]', params: { id: e.id } })} style={styles.next}>
+                  <DateBadge month={r.ay} day={r.gun} />
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 15 }} numberOfLines={1}>
+                      {e.title}
+                    </Txt>
+                    <Txt variant="small" numberOfLines={1}>
+                      {kisaTarih(e.starts_at)}
+                      {e.group_name ? ` · ${e.group_name}` : ''} · {e.going_count} kişi
+                      {e.my_status === 'going' ? ' · gidiyorsun' : e.my_status === 'waitlist' ? ' · bekleme listesi' : ''}
+                    </Txt>
+                  </View>
+                  <Icon name="chevron" size={20} color={colors.inkMuted} strokeWidth={2} />
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
+
         <SectionHeader title="Grupların ve toplulukların" />
         {benim === null ? <ActivityIndicator color={colors.terra} style={{ marginVertical: space.lg }} /> : null}
         {benim && benim.length === 0 ? (
@@ -167,6 +195,10 @@ function GercekGruplar() {
             ) : null}
           </Pressable>
         ))}
+
+        <View style={{ marginTop: space.lg }}>
+          <Button label="Etkinlik oluştur" icon="calendar" variant="outline" href="/etkinlik/olustur" />
+        </View>
 
         <View style={{ marginTop: space.xl }}>
           <SectionHeader title="Toplulukları keşfet" />
@@ -232,6 +264,7 @@ const styles = StyleSheet.create({
   kodInput: { flex: 1, fontFamily: fontFamily.body, fontSize: 14, color: colors.ink, height: 44 },
   kodBtn: { height: 40, minWidth: 64, paddingHorizontal: 14, borderRadius: 20, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center' },
   ara: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, paddingHorizontal: 14, borderRadius: 22, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, marginBottom: space.sm },
+  next: { flexDirection: 'row', gap: 12, alignItems: 'center', padding: 12, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, marginBottom: 8 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.lineStrong },
   badge: { minWidth: 22, height: 22, borderRadius: 11, backgroundColor: colors.terra, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6 },
   katil: { height: 36, minWidth: 64, paddingHorizontal: 12, borderRadius: 18, backgroundColor: colors.sea, alignItems: 'center', justifyContent: 'center' },
