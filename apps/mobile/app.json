@@ -10,7 +10,12 @@
     "backgroundColor": "#F2EDE3",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "app.lykiva.mobile"
+      "bundleIdentifier": "app.lykiva.mobile",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "location"
+        ]
+      }
     },
     "android": {
       "package": "app.lykiva.mobile",
@@ -29,6 +34,16 @@
       "expo-router",
       "expo-font",
       "@maplibre/maplibre-react-native",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Lykiva, rotanı, hızını ve mesafeni kaydetmek için konumunu kullanır.",
+          "locationAlwaysAndWhenInUsePermission": "Lykiva, ekran kapalıyken ya da başka bir uygulamaya geçtiğinde de rotanı kaydetmeye devam edebilmek için konumunu kullanır.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
       [
         "expo-splash-screen",
         {

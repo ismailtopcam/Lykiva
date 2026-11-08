@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -7,15 +7,73 @@ import { RouteThumb } from '@/components/charts';
 import { IconButton } from '@/components/IconButton';
 import { Txt } from '@/components/Txt';
 import { Avatar, Card } from '@/components/ui';
+import { aktivitelerim, haftaOzeti, profilim, type AktiviteSatiri, type Profilim } from '@/data/aktivite';
 import { myActivities, people, weekKm } from '@/data/ornek';
+import { formatKm, formatMeters } from '@lykiva/shared';
+import { oturumuSagla, supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space } from '@/theme';
 
 const tabs = ['Aktiviteler', 'Rotalarım', 'Gruplar'];
 
 export default function ProfilScreen() {
   const [tab, setTab] = useState(0);
-  const me = people.me;
-  const maxKm = Math.max(...weekKm.map((d) => d.km));
+  const [liste, setListe] = useState<AktiviteSatiri[] | null>(null);
+  const [profil, setProfil] = useState<Profilim | null>(null);
+
+  // Sekmeye her dönüşte yenile (yeni kayıt, gönderilen kuyruk)
+  useFocusEffect(
+    useCallback(() => {
+      let acik = true;
+      (async () => {
+        const uid = supabaseHazir ? await oturumuSagla().catch(() => null) : null;
+        const [l, pr] = await Promise.all([aktivitelerim(uid).catch(() => []), uid ? profilim(uid).catch(() => null) : null]);
+        if (acik) {
+          setListe(l);
+          setProfil(pr);
+        }
+      })();
+      return () => {
+        acik = false;
+      };
+    }, []),
+  );
+
+  // Sunucu anahtarı yoksa tasarım örneği gösterilir; varsa gerçek kayıtlar (+ telefonda bekleyenler)
+  const gercek = supabaseHazir || (liste?.length ?? 0) > 0;
+  const satirlar: AktiviteSatiri[] = gercek ? (liste ?? []) : myActivities;
+  const hafta = haftaOzeti(satirlar);
+  const ad = gercek ? (profil?.displayName ?? 'Sen') : people.me.name;
+  const bas = ad
+    .split(' ')
+    .map((w) => w.charAt(0))
+    .join('')
+    .slice(0, 2)
+    .toLocaleUpperCase('tr-TR');
+  const altBaslik = gercek ? (profil ? `@${profil.username}${profil.city ? ' · ' + profil.city : ''}` : 'Geçici hesap') : 'Antalya · Bisiklet, doğa yürüyüşü';
+  const sayilar: [string, string][] = gercek
+    ? [
+        [String(satirlar.length), 'aktivite'],
+        [String(profil?.takipci ?? 0), 'takipçi'],
+        [String(profil?.takip ?? 0), 'takip'],
+      ]
+    : [
+        ['128', 'aktivite'],
+        ['342', 'takipçi'],
+        ['210', 'takip'],
+      ];
+  const gunler = gercek ? hafta.gunler : weekKm;
+  const maxKm = Math.max(0.001, ...gunler.map((d) => d.km));
+  const haftaToplam: [string, string][] = gercek
+    ? [
+        [formatKm(hafta.km * 1000), 'km'],
+        [`${Math.floor(hafta.sn / 3600)}:${String(Math.floor((hafta.sn % 3600) / 60)).padStart(2, '0')}`, 'sa'],
+        [formatMeters(hafta.m), 'm'],
+      ]
+    : [
+        ['64,2', 'km'],
+        ['5:12', 'sa'],
+        ['1.240', 'm'],
+      ];
 
   return (
     <SafeAreaView edges={['top']} style={styles.root}>
@@ -25,20 +83,16 @@ export default function ProfilScreen() {
       </View>
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         <View style={styles.identity}>
-          <Avatar initials={me.initials} tone="ink" size={76} />
+          <Avatar initials={bas} tone="ink" size={76} />
           <View style={{ flex: 1 }}>
             <Txt variant="display" style={{ fontSize: 24 }}>
-              {me.name}
+              {ad}
             </Txt>
             <Txt variant="muted" style={{ fontSize: 13 }}>
-              Antalya · Bisiklet, doğa yürüyüşü
+              {altBaslik}
             </Txt>
             <View style={{ flexDirection: 'row', gap: 16, marginTop: 8 }}>
-              {[
-                ['128', 'aktivite'],
-                ['342', 'takipçi'],
-                ['210', 'takip'],
-              ].map(([n, l]) => (
+              {sayilar.map(([n, l]) => (
                 <Txt key={l} style={{ fontSize: 13 }}>
                   <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 13 }}>{n}</Txt> <Txt style={{ color: colors.inkMuted, fontSize: 13 }}>{l}</Txt>
                 </Txt>
@@ -53,15 +107,11 @@ export default function ProfilScreen() {
               Bu hafta
             </Txt>
             <Txt variant="small" color="#B9C2BA">
-              3 – 9 Kasım
+              {gercek ? hafta.aralik : '3 – 9 Kasım'}
             </Txt>
           </View>
           <View style={{ flexDirection: 'row', gap: 20, marginVertical: 10 }}>
-            {[
-              ['64,2', 'km'],
-              ['5:12', 'sa'],
-              ['1.240', 'm'],
-            ].map(([v, u]) => (
+            {haftaToplam.map(([v, u]) => (
               <Txt key={u} style={{ fontFamily: fontFamily.displayHeavy, fontSize: 30, color: colors.night.text, letterSpacing: -0.6 }}>
                 {v}
                 <Txt style={{ fontFamily: fontFamily.bodyMedium, fontSize: 14, color: colors.night.text }}> {u}</Txt>
@@ -69,7 +119,7 @@ export default function ProfilScreen() {
             ))}
           </View>
           <View style={styles.bars} accessible accessibilityLabel="Bu haftanın günlük mesafe grafiği">
-            {weekKm.map((d) => (
+            {gunler.map((d) => (
               <View key={d.day} style={{ flex: 1, alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
                 <View
                   style={{
@@ -101,9 +151,14 @@ export default function ProfilScreen() {
         </View>
 
         <View style={{ padding: space.md, gap: space.sm }}>
-          {myActivities.map((a) => (
-            <Pressable key={a.id} accessibilityRole="link" onPress={() => router.push('/aktivite/ornek')} style={styles.row}>
-              <RouteThumb route={a.route} />
+          {liste && satirlar.length === 0 ? (
+            <Txt variant="muted" style={{ textAlign: 'center', paddingVertical: space.lg }}>
+              Henüz kaydın yok. Ortadaki düğmeyle ilk kaydını başlat.
+            </Txt>
+          ) : null}
+          {satirlar.map((a) => (
+            <Pressable key={a.id} accessibilityRole="link" onPress={() => router.push({ pathname: '/aktivite/[id]', params: { id: a.id } })} style={styles.row}>
+              {a.route.length > 1 ? <RouteThumb route={a.route} /> : <View style={{ width: 64, height: 64 }} />}
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }} numberOfLines={1}>
                   {a.title}

@@ -46,7 +46,7 @@ export const faralyaKabakRoute: LngLat[] = [
   [29.1251, 36.4611],
 ];
 
-export type Stop = { n: number; title: string; time: string; km: string; duration: string; note: string; at: number };
+export type Stop = { n: number; title: string; time: string; km: string; duration: string; note: string; at: number; coord?: LngLat };
 
 export type Activity = {
   id: string;
@@ -71,6 +71,12 @@ export type Activity = {
   stops: Stop[];
   likes: number;
   comments: number;
+  /** Başlangıç / bitiş saati ve toplam mola (hız sayfası için) */
+  startClock: string;
+  endClock: string;
+  stopTotal: string;
+  /** Cihaz rakım verdi mi (vermediyse yükseklik bölümü gizlenir) */
+  hasElevation?: boolean;
 };
 
 export const kasKalkan: Activity = {
@@ -99,6 +105,9 @@ export const kasKalkan: Activity = {
   ],
   likes: 24,
   comments: 6,
+  startClock: '08:12',
+  endClock: '10:08',
+  stopTotal: '17:45',
 };
 
 export const myActivities = [
