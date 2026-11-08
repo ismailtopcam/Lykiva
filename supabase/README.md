@@ -63,25 +63,26 @@ Geçici (anonim) giriş açık (`ENABLE_ANONYMOUS_USERS=true`). Uygulama Google 
 - Geçici hesaptaysa yeni hesap açılmaz, kimlik bu hesaba bağlanır (manual linking açık olmalı).
   Kimlik başka bir hesaptaysa asıl hesaba girilir ve `hesabi_devral` ile kayıtlar taşınır.
 
-### Sunucu ayarı (Coolify > lykiva-supabase)
+### Sunucu ayarı (Coolify > lykiva-supabase) — 9 Kasım 2026 itibarıyla yapıldı
 
-Şablonda Google / Apple değişkenleri yok; **Edit Compose File** ile `supabase-auth` servisinin
-`environment` listesine eklenmeli:
+`supabase-auth` servisinin compose'una şu satırlar eklendi (Coolify API ile) ve servis yeniden başlatıldı:
 
 ```yaml
-      - GOTRUE_SECURITY_MANUAL_LINKING_ENABLED=true
-      - GOTRUE_EXTERNAL_GOOGLE_ENABLED=true
-      - GOTRUE_EXTERNAL_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - GOTRUE_EXTERNAL_GOOGLE_SECRET=${GOOGLE_SECRET}
-      - GOTRUE_EXTERNAL_GOOGLE_REDIRECT_URI=https://api.lykiva.ismailtopcam.dev/auth/v1/callback
-      - GOTRUE_EXTERNAL_APPLE_ENABLED=true
-      - GOTRUE_EXTERNAL_APPLE_CLIENT_ID=app.lykiva.mobile
+      - 'GOTRUE_SECURITY_MANUAL_LINKING_ENABLED=${ENABLE_MANUAL_LINKING:-true}'
+      - 'GOTRUE_EXTERNAL_APPLE_ENABLED=${ENABLE_APPLE_SIGNIN:-true}'
+      - 'GOTRUE_EXTERNAL_APPLE_CLIENT_ID=${APPLE_CLIENT_ID:-app.lykiva.mobile}'
+      - 'GOTRUE_EXTERNAL_GOOGLE_ENABLED=${ENABLE_GOOGLE_SIGNIN:-false}'
+      - 'GOTRUE_EXTERNAL_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}'
+      - 'GOTRUE_EXTERNAL_GOOGLE_SECRET=${GOOGLE_SECRET}'
+      - 'GOTRUE_EXTERNAL_GOOGLE_REDIRECT_URI=${SERVICE_URL_SUPABASEKONG}/auth/v1/callback'
 ```
 
-Sonra Environment Variables'a `GOOGLE_CLIENT_ID` ve `GOOGLE_SECRET` girilir, `ADDITIONAL_REDIRECT_URLS`
-değerine `lykiva://giris-donus` eklenir (virgülle ayrılır) ve servis yeniden başlatılır.
+- Hesap bağlama ve Apple girişi **açık**; Apple için gizli anahtar gerekmez (yerel giriş yalnızca bundle id'ye bakar).
+- `ADDITIONAL_REDIRECT_URLS` zaten `lykiva://**` içeriyor (`lykiva://giris-donus` kapsanıyor).
+- **Google kapalı.** Açmak için Coolify > lykiva-supabase > Environment Variables'ta `GOOGLE_CLIENT_ID`, `GOOGLE_SECRET` doldurulur, `ENABLE_GOOGLE_SIGNIN=true` yapılır ve servis yeniden başlatılır.
+- Bundle id değişirse `APPLE_CLIENT_ID` değişkeni güncellenmeli.
 
 - Google Cloud Console: OAuth istemcisi türü **Web application**, yetkili yönlendirme adresi
   `https://api.lykiva.ismailtopcam.dev/auth/v1/callback`.
-- Apple Developer: `app.lykiva.mobile` App ID'sinde **Sign in with Apple** açık olmalı.
+- Apple Developer: `app.lykiva.mobile` App ID'sinde **Sign in with Apple** açık olmalı (ücretli hesapla Xcode'un otomatik imzalaması bunu kendisi açar).
   Bundle id değişirse `GOTRUE_EXTERNAL_APPLE_CLIENT_ID` da değişmeli.
