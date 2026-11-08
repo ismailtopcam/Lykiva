@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { acceptPoint, computeStats, detectStops, haversine, routeProgress, thin, type TrackPoint } from './track';
+import { acceptPoint, computeSegmentedStats, computeStats, currentSpeed, detectStops, haversine, routeProgress, thin, type TrackPoint } from './track';
 
 const START = { lat: 36.2, lng: 29.6 };
 /** Kuzeye doğru 1 m ≈ bu kadar enlem */
@@ -94,5 +94,27 @@ describe('routeProgress', () => {
     expect(p.totalM).toBeCloseTo(1000, -1);
     expect(p.doneM).toBeCloseTo(500, -1);
     expect(p.remainingM).toBeCloseTo(500, -1);
+  });
+});
+
+describe('computeSegmentedStats', () => {
+  it('duraklatma sırasında gidilen yolu saymaz', () => {
+    const pts = synthetic(0);
+    const a = pts.slice(0, 300);
+    // duraklatmadayken 2 km "araçla" gidilmiş gibi: ikinci parça 2 km kuzeyden başlar
+    const b = pts.slice(300).map((p) => ({ ...p, t: p.t + 600_000, lat: p.lat + 2000 * DEG_PER_M }));
+    const s = computeSegmentedStats([a, b]);
+    expect(Math.abs(s.distanceM - 3000)).toBeLessThan(30);
+    expect(Math.abs(s.elapsedS - 1200)).toBeLessThan(3);
+    expect(Math.abs(s.movingS - 600)).toBeLessThan(5);
+  });
+  it('boş parçalarla çökmez', () => {
+    expect(computeSegmentedStats([[], []]).distanceM).toBe(0);
+  });
+});
+
+describe('currentSpeed', () => {
+  it('son saniyelerdeki hızı verir', () => {
+    expect(currentSpeed(synthetic())).toBeCloseTo(5, 1);
   });
 });

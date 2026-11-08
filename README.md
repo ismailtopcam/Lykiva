@@ -28,7 +28,23 @@ npm install
 
 ## Çalıştırma
 
-**Mobil uygulama**
+**Mobil uygulama — ilk kez**
+
+`apps/mobile/.env.example` dosyasını `apps/mobile/.env` adıyla kopyala ve `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+satırına Coolify'daki anon anahtarını yaz (Coolify > lykiva-supabase > Environment Variables >
+`SERVICE_SUPABASEANON_KEY`). Anahtar yoksa uygulama yine çalışır, kayıtlar telefonda bekler.
+
+GPS kaydı yerel modül kullandığı için **Expo Go'da arka plan kaydı çalışmaz**; geliştirme derlemesiyle dene:
+
+```bash
+cd apps/mobile
+npx expo run:ios --device     # iPhone kabloyla bağlıyken (Xcode gerekli)
+npx expo run:android          # Android
+```
+
+iOS Simülatöründe konum: Features > Location > City Bicycle Ride / Freeway Drive.
+
+**Mobil uygulama — günlük**
 
 ```bash
 npm run mobile
@@ -54,13 +70,15 @@ Tarayıcıda http://localhost:3000 (karşılama) ve http://localhost:3000/admin 
 ```bash
 npm run typecheck   # tüm paketlerde TypeScript kontrolü
 npm run web:build   # web üretim derlemesi
+npm test -w @lykiva/shared   # GPS hesaplama testleri
 ```
 
 ## Aşamalar
 
 1. **İskelet + tasarım + gezinme** — proje yapısı, ortak tasarım dili, mobil alt menü ve tüm ekranların kabukları, web karşılama sayfası ve yönetim paneli kabuğu, veritabanı şeması.
 2. **Tasarımın koda dökülmesi** — 18 ekran örnek verilerle, MapLibre haritası, web için Dockerfile.
-3. Sırada: gerçek GPS kaydı, Supabase bağlantısı ve güvenlik kuralları.
+3. **Gerçek GPS kaydı** — ekran kapalıyken de kayıt (arka plan konum), duraklat/devam, mesafe/hız/tırmanış/mola hesapları (birim testli), çevrimdışı kuyruk, Supabase'e kaydetme, güvenlik kuralları (RLS), geçici (anonim) giriş, aktivite özeti ve hız/mola sayfası gerçek veriden.
+4. Sırada: Google / Apple girişi, rota seçip "kalan km / varış süresi", paylaşım kartı.
 
 ## Sunucu
 

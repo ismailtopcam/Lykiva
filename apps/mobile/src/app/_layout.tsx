@@ -13,8 +13,12 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { AppState } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+// Arka plan konum görevi uygulama açılır açılmaz tanımlanmalı
+import { kaydiGeriYukle } from '@/kayit/kaydedici';
+import { kuyruguGonder } from '@/kayit/kuyruk';
 import { colors } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
@@ -32,6 +36,16 @@ export default function RootLayout() {
   useEffect(() => {
     if (loaded || error) SplashScreen.hideAsync();
   }, [loaded, error]);
+
+  // Yarım kalan kaydı geri yükle; bekleyen kayıtları uygulama her öne geldiğinde göndermeyi dene
+  useEffect(() => {
+    void kaydiGeriYukle();
+    void kuyruguGonder().catch(() => undefined);
+    const sub = AppState.addEventListener('change', (s) => {
+      if (s === 'active') void kuyruguGonder().catch(() => undefined);
+    });
+    return () => sub.remove();
+  }, []);
 
   if (!loaded && !error) return null;
 

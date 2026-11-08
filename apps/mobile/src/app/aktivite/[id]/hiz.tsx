@@ -1,4 +1,5 @@
-import { ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
+import { ActivityIndicator, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { SpeedChart } from '@/components/charts';
@@ -6,14 +7,26 @@ import { Header } from '@/components/Header';
 import { Icon } from '@/components/Icon';
 import { Txt } from '@/components/Txt';
 import { Card, SectionHeader } from '@/components/ui';
-import { kasKalkan } from '@/data/ornek';
+import { useAktivite } from '@/data/aktivite';
 import { colors, fontFamily, space } from '@/theme';
 
 export default function HizMolalarScreen() {
-  const a = kasKalkan;
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { a, hata } = useAktivite(id);
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+
+  if (!a) {
+    return (
+      <View style={styles.root}>
+        <Header title="Hız & molalar" />
+        <View style={{ padding: space.lg, alignItems: 'center' }}>{hata ? <Txt variant="muted">{hata}</Txt> : <ActivityIndicator color={colors.terra} />}</View>
+      </View>
+    );
+  }
+
   const maxIndex = a.speed.indexOf(Math.max(...a.speed));
+  const ornek = a.id === 'ornek';
 
   return (
     <View style={styles.root}>
@@ -23,7 +36,7 @@ export default function HizMolalarScreen() {
           <View style={[styles.kpi, { backgroundColor: colors.terra, borderColor: colors.terra }]}>
             <Txt style={styles.kpiLabelLight}>Maks.</Txt>
             <Txt style={[styles.kpiValue, { color: '#FFFFFF' }]}>{a.maxSpeed}</Txt>
-            <Txt style={styles.kpiLabelLight}>Sarıbelen inişi</Txt>
+            <Txt style={styles.kpiLabelLight}>{ornek ? 'Sarıbelen inişi' : 'en yüksek'}</Txt>
           </View>
           <View style={styles.kpi}>
             <Txt variant="small">Ortalama</Txt>
@@ -33,7 +46,7 @@ export default function HizMolalarScreen() {
           <View style={styles.kpi}>
             <Txt variant="small">Min.</Txt>
             <Txt style={styles.kpiValue}>{a.minSpeed}</Txt>
-            <Txt variant="small">dik yokuşta</Txt>
+            <Txt variant="small">{ornek ? 'dik yokuşta' : 'hareketteyken'}</Txt>
           </View>
         </View>
 
@@ -54,17 +67,17 @@ export default function HizMolalarScreen() {
           <SpeedChart
             values={a.speed}
             width={width - space.lg * 2 - 26}
-            avg={16.7}
+            avg={parseFloat(a.avgSpeed.replace('.', '').replace(',', '.')) || 0}
             maxIndex={maxIndex}
-            start="08:12"
-            end="10:08"
-            label={`Hız grafiği: iki molada hız sıfıra düşüyor, en yüksek hız ${a.maxSpeed} km/sa`}
+            start={a.startClock}
+            end={a.endClock}
+            label={`Hız grafiği: ${a.stops.length} molada hız sıfıra düşüyor, en yüksek hız ${a.maxSpeed} km/sa`}
           />
         </Card>
 
         <SectionHeader title="Nerede durdun?" />
         <Txt variant="small" style={{ marginTop: -6, marginBottom: 10 }}>
-          Toplam mola 17:45
+          {a.stops.length ? `Toplam mola ${a.stopTotal}` : '1 dakikadan uzun mola yok'}
         </Txt>
         {a.stops.map((s) => (
           <View key={s.n} style={styles.stop}>
@@ -80,9 +93,9 @@ export default function HizMolalarScreen() {
                 <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14 }}>{s.duration} dk</Txt>
               </View>
               <Txt variant="small">
-                {s.time} · {s.km}. km · {s.note}
+                {s.time} · {s.km}. km{s.note ? ` · ${s.note}` : ''}
               </Txt>
-              {s.n === 1 ? (
+              {ornek && s.n === 1 ? (
                 <View style={{ flexDirection: 'row', gap: 6, marginTop: 8 }}>
                   {[colors.water, colors.sand].map((bg) => (
                     <View key={bg} style={[styles.photo, { backgroundColor: bg }]}>
@@ -94,6 +107,7 @@ export default function HizMolalarScreen() {
             </View>
           </View>
         ))}
+        {ornek ? (
         <View style={styles.stop}>
           <View style={[styles.num, styles.numDashed]} />
           <View style={{ flex: 1 }}>
@@ -104,6 +118,7 @@ export default function HizMolalarScreen() {
             <Txt variant="small">4 kez, her biri 1 dakikadan kısa</Txt>
           </View>
         </View>
+        ) : null}
       </ScrollView>
     </View>
   );

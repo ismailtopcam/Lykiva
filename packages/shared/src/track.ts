@@ -232,3 +232,42 @@ export function routeProgress(route: { lat: number; lng: number }[], here: { lat
   const totalM = cum[cum.length - 1];
   return { doneM: cum[best], remainingM: totalM - cum[best], totalM };
 }
+
+/**
+ * Duraklatmalarla bölünmüş kayıt için istatistik: her parça ayrı hesaplanır,
+ * böylece duraklatılmışken (ör. araçla) gidilen yol mesafeye eklenmez.
+ * Toplam süre ilk noktadan son noktaya kadardır (duraklatmalar dahil).
+ */
+export function computeSegmentedStats(segments: TrackPoint[][]): TrackStats {
+  const parts = segments.filter((s) => s.length > 0);
+  const all = parts.flat();
+  const per = parts.filter((s) => s.length > 1).map(computeStats);
+  const sum = (f: (s: TrackStats) => number) => per.reduce((a, s) => a + f(s), 0);
+  const movingS = sum((s) => s.movingS);
+  const movingDist = sum((s) => s.avgMovingSpeed * s.movingS);
+  const alts = per.flatMap((s) => [s.maxAltM, s.minAltM]).filter((a): a is number => a != null);
+  const mins = per.map((s) => s.minMovingSpeed).filter((v) => v > 0);
+  return {
+    distanceM: sum((s) => s.distanceM),
+    elapsedS: all.length > 1 ? (all[all.length - 1].t - all[0].t) / 1000 : 0,
+    movingS,
+    avgMovingSpeed: movingS > 0 ? movingDist / movingS : 0,
+    maxSpeed: per.length ? Math.max(...per.map((s) => s.maxSpeed)) : 0,
+    minMovingSpeed: mins.length ? Math.min(...mins) : 0,
+    gainM: sum((s) => s.gainM),
+    lossM: sum((s) => s.lossM),
+    maxAltM: alts.length ? Math.max(...alts) : null,
+    minAltM: alts.length ? Math.min(...alts) : null,
+  };
+}
+
+/** Anlık hız: son birkaç saniyedeki noktalardan (cihaz hızı varsa onun medyanı) */
+export function currentSpeed(points: TrackPoint[], windowS = 5): number {
+  if (!points.length) return 0;
+  const last = points[points.length - 1];
+  const recent = points.filter((p) => last.t - p.t <= windowS * 1000);
+  if (recent.length < 2) {
+    return last.speed != null && last.speed >= 0 ? last.speed : 0;
+  }
+  return median(pointSpeeds(recent).slice(1));
+}

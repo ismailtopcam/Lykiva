@@ -137,6 +137,7 @@ export function Button({
   icon,
   style,
   big,
+  disabled,
 }: {
   label: string;
   onPress?: () => void;
@@ -145,11 +146,14 @@ export function Button({
   icon?: IconName;
   style?: StyleProp<ViewStyle>;
   big?: boolean;
+  disabled?: boolean;
 }) {
   const v = buttonVariants[variant];
   return (
     <Pressable
       accessibilityRole={href ? 'link' : 'button'}
+      accessibilityState={{ disabled: !!disabled }}
+      disabled={disabled}
       onPress={() => {
         onPress?.();
         if (href) router.push(href);
@@ -158,6 +162,7 @@ export function Button({
         styles.button,
         { backgroundColor: v.bg, borderColor: v.border ?? v.bg, height: big ? 60 : 54 },
         pressed && { opacity: 0.85 },
+        disabled && { opacity: 0.55 },
         style,
       ]}>
       {icon ? <Icon name={icon} size={20} color={v.fg} strokeWidth={icon === 'play' || icon === 'stop' ? 1 : 1.8} /> : null}

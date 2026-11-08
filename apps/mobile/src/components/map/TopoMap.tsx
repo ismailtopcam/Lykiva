@@ -36,10 +36,12 @@ export type TopoMapProps = {
   style?: StyleProp<ViewStyle>;
   /** Kamera kenar boşluğu (alttaki panel için alt boşluğu artır) */
   padding?: { top?: number; right?: number; bottom?: number; left?: number };
+  /** Verilirse kamera bu konumu takip eder (kayıt sırasında) */
+  follow?: LngLat | null;
   accessibilityLabel: string;
 };
 
-export const MAP_STYLE_URL = process.env.EXPO_PUBLIC_MAP_STYLE_URL ?? 'https://tiles.openfreemap.org/styles/liberty';
+export const MAP_STYLE_URL = process.env.EXPO_PUBLIC_MAP_STYLE_URL || 'https://tiles.openfreemap.org/styles/liberty';
 
 // Expo Go ve web'de MapLibre'nin yerel modülü yok → stilize SVG harita
 const useFallback = Constants.executionEnvironment === ExecutionEnvironment.StoreClient || Platform.OS === 'web';
@@ -88,7 +90,9 @@ function NativeMap(props: TopoMapProps) {
       doubleTapZoom={interactive}
       touchRotate={false}
       touchPitch={false}>
-      {bounds ? (
+      {props.follow ? (
+        <ML.Camera center={props.follow} zoom={16} duration={800} padding={{ top: 0, right: 0, left: 0, bottom: 0, ...padding }} />
+      ) : bounds ? (
         <ML.Camera
           initialViewState={{
             bounds,
