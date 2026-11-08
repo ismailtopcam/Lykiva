@@ -28,6 +28,10 @@ export type MapMarker = {
 
 export type TopoMapProps = {
   route?: LngLat[];
+  /** Takip edilen planlı rota: kaydedilen izin altında ayrı renkte çizilir */
+  plan?: LngLat[];
+  /** Haritaya dokunulunca (rota çizimi). Yalnızca gerçek haritada çalışır. */
+  onPress?: (coord: LngLat) => void;
   /** 0..1 — canlı takipte tamamlanan kısım (geri kalanı kesikli) */
   progress?: number;
   markers?: MapMarker[];
@@ -40,6 +44,9 @@ export type TopoMapProps = {
   follow?: LngLat | null;
   accessibilityLabel: string;
 };
+
+/** Haritaya dokunarak işlem yapılabilir mi (Expo Go / web'deki yedek haritada hayır) */
+export const haritaEtkilesimli = () => !useFallback;
 
 export const MAP_STYLE_URL = process.env.EXPO_PUBLIC_MAP_STYLE_URL || 'https://tiles.openfreemap.org/styles/liberty';
 
@@ -62,8 +69,8 @@ function NativeMap(props: TopoMapProps) {
   // Yerel modül yalnızca burada yüklenir; Expo Go bu satıra hiç gelmez.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const ML = require('@maplibre/maplibre-react-native') as typeof import('@maplibre/maplibre-react-native');
-  const { route = [], progress, markers = [], interactive = true, padding } = props;
-  const pts = route.length ? route : markers.map((m) => m.coord);
+  const { route = [], plan = [], progress, markers = [], interactive = true, padding } = props;
+  const pts = route.length || plan.length ? [...plan, ...route] : markers.map((m) => m.coord);
   const bounds = boundsOf(pts);
   const split = progress !== undefined ? Math.max(1, Math.round(progress * (route.length - 1))) : route.length - 1;
   const done = route.slice(0, split + 1);
@@ -89,7 +96,8 @@ function NativeMap(props: TopoMapProps) {
       touchZoom={interactive}
       doubleTapZoom={interactive}
       touchRotate={false}
-      touchPitch={false}>
+      touchPitch={false}
+      onPress={props.onPress ? (e) => props.onPress?.(e.nativeEvent.lngLat as LngLat) : undefined}>
       {props.follow ? (
         <ML.Camera center={props.follow} zoom={16} duration={800} padding={{ top: 0, right: 0, left: 0, bottom: 0, ...padding }} />
       ) : bounds ? (
@@ -99,6 +107,23 @@ function NativeMap(props: TopoMapProps) {
             padding: { top: 60, right: 40, bottom: 40, left: 40, ...padding },
           }}
         />
+      ) : null}
+
+      {plan.length > 1 ? (
+        <ML.GeoJSONSource id="plan" data={lineOf(plan)}>
+          <ML.Layer
+            id="plan-kenar"
+            type="line"
+            layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+            paint={{ 'line-color': props.dark ? '#0E1512' : '#FBF8F2', 'line-width': 9 }}
+          />
+          <ML.Layer
+            id="plan-cizgi"
+            type="line"
+            layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+            paint={{ 'line-color': props.dark ? '#4FB3AC' : '#0B6A6A', 'line-width': 5, 'line-opacity': 0.75 }}
+          />
+        </ML.GeoJSONSource>
       ) : null}
 
       {done.length > 1 ? (

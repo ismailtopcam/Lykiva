@@ -11,14 +11,14 @@ import { TopoMap } from '@/components/map/TopoMap';
 import { Txt } from '@/components/Txt';
 import { Stat } from '@/components/ui';
 import { duraklat } from '@/kayit/kaydedici';
-import { useCanliVeri } from '@/kayit/istatistik';
+import { useCanliVeri, type RotaDurumu } from '@/kayit/istatistik';
 import { colors, fontFamily, space } from '@/theme';
 
 const n = colors.night;
 
 export default function CanliTakipScreen() {
   const insets = useSafeAreaInsets();
-  const { kayit, stats, anlikHiz, aktifS, iz, ben, gpsDogruluk } = useCanliVeri();
+  const { kayit, stats, anlikHiz, aktifS, iz, ben, gpsDogruluk, rota, simdi } = useCanliVeri();
   const [takip, setTakip] = useState(true);
 
   if (kayit.durum === 'bos') return <Redirect href="/kayit" />;
@@ -39,6 +39,7 @@ export default function CanliTakipScreen() {
         dark
         style={{ height: 340 }}
         route={iz}
+        plan={rota?.plan}
         markers={ben ? [{ id: 'me', coord: ben, kind: 'me' }] : []}
         follow={takip ? ben : null}
         padding={{ top: 110, bottom: 40 }}
@@ -65,6 +66,11 @@ export default function CanliTakipScreen() {
       />
 
       <View style={[styles.panel, { paddingBottom: insets.bottom + 24 }]}>
+        {rota?.rotaDisinda ? (
+          <View style={[styles.warn, { backgroundColor: '#3A1F17' }]} accessibilityRole="alert">
+            <Txt style={[styles.warnText, { color: n.accentSoft }]}>Rotanın dışındasın · rotaya {formatMeters(rota.sapmaM)} m</Txt>
+          </View>
+        ) : null}
         {!kayit.arkaPlan ? (
           <View style={styles.warn} accessibilityRole="alert">
             <Txt style={styles.warnText}>Arka plan konum izni yok: uygulama açık ve ekran açıkken kaydediyor.</Txt>
@@ -74,6 +80,8 @@ export default function CanliTakipScreen() {
             <Txt style={styles.warnText}>GPS sinyali zayıf — açık gökyüzü gören bir yerde düzelir.</Txt>
           </View>
         ) : null}
+
+        {rota ? <RotaSeridi rota={rota} simdi={simdi} /> : null}
 
         <View style={{ alignItems: 'center' }}>
           <Txt variant="label" color={n.textMuted}>
@@ -109,7 +117,49 @@ export default function CanliTakipScreen() {
   );
 }
 
+/** Takip edilen rota: kalan mesafe, tahmini süre ve varış saati */
+function RotaSeridi({ rota, simdi }: { rota: RotaDurumu; simdi: number }) {
+  const varis = rota.kalanS != null ? new Date(simdi + rota.kalanS * 1000).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : null;
+  const bitti = rota.remainingM < 30;
+  return (
+    <View
+      style={styles.rota}
+      accessible
+      accessibilityLabel={
+        bitti
+          ? `${rota.ad} rotası tamamlandı`
+          : `${rota.ad}: kalan ${formatKm(rota.remainingM)} kilometre${rota.kalanS != null ? `, tahmini ${formatDuration(rota.kalanS)}, varış ${varis}` : ''}`
+      }>
+      <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
+        <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 12, color: n.textMuted, flexShrink: 1 }} numberOfLines={1}>
+          {rota.ad}
+        </Txt>
+        <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 12, color: n.textMuted }}>{formatKm(rota.totalM)} km</Txt>
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 14, marginTop: 2 }}>
+        <Txt style={styles.rotaDeger}>
+          {bitti ? 'Vardın' : formatKm(rota.remainingM)}
+          {bitti ? null : <Txt style={styles.rotaBirim}> km kaldı</Txt>}
+        </Txt>
+        {!bitti && rota.kalanS != null ? (
+          <Txt style={[styles.rotaDeger, { color: n.accentSoft }]}>
+            ~{formatDuration(rota.kalanS)}
+            <Txt style={styles.rotaBirim}> · {varis}</Txt>
+          </Txt>
+        ) : null}
+      </View>
+      <View style={styles.rotaBar}>
+        <View style={{ width: `${Math.round(Math.min(1, rota.oran) * 100)}%`, height: '100%', backgroundColor: n.sea, borderRadius: 3 }} />
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  rota: { padding: 12, borderRadius: 14, backgroundColor: n.surface, marginBottom: 12 },
+  rotaDeger: { fontFamily: fontFamily.display, fontSize: 24, color: n.text, letterSpacing: -0.4 },
+  rotaBirim: { fontFamily: fontFamily.bodyMedium, fontSize: 13, color: n.textMuted, letterSpacing: 0 },
+  rotaBar: { height: 6, borderRadius: 3, backgroundColor: n.line, marginTop: 8, overflow: 'hidden' },
   root: { flex: 1, backgroundColor: n.ground },
   pill: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: 'rgba(14,21,18,0.85)' },
   pillText: { fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: n.text },

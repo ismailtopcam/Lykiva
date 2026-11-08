@@ -9,6 +9,7 @@ Kendi sunucumuzda (Coolify, `lykiva-supabase` servisi): https://api.lykiva.ismai
 | `20261107000000_ilk_sema.sql` | Tablolar, PostGIS, RLS açık | uygulandı |
 | `20261108000000_kayit_ve_kurallar.sql` | Profil tetikleyicisi, aktivite/rota/takip kuralları, `kaydet_aktivite`, `aktivite_detay`, `aktivite_ozetleri` | uygulandı (8 Kasım 2026) |
 | `20261109000000_giris.sql` | Hesap devri: `devir_kodu_al`, `hesabi_devral` (geçici hesaptaki kayıtları asıl hesaba taşır) | **henüz uygulanmadı** |
+| `20261110000000_rotalar.sql` | `rota_kaydet`, `rota_detay`, `rota_ozetleri`, `aktiviteden_rota`; `kaydet_aktivite` artık `route_id` de yazar | **henüz uygulanmadı** |
 
 Gruplar, etkinlikler, mesajlar ve canlı konum tablolarının kuralları henüz yok — istemciden kapalılar.
 

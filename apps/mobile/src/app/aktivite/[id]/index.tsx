@@ -1,6 +1,7 @@
 import { ACTIVITY_LABELS } from '@lykiva/shared';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ElevationProfile } from '@/components/charts';
@@ -11,6 +12,8 @@ import { Txt } from '@/components/Txt';
 import { Button } from '@/components/ui';
 import { useAktivite } from '@/data/aktivite';
 import { people } from '@/data/ornek';
+import { useHesap } from '@/lib/giris';
+import { aktivitedenRota } from '@/rota/rotalar';
 import { colors, fontFamily, space } from '@/theme';
 
 export default function AktiviteOzetiScreen() {
@@ -18,6 +21,8 @@ export default function AktiviteOzetiScreen() {
   const { a, yukleniyor, hata, bekliyor } = useAktivite(id);
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const hesap = useHesap();
+  const [rotaYapiliyor, setRotaYapiliyor] = useState(false);
 
   if (!a) {
     return (
@@ -26,6 +31,21 @@ export default function AktiviteOzetiScreen() {
         {yukleniyor ? <ActivityIndicator color={colors.terra} /> : <Txt variant="muted">{hata ?? 'Aktivite bulunamadı'}</Txt>}
       </View>
     );
+  }
+
+  const rotaYapilabilir = !bekliyor && !!hesap && a.ownerId === hesap.id && a.route.length > 1;
+
+  async function rotaYap() {
+    if (!a) return;
+    setRotaYapiliyor(true);
+    try {
+      const rid = await aktivitedenRota(a.id, a.title);
+      router.push({ pathname: '/rota/[id]', params: { id: rid } });
+    } catch (e) {
+      Alert.alert('Rota oluşturulamadı', e instanceof Error ? e.message : String(e));
+    } finally {
+      setRotaYapiliyor(false);
+    }
   }
 
   const stopCoord = (at: number) => a.route[Math.round(at * (a.route.length - 1))];
@@ -115,6 +135,21 @@ export default function AktiviteOzetiScreen() {
           <Txt style={{ flex: 1, fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: colors.seaInk }}>İnişli çıkışlı haritada gör (3B)</Txt>
           <Icon name="chevron" size={18} color={colors.seaInk} strokeWidth={2} />
         </Pressable>
+
+        {rotaYapilabilir ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ busy: rotaYapiliyor }}
+            disabled={rotaYapiliyor}
+            onPress={() => void rotaYap()}
+            style={[styles.link3d, { backgroundColor: colors.sand, marginTop: space.sm }]}>
+            <Icon name="route" color={colors.sandInk} />
+            <Txt style={{ flex: 1, fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: colors.sandInk }}>
+              {rotaYapiliyor ? 'Rota oluşturuluyor…' : 'Bu izi rota olarak kaydet'}
+            </Txt>
+            {rotaYapiliyor ? <ActivityIndicator color={colors.sandInk} /> : <Icon name="chevron" size={18} color={colors.sandInk} strokeWidth={2} />}
+          </Pressable>
+        ) : null}
       </ScrollView>
 
       <FloatingHeader />

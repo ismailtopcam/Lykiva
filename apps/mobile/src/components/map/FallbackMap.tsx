@@ -12,13 +12,13 @@ import type { TopoMapProps } from './TopoMap';
 const light = { land: '#E8E0CF', water: '#CBE1DC', contour: '#D3C7B0', casing: '#FBF8F2', line: '#B04E25', rest: '#9C9282' };
 const night = { land: '#121B17', water: '#12302E', contour: '#24302B', casing: '#0E1512', line: '#E07A4A', rest: '#6E7A73' };
 
-export function FallbackMap({ route = [], progress, markers = [], dark, padding }: TopoMapProps) {
+export function FallbackMap({ route = [], plan = [], progress, markers = [], dark, padding }: TopoMapProps) {
   const [size, setSize] = useState({ w: 0, h: 0 });
   const c = dark ? night : light;
   const onLayout = (e: LayoutChangeEvent) => setSize({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height });
   const { w, h } = size;
 
-  const all = route.length ? route : markers.map((m) => m.coord);
+  const all = route.length || plan.length ? [...plan, ...route] : markers.map((m) => m.coord);
   const pad = { top: 60, right: 40, bottom: 40, left: 40, ...padding };
   const project = makeProjection(all, w, h, pad);
 
@@ -43,6 +43,12 @@ export function FallbackMap({ route = [], progress, markers = [], dark, padding 
               <Ellipse key={'c' + k} cx={w * 0.4} cy={h * 0.62} rx={w * 0.1 * k} ry={h * 0.06 * k} />
             ))}
           </G>
+          {plan.length > 1 ? (
+            <>
+              <Path d={toPath(plan.map(project))} fill="none" stroke={c.casing} strokeWidth={9} strokeLinecap="round" strokeLinejoin="round" />
+              <Path d={toPath(plan.map(project))} fill="none" stroke={dark ? '#4FB3AC' : '#0B6A6A'} strokeOpacity={0.75} strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
+            </>
+          ) : null}
           {done.length > 1 ? (
             <>
               <Path d={toPath(done)} fill="none" stroke={c.casing} strokeWidth={8} strokeLinecap="round" strokeLinejoin="round" />

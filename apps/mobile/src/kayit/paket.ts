@@ -22,6 +22,8 @@ export type KayitPaketi = {
   hide_endpoints: boolean;
   points: TrackPoint[];
   stops: TrackStop[];
+  /** Takip edilen rota */
+  route_id: string | null;
 };
 
 const r1 = (n: number) => Math.round(n * 10) / 10;
@@ -47,6 +49,7 @@ export function paketOlustur(opts: {
   activity: ActivityType;
   segments: TrackPoint[][];
   title?: string;
+  routeId?: string | null;
 }): KayitPaketi | null {
   const segments = opts.segments.filter((s) => s.length > 0);
   const points = segments.flat();
@@ -93,5 +96,6 @@ export function paketOlustur(opts: {
       speed: p.speed == null || p.speed < 0 ? null : r2(p.speed),
     })),
     stops: stops.sort((a, b) => a.startT - b.startT),
+    route_id: opts.routeId ?? null,
   };
 }

@@ -51,6 +51,8 @@ export type Stop = { n: number; title: string; time: string; km: string; duratio
 export type Activity = {
   id: string;
   owner: string;
+  /** Sunucudaki aktivitelerde sahibin kullanıcı kimliği */
+  ownerId?: string;
   with: string[];
   title: string;
   type: ActivityType;

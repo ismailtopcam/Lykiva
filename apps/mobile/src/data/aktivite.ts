@@ -33,6 +33,7 @@ type Ham = {
   profile: ProfilNoktasi[];
   stops: Mola[];
   ownerName?: string;
+  ownerId?: string;
 };
 
 const saat = (ms: number) => new Date(ms).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
@@ -85,6 +86,7 @@ function goruntuyeCevir(h: Ham): Activity {
   return {
     id: h.id,
     owner: h.ownerName ?? 'me',
+    ownerId: h.ownerId,
     with: [],
     title: h.title ?? ACTIVITY_LABELS[h.activity],
     type: h.activity,
@@ -143,6 +145,7 @@ async function sunucudan(id: string): Promise<Activity> {
     profile: detay.profile,
     stops: detay.stops.map((s) => ({ start: Date.parse(s.started_at), end: Date.parse(s.ended_at), distanceAt: s.distance_at_m, lng: s.lng, lat: s.lat, note: s.note })),
     ownerName: o.owner_name,
+    ownerId: o.owner_id,
   });
 }
 

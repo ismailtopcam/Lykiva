@@ -1,4 +1,4 @@
-import { computeSegmentedStats, currentSpeed, type TrackStats } from '@lykiva/shared';
+import { computeSegmentedStats, currentSpeed, etaSeconds, rotaUzunlugu, ROTADAN_SAPMA_M, type TrackStats } from '@lykiva/shared';
 import { useEffect, useMemo, useState } from 'react';
 
 import type { LngLat } from '@/data/ornek';
@@ -14,6 +14,21 @@ export function useSaat(aralikMs = 1000) {
   return simdi;
 }
 
+export type RotaDurumu = {
+  ad: string;
+  plan: LngLat[];
+  totalM: number;
+  doneM: number;
+  remainingM: number;
+  /** Rotaya uzaklık (m) */
+  sapmaM: number;
+  rotaDisinda: boolean;
+  /** Hareket hâlindeki ortalama hızla kalan süre (s); henüz hız yoksa null */
+  kalanS: number | null;
+  /** 0..1 */
+  oran: number;
+};
+
 export type CanliVeri = {
   kayit: Kayit;
   stats: TrackStats;
@@ -23,6 +38,7 @@ export type CanliVeri = {
   ben: LngLat | null;
   gpsDogruluk: number | null;
   simdi: number;
+  rota: RotaDurumu | null;
 };
 
 export function useCanliVeri(): CanliVeri {
@@ -35,6 +51,28 @@ export function useCanliVeri(): CanliVeri {
   const anlikHiz = kayit.durum === 'kayitta' && taze ? currentSpeed(son) : 0;
   const iz = useMemo(() => kayit.segments.flat().map((p) => [p.lng, p.lat] as LngLat), [kayit.segments]);
   const sk = kayit.sonKonum;
+
+  // İlerleme kaydedicide her yeni noktada hesaplanır (arka planda da); burada yalnızca gösterilir
+  const plan = useMemo(() => (kayit.rota?.noktalar ?? []) as LngLat[], [kayit.rota]);
+  const totalM = useMemo(() => rotaUzunlugu(plan.map(([lng, lat]) => ({ lng, lat }))), [plan]);
+  let rota: RotaDurumu | null = null;
+  if (kayit.rota && plan.length > 1) {
+    const ilerleme = kayit.rotaIlerleme;
+    const doneM = Math.min(totalM, ilerleme?.m ?? 0);
+    const remainingM = Math.max(0, totalM - doneM);
+    rota = {
+      ad: kayit.rota.ad,
+      plan,
+      totalM,
+      doneM,
+      remainingM,
+      sapmaM: ilerleme?.sapmaM ?? 0,
+      rotaDisinda: !!ilerleme && ilerleme.sapmaM > ROTADAN_SAPMA_M,
+      kalanS: stats.movingS > 60 ? etaSeconds(remainingM, stats.avgMovingSpeed) : null,
+      oran: totalM > 0 ? doneM / totalM : 0,
+    };
+  }
+
   return {
     kayit,
     stats,
@@ -44,5 +82,6 @@ export function useCanliVeri(): CanliVeri {
     ben: sk ? [sk.lng, sk.lat] : null,
     gpsDogruluk: sk?.acc ?? null,
     simdi,
+    rota,
   };
 }

@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { RouteThumb } from '@/components/charts';
+import { RotaSatiri } from '@/components/RotaSatiri';
 import { IconButton } from '@/components/IconButton';
 import { Txt } from '@/components/Txt';
 import { Avatar, Button, Card } from '@/components/ui';
@@ -11,6 +12,7 @@ import { aktivitelerim, haftaOzeti, profilim, type AktiviteSatiri, type Profilim
 import { myActivities, people, weekKm } from '@/data/ornek';
 import { formatKm, formatMeters } from '@lykiva/shared';
 import { useHesap } from '@/lib/giris';
+import { useRotalarim } from '@/rota/rotalar';
 import { oturumuSagla, supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space } from '@/theme';
 
@@ -21,6 +23,8 @@ export default function ProfilScreen() {
   const [liste, setListe] = useState<AktiviteSatiri[] | null>(null);
   const [profil, setProfil] = useState<Profilim | null>(null);
   const hesap = useHesap();
+  const rotalar = useRotalarim();
+  const rotalariYenile = rotalar.yenile;
 
   // Sekmeye her dönüşte yenile (yeni kayıt, gönderilen kuyruk)
   useFocusEffect(
@@ -34,10 +38,11 @@ export default function ProfilScreen() {
           setProfil(pr);
         }
       })();
+      if (supabaseHazir) void rotalariYenile();
       return () => {
         acik = false;
       };
-    }, []),
+    }, [rotalariYenile]),
   );
 
   // Sunucu anahtarı yoksa tasarım örneği gösterilir; varsa gerçek kayıtlar (+ telefonda bekleyenler)
@@ -162,6 +167,25 @@ export default function ProfilScreen() {
           ))}
         </View>
 
+        {tab === 1 ? (
+          <View style={{ padding: space.md, gap: space.sm }}>
+            <Button label="Yeni rota çiz" icon="route" variant="outline" href="/rota/olustur" />
+            {!supabaseHazir ? <Txt variant="muted">Rotalar sunucuda saklanır; sunucu anahtarı girilmemiş.</Txt> : null}
+            {rotalar.hata ? <Txt style={{ color: colors.terraInk }}>{rotalar.hata}</Txt> : null}
+            {rotalar.liste && rotalar.liste.length === 0 && supabaseHazir ? (
+              <Txt variant="muted" style={{ textAlign: 'center', paddingVertical: space.lg }}>
+                Henüz rotan yok. Haritada çiz ya da bir aktiviteni rota olarak kaydet.
+              </Txt>
+            ) : null}
+            {rotalar.liste?.map((r) => (
+              <RotaSatiri key={r.id} rota={r} onPress={() => router.push({ pathname: '/rota/[id]', params: { id: r.id } })} />
+            ))}
+          </View>
+        ) : tab === 2 ? (
+          <Txt variant="muted" style={{ textAlign: 'center', padding: space.lg }}>
+            Gruplar sonraki aşamada geliyor.
+          </Txt>
+        ) : (
         <View style={{ padding: space.md, gap: space.sm }}>
           {liste && satirlar.length === 0 ? (
             <Txt variant="muted" style={{ textAlign: 'center', paddingVertical: space.lg }}>
@@ -181,6 +205,7 @@ export default function ProfilScreen() {
             </Pressable>
           ))}
         </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

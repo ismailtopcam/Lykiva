@@ -79,7 +79,8 @@ npm test -w @lykiva/shared   # GPS hesaplama testleri
 2. **Tasarımın koda dökülmesi** — 18 ekran örnek verilerle, MapLibre haritası, web için Dockerfile.
 3. **Gerçek GPS kaydı** — ekran kapalıyken de kayıt (arka plan konum), duraklat/devam, mesafe/hız/tırmanış/mola hesapları (birim testli), çevrimdışı kuyruk, Supabase'e kaydetme, güvenlik kuralları (RLS), geçici (anonim) giriş, aktivite özeti ve hız/mola sayfası gerçek veriden.
 4. **Google / Apple girişi** — iOS'ta yerel Apple girişi, Google için tarayıcı (PKCE). Geçici hesaba kimlik bağlanır, kayıtlar kaybolmaz; o kimlik başka hesaptaysa kayıtlar oraya taşınır. Açılışta giriş ekranı ("Şimdilik geç" ile atlanabilir), ayarlarda hesap ve çıkış.
-5. Sırada: rota seçip "kalan km / varış süresi", paylaşım kartı.
+5. **Rotalar** — haritaya dokunarak rota çizme (patikaya / yola yapış: BRouter + OSM, ya da serbest), zemin dağılımı, tırmanış, tahmini yürüyüş süresi (Tobler); aktiviteyi rota olarak kaydetme; kayıtta rota takibi: kalan km, tahmini varış, rotadan sapma uyarısı (internetsiz de çalışır).
+6. Sırada: paylaşım kartı, 3B sayfası gerçek veriye.
 
 ## Sunucu
 

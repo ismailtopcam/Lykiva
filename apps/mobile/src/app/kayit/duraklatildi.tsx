@@ -16,7 +16,7 @@ const n = colors.night;
 
 export default function DuraklatildiScreen() {
   const insets = useSafeAreaInsets();
-  const { kayit, stats, aktifS, simdi } = useCanliVeri();
+  const { kayit, stats, aktifS, simdi, rota } = useCanliVeri();
   const [kaydediyor, setKaydediyor] = useState(false);
 
   if (kayit.durum === 'bos' && !kaydediyor) return <Redirect href="/kayit" />;
@@ -73,6 +73,12 @@ export default function DuraklatildiScreen() {
         <Stat label="Ort. hız" value={formatSpeedKmh(stats.avgMovingSpeed)} color={n.text} muted={n.textMuted} />
         <Stat label="Maks. hız" value={formatSpeedKmh(stats.maxSpeed)} color={n.text} muted={n.textMuted} />
       </View>
+
+      {rota ? (
+        <Txt style={{ textAlign: 'center', fontSize: 14, color: n.text, fontFamily: fontFamily.bodySemiBold, marginTop: -8, marginBottom: 16 }}>
+          {rota.ad}: {formatKm(rota.remainingM)} km kaldı
+        </Txt>
+      ) : null}
 
       <Txt variant="small" color={n.textMuted} style={{ textAlign: 'center' }}>
         Bu mola, kaydın “Hız & molalar” sayfasında yeriyle birlikte görünecek. Duraklatmadan verdiğin 1 dakikadan uzun molalar da otomatik bulunur.
