@@ -15,6 +15,7 @@ import * as TaskManager from 'expo-task-manager';
 import { useSyncExternalStore } from 'react';
 import { Platform } from 'react-native';
 
+import { hemenYayinla, konumYayinla, paylasimiBitir, type PaylasimGrubu } from './canliPaylasim';
 import { kuyrugaEkle, kuyruguGonder, sunucuIdsi } from './kuyruk';
 import { paketOlustur } from './paket';
 
@@ -41,6 +42,8 @@ export type Kayit = {
   rota: KayitRotasi | null;
   /** Rotadaki son ilerleme */
   rotaIlerleme: RouteProgress | null;
+  /** Canlı konumun paylaşıldığı grup (yoksa paylaşılmıyor) */
+  paylasim: PaylasimGrubu | null;
 };
 
 export type KayitRotasi = { id: string; name: string; points: RoutePoint[] };
@@ -57,6 +60,7 @@ const BOS: Kayit = {
   sonKonum: null,
   rota: null,
   rotaIlerleme: null,
+  paylasim: null,
 };
 
 // Hazırlanmış rota (birikmiş mesafeler) — rota başına bir kez hesaplanır
@@ -138,6 +142,18 @@ function noktalarEkle(locs: Location.LocationObject[]) {
   }
   segments[segments.length - 1] = seg;
   degistir({ segments, sonKonum, rotaIlerleme });
+  if (kayit.paylasim) konumYayinla(paylasimDurumu());
+}
+
+function paylasimDurumu() {
+  return {
+    grup: kayit.paylasim,
+    activity: kayit.activity,
+    segments: kayit.segments,
+    baslangic: kayit.baslangic,
+    duraklatildi: kayit.durum === 'duraklatildi',
+    sonKonum: kayit.sonKonum,
+  };
 }
 
 // Arka plan görevi modül yüklenirken tanımlanmalı (kök düzende içe aktarılır)
@@ -197,7 +213,7 @@ async function izlemeyiDurdur() {
 
 export class IzinHatasi extends Error {}
 
-export async function baslat(activity: ActivityType, rota: KayitRotasi | null = null) {
+export async function baslat(activity: ActivityType, rota: KayitRotasi | null = null, paylasim: PaylasimGrubu | null = null) {
   const fg = await Location.requestForegroundPermissionsAsync();
   if (!fg.granted) throw new IzinHatasi('Konum izni verilmedi. Ayarlar > Lykiva > Konum bölümünden açabilirsin.');
   degistir({
@@ -210,7 +226,9 @@ export async function baslat(activity: ActivityType, rota: KayitRotasi | null = 
     sonKonum: kayit.sonKonum,
     rota,
     rotaIlerleme: rota && kayit.sonKonum ? trackOnRoute(hazir(rota), kayit.sonKonum) : null,
+    paylasim,
   });
+  if (paylasim) hemenYayinla(paylasimDurumu());
   const arkaPlan = await izlemeyiBaslat();
   degistir({ arkaPlan });
 }
@@ -219,6 +237,7 @@ export async function duraklat() {
   if (kayit.durum !== 'kayitta') return;
   await izlemeyiDurdur();
   degistir({ durum: 'duraklatildi', duraklatmaBaslangic: Date.now() });
+  if (kayit.paylasim) hemenYayinla(paylasimDurumu());
 }
 
 export async function devamEt() {
@@ -227,6 +246,7 @@ export async function devamEt() {
   const segments = son && son.length === 0 ? kayit.segments : [...kayit.segments, []];
   const duraklamaToplam = kayit.duraklamaToplam + (kayit.duraklatmaBaslangic ? Date.now() - kayit.duraklatmaBaslangic : 0);
   degistir({ durum: 'kayitta', duraklatmaBaslangic: null, duraklamaToplam, segments });
+  if (kayit.paylasim) hemenYayinla(paylasimDurumu());
   const arkaPlan = await izlemeyiBaslat();
   degistir({ arkaPlan });
 }
@@ -239,7 +259,9 @@ export async function bitir(title?: string): Promise<string | null> {
   await izlemeyiDurdur();
   const paket = paketOlustur({ clientId: kayit.clientId, activity: kayit.activity, segments: kayit.segments, title, routeId: kayit.rota?.id });
   const clientId = kayit.clientId;
+  const paylasiyordu = !!kayit.paylasim;
   degistir({ ...BOS, sonKonum: kayit.sonKonum });
+  if (paylasiyordu) void paylasimiBitir();
   if (!paket) return null;
   await kuyrugaEkle(paket);
   try {
@@ -252,7 +274,9 @@ export async function bitir(title?: string): Promise<string | null> {
 
 export async function iptalEt() {
   await izlemeyiDurdur();
+  const paylasiyordu = !!kayit.paylasim;
   degistir({ ...BOS, sonKonum: kayit.sonKonum });
+  if (paylasiyordu) void paylasimiBitir();
 }
 
 function abone(f: () => void) {

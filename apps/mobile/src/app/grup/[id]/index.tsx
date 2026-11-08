@@ -18,6 +18,7 @@ import {
   davetKoduYenile,
   davetMetni,
   grubaKatil,
+  grupCanliSayisi,
   grupDetayi,
   grupEtiketi,
   grupRengi,
@@ -59,6 +60,7 @@ function GercekGrup({ id }: { id: string }) {
   const [etkinlikler, setEtkinlikler] = useState<EtkinlikOzeti[]>([]);
   // Geçmiş etkinlikleri soluk göstermek için yükleme anı (render sırasında saat okunmaz)
   const [yuklenme, setYuklenme] = useState(0);
+  const [canliSayisi, setCanliSayisi] = useState(0);
   const [sekme, setSekme] = useState<Sekme>('etkinlikler');
   const [hata, setHata] = useState<string | null>(null);
   const [mesgul, setMesgul] = useState(false);
@@ -77,6 +79,7 @@ function GercekGrup({ id }: { id: string }) {
         yonetici ? bekleyenIstekler(id) : Promise.resolve([]),
         uye ? grupEtkinlikleri(id).catch(() => []) : Promise.resolve([]),
       ]);
+      if (uye) void grupCanliSayisi(id).then(setCanliSayisi).catch(() => undefined);
       setUyeler(u);
       setRotalar(r);
       setIstekler(i);
@@ -185,6 +188,7 @@ function GercekGrup({ id }: { id: string }) {
   const kisayollar: { label: string; icon: IconName; onPress: () => void; dark?: boolean }[] = uye
     ? [
         { label: 'Sohbet', icon: 'chat', dark: true, onPress: () => router.push({ pathname: '/grup/[id]/sohbet', params: { id: grup.id } }) },
+        { label: canliSayisi ? `Canlı (${canliSayisi})` : 'Canlı harita', icon: 'pin', onPress: () => router.push({ pathname: '/canli-harita', params: { grup: grup.id } }) },
         { label: 'Etkinlik', icon: 'calendar', onPress: () => router.push({ pathname: '/etkinlik/olustur', params: { grup: grup.id } }) },
         { label: 'Rota paylaş', icon: 'route', onPress: () => router.push({ pathname: '/grup/[id]/rota-paylas', params: { id: grup.id } }) },
         ...(yonetici ? [{ label: 'Davet et', icon: 'share' as IconName, onPress: () => void davetEt() }] : []),

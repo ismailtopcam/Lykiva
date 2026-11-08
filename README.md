@@ -84,7 +84,8 @@ npm test -w @lykiva/shared   # GPS hesaplama testleri
 7. **3B görünüm** — aktivitenin gerçek izi gerçek yüksekliklerle: sürükleyerek döndür/eğ, yükseklik abartısı (1x gerçek, 3x, 10x), eğime göre renk, yükseklik profilinde imleçle konum/yükseklik/eğim/hız. İnternetsiz çalışır.
 8. **Gruplar** — özel grup (davet kodu / bağlantısı) ve açık topluluk (keşfet, doğrudan ya da onaylı katılım), üyeler ve yönetici işlemleri, gruba rota paylaşma, canlı grup sohbeti (Supabase Realtime) ve okunmamış sayısı; "Gruplarım" görünürlüğü.
 9. **Etkinlikler** — gruba bağlı ya da herkese açık etkinlik: tarih/saat, buluşma noktası, rota, seviye, kontenjan; Katılıyorum / Belki / Gelemem, dolunca bekleme listesi (yer açılınca otomatik), grup sohbetinde etkinlik kartı, grup sayfasında Etkinlikler, Gruplar sekmesinde yaklaşanlar.
-10. Sırada: canlı konum, birlikte yapılan aktivite, bildirimler, web paylaşım sayfası.
+10. **Canlı konum** — kayıt başlatırken isteğe bağlı olarak bir grupla son konumu paylaşma (≈15 sn’de bir, arka planda da), duraklatınca "molada", kayıt bitince silinir; grubun canlı haritası (10 sn’de bir yenilenir), grup sayfası ve sohbetten erişim.
+11. Sırada: birlikte yapılan aktivite, bildirimler, web paylaşım sayfası.
 
 ## Sunucu
 

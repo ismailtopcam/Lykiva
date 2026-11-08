@@ -86,6 +86,19 @@ export default function CanliTakipScreen() {
             <Txt style={styles.warnText}>GPS sinyali zayıf — açık gökyüzü gören bir yerde düzelir.</Txt>
           </View>
         ) : null}
+        {kayit.paylasim ? (
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel={`Konumun ${kayit.paylasim.ad} grubuyla canlı paylaşılıyor. Grup haritasını aç`}
+            onPress={() => router.push({ pathname: '/canli-harita', params: { grup: kayit.paylasim!.id } })}
+            style={styles.paylasim}>
+            <View style={[styles.dot, { backgroundColor: n.sea }]} />
+            <Txt style={[styles.pillText, { flex: 1 }]} numberOfLines={1}>
+              Canlı paylaşılıyor · {kayit.paylasim.ad}
+            </Txt>
+            <Txt style={[styles.pillText, { color: n.sea }]}>Harita</Txt>
+          </Pressable>
+        ) : null}
 
         <View style={{ alignItems: 'center' }}>
           <Txt variant="label" color={n.textMuted}>
@@ -151,6 +164,7 @@ export default function CanliTakipScreen() {
 }
 
 const styles = StyleSheet.create({
+  paylasim: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, height: 36, borderRadius: 12, backgroundColor: n.surface, marginBottom: 10 },
   root: { flex: 1, backgroundColor: n.ground },
   pill: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: 'rgba(14,21,18,0.85)' },
   pillText: { fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: n.text },
