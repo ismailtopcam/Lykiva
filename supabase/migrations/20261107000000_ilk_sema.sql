@@ -1,8 +1,9 @@
--- Lykiva — ilk şema TASLAĞI
--- Durum: henüz hiçbir Supabase projesine uygulanmadı. 2. aşamada gözden geçirilip uygulanacak.
+-- Lykiva — ilk şema
+-- Kendi sunucumuzdaki Supabase'e (Coolify, api.lykiva.ismailtopcam.dev) uygulanır.
 -- Konum verileri PostGIS ile tutulur (SRID 4326, WGS84).
 
-create extension if not exists postgis;
+-- Supabase'in önerdiği gibi eklentiler "extensions" şemasına kurulur (arama yolunda var).
+create extension if not exists postgis with schema extensions;
 
 -- ---------------------------------------------------------------------------
 -- Türler
