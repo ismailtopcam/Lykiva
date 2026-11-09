@@ -1,9 +1,19 @@
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { akisGetir, begen, kisiAra, SAYFA, simdikiKonum, type AkisFiltresi, type AkisOgesi, type KisiOzeti } from '@/akis/akis';
+import {
+  aktiviteDegisikliginiDinle,
+  akisGetir,
+  begen,
+  kisiAra,
+  SAYFA,
+  simdikiKonum,
+  type AkisFiltresi,
+  type AkisOgesi,
+  type KisiOzeti,
+} from '@/akis/akis';
 import { AkisKarti } from '@/components/AkisKarti';
 import { IconButton } from '@/components/IconButton';
 import { KisiSatiri } from '@/components/KisiSatiri';
@@ -81,6 +91,15 @@ function GercekAkis() {
       if (istekNo.current === 0) void ilkSayfa(filtre);
       else if (sonYukleme.current && Date.now() - sonYukleme.current > TAZELIK_MS) void ilkSayfa(filtre, true);
     }, [filtre, ilkSayfa]),
+  );
+
+  // Yorum / beğeni başka ekranda (yorumlar, aktivite detayı) değişince kartı güncelle
+  useEffect(
+    () =>
+      aktiviteDegisikliginiDinle((id, d) => {
+        setListe((x) => (x?.some((o) => o.id === id) ? x.map((o) => (o.id === id ? { ...o, ...d } : o)) : x));
+      }),
+    [],
   );
 
   function filtreSec(f: AkisFiltresi) {

@@ -8,6 +8,7 @@ import { ElevationProfile } from '@/components/charts';
 import { FloatingHeader } from '@/components/Header';
 import { Icon } from '@/components/Icon';
 import { TopoMap } from '@/components/map/TopoMap';
+import { SosyalSatiri } from '@/components/SosyalSatiri';
 import { Txt } from '@/components/Txt';
 import { Button } from '@/components/ui';
 import { useAktivite } from '@/data/aktivite';
@@ -89,6 +90,8 @@ export default function AktiviteOzetiScreen() {
             </Txt>
           ) : null}
         </View>
+
+        <SosyalSatiri id={a.id} />
 
         <View style={styles.grid}>
           {cells.map(([l, v, hi]) => (

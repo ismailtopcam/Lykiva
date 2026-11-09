@@ -220,6 +220,47 @@ bekle('C, geçici hesabın grubuna üye oldu', uye === true, uye);
 const kalan = (await db.query(`select (select count(*) from follows where follower_id = '${G}' or followee_id = '${G}')::int as f, (select count(*) from group_members where user_id = '${G}')::int as g`)).rows[0];
 bekle('Geçici hesapta takip/üyelik kalmadı', kalan.f === 0 && kalan.g === 0, kalan);
 
+console.log('\nYorumlar');
+async function hataMesaji(fn) {
+  try {
+    await fn();
+    return null;
+  } catch (e) {
+    return e.message;
+  }
+}
+let y = (await olarak(C, `select yorum_yaz($1, $2) as j`, [aKas, '  Harika rota!  '])).rows[0].j;
+bekle('C açık aktiviteye yorum yazar; boşluklar kırpılır, adı gelir', y.body === 'Harika rota!' && y.display_name === 'Cem Kaya' && y.mine === true, y);
+const yC = y.id;
+const yB = (await olarak(B, `select yorum_yaz($1, 'Ben de gitmek istiyorum') as j`, [aKas])).rows[0].j.id;
+let m = await hataMesaji(() => olarak(B, `select yorum_yaz($1, 'gizli?')`, [aOzel]));
+bekle('Göremediği aktiviteye yorum yazamaz', /göremiyorsun/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(B, `select yorum_yaz($1, '   ')`, [aKas]));
+bekle('Boş yorum reddedilir', /boş/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(B, `select yorum_yaz($1, $2)`, [aKas, 'x'.repeat(1001)]));
+bekle('1000 karakterden uzun yorum reddedilir', /1000/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(B, `insert into activity_comments (activity_id, user_id, body) values ($1, $2, 'doğrudan')`, [aKas, B]));
+bekle('Tabloya doğrudan yorum yazılamaz (sınırlar atlanamaz)', /permission denied/.test(m ?? ''), m);
+
+r = await olarak(A, `select aktivite_yorumlari($1) as j`, [aKas]);
+let yl = r.rows[0].j;
+bekle('Sahibi için: 2 yorum, eskiden yeniye, silme yetkisi var', yl.comment_count === 2 && yl.i_own_activity === true && yl.comments[0].id === yC && yl.comments[1].id === yB, yl);
+r = await olarak(B, `select aktivite_sosyal($1) as j`, [aOzel]);
+bekle('Göremediği aktivitenin sayıları gelmez', r.rows[0].j === null, r.rows[0].j);
+r = await olarak(C, `select aktivite_sosyal($1) as j`, [aKas]);
+bekle('aktivite_sosyal: 1 beğeni (B), 2 yorum, C beğenmedi', r.rows[0].j.like_count === 1 && r.rows[0].j.comment_count === 2 && r.rows[0].j.liked === false, r.rows[0].j);
+
+let silindi = (await olarak(B, `select yorum_sil($1) as s`, [yC])).rows[0].s;
+bekle('B, C\'nin yorumunu silemez', silindi === false, silindi);
+silindi = (await olarak(A, `select yorum_sil($1) as s`, [yB])).rows[0].s;
+bekle('Aktivitenin sahibi A, B\'nin yorumunu siler', silindi === true, silindi);
+silindi = (await olarak(C, `select yorum_sil($1) as s`, [yC])).rows[0].s;
+bekle('C kendi yorumunu siler', silindi === true, silindi);
+
+for (let i = 0; i < 10; i++) await olarak(C, `select yorum_yaz($1, $2)`, [aKas, `yorum ${i}`]);
+m = await hataMesaji(() => olarak(C, `select yorum_yaz($1, 'on birinci')`, [aKas]));
+bekle('Dakikada 10 yorumdan sonrası reddedilir', /hızlı/.test(m ?? ''), m);
+
 console.log('\nYetki');
 let anonHata = null;
 try {

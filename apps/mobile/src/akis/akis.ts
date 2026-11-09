@@ -114,6 +114,52 @@ export const kisiProfili = (id: string) => rpc<KisiProfili | null>('kisi_profili
 export const kisiAra = (arama?: string) => rpc<KisiOzeti[]>('kisi_ara', { arama: arama?.trim() || null });
 export const takipListesi = (kisi: string, yon: 'takipci' | 'takip') => rpc<KisiOzeti[]>('takip_listesi', { kisi, yon });
 
+/* ------------------------------------------------------------------ */
+/* Yorumlar (supabase/migrations/20261110010000_yorumlar.sql)          */
+/* ------------------------------------------------------------------ */
+
+export type Yorum = {
+  id: string;
+  user_id: string;
+  display_name: string;
+  username: string;
+  body: string;
+  created_at: string;
+  mine: boolean;
+};
+
+export type Sosyal = { like_count: number; comment_count: number; liked: boolean };
+export type YorumSayfasi = Sosyal & { i_own_activity: boolean; comments: Yorum[] };
+
+export const YORUM_SINIRI = 1000;
+
+/** Yalnızca sunucudaki aktivitelerin yorumu olur (örnek ve telefonda bekleyen kayıtların olmaz) */
+export const sunucuAktivitesiMi = (id: string | undefined): id is string => !!id && /^[0-9a-f-]{36}$/i.test(id);
+
+export const aktiviteSosyal = (id: string) => rpc<Sosyal | null>('aktivite_sosyal', { aktivite: id });
+export const aktiviteYorumlari = (id: string) => rpc<YorumSayfasi | null>('aktivite_yorumlari', { aktivite: id });
+export const yorumYaz = (id: string, metin: string) => rpc<Yorum>('yorum_yaz', { aktivite: id, metin });
+export const yorumSil = (yorum: string) => rpc<boolean>('yorum_sil', { yorum });
+
+/* ------------------------------------------------------------------ */
+/* Ekranlar arası güncelleme: yorum / beğeni başka ekranda değişince   */
+/* akış kartı yeniden yüklemeden güncellenir                           */
+/* ------------------------------------------------------------------ */
+
+export type AktiviteDegisikligi = Partial<Sosyal>;
+const dinleyiciler = new Set<(id: string, d: AktiviteDegisikligi) => void>();
+
+export function aktiviteDegisti(id: string, d: AktiviteDegisikligi) {
+  dinleyiciler.forEach((f) => f(id, d));
+}
+
+export function aktiviteDegisikliginiDinle(f: (id: string, d: AktiviteDegisikligi) => void) {
+  dinleyiciler.add(f);
+  return () => {
+    dinleyiciler.delete(f);
+  };
+}
+
 export type KisiAktivitesi = {
   id: string;
   title: string;

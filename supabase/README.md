@@ -16,10 +16,12 @@ gerçek durum için aşağıdaki `uygula.sh` (durum modu) ya da `node scripts/su
 | `20261109040000_etkinlikler.sql` | Etkinlik ve katılım kuralları, `etkinlik_olustur`, `etkinlik_detay`, `katilim_bildir` (kontenjan + bekleme listesi), `grup_etkinlikleri`, `yaklasan_etkinlikler`, `etkinlik_sil` | doğrulanmadı — `uygula.sh` ile bak |
 | `20261109050000_canli_konum.sql` | Canlı konum kuralları (yalnızca grup üyeleri, 15 dk tazelik), `canli_konum_gonder`, `canli_konum_bitir`, `grup_canli_konumlari`, `grup_canli_sayisi`; gruptan ayrılınca paylaşım silinir | doğrulanmadı — `uygula.sh` ile bak |
 | `20261110000000_akis_takip.sql` | Akış (`akis`: takip ettiklerim / gruplarım / yakınımda, sayfalı), `kisi_profili`, `kisi_ara` (geçici hesaplar görünmez), `takip_listesi`; hesap devrinde takipler, grup üyelikleri, etkinlik katılımları ve mesajlar da taşınır | **henüz uygulanmadı** |
+| `20261110010000_yorumlar.sql` | Yorumlar: `yorum_yaz` (1–1000 karakter, dakikada en fazla 10), `yorum_sil` (yazan ya da aktivitenin sahibi), `aktivite_yorumlari`, `aktivite_sosyal` (beğeni / yorum sayısı); tabloya doğrudan yorum yazma kapalı | **henüz uygulanmadı** |
 
 Tüm tabloların kuralları yazıldı (son: canlı konum, `20261109050000_canli_konum.sql`). Gruplar ve mesajlar `20261109030000_gruplar.sql` ile açılır.
 
 Takip etme / bırakma ve beğeni doğrudan tablo yazımıyla yapılır (`follows`, `activity_likes`; kurallar `20261108000000`'de).
+Yorum ise yalnızca `yorum_yaz` / `yorum_sil` ile yazılır ve silinir (uzunluk ve hız sınırı atlanamasın diye).
 
 **Gizlilik:** Ham GPS noktalarını yalnızca sahibi okur. Başkalarına gösterilen iz, `hide_endpoints`
 açıksa baştan ve sondan 200 m kırpılır (ev / iş adresi görünmesin diye).
@@ -56,7 +58,7 @@ npm run test:sql
 
 Bellekte PGlite + PostGIS ile boş bir veritabanı açar, Supabase'in `auth` şemasını ve rollerini taklit eder,
 tüm migration'ları sırayla uygular ve farklı kullanıcılar adına senaryoları dener (`supabase/test/dene.mjs`):
-akış süzgeçleri, görünürlük kuralları, baş/son 200 m kırpma, beğeni, sayfalama, kişi arama, hesap devri, yetkiler.
+akış süzgeçleri, görünürlük kuralları, baş/son 200 m kırpma, beğeni, sayfalama, kişi arama, hesap devri, yorumlar, yetkiler.
 Gerçek Supabase'in birebir aynısı değildir (GoTrue, Realtime yok). Yeni migration eklenince senaryoları da eklenmeli.
 
 ## Sunucuyu Mac'ten kontrol etmek
