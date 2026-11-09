@@ -20,6 +20,7 @@ import { KisiSatiri } from '@/components/KisiSatiri';
 import { Logo } from '@/components/Logo';
 import { OrnekAkis } from '@/components/OrnekAkis';
 import { Txt } from '@/components/Txt';
+import { ZilDugmesi } from '@/components/ZilDugmesi';
 import { Button, Card, Chip } from '@/components/ui';
 import type { LngLat } from '@/data/ornek';
 import { supabaseHazir } from '@/lib/supabase';
@@ -152,6 +153,7 @@ function GercekAkis() {
         <View style={{ flexDirection: 'row' }}>
           <IconButton icon="search" label="Kişi ara" onPress={() => router.push('/kisiler')} />
           <IconButton icon="chat" label="Grup sohbetleri" onPress={() => router.push('/gruplar')} />
+          <ZilDugmesi />
         </View>
       </View>
 

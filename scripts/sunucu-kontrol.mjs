@@ -71,6 +71,7 @@ const asamalar = [
   ['20261110000000_akis_takip', 'akis', {}],
   ['20261110010000_yorumlar', 'yorum_yaz', {}],
   ['20261110020000_paylasim_baglantisi', 'paylasilan_aktivite', { anahtar: '0'.repeat(32) }],
+  ['20261110030000_bildirimler', 'bildirim_sayisi', {}],
 ];
 for (const [dosya, fn, govde] of asamalar) {
   try {
