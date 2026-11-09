@@ -2,20 +2,24 @@
 
 Kendi sunucumuzda (Coolify, `lykiva-supabase` servisi): https://api.lykiva.ismailtopcam.dev
 
-`migrations/` altındaki SQL dosyaları sırayla uygulanır:
+`migrations/` altındaki SQL dosyaları sırayla uygulanır. "Sunucuda" sütunu elle tutulur ve geride kalabilir;
+gerçek durum için aşağıdaki `uygula.sh` (durum modu) ya da `node scripts/sunucu-kontrol.mjs` kullanılır.
 
 | Dosya | İçerik | Sunucuda |
 | --- | --- | --- |
 | `20261107000000_ilk_sema.sql` | Tablolar, PostGIS, RLS açık | uygulandı |
 | `20261108000000_kayit_ve_kurallar.sql` | Profil tetikleyicisi, aktivite/rota/takip kuralları, `kaydet_aktivite`, `aktivite_detay`, `aktivite_ozetleri` | uygulandı (8 Kasım 2026) |
-| `20261109000000_giris.sql` | Hesap devri: `devir_kodu_al`, `hesabi_devral` (geçici hesaptaki kayıtları asıl hesaba taşır) | **henüz uygulanmadı** |
+| `20261109000000_giris.sql` | Hesap devri: `devir_kodu_al`, `hesabi_devral` (geçici hesaptaki kayıtları asıl hesaba taşır) | doğrulanmadı — `uygula.sh` ile bak |
 | `20261109010000_rotalar.sql` | `kaydet_rota`, `aktiviteden_rota`, `rota_ozetleri`; aktiviteye `route_id` | uygulandı (8 Kasım 2026) |
-| `20261109020000_paylasim.sql` | `aktivite_noktalari` (GPX dışa aktarımı; yalnızca sahibi nokta alır) | **henüz uygulanmadı** |
-| `20261109030000_gruplar.sql` | Grup / üyelik / sohbet kuralları, davet kodu, katılma istekleri, okundu bilgisi, gruba rota paylaşma, "gruplar" görünürlüğü; `messages` Realtime yayınında | **henüz uygulanmadı** |
-| `20261109040000_etkinlikler.sql` | Etkinlik ve katılım kuralları, `etkinlik_olustur`, `etkinlik_detay`, `katilim_bildir` (kontenjan + bekleme listesi), `grup_etkinlikleri`, `yaklasan_etkinlikler`, `etkinlik_sil` | **henüz uygulanmadı** |
-| `20261109050000_canli_konum.sql` | Canlı konum kuralları (yalnızca grup üyeleri, 15 dk tazelik), `canli_konum_gonder`, `canli_konum_bitir`, `grup_canli_konumlari`, `grup_canli_sayisi`; gruptan ayrılınca paylaşım silinir | **henüz uygulanmadı** |
+| `20261109020000_paylasim.sql` | `aktivite_noktalari` (GPX dışa aktarımı; yalnızca sahibi nokta alır) | uygulandı (8 Kasım 2026, elle) |
+| `20261109030000_gruplar.sql` | Grup / üyelik / sohbet kuralları, davet kodu, katılma istekleri, okundu bilgisi, gruba rota paylaşma, "gruplar" görünürlüğü; `messages` Realtime yayınında | doğrulanmadı — `uygula.sh` ile bak |
+| `20261109040000_etkinlikler.sql` | Etkinlik ve katılım kuralları, `etkinlik_olustur`, `etkinlik_detay`, `katilim_bildir` (kontenjan + bekleme listesi), `grup_etkinlikleri`, `yaklasan_etkinlikler`, `etkinlik_sil` | doğrulanmadı — `uygula.sh` ile bak |
+| `20261109050000_canli_konum.sql` | Canlı konum kuralları (yalnızca grup üyeleri, 15 dk tazelik), `canli_konum_gonder`, `canli_konum_bitir`, `grup_canli_konumlari`, `grup_canli_sayisi`; gruptan ayrılınca paylaşım silinir | doğrulanmadı — `uygula.sh` ile bak |
+| `20261110000000_akis_takip.sql` | Akış (`akis`: takip ettiklerim / gruplarım / yakınımda, sayfalı), `kisi_profili`, `kisi_ara` (geçici hesaplar görünmez), `takip_listesi`; hesap devrinde takipler, grup üyelikleri, etkinlik katılımları ve mesajlar da taşınır | **henüz uygulanmadı** |
 
 Tüm tabloların kuralları yazıldı (son: canlı konum, `20261109050000_canli_konum.sql`). Gruplar ve mesajlar `20261109030000_gruplar.sql` ile açılır.
+
+Takip etme / bırakma ve beğeni doğrudan tablo yazımıyla yapılır (`follows`, `activity_likes`; kurallar `20261108000000`'de).
 
 **Gizlilik:** Ham GPS noktalarını yalnızca sahibi okur. Başkalarına gösterilen iz, `hide_endpoints`
 açıksa baştan ve sondan 200 m kırpılır (ev / iş adresi görünmesin diye).
@@ -43,6 +47,17 @@ Tek bir dosyayı elle uygulamak için:
 curl -fsSL https://raw.githubusercontent.com/ismailtopcam/Lykiva/main/supabase/migrations/<dosya>.sql \
   | docker exec -i supabase-db-nqyujqqkkjyba4flthzcf9uf psql -U postgres -v ON_ERROR_STOP=1 -1
 ```
+
+## Migration'ları sunucuya göndermeden denemek
+
+```bash
+npm run test:sql
+```
+
+Bellekte PGlite + PostGIS ile boş bir veritabanı açar, Supabase'in `auth` şemasını ve rollerini taklit eder,
+tüm migration'ları sırayla uygular ve farklı kullanıcılar adına senaryoları dener (`supabase/test/dene.mjs`):
+akış süzgeçleri, görünürlük kuralları, baş/son 200 m kırpma, beğeni, sayfalama, kişi arama, hesap devri, yetkiler.
+Gerçek Supabase'in birebir aynısı değildir (GoTrue, Realtime yok). Yeni migration eklenince senaryoları da eklenmeli.
 
 ## Sunucuyu Mac'ten kontrol etmek
 
