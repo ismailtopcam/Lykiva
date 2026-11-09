@@ -1,19 +1,22 @@
 import { ACTIVITY_LABELS } from '@lykiva/shared';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { birlikteKisileri, sunucuAktivitesiMi } from '@/akis/akis';
 import { ElevationProfile } from '@/components/charts';
 import { FloatingHeader } from '@/components/Header';
 import { Icon } from '@/components/Icon';
 import { TopoMap } from '@/components/map/TopoMap';
 import { SosyalSatiri } from '@/components/SosyalSatiri';
 import { Txt } from '@/components/Txt';
-import { Button } from '@/components/ui';
-import { useAktivite } from '@/data/aktivite';
+import { AvatarStack, Button } from '@/components/ui';
+import { adListesi, birlikteKisiler, useAktivite } from '@/data/aktivite';
+import type { Activity, BirlikteKisi } from '@/data/ornek';
 import { aktivitedenRota } from '@/data/rota';
-import { people } from '@/data/ornek';
+import { basHarfler, grupRengi } from '@/grup/gruplar';
+import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space } from '@/theme';
 
 export default function AktiviteOzetiScreen() {
@@ -84,11 +87,7 @@ export default function AktiviteOzetiScreen() {
           <Txt variant="display" style={{ fontSize: 25, marginVertical: 2 }} accessibilityRole="header">
             {a.title}
           </Txt>
-          {a.with.length ? (
-            <Txt variant="muted" style={{ fontSize: 13 }}>
-              {a.with.map((p) => people[p].short).join(', ').replace(/, ([^,]*)$/, ' ve $1')} ile birlikte
-            </Txt>
-          ) : null}
+          <BirlikteSatiri a={a} />
         </View>
 
         <SosyalSatiri id={a.id} />
@@ -169,7 +168,48 @@ export default function AktiviteOzetiScreen() {
   );
 }
 
+/** "Cem ve Burak ile birlikte" (dokununca kişi listesi / ekleme); kendi aktivitende kimse yoksa "Birlikte yaptığın kişileri ekle" */
+function BirlikteSatiri({ a }: { a: Activity }) {
+  const sunucu = supabaseHazir && sunucuAktivitesiMi(a.id);
+  // Kişi ekleme ekranından dönünce liste tazelensin
+  const [taze, setTaze] = useState<BirlikteKisi[] | null>(null);
+  useFocusEffect(
+    useCallback(() => {
+      if (!sunucu) return;
+      let acik = true;
+      birlikteKisileri(a.id)
+        .then((l) => acik && setTaze(l.map((k) => ({ id: k.user_id, ad: k.display_name, kisa: k.display_name.split(' ')[0], kullanici: k.username, me: k.me }))))
+        .catch(() => undefined);
+      return () => {
+        acik = false;
+      };
+    }, [a.id, sunucu]),
+  );
+  const kisiler = taze ?? birlikteKisiler(a);
+  if (!kisiler.length && !(a.mine && sunucu)) return null;
+  const metin = kisiler.length ? `${adListesi(kisiler.map((k) => (k.me ? 'sen' : k.kisa)))} ile birlikte` : 'Birlikte yaptığın kişileri ekle';
+  return (
+    <Pressable
+      accessibilityRole={sunucu ? 'link' : undefined}
+      accessibilityLabel={sunucu ? `${metin}, kişileri aç` : metin}
+      disabled={!sunucu}
+      onPress={() => router.push({ pathname: '/aktivite/[id]/birlikte', params: { id: a.id } })}
+      style={styles.birlikte}>
+      {kisiler.length ? (
+        <AvatarStack items={kisiler.slice(0, 4).map((k) => ({ initials: basHarfler(k.ad), tone: grupRengi(k.id ?? k.kullanici) }))} size={26} bg={colors.ground} />
+      ) : (
+        <Icon name="users" size={20} color={colors.terra} />
+      )}
+      <Txt style={{ flex: 1, fontSize: 14, fontFamily: kisiler.length ? fontFamily.body : fontFamily.bodySemiBold, color: kisiler.length ? colors.inkMuted : colors.terra }} numberOfLines={2}>
+        {metin}
+      </Txt>
+      {sunucu ? <Icon name="chevron" size={18} color={colors.inkMuted} strokeWidth={2} /> : null}
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
+  birlikte: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 40, marginTop: 4 },
   root: { flex: 1, backgroundColor: colors.ground },
   center: { alignItems: 'center', justifyContent: 'center', padding: space.lg },
   grid: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: space.lg, marginTop: 14, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: colors.lineStrong, backgroundColor: colors.lineStrong, gap: 1 },

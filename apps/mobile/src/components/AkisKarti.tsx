@@ -11,7 +11,7 @@ import { Icon } from '@/components/Icon';
 import { IconButton } from '@/components/IconButton';
 import { TopoMap } from '@/components/map/TopoMap';
 import { Txt } from '@/components/Txt';
-import { Avatar, Card, Stat } from '@/components/ui';
+import { Avatar, AvatarStack, Card, Stat } from '@/components/ui';
 import { basHarfler, grupRengi } from '@/grup/gruplar';
 import { colors, fontFamily, space } from '@/theme';
 
@@ -21,6 +21,15 @@ const GORUNURLUK: Record<AkisOgesi['visibility'], string> = {
   groups: 'gruplara',
   private: 'sadece sen',
 };
+
+/** "Cem'le", "Cem ve 2 kişiyle"; etiketlendiysen "seninle" */
+function birlikteMetni(o: AkisOgesi) {
+  const n = o.with_count ?? 0;
+  if (!n || !o.with?.length) return '';
+  if (o.tagged_me) return n === 1 ? 'seninle' : `sen ve ${n - 1} kişiyle`;
+  const ilk = o.with[0].ad.split(' ')[0];
+  return n === 1 ? `${ilk} ile` : `${ilk} ve ${n - 1} kişiyle`;
+}
 
 type Props = {
   o: AkisOgesi;
@@ -43,6 +52,7 @@ function AkisKartiIc({ o, onBegen }: Props) {
         <Pressable accessibilityRole="link" onPress={kisiye} style={{ flex: 1, minWidth: 0 }}>
           <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14 }} numberOfLines={1}>
             {o.mine ? 'Sen' : o.owner_name}
+            {birlikteMetni(o) ? <Txt style={{ color: colors.inkMuted }}> · {birlikteMetni(o)}</Txt> : null}
           </Txt>
           <Txt variant="small" numberOfLines={1}>
             {akisZamani(o.started_at)}
@@ -78,9 +88,10 @@ function AkisKartiIc({ o, onBegen }: Props) {
         ) : null}
       </Pressable>
 
-      {o.stop_count ? (
+      {o.with?.length || o.stop_count ? (
         <View style={styles.meta}>
-          <Txt variant="small">{o.stop_count} mola</Txt>
+          {o.with?.length ? <AvatarStack items={o.with.map((k) => ({ initials: basHarfler(k.ad), tone: grupRengi(k.id) }))} size={26} /> : null}
+          <Txt variant="small">{[o.with?.length ? 'Birlikte yaptılar' : null, o.stop_count ? `${o.stop_count} mola` : null].filter(Boolean).join(' · ')}</Txt>
         </View>
       ) : null}
 

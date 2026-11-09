@@ -30,6 +30,10 @@ export type AkisOgesi = {
   liked: boolean;
   stop_count: number;
   mine: boolean;
+  /** Birlikte yapılanlar (ilk 3) ve toplam sayı; eski sunucuda gelmeyebilir */
+  with?: { id: string; ad: string }[];
+  with_count?: number;
+  tagged_me?: boolean;
 };
 
 export type KisiOzeti = {
@@ -159,6 +163,19 @@ export function aktiviteDegisikliginiDinle(f: (id: string, d: AktiviteDegisiklig
     dinleyiciler.delete(f);
   };
 }
+
+/* ------------------------------------------------------------------ */
+/* Birlikte yapılan aktivite (supabase/migrations/20261110040000_birlikte.sql) */
+/* ------------------------------------------------------------------ */
+
+export type BirlikteOnerisi = { user_id: string; display_name: string; username: string; activity_id: string; title: string | null; started_at: string };
+export type BirlikteKisisi = { user_id: string; display_name: string; username: string; me: boolean };
+
+export const birlikteKisileri = (id: string) => rpc<BirlikteKisisi[]>('birlikte_kisiler', { aktivite: id });
+/** Aynı saatlerde aynı yoldan geçen tanıdıklar (yalnızca sahibine) */
+export const birlikteOnerileri = (id: string) => rpc<BirlikteOnerisi[]>('birlikte_onerileri', { aktivite: id });
+export const birlikteEkle = (id: string, kisiler: string[]) => rpc<number>('birlikte_ekle', { aktivite: id, kisiler });
+export const birlikteCikar = (id: string, kisi: string) => rpc<boolean>('birlikte_cikar', { aktivite: id, kisi });
 
 export type KisiAktivitesi = {
   id: string;

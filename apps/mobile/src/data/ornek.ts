@@ -48,6 +48,8 @@ export const faralyaKabakRoute: LngLat[] = [
 
 export type Stop = { n: number; title: string; time: string; km: string; duration: string; note: string; at: number; coord?: LngLat };
 
+export type BirlikteKisi = { id: string | null; ad: string; kisa: string; kullanici: string; me?: boolean };
+
 export type Activity = {
   id: string;
   owner: string;
@@ -82,6 +84,8 @@ export type Activity = {
   /** Sunucudaki sahibinin kimliği ve adı (başkasının aktivitesinde kişi sayfasına bağlantı) */
   ownerId?: string;
   ownerName?: string;
+  /** Sunucudaki aktivitede birlikte yapılan kişiler (with alanı bunların kullanıcı adları) */
+  birlikte?: BirlikteKisi[];
   /** 3B görünüm için yükseklikli iz [boylam, enlem, yükseklik | null] */
   iz3b?: [number, number, number | null][];
   /** Mesafeye göre hız (km/sa): 3B sayfasında imlecin altındaki hız */

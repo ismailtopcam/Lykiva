@@ -9,7 +9,7 @@ import { AppState } from 'react-native';
 
 import { oturumuSagla, supabase, supabaseHazir } from '@/lib/supabase';
 
-export type BildirimTuru = 'takip' | 'begeni' | 'yorum' | 'katilim_istegi' | 'katilim_kabul' | 'etkinlik';
+export type BildirimTuru = 'takip' | 'begeni' | 'yorum' | 'katilim_istegi' | 'katilim_kabul' | 'etkinlik' | 'birlikte';
 
 export type Bildirim = {
   id: string;

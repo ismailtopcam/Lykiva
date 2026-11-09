@@ -90,7 +90,8 @@ npm run test:sql             # migration'ları bellekteki veritabanında dener (
 12. **Yorumlar** — aktiviteye yorum yazma (akış kartından ya da aktivite detayından), yazan ya da aktivitenin sahibi basılı tutarak siler; aktivite detayında beğeni ve yorum satırı; yorum / beğeni başka ekranda değişince akış kartı da güncellenir. Yorum 1–1000 karakter, dakikada en fazla 10.
 13. **Web paylaşım sayfası** — paylaşım stüdyosundaki "Bağlantı" ile aktivite için `lykiva.ismailtopcam.dev/a/<anahtar>` bağlantısı açılır ve telefonun paylaşım menüsüyle gönderilir; bağlantısı olan herkes giriş yapmadan web'de görür (rota, değerler, yükseklik profili). WhatsApp / Telegram / X önizlemesinde rota görseli çıkar. Sahibi bağlantıyı istediği an kapatır; başlangıç/bitiş gizliyse iz kırpılır, sayfa arama motorlarına kapalı.
 14. **Bildirimler (uygulama içi)** — yeni takipçi, beğeni, yorum, gruba katılma isteği ve kabulü, grupta yeni etkinlik; akışın üstündeki zilde okunmamış sayısı (yeni bildirim gelince canlı güncellenir), bildirimler ekranında dokununca ilgili sayfaya gider, takipçiye oradan geri takip. Telefona anlık bildirim (push) ayrı aşama.
-15. Sırada: telefona anlık bildirim (push), birlikte yapılan aktivite.
+15. **Birlikte yapılan aktivite** — aktivitenin sahibi birlikte gittiği kişileri ekler (takipleştiği ya da ortak grubu olanlar); aynı saatlerde aynı yoldan geçen tanıdıklar öneri olarak çıkar. Eklenen kişi bildirim alır, aktiviteyi görür, akışında çıkar ve kendini kaldırabilir. Akış kartında "Mert ve 2 kişiyle", aktivite detayında "Ayşe ve Mert ile birlikte", paylaşım kartında @kullanıcı adları.
+16. Sırada: telefona anlık bildirim (push).
 
 ## Sunucu
 

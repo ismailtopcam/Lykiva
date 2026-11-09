@@ -358,6 +358,47 @@ await olarak(A, `select bildirimleri_okundu_say()`);
 bekle('Okundu sayınca rozet sıfırlanır', onceA > 0 && (await sayi(A)) === 0, [onceA, await sayi(A)]);
 bekle('Okunanlar listede kalır', (await liste(A)).length >= 3 && (await liste(A)).every((x) => x.okundu), (await liste(A)).length);
 
+console.log('\nBirlikte yapılan aktivite');
+const D = 'd0000000-0000-0000-0000-00000000000d'; // A'yı tanımayan biri
+await db.exec(`insert into auth.users (id, is_anonymous, raw_user_meta_data) values ('${D}', false, '{"full_name":"Deniz Yabancı"}')`);
+// aKas ile aynı gün, aynı yerde: C (açık), B (özel), D (açık ama tanıdık değil)
+await aktivite(C, 'C de oradaydı', 'public', 29.6005, 36.2, 0);
+await aktivite(B, 'B gizli kayıt', 'private', 29.6, 36.2005, 0);
+await aktivite(D, 'D yabancı', 'public', 29.6, 36.2, 0);
+let on = (await olarak(A, `select birlikte_onerileri($1) as j`, [aKas])).rows[0].j;
+bekle('Öneri: aynı saatte aynı yoldan geçen tanıdık C; B\'nin gizli kaydı ve yabancı D önerilmez', on.length === 1 && on[0].user_id === C && on[0].display_name === 'Cem Kaya', on);
+on = (await olarak(B, `select birlikte_onerileri($1) as j`, [aKas])).rows[0].j;
+bekle('Başkasının aktivitesi için öneri alınamaz', on.length === 0, on);
+m = await hataMesaji(() => olarak(A, `select birlikte_ekle($1, $2::uuid[])`, [aKas, [D]]));
+bekle('Tanımadığın biri etiketlenemez', /takipleştiğin/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(B, `select birlikte_ekle($1, $2::uuid[])`, [aKas, [C]]));
+bekle('Başkasının aktivitesine kişi eklenemez', /kendi aktivitene/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(A, `insert into activity_participants (activity_id, user_id) values ($1, $2)`, [aKas, C]));
+bekle('Tabloya doğrudan etiket yazılamaz', /permission denied/.test(m ?? ''), m);
+const eklenen = (await olarak(A, `select birlikte_ekle($1, $2::uuid[]) as n`, [aKas, [C, B, A]])).rows[0].n;
+bekle('A, C ve B\'yi etiketler (kendini saymaz)', eklenen === 2, eklenen);
+r = await olarak(C, `select birlikte_kisiler($1) as j`, [aKas]);
+bekle('Birlikte yapılanlar listesi: Burak ve Cem', r.rows[0].j.map((x) => x.display_name).join(',') === 'Burak Demir,Cem Kaya', r.rows[0].j);
+bl = await liste(C);
+bekle('Etiketlenen C\'ye "birlikte" bildirimi', bl[0]?.tur === 'birlikte' && bl[0].aktor_adi === 'Ayşe Yılmaz' && bl[0].activity_id === aKas, bl[0]);
+on = (await olarak(A, `select birlikte_onerileri($1) as j`, [aKas])).rows[0].j;
+bekle('Etiketlenen kişi artık önerilmez', on.length === 0, on);
+r = await olarak(B, `select akis('takip') as j`);
+let kartK = r.rows[0].j.find((x) => x.id === aKas);
+bekle('Akış kartında birlikte yapılanlar ve "beni etiketledi"', kartK?.with_count === 2 && kartK.with.length === 2 && kartK.tagged_me === true, kartK);
+
+await olarak(A, `select birlikte_ekle($1, $2::uuid[])`, [aOzel, [C]]);
+r = await olarak(C, `select akis('takip') as j`);
+bekle('Özel aktiviteye etiketlenen C onu görür ve akışında çıkar', r.rows[0].j.some((x) => x.id === aOzel), r.rows[0].j.map((x) => x.title));
+let cikti = (await olarak(B, `select birlikte_cikar($1, $2) as s`, [aKas, C])).rows[0].s;
+bekle('B, C\'nin etiketini kaldıramaz', cikti === false, cikti);
+cikti = (await olarak(C, `select birlikte_cikar($1, $2) as s`, [aOzel, C])).rows[0].s;
+r = await olarak(C, `select akis('takip') as j`);
+bekle('C kendi etiketini kaldırır; özel aktivite artık görünmez', cikti === true && !r.rows[0].j.some((x) => x.id === aOzel), r.rows[0].j.map((x) => x.title));
+cikti = (await olarak(A, `select birlikte_cikar($1, $2) as s`, [aKas, B])).rows[0].s;
+r = await olarak(A, `select birlikte_kisiler($1) as j`, [aKas]);
+bekle('Sahibi A, B\'nin etiketini kaldırır', cikti === true && r.rows[0].j.length === 1, r.rows[0].j);
+
 console.log('\nYetki');
 let anonHata = null;
 try {
