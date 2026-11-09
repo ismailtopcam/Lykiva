@@ -299,6 +299,65 @@ bekle('Sahibi kapatınca sayfa açılmaz', r.rows[0].j === null, r.rows[0].j);
 const anahtar2 = (await olarak(A, `select paylasim_baglantisi_ac($1) as k`, [aOzel])).rows[0].k;
 bekle('Yeniden açınca yeni anahtar üretilir', anahtar2 !== anahtar1, [anahtar1, anahtar2]);
 
+console.log('\nBildirimler');
+const sayi = async (u) => (await olarak(u, `select bildirim_sayisi() as n`)).rows[0].n;
+const liste = async (u) => (await olarak(u, `select bildirimlerim() as j`)).rows[0].j;
+await olarak(A, `select bildirimleri_okundu_say()`);
+await olarak(B, `select bildirimleri_okundu_say()`);
+bekle('Başlangıçta okunmamış yok', (await sayi(A)) === 0, await sayi(A));
+
+await olarak(B, `insert into follows (follower_id, followee_id) values ($1, $2)`, [B, A]);
+let bl = await liste(A);
+bekle('B takip edince A\'ya "takip" bildirimi (aktör adı ve geri takip bilgisi)', bl[0]?.tur === 'takip' && bl[0].aktor_adi === 'Burak Demir' && bl[0].takip_ediyorum === false && (await sayi(A)) === 1, bl[0]);
+await olarak(B, `delete from follows where follower_id = $1 and followee_id = $2`, [B, A]);
+bekle('Takibi bırakınca okunmamış bildirim silinir', (await sayi(A)) === 0, await sayi(A));
+await olarak(B, `insert into follows (follower_id, followee_id) values ($1, $2)`, [B, A]);
+await olarak(B, `delete from follows where follower_id = $1 and followee_id = $2`, [B, A]);
+await olarak(B, `insert into follows (follower_id, followee_id) values ($1, $2)`, [B, A]);
+bekle('Takip / bırak / takip: tek bildirim', (await sayi(A)) === 1, await sayi(A));
+
+// B, A'yı yeniden takip ettiği için takipçilere açık aktiviteyi görür ve beğenebilir
+await olarak(B, `insert into activity_likes (activity_id, user_id) values ($1, $2)`, [aTakip, B]);
+await olarak(A, `insert into activity_likes (activity_id, user_id) values ($1, $2)`, [aTakip, A]);
+bl = await liste(A);
+bekle('B beğenince A\'ya "beğeni" bildirimi; A\'nın kendi beğenisi bildirim olmaz', bl[0].tur === 'begeni' && bl[0].aktivite_adi === 'A takipçilere' && bl.filter((x) => x.tur === 'begeni' && x.activity_id === aTakip).length === 1, bl.slice(0, 3));
+await olarak(B, `delete from activity_likes where activity_id = $1 and user_id = $2`, [aTakip, B]);
+bekle('Beğeniyi geri alınca okunmamış bildirim silinir', !(await liste(A)).some((x) => x.tur === 'begeni' && x.activity_id === aTakip), (await liste(A)).slice(0, 2));
+// Daha önce okunmuş bir beğeni bildirimi varsa aynı beğeni yeniden bildirilmez (tekrar tekrar beğen-bırak gürültü yapmasın)
+await olarak(B, `insert into activity_likes (activity_id, user_id) values ($1, $2)`, [aTakip, B]);
+
+await olarak(B, `select yorum_yaz($1, 'Süper bir tur!')`, [aKas]);
+bl = await liste(A);
+bekle('B yorum yazınca A\'ya "yorum" bildirimi, yorum metniyle', bl[0].tur === 'yorum' && bl[0].yorum === 'Süper bir tur!', bl[0]);
+m = await hataMesaji(() => olarak(B, `insert into bildirimler (alici, aktor, tur) values ($1, $2, 'takip')`, [A, B]));
+bekle('İstemci bildirim yazamaz', /permission denied/.test(m ?? ''), m);
+r = await olarak(B, `select count(*)::int as n from bildirimler where alici = $1`, [A]);
+bekle('Başkasının bildirimleri okunamaz', r.rows[0].n === 0, r.rows[0].n);
+
+const acikGrup = (await olarak(A, `select grup_olustur('{"name":"Onaylı Topluluk","is_private":false,"requires_approval":true,"is_community":true}'::jsonb) as id`)).rows[0].id;
+await olarak(C, `select gruba_katil($1)`, [acikGrup]);
+bl = await liste(A);
+bekle('C katılmak isteyince grup sahibi A\'ya "katilim_istegi"', bl[0].tur === 'katilim_istegi' && bl[0].grup_adi === 'Onaylı Topluluk' && bl[0].aktor_adi === 'Cem Kaya', bl[0]);
+await olarak(B, `select bildirimleri_okundu_say()`);
+await olarak(A, `select istegi_yanitla($1, $2, true)`, [acikGrup, C]);
+bl = await liste(C);
+bekle('İstek kabul edilince C\'ye "katilim_kabul"', bl[0]?.tur === 'katilim_kabul' && bl[0].grup_adi === 'Onaylı Topluluk', bl[0]);
+bekle('Yanıtlanan isteğin okunmamış bildirimi sahipten silinir', !(await liste(A)).some((x) => x.tur === 'katilim_istegi'), (await liste(A)).map((x) => x.tur));
+
+const ileride = new Date(Date.now() + 3 * 86400000).toISOString();
+await olarak(A, `select etkinlik_olustur($1::jsonb)`, [JSON.stringify({ title: 'Pazar turu', group_id: grup, starts_at: ileride, activity: 'bike' })]);
+const blB = await liste(B);
+bekle('Grupta etkinlik: üye B\'ye "etkinlik" bildirimi; oluşturan A\'ya yok', blB[0]?.tur === 'etkinlik' && blB[0].etkinlik_adi === 'Pazar turu' && !(await liste(A)).some((x) => x.tur === 'etkinlik'), blB[0]);
+
+const gecici = (await db.query(`select count(*)::int as n from bildirimler where alici = '${G}' or aktor = '${G}'`)).rows[0].n;
+const devralinan = (await db.query(`select count(*)::int as n from bildirimler where tur = 'takip' and alici = '${A}' and aktor = '${C}'`)).rows[0].n;
+bekle('Hesap devrinde geçici hesabın bildirimleri asıl hesaba geçti (G\'nin takibi artık C\'den)', gecici === 0 && devralinan === 1, { gecici, devralinan });
+
+const onceA = await sayi(A);
+await olarak(A, `select bildirimleri_okundu_say()`);
+bekle('Okundu sayınca rozet sıfırlanır', onceA > 0 && (await sayi(A)) === 0, [onceA, await sayi(A)]);
+bekle('Okunanlar listede kalır', (await liste(A)).length >= 3 && (await liste(A)).every((x) => x.okundu), (await liste(A)).length);
+
 console.log('\nYetki');
 let anonHata = null;
 try {
