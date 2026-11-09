@@ -261,6 +261,44 @@ for (let i = 0; i < 10; i++) await olarak(C, `select yorum_yaz($1, $2)`, [aKas, 
 m = await hataMesaji(() => olarak(C, `select yorum_yaz($1, 'on birinci')`, [aKas]));
 bekle('Dakikada 10 yorumdan sonrası reddedilir', /hızlı/.test(m ?? ''), m);
 
+console.log('\nPaylaşım bağlantısı');
+async function anonOlarak(sql, params = []) {
+  await db.exec(`set role anon; select set_config('request.jwt.claims', '', false);`);
+  try {
+    return await db.query(sql, params);
+  } finally {
+    await db.exec(`reset role;`);
+  }
+}
+m = await hataMesaji(() => olarak(B, `select paylasim_baglantisi_ac($1)`, [aOzel]));
+bekle('Başkasının aktivitesine bağlantı açılamaz', /kendi aktiviten/.test(m ?? ''), m);
+const anahtar1 = (await olarak(A, `select paylasim_baglantisi_ac($1) as k`, [aOzel])).rows[0].k;
+const anahtar1b = (await olarak(A, `select paylasim_baglantisi_ac($1) as k`, [aOzel])).rows[0].k;
+bekle('Sahibi bağlantı açar; 32 karakter, ikinci kez aynısı döner', /^[0-9a-f]{32}$/.test(anahtar1) && anahtar1 === anahtar1b, [anahtar1, anahtar1b]);
+r = await anonOlarak(`select paylasilan_aktivite($1) as j`, [anahtar1]);
+let pa = r.rows[0].j;
+bekle('Giriş yapmamış biri bağlantıyla özel aktiviteyi görür (sahibi bağlantı açtığı için)', pa?.title === 'A özel' && pa.owner_name === 'Ayşe Yılmaz' && pa.distance_m === 2500, pa);
+bekle('Kimlikler ve kullanıcı adı verilmez', pa && !('id' in pa) && !('owner_id' in pa) && !('owner_username' in pa), Object.keys(pa ?? {}));
+bekle('Başlangıç/bitiş gizli bilgisi gelir', pa.endpoints_hidden === true, pa.endpoints_hidden);
+bekle('İz başından kırpılmış (başlangıç noktası görünmez)', Array.isArray(pa.track) && pa.track.length > 1 && pa.track[0][0] !== 29.6, pa.track?.[0]);
+bekle('Yükseklik profili var, 2–121 nokta, [mesafe, yükseklik]', Array.isArray(pa.elevation) && pa.elevation.length >= 2 && pa.elevation.length <= 121 && pa.elevation[0].length === 2, pa.elevation?.length);
+r = await anonOlarak(`select paylasilan_aktivite($1) as j`, ['0'.repeat(32)]);
+bekle('Yanlış anahtar: boş', r.rows[0].j === null, r.rows[0].j);
+m = await hataMesaji(() => olarak(B, `select * from aktivite_baglantilari`));
+bekle('Anahtar tablosu istemciye kapalı', /permission denied/.test(m ?? ''), m);
+r = await olarak(B, `select paylasim_baglantisi($1) as k`, [aOzel]);
+bekle('Başkası anahtarı öğrenemez', r.rows[0].k === null, r.rows[0].k);
+m = await hataMesaji(() => anonOlarak(`select paylasim_baglantisi_ac($1)`, [aKas]));
+bekle('Giriş yapmamış biri bağlantı açamaz', /permission denied/.test(m ?? ''), m);
+await olarak(B, `select paylasim_baglantisi_kapat($1)`, [aOzel]);
+r = await anonOlarak(`select paylasilan_aktivite($1) as j`, [anahtar1]);
+bekle('Başkası bağlantıyı kapatamaz', r.rows[0].j !== null, r.rows[0].j);
+await olarak(A, `select paylasim_baglantisi_kapat($1)`, [aOzel]);
+r = await anonOlarak(`select paylasilan_aktivite($1) as j`, [anahtar1]);
+bekle('Sahibi kapatınca sayfa açılmaz', r.rows[0].j === null, r.rows[0].j);
+const anahtar2 = (await olarak(A, `select paylasim_baglantisi_ac($1) as k`, [aOzel])).rows[0].k;
+bekle('Yeniden açınca yeni anahtar üretilir', anahtar2 !== anahtar1, [anahtar1, anahtar2]);
+
 console.log('\nYetki');
 let anonHata = null;
 try {

@@ -1,6 +1,6 @@
 import * as Sharing from 'expo-sharing';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, View, type HostInstance } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -11,7 +11,9 @@ import { Txt } from '@/components/Txt';
 import { Chip, Label, ToggleRow } from '@/components/ui';
 import { aktiviteAyarla, aktiviteNoktalari, useAktivite } from '@/data/aktivite';
 import type { Activity } from '@/data/ornek';
+import { baglantiAc, baglantiAdresi, baglantiDurumu, baglantiKapat, baglantiPaylas } from '@/lib/baglanti';
 import { dosyaAdi, gpxPaylas } from '@/lib/gpx';
+import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space } from '@/theme';
 
 const statDefs: [KartIstatistigi, string][] = [
@@ -53,6 +55,20 @@ export default function PaylasimStudyosuScreen() {
   const [mesgul, setMesgul] = useState<Hedef['id'] | null>(null);
   const buyukKart = useRef<HostInstance>(null);
   const hikaye = useRef<HostInstance>(null);
+  // Web paylaşım bağlantısı: undefined = bilinmiyor, null = kapalı, metin = açık (anahtar)
+  const [baglanti, setBaglanti] = useState<string | null | undefined>(undefined);
+  const sunucuId = a?.mine && supabaseHazir ? a.id : null;
+
+  useEffect(() => {
+    if (!sunucuId) return;
+    let acik = true;
+    baglantiDurumu(sunucuId)
+      .then((k) => acik && setBaglanti(k))
+      .catch(() => undefined);
+    return () => {
+      acik = false;
+    };
+  }, [sunucuId]);
 
   if (!a) {
     return (
@@ -96,7 +112,12 @@ export default function PaylasimStudyosuScreen() {
         setGorunurluk(v);
         setMesaj(v === 'public' ? 'Akışta herkese açık paylaşıldı' : 'Takipçilerinin akışında paylaşıldı');
       } else if (h.id === 'baglanti') {
-        setMesaj('Paylaşım bağlantısı web sayfası hazır olunca gelecek');
+        if (!sunucuda) throw new Error(a!.id.startsWith('yerel-') ? 'Kayıt henüz sunucuya gitmedi; internet gelince bağlantı açabilirsin' : 'Yalnızca kendi aktivitenin bağlantısını paylaşabilirsin');
+        const anahtar = baglanti ?? (await baglantiAc(a!.id));
+        setBaglanti(anahtar);
+        const adres = baglantiAdresi(anahtar);
+        if (Platform.OS === 'web') setMesaj(adres);
+        else await baglantiPaylas(a!.title, adres);
       }
     } catch (e) {
       setMesaj(e instanceof Error ? e.message : 'Paylaşılamadı');
@@ -111,6 +132,22 @@ export default function PaylasimStudyosuScreen() {
     try {
       await aktiviteAyarla(a!.id, { visibility: v });
       setMesaj(v === 'private' ? 'Artık yalnızca sen görüyorsun' : v === 'public' ? 'Herkese açık' : v === 'groups' ? 'Gruplarındaki kişiler görebilir' : 'Takipçilerin görebilir');
+    } catch (e) {
+      setMesaj(e instanceof Error ? e.message : 'Kaydedilemedi');
+    }
+  }
+
+  async function baglantiSec(v: boolean) {
+    setMesaj(null);
+    try {
+      if (v) {
+        setBaglanti(await baglantiAc(a!.id));
+        setMesaj('Bağlantı açıldı; "Bağlantı" ile paylaşabilirsin');
+      } else {
+        await baglantiKapat(a!.id);
+        setBaglanti(null);
+        setMesaj('Bağlantı kapatıldı; eski bağlantı artık açılmaz');
+      }
     } catch (e) {
       setMesaj(e instanceof Error ? e.message : 'Kaydedilemedi');
     }
@@ -174,6 +211,20 @@ export default function PaylasimStudyosuScreen() {
                     <Chip key={g.id} label={g.label} role="radio" tone="sea" selected={g.id === gorunurluk} onPress={() => gorunurlukSec(g.id)} />
                   ))}
                 </View>
+                {baglanti !== undefined ? (
+                  <View style={{ borderTopWidth: 1, borderTopColor: colors.lineStrong }}>
+                    <ToggleRow
+                      title="Bağlantıyla paylaşım"
+                      subtitle={
+                        baglanti
+                          ? 'Açık: bağlantısı olan herkes giriş yapmadan web’de görür (yukarıdaki ayardan bağımsız)'
+                          : 'Kapalı: açarsan web’de görülebilen bir bağlantı oluşur'
+                      }
+                      value={!!baglanti}
+                      onChange={baglantiSec}
+                    />
+                  </View>
+                ) : null}
               </>
             ) : null}
           </View>
@@ -188,7 +239,7 @@ export default function PaylasimStudyosuScreen() {
           ) : null}
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             {targets.map((t) => {
-              const pasif = t.id === 'baglanti' || (t.id === 'akis' && !sunucuda);
+              const pasif = (t.id === 'akis' || t.id === 'baglanti') && !sunucuda;
               return (
                 <Pressable
                   key={t.id}
