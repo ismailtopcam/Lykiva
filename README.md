@@ -87,7 +87,8 @@ npm run test:sql             # migration'ları bellekteki veritabanında dener (
 9. **Etkinlikler** — gruba bağlı ya da herkese açık etkinlik: tarih/saat, buluşma noktası, rota, seviye, kontenjan; Katılıyorum / Belki / Gelemem, dolunca bekleme listesi (yer açılınca otomatik), grup sohbetinde etkinlik kartı, grup sayfasında Etkinlikler, Gruplar sekmesinde yaklaşanlar.
 10. **Canlı konum** — kayıt başlatırken isteğe bağlı olarak bir grupla son konumu paylaşma (≈15 sn’de bir, arka planda da), duraklatınca "molada", kayıt bitince silinir; grubun canlı haritası (10 sn’de bir yenilenir), grup sayfası ve sohbetten erişim.
 11. **Akış ve takip** — ana sayfa akışı gerçek veriden: Takip ettiklerim / Gruplarım / Yakınımda (25 km), aşağı çekerek yenileme, kaydırdıkça devamı; beğeni; kişi arama ve öneriler (seni takip edenler, grup arkadaşların); kişi sayfası, Takip et, takipçi / takip listeleri; aktivitede sahibinin adı kişi sayfasına gider. Hesap devrinde takipler ve grup üyelikleri de taşınır. Migration'lar `npm run test:sql` ile sunucusuz denenir.
-12. Sırada: yorumlar, birlikte yapılan aktivite, bildirimler, web paylaşım sayfası.
+12. **Yorumlar** — aktiviteye yorum yazma (akış kartından ya da aktivite detayından), yazan ya da aktivitenin sahibi basılı tutarak siler; aktivite detayında beğeni ve yorum satırı; yorum / beğeni başka ekranda değişince akış kartı da güncellenir. Yorum 1–1000 karakter, dakikada en fazla 10.
+13. Sırada: birlikte yapılan aktivite, bildirimler, web paylaşım sayfası.
 
 ## Sunucu
 

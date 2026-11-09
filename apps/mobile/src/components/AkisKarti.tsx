@@ -94,7 +94,11 @@ function AkisKartiIc({ o, onBegen }: Props) {
           <Icon name="heart" size={21} color={o.liked ? colors.terra : colors.ink} />
           <Txt style={[styles.actionText, o.liked && { color: colors.terra }]}>{o.like_count}</Txt>
         </Pressable>
-        <Pressable accessibilityRole="link" accessibilityLabel={`${o.comment_count} yorum`} onPress={aktiviteye} style={styles.action}>
+        <Pressable
+          accessibilityRole="link"
+          accessibilityLabel={`${o.comment_count} yorum`}
+          onPress={() => router.push({ pathname: '/aktivite/[id]/yorumlar', params: { id: o.id } })}
+          style={styles.action}>
           <Icon name="chat" size={21} />
           <Txt style={styles.actionText}>{o.comment_count}</Txt>
         </Pressable>
