@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 
 import { kuyruguGonder, kuyruktakiler, sunucuIdsi, yereldekiPaket } from '@/kayit/kuyruk';
 import { supabase, supabaseHazir } from '@/lib/supabase';
-import { kasKalkan, type Activity, type LngLat, type Stop } from './ornek';
+import { kasKalkan, people, type Activity, type BirlikteKisi, type LngLat, type Stop } from './ornek';
 
 type ProfilNoktasi = { t: number; d: number; alt: number | null; speed: number | null };
 type Mola = { start: number; end: number; distanceAt: number; lng: number; lat: number; note?: string | null };
@@ -36,6 +36,7 @@ type Ham = {
   stops: Mola[];
   ownerName?: string;
   ownerId?: string;
+  birlikte?: BirlikteKisi[];
   mine?: boolean;
   visibility?: Activity['visibility'];
   hideEndpoints?: boolean;
@@ -91,7 +92,8 @@ function goruntuyeCevir(h: Ham): Activity {
   return {
     id: h.id,
     owner: h.ownerName ?? 'me',
-    with: [],
+    with: (h.birlikte ?? []).map((k) => k.kullanici),
+    birlikte: h.birlikte,
     title: h.title ?? ACTIVITY_LABELS[h.activity],
     type: h.activity,
     place: '',
@@ -126,10 +128,12 @@ function goruntuyeCevir(h: Ham): Activity {
 }
 
 async function sunucudan(id: string): Promise<Activity> {
-  const [{ data: oturum }, { data: o, error }, { data: d, error: e2 }] = await Promise.all([
+  const [{ data: oturum }, { data: o, error }, { data: d, error: e2 }, { data: bk }] = await Promise.all([
     supabase.auth.getSession(),
     supabase.from('aktivite_ozetleri').select('*').eq('id', id).maybeSingle(),
     supabase.rpc('aktivite_detay', { aktivite: id }),
+    // Eski sunucuda fonksiyon yoksa boş geçilir
+    supabase.rpc('birlikte_kisiler', { aktivite: id }),
   ]);
   if (error || e2) throw error ?? e2;
   if (!o) throw new Error('Aktivite bulunamadı ya da görme iznin yok');
@@ -162,6 +166,13 @@ async function sunucudan(id: string): Promise<Activity> {
     stops: detay.stops.map((s) => ({ start: Date.parse(s.started_at), end: Date.parse(s.ended_at), distanceAt: s.distance_at_m, lng: s.lng, lat: s.lat, note: s.note })),
     ownerName: o.owner_name,
     ownerId: o.owner_id,
+    birlikte: ((bk ?? []) as { user_id: string; display_name: string; username: string; me: boolean }[]).map((k) => ({
+      id: k.user_id,
+      ad: k.display_name,
+      kisa: k.display_name.split(' ')[0],
+      kullanici: k.username,
+      me: k.me,
+    })),
     mine: !!oturum.session && oturum.session.user.id === o.owner_id,
     visibility: o.visibility,
     hideEndpoints: o.hide_endpoints,
@@ -355,4 +366,15 @@ export async function aktiviteNoktalari(id: string): Promise<GpxNoktasi[]> {
 export async function aktiviteAyarla(id: string, ayar: { visibility?: Activity['visibility']; hide_endpoints?: boolean }) {
   const { error } = await supabase.from('activities').update(ayar).eq('id', id);
   if (error) throw new Error(error.message);
+}
+
+/** Birlikte yapılan kişiler: sunucudaki aktivitede gerçek kişiler, tasarım örneğinde örnek kişiler */
+export function birlikteKisiler(a: Activity): BirlikteKisi[] {
+  if (a.birlikte) return a.birlikte;
+  return a.with.filter((k) => people[k]).map((k) => ({ id: null, ad: people[k].name, kisa: people[k].short, kullanici: k }));
+}
+
+/** "Cem, Burak ve Deniz" */
+export function adListesi(adlar: string[]) {
+  return adlar.length > 1 ? `${adlar.slice(0, -1).join(', ')} ve ${adlar[adlar.length - 1]}` : (adlar[0] ?? '');
 }

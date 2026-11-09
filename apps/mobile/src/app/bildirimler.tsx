@@ -48,6 +48,8 @@ function metin(b: Bildirim): [string | null, string] {
       return [ad, ` ${tirnak(b.grup_adi)} grubuna katılmak istiyor`];
     case 'katilim_kabul':
       return [null, `${tirnak(b.grup_adi)} grubuna katılma isteğin kabul edildi`];
+    case 'birlikte':
+      return [ad, b.aktivite_adi ? ` seni ${tirnak(b.aktivite_adi)} aktivitesine birlikte yapanlar arasına ekledi` : ' seni bir aktivitesine birlikte yapanlar arasına ekledi'];
     case 'etkinlik':
       return [ad, ` ${tirnak(b.grup_adi)} grubunda etkinlik oluşturdu: ${tirnak(b.etkinlik_adi)}${b.etkinlik_zamani ? ` · ${kisaTarih(b.etkinlik_zamani)}` : ''}`];
   }
@@ -60,11 +62,12 @@ const SIMGE: Record<Bildirim['tur'], IconName> = {
   katilim_istegi: 'users',
   katilim_kabul: 'users',
   etkinlik: 'calendar',
+  birlikte: 'users',
 };
 
 function hedef(b: Bildirim): Href | null {
   if (b.tur === 'takip' && b.aktor) return { pathname: '/kisi/[id]', params: { id: b.aktor } };
-  if (b.tur === 'begeni' && b.activity_id) return { pathname: '/aktivite/[id]', params: { id: b.activity_id } };
+  if ((b.tur === 'begeni' || b.tur === 'birlikte') && b.activity_id) return { pathname: '/aktivite/[id]', params: { id: b.activity_id } };
   if (b.tur === 'yorum' && b.activity_id) return { pathname: '/aktivite/[id]/yorumlar', params: { id: b.activity_id } };
   if ((b.tur === 'katilim_istegi' || b.tur === 'katilim_kabul') && b.group_id) return { pathname: '/grup/[id]', params: { id: b.group_id } };
   if (b.tur === 'etkinlik' && b.event_id) return { pathname: '/etkinlik/[id]', params: { id: b.event_id } };
