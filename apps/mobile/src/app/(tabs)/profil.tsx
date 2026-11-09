@@ -22,6 +22,7 @@ export default function ProfilScreen() {
   const [liste, setListe] = useState<AktiviteSatiri[] | null>(null);
   const [profil, setProfil] = useState<Profilim | null>(null);
   const [rotalar, setRotalar] = useState<Rota[] | null>(null);
+  const [uid, setUid] = useState<string | null>(null);
   const hesap = useHesap();
 
   // Sekmeye her dönüşte yenile (yeni kayıt, gönderilen kuyruk)
@@ -32,6 +33,7 @@ export default function ProfilScreen() {
         const uid = supabaseHazir ? await oturumuSagla().catch(() => null) : null;
         const [l, pr, ro] = await Promise.all([aktivitelerim(uid).catch(() => []), uid ? profilim(uid).catch(() => null) : null, rotalarim().catch(() => [])]);
         if (acik) {
+          setUid(uid);
           setListe(l);
           setProfil(pr);
           setRotalar(ro);
@@ -55,11 +57,13 @@ export default function ProfilScreen() {
     .slice(0, 2)
     .toLocaleUpperCase('tr-TR');
   const altBaslik = gercek ? (profil ? `@${profil.username}${profil.city ? ' · ' + profil.city : ''}` : 'Geçici hesap') : 'Antalya · Bisiklet, doğa yürüyüşü';
-  const sayilar: [string, string][] = gercek
+  // Takipçi / takip sayısına dokununca liste açılır (gerçek hesapta)
+  const takipListesi = (yon: 'takipci' | 'takip') => (uid ? () => router.push({ pathname: '/kisi/[id]/takip', params: { id: uid, yon } }) : undefined);
+  const sayilar: [string, string, (() => void)?][] = gercek
     ? [
         [String(satirlar.length), 'aktivite'],
-        [String(profil?.takipci ?? 0), 'takipçi'],
-        [String(profil?.takip ?? 0), 'takip'],
+        [String(profil?.takipci ?? 0), 'takipçi', takipListesi('takipci')],
+        [String(profil?.takip ?? 0), 'takip', takipListesi('takip')],
       ]
     : [
         ['128', 'aktivite'],
@@ -83,6 +87,7 @@ export default function ProfilScreen() {
   return (
     <SafeAreaView edges={['top']} style={styles.root}>
       <View style={styles.top}>
+        {supabaseHazir ? <IconButton icon="search" label="Kişi ara" onPress={() => router.push('/kisiler')} /> : null}
         <IconButton icon="share" label="Profili paylaş" />
         <IconButton icon="more" label="Ayarlar" onPress={() => router.push('/ayarlar')} />
       </View>
@@ -97,10 +102,12 @@ export default function ProfilScreen() {
               {altBaslik}
             </Txt>
             <View style={{ flexDirection: 'row', gap: 16, marginTop: 8 }}>
-              {sayilar.map(([n, l]) => (
-                <Txt key={l} style={{ fontSize: 13 }}>
-                  <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 13 }}>{n}</Txt> <Txt style={{ color: colors.inkMuted, fontSize: 13 }}>{l}</Txt>
-                </Txt>
+              {sayilar.map(([n, l, onPress]) => (
+                <Pressable key={l} accessibilityRole={onPress ? 'link' : undefined} disabled={!onPress} onPress={onPress} hitSlop={10}>
+                  <Txt style={{ fontSize: 13 }}>
+                    <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 13 }}>{n}</Txt> <Txt style={{ color: colors.inkMuted, fontSize: 13 }}>{l}</Txt>
+                  </Txt>
+                </Pressable>
               ))}
             </View>
           </View>

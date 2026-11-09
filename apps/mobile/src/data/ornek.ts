@@ -79,6 +79,9 @@ export type Activity = {
   hasElevation?: boolean;
   /** Giriş yapan kullanıcının kendi aktivitesi mi (sunucudaki) */
   mine?: boolean;
+  /** Sunucudaki sahibinin kimliği ve adı (başkasının aktivitesinde kişi sayfasına bağlantı) */
+  ownerId?: string;
+  ownerName?: string;
   /** 3B görünüm için yükseklikli iz [boylam, enlem, yükseklik | null] */
   iz3b?: [number, number, number | null][];
   /** Mesafeye göre hız (km/sa): 3B sayfasında imlecin altındaki hız */

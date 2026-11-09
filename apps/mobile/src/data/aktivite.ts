@@ -35,6 +35,7 @@ type Ham = {
   profile: ProfilNoktasi[];
   stops: Mola[];
   ownerName?: string;
+  ownerId?: string;
   mine?: boolean;
   visibility?: Activity['visibility'];
   hideEndpoints?: boolean;
@@ -117,6 +118,8 @@ function goruntuyeCevir(h: Ham): Activity {
     stopTotal: formatDuration(molaS),
     hasElevation: altli.length > 1,
     mine: h.mine,
+    ownerId: h.ownerId,
+    ownerName: h.ownerName,
     visibility: h.visibility,
     hideEndpoints: h.hideEndpoints,
   };
@@ -158,6 +161,7 @@ async function sunucudan(id: string): Promise<Activity> {
     profile: detay.profile,
     stops: detay.stops.map((s) => ({ start: Date.parse(s.started_at), end: Date.parse(s.ended_at), distanceAt: s.distance_at_m, lng: s.lng, lat: s.lat, note: s.note })),
     ownerName: o.owner_name,
+    ownerId: o.owner_id,
     mine: !!oturum.session && oturum.session.user.id === o.owner_id,
     visibility: o.visibility,
     hideEndpoints: o.hide_endpoints,

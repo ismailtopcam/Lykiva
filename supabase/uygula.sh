@@ -28,6 +28,7 @@ MIGRATIONLAR=(
   "20261109030000_gruplar.sql|exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'grup_olustur')"
   "20261109040000_etkinlikler.sql|exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'etkinlik_olustur')"
   "20261109050000_canli_konum.sql|exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'canli_konum_gonder')"
+  "20261110000000_akis_takip.sql|exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'akis')"
 )
 
 # Betik "curl ... | bash" ile çalışırken kendi girdisi betiğin geri kalanıdır: sorgular girdi okumamalı,

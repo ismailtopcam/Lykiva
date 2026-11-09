@@ -62,6 +62,16 @@ export default function AktiviteOzetiScreen() {
           accessibilityLabel={`Rota haritası${a.stops.length ? `, ${a.stops.length} mola noktası işaretli` : ''}`}
         />
         <View style={{ padding: space.lg, paddingBottom: 0 }}>
+          {!a.mine && a.ownerId && a.ownerName ? (
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel={`${a.ownerName} profili`}
+              onPress={() => router.push({ pathname: '/kisi/[id]', params: { id: a.ownerId! } })}
+              hitSlop={8}
+              style={{ alignSelf: 'flex-start', marginBottom: 2 }}>
+              <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: colors.terra }}>{a.ownerName}</Txt>
+            </Pressable>
+          ) : null}
           <Txt variant="small">
             {a.when} · {ACTIVITY_LABELS[a.type]}
           </Txt>
