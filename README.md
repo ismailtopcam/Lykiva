@@ -88,9 +88,11 @@ npm run test:sql             # migration'ları bellekteki veritabanında dener (
 10. **Canlı konum** — kayıt başlatırken isteğe bağlı olarak bir grupla son konumu paylaşma (≈15 sn’de bir, arka planda da), duraklatınca "molada", kayıt bitince silinir; grubun canlı haritası (10 sn’de bir yenilenir), grup sayfası ve sohbetten erişim.
 11. **Akış ve takip** — ana sayfa akışı gerçek veriden: Takip ettiklerim / Gruplarım / Yakınımda (25 km), aşağı çekerek yenileme, kaydırdıkça devamı; beğeni; kişi arama ve öneriler (seni takip edenler, grup arkadaşların); kişi sayfası, Takip et, takipçi / takip listeleri; aktivitede sahibinin adı kişi sayfasına gider. Hesap devrinde takipler ve grup üyelikleri de taşınır. Migration'lar `npm run test:sql` ile sunucusuz denenir.
 12. **Yorumlar** — aktiviteye yorum yazma (akış kartından ya da aktivite detayından), yazan ya da aktivitenin sahibi basılı tutarak siler; aktivite detayında beğeni ve yorum satırı; yorum / beğeni başka ekranda değişince akış kartı da güncellenir. Yorum 1–1000 karakter, dakikada en fazla 10.
-13. Sırada: birlikte yapılan aktivite, bildirimler, web paylaşım sayfası.
+13. **Web paylaşım sayfası** — paylaşım stüdyosundaki "Bağlantı" ile aktivite için `lykiva.ismailtopcam.dev/a/<anahtar>` bağlantısı açılır ve telefonun paylaşım menüsüyle gönderilir; bağlantısı olan herkes giriş yapmadan web'de görür (rota, değerler, yükseklik profili). WhatsApp / Telegram / X önizlemesinde rota görseli çıkar. Sahibi bağlantıyı istediği an kapatır; başlangıç/bitiş gizliyse iz kırpılır, sayfa arama motorlarına kapalı.
+14. Sırada: birlikte yapılan aktivite, bildirimler.
 
 ## Sunucu
 
 - Supabase (kendi sunucumuzda, Coolify): https://api.lykiva.ismailtopcam.dev
-- Web: https://lykiva.ismailtopcam.dev (Coolify, `apps/web/Dockerfile`)
+- Web: https://lykiva.ismailtopcam.dev (Coolify, `apps/web/Dockerfile`). Paylaşım sayfası (`/a/<anahtar>`) için web uygulamasının
+  ortam değişkenlerinde `SUPABASE_ANON_KEY` (lykiva-supabase > `SERVICE_SUPABASEANON_KEY`) olmalı; isteğe bağlı `SUPABASE_URL`, `SITE_URL`.

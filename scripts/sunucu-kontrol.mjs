@@ -70,6 +70,7 @@ const asamalar = [
   ['20261109050000_canli_konum', 'canli_konum_gonder', { p: {} }],
   ['20261110000000_akis_takip', 'akis', {}],
   ['20261110010000_yorumlar', 'yorum_yaz', {}],
+  ['20261110020000_paylasim_baglantisi', 'paylasilan_aktivite', { anahtar: '0'.repeat(32) }],
 ];
 for (const [dosya, fn, govde] of asamalar) {
   try {
