@@ -399,6 +399,36 @@ cikti = (await olarak(A, `select birlikte_cikar($1, $2) as s`, [aKas, B])).rows[
 r = await olarak(A, `select birlikte_kisiler($1) as j`, [aKas]);
 bekle('Sahibi A, B\'nin etiketini kaldırır', cikti === true && r.rows[0].j.length === 1, r.rows[0].j);
 
+console.log('\nKeşfet');
+async function rota(uid, ad, gorunurluk, lng0, lat0) {
+  const pts = iz(lng0, lat0, 30).map((p) => ({ lng: p.lng, lat: p.lat, alt: p.alt }));
+  const p = { name: ad, activity: 'bike', distance_m: 1500, elevation_gain_m: 30, elevation_loss_m: 0, visibility: gorunurluk, points: pts };
+  return (await olarak(uid, `select kaydet_rota($1::jsonb) as id`, [JSON.stringify(p)])).rows[0].id;
+}
+await rota(A, 'Belgrad Ormanı turu', 'public', 28.98, 41.17);
+await rota(A, 'A gizli rota', 'private', 29.6, 36.2);
+await rota(A, 'Kaş sahil rotası', 'public', 29.62, 36.2);
+await rota(D, 'D Kaş tepe rotası', 'public', 29.64, 36.21);
+const KAS = [29.61, 36.2];
+let kr = (await olarak(C, `select kesfet_rotalar(null, $1, $2) as j`, KAS)).rows[0].j;
+bekle('Rotalar: herkese açıklar yakından uzağa (özel rota yok), uzaklık var', kr.length === 3 && kr[2].name === 'Belgrad Ormanı turu' && !kr.some((x) => x.name === 'A gizli rota') && kr[0].uzaklik_m < kr[2].uzaklik_m && Array.isArray(kr[0].preview), kr.map((x) => [x.name, x.uzaklik_m]));
+kr = (await olarak(A, `select kesfet_rotalar(null, $1, $2) as j`, KAS)).rows[0].j;
+bekle('Kendi rotaların Keşfet\'te çıkmaz', kr.length === 1 && kr[0].name === 'D Kaş tepe rotası', kr.map((x) => x.name));
+kr = (await olarak(C, `select kesfet_rotalar('BELGRAD') as j`)).rows[0].j;
+bekle('Rota araması (büyük/küçük harf duyarsız)', kr.length === 1 && kr[0].name === 'Belgrad Ormanı turu' && kr[0].uzaklik_m === null, kr.map((x) => x.name));
+kr = (await olarak(C, `select kesfet_rotalar() as j`)).rows[0].j;
+bekle('Konumsuz: en yeni rota başta', kr[0].name === 'D Kaş tepe rotası', kr.map((x) => x.name));
+
+const ilerideD = new Date(Date.now() + 5 * 86400000).toISOString();
+await olarak(D, `select etkinlik_olustur($1::jsonb)`, [JSON.stringify({ title: 'Kaş gün batımı sürüşü', starts_at: ilerideD, activity: 'bike', visibility: 'public', meeting_lng: 29.615, meeting_lat: 36.2, meeting_point_name: 'Kaş meydan' })]);
+await olarak(D, `select etkinlik_olustur($1::jsonb)`, [JSON.stringify({ title: 'Çok uzak tarih', starts_at: new Date(Date.now() + 60 * 86400000).toISOString(), activity: 'bike', visibility: 'public' })]);
+let ke = (await olarak(B, `select kesfet_etkinlikler(null, $1, $2) as j`, KAS)).rows[0].j;
+bekle('Etkinlikler: grubundaki "Pazar turu" + herkese açık olan; 30 günden uzak olan yok; yakındaki başta', ke.length === 2 && ke[0].title === 'Kaş gün batımı sürüşü' && ke[0].uzaklik_m < 1000 && ke[1].title === 'Pazar turu', ke.map((x) => [x.title, x.uzaklik_m]));
+ke = (await olarak(D, `select kesfet_etkinlikler() as j`)).rows[0].j;
+bekle('Grupta olmayan D grup etkinliğini görmez', ke.length === 1 && ke[0].title === 'Kaş gün batımı sürüşü', ke.map((x) => x.title));
+ke = (await olarak(B, `select kesfet_etkinlikler('meydan') as j`)).rows[0].j;
+bekle('Etkinlik araması buluşma yerinde de arar', ke.length === 1 && ke[0].title === 'Kaş gün batımı sürüşü', ke.map((x) => x.title));
+
 console.log('\nYetki');
 let anonHata = null;
 try {

@@ -91,7 +91,8 @@ npm run test:sql             # migration'ları bellekteki veritabanında dener (
 13. **Web paylaşım sayfası** — paylaşım stüdyosundaki "Bağlantı" ile aktivite için `lykiva.ismailtopcam.dev/a/<anahtar>` bağlantısı açılır ve telefonun paylaşım menüsüyle gönderilir; bağlantısı olan herkes giriş yapmadan web'de görür (rota, değerler, yükseklik profili). WhatsApp / Telegram / X önizlemesinde rota görseli çıkar. Sahibi bağlantıyı istediği an kapatır; başlangıç/bitiş gizliyse iz kırpılır, sayfa arama motorlarına kapalı.
 14. **Bildirimler (uygulama içi)** — yeni takipçi, beğeni, yorum, gruba katılma isteği ve kabulü, grupta yeni etkinlik; akışın üstündeki zilde okunmamış sayısı (yeni bildirim gelince canlı güncellenir), bildirimler ekranında dokununca ilgili sayfaya gider, takipçiye oradan geri takip. Telefona anlık bildirim (push) ayrı aşama.
 15. **Birlikte yapılan aktivite** — aktivitenin sahibi birlikte gittiği kişileri ekler (takipleştiği ya da ortak grubu olanlar); aynı saatlerde aynı yoldan geçen tanıdıklar öneri olarak çıkar. Eklenen kişi bildirim alır, aktiviteyi görür, akışında çıkar ve kendini kaldırabilir. Akış kartında "Mert ve 2 kişiyle", aktivite detayında "Ayşe ve Mert ile birlikte", paylaşım kartında @kullanıcı adları.
-16. Sırada: telefona anlık bildirim (push).
+16. **Keşfet gerçek veriden** — yaklaşan etkinlikler (herkese açık + gruplarının, 30 gün), herkese açık rotalar, katılabileceğin topluluklar ve kişi arama; konum izni varsa yakından uzağa sıralı ("Yakınındakileri önce göster" izni ister), tek arama kutusu hepsinde arar, Tümü / Rotalar / Topluluklar / Etkinlikler / Kişiler sekmeleri, topluluğa katıl / istek gönder, "Topluluk kur" açık topluluk seçili açılır.
+17. Sırada: telefona anlık bildirim (push), yönetim paneli girişi ve gerçek veri.
 
 ## Sunucu
 

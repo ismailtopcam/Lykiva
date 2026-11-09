@@ -73,6 +73,7 @@ const asamalar = [
   ['20261110020000_paylasim_baglantisi', 'paylasilan_aktivite', { anahtar: '0'.repeat(32) }],
   ['20261110030000_bildirimler', 'bildirim_sayisi', {}],
   ['20261110040000_birlikte', 'birlikte_ekle', {}],
+  ['20261110050000_kesfet', 'kesfet_rotalar', {}],
 ];
 for (const [dosya, fn, govde] of asamalar) {
   try {

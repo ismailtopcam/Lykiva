@@ -1,5 +1,5 @@
 import { ACTIVITY_LABELS, ACTIVITY_TYPES, type ActivityType } from '@lykiva/shared';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -23,7 +23,9 @@ export default function GrupOlusturScreen() {
   const [aciklama, setAciklama] = useState('');
   const [sehir, setSehir] = useState('');
   const [aktivite, setAktivite] = useState<ActivityType | null>(null);
-  const [tur, setTur] = useState<'ozel' | 'acik'>('ozel');
+  // Keşfet'teki "Topluluk kur" açık topluluğu seçili açar
+  const { tur: turParam } = useLocalSearchParams<{ tur?: string }>();
+  const [tur, setTur] = useState<'ozel' | 'acik'>(turParam === 'acik' ? 'acik' : 'ozel');
   const [onay, setOnay] = useState(false);
   const [kaydediyor, setKaydediyor] = useState(false);
   const [hata, setHata] = useState<string | null>(null);
