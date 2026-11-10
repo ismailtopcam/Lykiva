@@ -69,6 +69,12 @@
           "microphonePermission": false
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "c063d1da-06aa-4ab1-9868-ac9592eccb79"
+      }
+    },
+    "owner": "ismailtopcam"
   }
 }
