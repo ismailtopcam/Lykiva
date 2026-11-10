@@ -9,6 +9,7 @@ import { ElevationProfile } from '@/components/charts';
 import { FloatingHeader } from '@/components/Header';
 import { Icon } from '@/components/Icon';
 import { TopoMap } from '@/components/map/TopoMap';
+import { SikayetBaglantisi, useSikayet } from '@/components/SikayetPenceresi';
 import { SosyalSatiri } from '@/components/SosyalSatiri';
 import { Txt } from '@/components/Txt';
 import { AvatarStack, Button } from '@/components/ui';
@@ -25,6 +26,7 @@ export default function AktiviteOzetiScreen() {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [rotaDurumu, setRotaDurumu] = useState<'bos' | 'kaydediyor' | string>('bos');
+  const sikayet = useSikayet();
 
   if (!a) {
     return (
@@ -152,6 +154,9 @@ export default function AktiviteOzetiScreen() {
             <Icon name="chevron" size={18} color={colors.inkMuted} strokeWidth={2} />
           </Pressable>
         ) : null}
+        {!a.mine && supabaseHazir && sunucuAktivitesiMi(a.id) ? (
+          <SikayetBaglantisi etiket="Bu aktiviteyi şikayet et" onPress={() => sikayet.ac('activity', a.id, `${a.title}${a.ownerName ? ` · ${a.ownerName}` : ''}`)} />
+        ) : null}
         {rotaDurumu !== 'bos' && rotaDurumu !== 'kaydediyor' ? (
           <Txt accessibilityRole="alert" style={{ color: colors.terra, fontSize: 13, paddingHorizontal: space.lg, marginTop: 6 }}>
             {rotaDurumu}
@@ -164,6 +169,7 @@ export default function AktiviteOzetiScreen() {
         <Button label="Hız & molalar" icon="gauge" variant="outline" href={{ pathname: '/aktivite/[id]/hiz', params: { id: a.id } }} style={{ flex: 1 }} />
         <Button label="Paylaş" icon="share" href={{ pathname: '/aktivite/[id]/paylas', params: { id: a.id } }} style={{ flex: 1 }} />
       </View>
+      {sikayet.pencere}
     </View>
   );
 }

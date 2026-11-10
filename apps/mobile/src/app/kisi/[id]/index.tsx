@@ -9,6 +9,7 @@ import { kisiProfili, kisininAktiviteleri, type KisiAktivitesi, type KisiProfili
 import { RouteThumb } from '@/components/charts';
 import { Header } from '@/components/Header';
 import { TakipDugmesi } from '@/components/KisiSatiri';
+import { SikayetBaglantisi, useSikayet } from '@/components/SikayetPenceresi';
 import { Txt } from '@/components/Txt';
 import { Avatar, Button, SectionHeader } from '@/components/ui';
 import { basHarfler, grupRengi } from '@/grup/gruplar';
@@ -19,6 +20,7 @@ export default function KisiScreen() {
   const [p, setP] = useState<KisiProfili | null | undefined>(undefined);
   const [aktiviteler, setAktiviteler] = useState<KisiAktivitesi[] | null>(null);
   const [hata, setHata] = useState<string | null>(null);
+  const sikayet = useSikayet();
 
   const yukle = useCallback(async () => {
     if (!id) return;
@@ -134,8 +136,10 @@ export default function KisiScreen() {
               </Pressable>
             ))}
           </View>
+          {!p.me ? <SikayetBaglantisi etiket="Bu kişiyi şikayet et" onPress={() => sikayet.ac('user', p.id, `${p.display_name} · @${p.username}`)} /> : null}
         </View>
       </ScrollView>
+      {sikayet.pencere}
     </View>
   );
 }

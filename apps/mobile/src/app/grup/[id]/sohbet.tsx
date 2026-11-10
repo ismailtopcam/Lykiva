@@ -8,6 +8,7 @@ import { RouteThumb } from '@/components/charts';
 import { Icon } from '@/components/Icon';
 import { IconButton } from '@/components/IconButton';
 import { OrnekSohbet } from '@/components/OrnekSohbet';
+import { useSikayet } from '@/components/SikayetPenceresi';
 import { Txt } from '@/components/Txt';
 import { Avatar, DateBadge } from '@/components/ui';
 import { grupEtkinlikleri, kisaTarih, tarihRozeti, type EtkinlikOzeti } from '@/etkinlik/etkinlikler';
@@ -36,6 +37,7 @@ const saat = (iso: string) => new Date(iso).toLocaleTimeString('tr-TR', { hour: 
 function GercekSohbet({ id }: { id: string }) {
   const insets = useSafeAreaInsets();
   const { mesajlar, hata, ben, dahaVar, eskileriYukle, gonder, sil } = useSohbet(id);
+  const sikayet = useSikayet();
   const [grup, setGrup] = useState<GrupDetayi | null>(null);
   const [rotalar, setRotalar] = useState<Map<string, GrupRotasi>>(new Map());
   const [etkinlikler, setEtkinlikler] = useState<Map<string, EtkinlikOzeti>>(new Map());
@@ -97,9 +99,13 @@ function GercekSohbet({ id }: { id: string }) {
 
   function mesajSecenekleri(m: Mesaj) {
     const yonetici = grup?.my_role === 'owner' || grup?.my_role === 'admin';
-    if (m.bekliyor || (m.sender_id !== ben && !yonetici)) return;
+    if (m.bekliyor) return;
+    const benim = m.sender_id === ben;
     Alert.alert('Mesaj', undefined, [
-      { text: 'Sil', style: 'destructive', onPress: () => void sil(m.id).catch((e: unknown) => Alert.alert('Silinemedi', e instanceof Error ? e.message : String(e))) },
+      ...(!benim ? [{ text: 'Şikayet et', onPress: () => sikayet.ac('message', m.id, `${m.ad ?? 'Üye'}: ${(m.body ?? '').slice(0, 80)}`) }] : []),
+      ...(benim || yonetici
+        ? [{ text: 'Sil', style: 'destructive' as const, onPress: () => void sil(m.id).catch((e: unknown) => Alert.alert('Silinemedi', e instanceof Error ? e.message : String(e))) }]
+        : []),
       { text: 'Vazgeç', style: 'cancel' },
     ]);
   }
@@ -238,6 +244,7 @@ function GercekSohbet({ id }: { id: string }) {
           <Icon name="send" size={20} color="#FFFFFF" />
         </Pressable>
       </View>
+      {sikayet.pencere}
     </KeyboardAvoidingView>
   );
 }

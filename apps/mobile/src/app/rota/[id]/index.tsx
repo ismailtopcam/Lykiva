@@ -11,6 +11,9 @@ import { Txt } from '@/components/Txt';
 import { AvatarStack, Button, Stat } from '@/components/ui';
 import { faralyaKabak, people, type LngLat } from '@/data/ornek';
 import { useRota } from '@/data/rota';
+import { useHesap } from '@/lib/giris';
+import { supabaseHazir } from '@/lib/supabase';
+import { SikayetBaglantisi, useSikayet } from '@/components/SikayetPenceresi';
 import { colors, fontFamily, space } from '@/theme';
 
 function sureMetni(s: number) {
@@ -28,6 +31,8 @@ function profil(alts: number[]): number[] {
 export default function RotaDetayScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { r, hata } = useRota(id);
+  const hesap = useHesap();
+  const sikayet = useSikayet();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
@@ -109,8 +114,12 @@ export default function RotaDetayScreen() {
               <Txt style={{ fontSize: 13, lineHeight: 20, color: '#2E3631' }}>{r.notes}</Txt>
             </>
           ) : null}
+          {!ornek && supabaseHazir && r.ownerId && hesap && r.ownerId !== hesap.id ? (
+            <SikayetBaglantisi etiket="Bu rotayı şikayet et" onPress={() => sikayet.ac('route', r.id, `${r.name} · ${r.ownerName}`)} />
+          ) : null}
         </View>
       </ScrollView>
+      {sikayet.pencere}
 
       <FloatingHeader
         right={

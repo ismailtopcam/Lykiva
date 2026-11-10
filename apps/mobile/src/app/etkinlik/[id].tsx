@@ -9,6 +9,7 @@ import { Icon, type IconName } from '@/components/Icon';
 import { IconButton } from '@/components/IconButton';
 import { TopoMap, type MapMarker } from '@/components/map/TopoMap';
 import { OrnekEtkinlik } from '@/components/OrnekEtkinlik';
+import { SikayetBaglantisi, useSikayet } from '@/components/SikayetPenceresi';
 import { Txt } from '@/components/Txt';
 import { Avatar } from '@/components/ui';
 import type { LngLat } from '@/data/ornek';
@@ -61,6 +62,7 @@ function GercekEtkinlik({ id }: { id: string }) {
   const [hata, setHata] = useState<string | null>(null);
   const [mesgul, setMesgul] = useState(false);
   const [mesaj, setMesaj] = useState<string | null>(null);
+  const sikayet = useSikayet();
 
   const yukle = useCallback(async () => {
     try {
@@ -208,6 +210,7 @@ function GercekEtkinlik({ id }: { id: string }) {
               <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: colors.terraInk }}>Etkinliği iptal et</Txt>
             </Pressable>
           ) : null}
+          {!ev.can_manage ? <SikayetBaglantisi etiket="Bu etkinliği şikayet et" onPress={() => sikayet.ac('event', ev.id, `${ev.title} · ${ev.creator_name}`)} /> : null}
         </View>
       </ScrollView>
 
@@ -249,6 +252,7 @@ function GercekEtkinlik({ id }: { id: string }) {
           </View>
         )}
       </View>
+      {sikayet.pencere}
     </View>
   );
 }
