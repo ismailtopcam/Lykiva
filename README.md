@@ -94,7 +94,8 @@ npm run test:sql             # migration'ları bellekteki veritabanında dener (
 16. **Keşfet gerçek veriden** — yaklaşan etkinlikler (herkese açık + gruplarının, 30 gün), herkese açık rotalar, katılabileceğin topluluklar ve kişi arama; konum izni varsa yakından uzağa sıralı ("Yakınındakileri önce göster" izni ister), tek arama kutusu hepsinde arar, Tümü / Rotalar / Topluluklar / Etkinlikler / Kişiler sekmeleri, topluluğa katıl / istek gönder, "Topluluk kur" açık topluluk seçili açılır.
 17. **Yönetim paneli** — `lykiva.ismailtopcam.dev/admin`: e-posta + şifreyle giriş (yalnızca `is_admin` hesaplar; oturum HttpOnly çerezde, süresi dolarken yenilenir), genel bakış (sayılar, 14 günlük grafik), şikayetler (durum + not, içeriği kaldırma), kullanıcılar (e-posta ile arama, yönetici yap / yetkiyi al), aktiviteler (silme), rotalar (herkese kapatma), gruplar ve etkinlikler (silme). Yönetici hesabı `supabase/yonetici.sh` ile açılır. Sunucuda `sikayet_et` fonksiyonu hazır; uygulamada şikayet düğmesi henüz yok.
 18. **Şikayet et** — başkasının aktivitesi, kişi sayfası, rota ve etkinlik altında "… şikayet et" bağlantısı; yorum ve grup mesajında basılı tutunca "Şikayet et"; grup menüsünde "Şikayet et". Neden seçilir (+ isteğe bağlı açıklama), şikayet yönetim paneline düşer, şikayet edilen kişi görmez.
-19. Sırada: yedekleme, hava durumu, telefona anlık bildirim (push), kendi BRouter / Photon sunucumuz.
+19. **Yedekleme betikleri** — `supabase/yedek/`: gecelik veritabanı + dosya deposu yedeği, S3 uyumlu depolamaya kopya, eski yedek temizliği, canlıya dokunmadan geri yükleme denemesi; tek komutla kurulum (`kur.sh`). Sunucuya kurulması ve S3 kovası bağlanması bekliyor.
+20. Sırada: hava durumu, telefona anlık bildirim (push), kendi BRouter / Photon sunucumuz.
 
 ## Sunucu
 
