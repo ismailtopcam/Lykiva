@@ -53,6 +53,7 @@ try {
   (ext.anonymous_users ? iyi : kotu)('Geçici (anonim) hesap ' + (ext.anonymous_users ? 'açık' : 'kapalı — ENABLE_ANONYMOUS_USERS=true olmalı'));
   (ext.google ? iyi : kotu)('Google girişi ' + (ext.google ? 'açık' : 'kapalı — supabase/README.md > Giriş'));
   (ext.apple ? iyi : kotu)('Apple girişi ' + (ext.apple ? 'açık' : 'kapalı — supabase/README.md > Giriş'));
+  (ext.email ? iyi : kotu)('E-postayla giriş ' + (ext.email ? 'açık (yönetim paneli girişi)' : 'kapalı — yönetim paneline girilemez (ENABLE_EMAIL_SIGNUP=true olmalı)'));
   bilgi('Hesap bağlama (manual linking) bu uçtan görünmüyor; Google/Apple ile ilk girişte anlaşılır.');
 } catch (e) {
   kotu(`Giriş ayarları okunamadı (${e.message})`);
@@ -74,6 +75,7 @@ const asamalar = [
   ['20261110030000_bildirimler', 'bildirim_sayisi', {}],
   ['20261110040000_birlikte', 'birlikte_ekle', {}],
   ['20261110050000_kesfet', 'kesfet_rotalar', {}],
+  ['20261110060000_yonetim', 'yonetim_ozet', {}],
 ];
 for (const [dosya, fn, govde] of asamalar) {
   try {

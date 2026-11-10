@@ -21,6 +21,7 @@ gerçek durum için aşağıdaki `uygula.sh` (durum modu) ya da `node scripts/su
 | `20261110030000_bildirimler.sql` | Uygulama içi bildirimler: `bildirimler` tablosu (tetikleyicilerle yazılır: takip, beğeni, yorum, katılma isteği / kabulü, grupta etkinlik), `bildirimlerim`, `bildirim_sayisi`, `bildirimleri_okundu_say`; `istegi_yanitla` ve `hesabi_devral` güncellendi; tablo Realtime yayınında | **henüz uygulanmadı** |
 | `20261110040000_birlikte.sql` | Birlikte yapılan aktivite: `birlikte_ekle` (yalnızca tanıdıklar), `birlikte_cikar`, `birlikte_kisiler`, `birlikte_onerileri` (aynı saatte aynı yoldan geçen, görebildiğin aktiviteler), "birlikte" bildirimi; `akis` kartında kişiler, etiketlendiğin aktiviteler akışında; `hesabi_devral` güncellendi | **henüz uygulanmadı** |
 | `20261110050000_kesfet.sql` | Keşfet: `kesfet_rotalar` (herkese açık rotalar, konuma göre yakından uzağa, önizleme izi), `kesfet_etkinlikler` (30 gün, herkese açık + grup etkinlikleri, buluşma noktası yakınlığı) | **henüz uygulanmadı** |
+| `20261110060000_yonetim.sql` | Yönetim paneli: `yonetici_mi`, `yonetim_ozet`, `yonetim_kullanicilar` / `aktiviteler` / `rotalar` / `gruplar` / `etkinlikler` / `sikayetler` (her biri yöneticiliği denetler), moderasyon (`yonetim_sikayet_guncelle`, `yonetim_aktivite_sil`, `yonetim_rota_gizle`, `yonetim_grup_sil`, `yonetim_etkinlik_sil`, `yonetim_yetki`), uygulamadan `sikayet_et`; `reports` istemciye kapalı | **henüz uygulanmadı** |
 
 Tüm tabloların kuralları yazıldı (son: canlı konum, `20261109050000_canli_konum.sql`). Gruplar ve mesajlar `20261109030000_gruplar.sql` ile açılır.
 
@@ -62,7 +63,7 @@ npm run test:sql
 
 Bellekte PGlite + PostGIS ile boş bir veritabanı açar, Supabase'in `auth` şemasını ve rollerini taklit eder,
 tüm migration'ları sırayla uygular ve farklı kullanıcılar adına senaryoları dener (`supabase/test/dene.mjs`):
-akış süzgeçleri, görünürlük kuralları, baş/son 200 m kırpma, beğeni, sayfalama, kişi arama, hesap devri, yorumlar, paylaşım bağlantısı, bildirimler, birlikte yapılan aktivite, Keşfet, yetkiler.
+akış süzgeçleri, görünürlük kuralları, baş/son 200 m kırpma, beğeni, sayfalama, kişi arama, hesap devri, yorumlar, paylaşım bağlantısı, bildirimler, birlikte yapılan aktivite, Keşfet, yönetim paneli ve şikayetler, yetkiler.
 Gerçek Supabase'in birebir aynısı değildir (GoTrue, Realtime yok). Yeni migration eklenince senaryoları da eklenmeli.
 
 ## Sunucuyu Mac'ten kontrol etmek
