@@ -5,8 +5,9 @@
 #   curl -fsSL https://raw.githubusercontent.com/ismailtopcam/Lykiva/main/supabase/yonetici.sh -o /tmp/yonetici.sh && bash /tmp/yonetici.sh
 #
 # - E-posta sorar. Bu e-postayla hesap yoksa şifre sorar ve hesabı (e-postası onaylı) açar.
+# - Hesap zaten varsa (ör. Google ile açılmış, şifresi yok ya da şifre unutuldu) yeni şifre belirlemeyi önerir.
 # - Sonra hesaba yönetici yetkisi verir (profiles.is_admin = true).
-# - Hesap açmak için Supabase servis anahtarı gerekir; betik onu Kong konteynerinden okur.
+# - Hesap açmak / şifre belirlemek için Supabase servis anahtarı gerekir; betik onu Kong konteynerinden okur.
 #   Okuyamazsa: LYKIVA_SERVICE_KEY=... bash /tmp/yonetici.sh
 #   (Coolify > lykiva-supabase > Environment Variables > SERVICE_SUPABASESERVICE_KEY). Anahtar hiçbir yere yazılmaz.
 # - Sonra giriş: https://lykiva.ismailtopcam.dev/admin
@@ -37,15 +38,23 @@ if ! [[ "$EPOSTA" =~ ^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$ ]]; then
   exit 1
 fi
 
-KISI="$(sorgu "select id from auth.users where lower(email) = '$EPOSTA'")"
+# Şifreyi iki kez sorar; SIFRE_JSON'a JSON içinde kullanılabilir (kaçışlanmış) hâlini yazar
+sifre_sor() {
+  local s1 s2
+  read -rsp "Şifre (en az 12 karakter): " s1; echo
+  read -rsp "Şifre (tekrar): " s2; echo
+  if [ "$s1" != "$s2" ]; then echo "Şifreler aynı değil."; exit 1; fi
+  if [ "${#s1}" -lt 12 ]; then echo "Şifre en az 12 karakter olmalı."; exit 1; fi
+  # JSON için şifredeki \ ve " kaçışlanır. Desen ve yerine konan metin tırnak içinde: bash sürümünden
+  # bağımsız olarak harfi harfine işlenir (tırnaksız \\ yazımı bash 5.2'de farklı yorumlanıyor)
+  local bs='\' q='"'
+  SIFRE_JSON="${s1//"$bs"/"$bs$bs"}"
+  SIFRE_JSON="${SIFRE_JSON//"$q"/"$bs$q"}"
+  # Denetim karakterleri (sekme vb.) JSON'u bozar
+  if [[ "$s1" =~ [[:cntrl:]] ]]; then echo "Şifrede sekme gibi görünmeyen karakter olmamalı."; exit 1; fi
+}
 
-if [ -z "$KISI" ]; then
-  echo "Bu e-postayla hesap yok; yeni hesap açılacak."
-  read -rsp "Şifre (en az 12 karakter): " SIFRE; echo
-  read -rsp "Şifre (tekrar): " SIFRE2; echo
-  if [ "$SIFRE" != "$SIFRE2" ]; then echo "Şifreler aynı değil."; exit 1; fi
-  if [ "${#SIFRE}" -lt 12 ]; then echo "Şifre en az 12 karakter olmalı."; exit 1; fi
-
+servis_anahtari() {
   SERVIS="${LYKIVA_SERVICE_KEY:-$(docker exec "$KONG" printenv SUPABASE_SERVICE_KEY < /dev/null 2>/dev/null || true)}"
   if [ -z "$SERVIS" ]; then
     echo "Servis anahtarı okunamadı ($KONG)."
@@ -53,15 +62,24 @@ if [ -z "$KISI" ]; then
     echo "  LYKIVA_SERVICE_KEY=... bash /tmp/yonetici.sh"
     exit 1
   fi
+}
 
-  # JSON için şifredeki \ ve " kaçışlanır
-  SIFRE_JSON="${SIFRE//\\/\\\\}"
-  SIFRE_JSON="${SIFRE_JSON//\"/\\\"}"
-  YANIT="$(curl -sS -w '\n%{http_code}' -X POST "$URL/auth/v1/admin/users" \
+# Supabase Auth yönetim API'si: $1 yöntem, $2 yol, $3 JSON gövde → YANIT (gövde + son satırda HTTP kodu), KOD
+auth_api() {
+  YANIT="$(curl -sS -w '\n%{http_code}' -X "$1" "$URL/auth/v1/admin/$2" \
     -H "apikey: $SERVIS" -H "Authorization: Bearer $SERVIS" -H "Content-Type: application/json" \
-    -d "{\"email\":\"$EPOSTA\",\"password\":\"$SIFRE_JSON\",\"email_confirm\":true}" < /dev/null)"
+    -d "$3" < /dev/null)"
   KOD="$(echo "$YANIT" | tail -n1)"
-  unset SIFRE SIFRE2 SIFRE_JSON SERVIS
+}
+
+KISI="$(sorgu "select id from auth.users where lower(email) = '$EPOSTA'")"
+
+if [ -z "$KISI" ]; then
+  echo "Bu e-postayla hesap yok; yeni hesap açılacak."
+  sifre_sor
+  servis_anahtari
+  auth_api POST users "{\"email\":\"$EPOSTA\",\"password\":\"$SIFRE_JSON\",\"email_confirm\":true}"
+  unset SIFRE_JSON SERVIS
   if [ "$KOD" != "200" ] && [ "$KOD" != "201" ]; then
     echo "Hesap açılamadı (HTTP $KOD): $(echo "$YANIT" | head -n -1 | head -c 300)"
     exit 1
@@ -69,6 +87,23 @@ if [ -z "$KISI" ]; then
   KISI="$(sorgu "select id from auth.users where lower(email) = '$EPOSTA'")"
   if [ -z "$KISI" ]; then echo "Hesap açıldı ama veritabanında bulunamadı."; exit 1; fi
   echo "Hesap açıldı."
+else
+  SAGLAYICI="$(sorgu "select coalesce(raw_app_meta_data ->> 'providers', raw_app_meta_data ->> 'provider', '?') from auth.users where id = '$KISI'")"
+  SIFRELI="$(sorgu "select coalesce(encrypted_password, '') <> '' from auth.users where id = '$KISI'")"
+  if [ "$SIFRELI" = "t" ]; then DURUM="şifresi var"; else DURUM="şifresi YOK"; fi
+  echo "Bu e-postayla hesap var (giriş yöntemi: $SAGLAYICI; $DURUM)."
+  read -rp "Bu hesaba yeni şifre belirlensin mi? Panele şifreyle girilir. [e/H]: " CEVAP
+  if [[ "$CEVAP" =~ ^[eEyY] ]]; then
+    sifre_sor
+    servis_anahtari
+    auth_api PUT "users/$KISI" "{\"password\":\"$SIFRE_JSON\",\"email_confirm\":true}"
+    unset SIFRE_JSON SERVIS
+    if [ "$KOD" != "200" ]; then
+      echo "Şifre belirlenemedi (HTTP $KOD): $(echo "$YANIT" | head -n -1 | head -c 300)"
+      exit 1
+    fi
+    echo "Şifre belirlendi."
+  fi
 fi
 
 if [ "$(sorgu "select coalesce(is_anonymous, false) from auth.users where id = '$KISI'")" = "t" ]; then
