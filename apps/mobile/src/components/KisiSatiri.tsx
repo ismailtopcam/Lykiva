@@ -81,7 +81,7 @@ export function KisiSatiri({ k, onDegisti }: { k: KisiOzeti; onDegisti?: (takipt
         accessibilityLabel={`${k.display_name} profili`}
         onPress={() => router.push({ pathname: '/kisi/[id]', params: { id: k.id } })}
         style={styles.kisi}>
-        <Avatar initials={basHarfler(k.display_name)} tone={grupRengi(k.id)} size={44} />
+        <Avatar initials={basHarfler(k.display_name)} tone={grupRengi(k.id)} size={44} uri={k.avatar_url} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }} numberOfLines={1}>
             {k.display_name}

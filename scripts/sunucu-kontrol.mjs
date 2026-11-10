@@ -78,6 +78,7 @@ const asamalar = [
   ['20261110060000_yonetim', 'yonetim_ozet', {}],
   ['20261110080000_push', 'push_jetonu_kaydet', {}],
   ['20261110090000_profil', 'herkese_acik_profil', { kullanici: 'yok-boyle-biri' }],
+  ['20261110100000_fotograflar', 'mola_fotolari_gecerli', { aktivite: '00000000-0000-0000-0000-000000000000', yollar: [] }],
 ];
 for (const [dosya, fn, govde] of asamalar) {
   try {

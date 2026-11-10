@@ -112,7 +112,7 @@ export default function ProfilScreen() {
       </View>
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         <View style={styles.identity}>
-          <Avatar initials={bas} tone="ink" size={76} />
+          <Avatar initials={bas} tone="ink" size={76} uri={gercek ? profil?.avatarUrl : null} />
           <View style={{ flex: 1 }}>
             <Txt variant="display" style={{ fontSize: 24 }}>
               {ad}

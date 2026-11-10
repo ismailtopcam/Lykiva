@@ -33,6 +33,14 @@ create function auth.uid() returns uuid language sql stable as $$
   select (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub')::uuid $$;
 create function auth.jwt() returns jsonb language sql stable as $$
   select nullif(current_setting('request.jwt.claims', true), '')::jsonb $$;
+-- Supabase Storage'ın yalnızca kuralları ilgilendiren kısmı
+create schema if not exists storage;
+create table storage.buckets (id text primary key, name text not null, owner uuid, public boolean default false, file_size_limit bigint, allowed_mime_types text[], created_at timestamptz default now(), updated_at timestamptz default now());
+create table storage.objects (id uuid primary key default gen_random_uuid(), bucket_id text references storage.buckets (id), name text, owner uuid default auth.uid(), created_at timestamptz default now(), metadata jsonb, unique (bucket_id, name));
+alter table storage.objects enable row level security;
+grant usage on schema storage to anon, authenticated;
+grant select, insert, update, delete on storage.objects to anon, authenticated;
+grant select on storage.buckets to anon, authenticated;
 grant usage on schema public, extensions, auth to anon, authenticated;
 alter default privileges in schema public grant all on tables to anon, authenticated;
 alter default privileges in schema public grant all on functions to anon, authenticated;
@@ -559,6 +567,42 @@ bekle('Sahibi aktiviteyi yeniden adlandırır; başkası adlandıramaz', (await 
 m = await hataMesaji(() => olarak(A, `update activities set title = $1 where id = $2`, ['x'.repeat(81), aKas]));
 bekle('80 karakterden uzun başlık reddedilir', /aktivite_baslik_uzunlugu/.test(m ?? ''), m);
 await db.exec(`update activities set title = 'A Kaş herkese açık' where id = '${aKas}'`);
+
+console.log('\nFotoğraflar');
+const u1 = '11111111-2222-3333-4444-555555555555';
+const u2 = '66666666-7777-8888-9999-aaaaaaaaaaaa';
+r = await db.query(`select id, public from storage.buckets order by id`);
+bekle('Kovalar: mola gizli, profil herkese açık', JSON.stringify(r.rows) === JSON.stringify([{ id: 'mola', public: false }, { id: 'profil', public: true }]), r.rows);
+await olarak(A, `insert into storage.objects (bucket_id, name) values ('profil', $1)`, [`${A}/${u1}.jpg`]);
+m = await hataMesaji(() => olarak(A, `insert into storage.objects (bucket_id, name) values ('profil', $1)`, [`${B}/${u1}.jpg`]));
+bekle('Başkasının klasörüne profil fotoğrafı yüklenemez', /row-level security/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(A, `insert into storage.objects (bucket_id, name) values ('profil', $1)`, [`${A}/alt/${u2}.jpg`]));
+bekle('Profil fotoğrafı yolu biçim dışıysa yüklenemez', /row-level security/.test(m ?? ''), m);
+await olarak(B, `delete from storage.objects where bucket_id = 'profil' and name = $1`, [`${A}/${u1}.jpg`]);
+bekle('Başkasının profil fotoğrafı silinemez', (await db.query(`select count(*)::int n from storage.objects where bucket_id = 'profil'`)).rows[0].n === 1, null);
+await olarak(A, `update profiles set avatar_url = $1 where id = $2`, [`https://api.ornek/storage/v1/object/public/profil/${A}/${u1}.jpg`, A]);
+bekle('Profil fotoğrafı adresi kaydedilir', !!(await db.query(`select avatar_url from profiles where id = '${A}'`)).rows[0].avatar_url, null);
+m = await hataMesaji(() => olarak(A, `update profiles set avatar_url = 'javascript:alert(1)' where id = $1`, [A]));
+bekle('Profil fotoğrafı adresi https olmalı', /profil_foto_adresi/.test(m ?? ''), m);
+
+await olarak(A, `insert into storage.objects (bucket_id, name) values ('mola', $1), ('mola', $2)`, [`${aKas}/${u1}.jpg`, `${aOzel}/${u2}.jpg`]);
+m = await hataMesaji(() => olarak(B, `insert into storage.objects (bucket_id, name) values ('mola', $1)`, [`${aKas}/${u2}.jpg`]));
+bekle('Başkasının aktivitesine mola fotoğrafı yüklenemez', /row-level security/.test(m ?? ''), m);
+r = await olarak(D, `select name from storage.objects where bucket_id = 'mola'`);
+bekle('Mola fotoğrafını yalnızca aktiviteyi görebilen okur (herkese açık evet, özel hayır)', r.rows.length === 1 && r.rows[0].name.startsWith(aKas), r.rows);
+r = await olarak(A, `select count(*)::int n from storage.objects where bucket_id = 'mola'`);
+bekle('Sahibi kendi özel aktivitesinin fotoğrafını görür', r.rows[0].n === 2, r.rows[0]);
+const molaKas = (await db.query(`select id from activity_stops where activity_id = '${aKas}' limit 1`)).rows[0].id;
+await olarak(A, `update activity_stops set photo_urls = array[$1], note = 'Çeşme başı' where id = $2`, [`${aKas}/${u1}.jpg`, molaKas]);
+m = await hataMesaji(() => olarak(A, `update activity_stops set photo_urls = array[$1] where id = $2`, [`${aOzel}/${u2}.jpg`, molaKas]));
+bekle('Molaya başka aktivitenin fotoğrafı bağlanamaz', /mola_fotolari/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(A, `update activity_stops set photo_urls = $1 where id = $2`, [Array.from({ length: 7 }, () => `${aKas}/${u1}.jpg`), molaKas]));
+bekle('Bir molaya en fazla 6 fotoğraf', /mola_fotolari/.test(m ?? ''), m);
+r = await olarak(B, `select aktivite_detay($1) as j`, [aKas]);
+const dm = r.rows[0].j.stops[0];
+bekle('aktivite_detay molanın kimliğini, notunu ve fotoğraflarını döner', dm.id === molaKas && dm.note === 'Çeşme başı' && dm.photos[0] === `${aKas}/${u1}.jpg`, dm);
+await olarak(A, `delete from storage.objects where bucket_id = 'mola' and name = $1`, [`${aOzel}/${u2}.jpg`]);
+bekle('Sahibi mola fotoğrafını siler', (await db.query(`select count(*)::int n from storage.objects where bucket_id = 'mola'`)).rows[0].n === 1, null);
 
 console.log('\nYetki');
 let anonHata = null;

@@ -4,10 +4,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { SpeedChart } from '@/components/charts';
 import { Header } from '@/components/Header';
+import { sunucuAktivitesiMi } from '@/akis/akis';
 import { Icon } from '@/components/Icon';
+import { MolaFotolari } from '@/components/MolaFotolari';
 import { Txt } from '@/components/Txt';
 import { Card, SectionHeader } from '@/components/ui';
 import { useAktivite } from '@/data/aktivite';
+import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space } from '@/theme';
 
 export default function HizMolalarScreen() {
@@ -27,6 +30,7 @@ export default function HizMolalarScreen() {
 
   const maxIndex = a.speed.indexOf(Math.max(...a.speed));
   const ornek = a.id === 'ornek';
+  const sunucuda = supabaseHazir && sunucuAktivitesiMi(a.id);
 
   return (
     <View style={styles.root}>
@@ -104,6 +108,7 @@ export default function HizMolalarScreen() {
                   ))}
                 </View>
               ) : null}
+              {sunucuda && s.id ? <MolaFotolari aktiviteId={a.id} molaId={s.id} ilk={s.fotolar ?? []} sahibi={!!a.mine} molaAdi={s.title} /> : null}
             </View>
           </View>
         ))}

@@ -47,7 +47,7 @@ function AkisKartiIc({ o, onBegen }: Props) {
     <Card style={styles.post}>
       <View style={styles.head}>
         <Pressable accessibilityRole="link" accessibilityLabel={`${o.owner_name} profili`} onPress={kisiye} hitSlop={4}>
-          <Avatar initials={basHarfler(o.owner_name)} tone={grupRengi(o.owner_id)} />
+          <Avatar initials={basHarfler(o.owner_name)} tone={grupRengi(o.owner_id)} uri={o.owner_avatar} />
         </Pressable>
         <Pressable accessibilityRole="link" onPress={kisiye} style={{ flex: 1, minWidth: 0 }}>
           <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14 }} numberOfLines={1}>
