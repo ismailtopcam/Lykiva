@@ -8,12 +8,13 @@ import { ACTIVITY_LABELS, formatDuration, formatKm, formatSpeedKmh, havaGecerliM
 import { useEffect, useState } from 'react';
 
 import { aktiviteDegisikliginiDinle, aktiviteDegisti } from '@/akis/akis';
+import { aktiviteFotograflariniSil } from '@/lib/foto';
 import { kuyruguGonder, kuyruktakiler, sunucuIdsi, yereldekiPaket } from '@/kayit/kuyruk';
 import { supabase, supabaseHazir } from '@/lib/supabase';
 import { kasKalkan, people, type Activity, type BirlikteKisi, type LngLat, type Stop } from './ornek';
 
 type ProfilNoktasi = { t: number; d: number; alt: number | null; speed: number | null };
-type Mola = { start: number; end: number; distanceAt: number; lng: number; lat: number; note?: string | null };
+type Mola = { id?: string; start: number; end: number; distanceAt: number; lng: number; lat: number; note?: string | null; photos?: string[] };
 
 type Ham = {
   id: string;
@@ -87,6 +88,8 @@ function goruntuyeCevir(h: Ham): Activity {
     km: formatKm(s.distanceAt),
     duration: formatDuration((s.end - s.start) / 1000),
     note: s.note ?? '',
+    id: s.id,
+    fotolar: s.photos ?? [],
     at: h.distanceM > 0 ? Math.min(1, s.distanceAt / h.distanceM) : 0,
     coord: [s.lng, s.lat],
   }));
@@ -141,7 +144,7 @@ async function sunucudan(id: string): Promise<Activity> {
   if (error || e2) throw error ?? e2;
   if (!o) throw new Error('Aktivite bulunamadı ya da görme iznin yok');
   const detay = (d ?? { stops: [], profile: [] }) as {
-    stops: { started_at: string; ended_at: string; distance_at_m: number; lng: number; lat: number; note: string | null }[];
+    stops: { id?: string; started_at: string; ended_at: string; distance_at_m: number; lng: number; lat: number; note: string | null; photos?: string[] }[];
     profile: ProfilNoktasi[];
   };
   const coords = (o.track_geojson?.coordinates ?? []) as number[][];
@@ -166,7 +169,7 @@ async function sunucudan(id: string): Promise<Activity> {
     route: coords.map((c) => [c[0], c[1]] as LngLat),
     iz3b,
     profile: detay.profile,
-    stops: detay.stops.map((s) => ({ start: Date.parse(s.started_at), end: Date.parse(s.ended_at), distanceAt: s.distance_at_m, lng: s.lng, lat: s.lat, note: s.note })),
+    stops: detay.stops.map((s) => ({ id: s.id, start: Date.parse(s.started_at), end: Date.parse(s.ended_at), distanceAt: s.distance_at_m, lng: s.lng, lat: s.lat, note: s.note, photos: s.photos ?? [] })),
     ownerName: o.owner_name,
     ownerId: o.owner_id,
     hava: havaGecerliMi(o.weather) ? o.weather : null,
@@ -393,6 +396,7 @@ export async function aktiviteYenidenAdlandir(id: string, baslik: string) {
 
 /** Sahibi için: aktiviteyi kalıcı olarak siler (molalar, beğeniler, yorumlar, paylaşım bağlantısı da gider) */
 export async function aktiviteSil(id: string) {
+  await aktiviteFotograflariniSil(id).catch(() => undefined);
   const { error, count } = await supabase.from('activities').delete({ count: 'exact' }).eq('id', id);
   if (error) throw new Error(error.message);
   if (!count) throw new Error('Aktivite silinemedi');

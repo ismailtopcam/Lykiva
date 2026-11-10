@@ -60,6 +60,14 @@
         {
           "color": "#B04E25"
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Lykiva, profil fotoğrafını ve mola fotoğraflarını seçebilmen için fotoğraflarına erişir.",
+          "cameraPermission": "Lykiva, profil ya da mola fotoğrafı çekebilmen için kamerayı kullanır.",
+          "microphonePermission": false
+        }
       ]
     ]
   }

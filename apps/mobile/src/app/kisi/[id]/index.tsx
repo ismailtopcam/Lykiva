@@ -69,7 +69,7 @@ export default function KisiScreen() {
       <Header />
       <ScrollView contentContainerStyle={{ paddingBottom: 60 }}>
         <View style={styles.identity}>
-          <Avatar initials={basHarfler(p.display_name)} tone={grupRengi(p.id)} size={76} />
+          <Avatar initials={basHarfler(p.display_name)} tone={grupRengi(p.id)} size={76} uri={p.avatar_url} />
           <View style={{ flex: 1, minWidth: 0 }}>
             <Txt variant="display" style={{ fontSize: 24 }} accessibilityRole="header" numberOfLines={2}>
               {p.display_name}

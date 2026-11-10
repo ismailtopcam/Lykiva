@@ -1,14 +1,15 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Header } from '@/components/Header';
 import { Icon } from '@/components/Icon';
 import { Txt } from '@/components/Txt';
-import { Button, Label } from '@/components/ui';
+import { Avatar, Button, Label } from '@/components/ui';
 import { KULLANICI_ADI_BICIMI, kullaniciAdiMusait, kullaniciAdiSadelestir, profilBilgim, profilGuncelle } from '@/data/profil';
 import { profilAdresi } from '@/lib/baglanti';
+import { fotoSec, profilFotografiniKaldir, profilFotografiYukle, type Kaynak } from '@/lib/foto';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, radius, space } from '@/theme';
 
@@ -22,6 +23,8 @@ export default function ProfilDuzenleScreen() {
   const [kadi, setKadi] = useState('');
   const [sehir, setSehir] = useState('');
   const [bio, setBio] = useState('');
+  const [foto, setFoto] = useState<string | null>(null);
+  const [fotoIsliyor, setFotoIsliyor] = useState(false);
   const [adDurumu, setAdDurumu] = useState<AdDurumu>('ayni');
   const [kaydediyor, setKaydediyor] = useState(false);
   const [hata, setHata] = useState<string | null>(null);
@@ -36,6 +39,7 @@ export default function ProfilDuzenleScreen() {
         setEskiKadi(p.username);
         setSehir(p.city ?? '');
         setBio(p.bio ?? '');
+        setFoto(p.avatar_url);
       })
       .catch((e) => setHata(e instanceof Error ? e.message : 'Profil yüklenemedi'))
       .finally(() => setYuklendi(true));
@@ -58,6 +62,49 @@ export default function ProfilDuzenleScreen() {
       clearTimeout(t);
     };
   }, [kadi, eskiKadi, yuklendi]);
+
+  async function fotoDegistir(kaynak: Kaynak) {
+    setHata(null);
+    try {
+      const uri = await fotoSec(kaynak, true);
+      if (!uri) return;
+      setFotoIsliyor(true);
+      setFoto(await profilFotografiYukle(uri, foto));
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : 'Fotoğraf yüklenemedi');
+    } finally {
+      setFotoIsliyor(false);
+    }
+  }
+
+  async function fotoKaldir() {
+    setHata(null);
+    setFotoIsliyor(true);
+    try {
+      await profilFotografiniKaldir(foto);
+      setFoto(null);
+    } catch (e) {
+      setHata(e instanceof Error ? e.message : 'Fotoğraf kaldırılamadı');
+    } finally {
+      setFotoIsliyor(false);
+    }
+  }
+
+  function fotoMenusu() {
+    Alert.alert('Profil fotoğrafı', undefined, [
+      { text: 'Galeriden seç', onPress: () => void fotoDegistir('galeri') },
+      { text: 'Fotoğraf çek', onPress: () => void fotoDegistir('kamera') },
+      ...(foto ? [{ text: 'Fotoğrafı kaldır', style: 'destructive' as const, onPress: () => void fotoKaldir() }] : []),
+      { text: 'Vazgeç', style: 'cancel' as const },
+    ]);
+  }
+
+  const basHarf = (ad.trim() || '?')
+    .split(/\s+/)
+    .map((w) => w.charAt(0))
+    .join('')
+    .slice(0, 2)
+    .toLocaleUpperCase('tr-TR');
 
   async function kaydet() {
     setHata(null);
@@ -90,6 +137,20 @@ export default function ProfilDuzenleScreen() {
         <ActivityIndicator color={colors.terra} style={{ marginTop: space.xl }} />
       ) : (
         <ScrollView contentContainerStyle={{ padding: space.lg, paddingTop: 4, gap: 18, paddingBottom: insets.bottom + 110 }} keyboardShouldPersistTaps="handled">
+          <View style={styles.fotoSatir}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Profil fotoğrafını değiştir" onPress={fotoMenusu} disabled={fotoIsliyor || !supabaseHazir}>
+              <Avatar initials={basHarf} tone="ink" size={84} uri={foto} />
+              {fotoIsliyor ? (
+                <View style={styles.fotoPerde}>
+                  <ActivityIndicator color="#fff" />
+                </View>
+              ) : null}
+            </Pressable>
+            <View style={{ flex: 1, gap: 6 }}>
+              <Button label={foto ? 'Fotoğrafı değiştir' : 'Fotoğraf ekle'} icon="camera" variant="outline" onPress={fotoMenusu} disabled={fotoIsliyor || !supabaseHazir} />
+              <Txt variant="small">Profil fotoğrafın herkese görünür. Fotoğraftaki konum bilgisi yüklenmez.</Txt>
+            </View>
+          </View>
           <View>
             <Label>Adın</Label>
             <TextInput value={ad} onChangeText={setAd} placeholder="ör. Ayşe Yılmaz" placeholderTextColor={colors.inkMuted} maxLength={40} accessibilityLabel="Adın" style={styles.input} autoComplete="name" />
@@ -153,6 +214,8 @@ export default function ProfilDuzenleScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   input: { height: 48, borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, paddingHorizontal: 14, fontFamily: fontFamily.body, fontSize: 15, color: colors.ink },
+  fotoSatir: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  fotoPerde: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 84, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' },
   kadiKutu: { flexDirection: 'row', alignItems: 'center', borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, paddingLeft: 14 },
   hata: { flexDirection: 'row', gap: 8, alignItems: 'center', padding: 12, borderRadius: radius.md, backgroundColor: colors.terraSoft },
   bottom: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: space.lg, paddingTop: 12, backgroundColor: colors.ground },

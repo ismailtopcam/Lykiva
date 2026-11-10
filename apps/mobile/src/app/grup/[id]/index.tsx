@@ -325,7 +325,7 @@ function GercekGrup({ id }: { id: string }) {
               onPress={() => uyeSecenekleri(u)}
               disabled={mesgul}
               style={styles.uye}>
-              <Avatar initials={basHarfler(u.display_name)} tone={grupRengi(u.user_id)} size={40} />
+              <Avatar initials={basHarfler(u.display_name)} tone={grupRengi(u.user_id)} size={40} uri={u.avatar_url} />
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }} numberOfLines={1}>
                   {u.display_name}
@@ -343,7 +343,7 @@ function GercekGrup({ id }: { id: string }) {
         ) : (
           istekler.map((r) => (
             <View key={r.user_id} style={styles.uye}>
-              <Avatar initials={basHarfler(r.display_name)} tone={grupRengi(r.user_id)} size={40} />
+              <Avatar initials={basHarfler(r.display_name)} tone={grupRengi(r.user_id)} size={40} uri={r.avatar_url} />
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }} numberOfLines={1}>
                   {r.display_name}

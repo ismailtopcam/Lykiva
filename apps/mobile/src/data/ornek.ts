@@ -46,7 +46,7 @@ export const faralyaKabakRoute: LngLat[] = [
   [29.1251, 36.4611],
 ];
 
-export type Stop = { n: number; title: string; time: string; km: string; duration: string; note: string; at: number; coord?: LngLat };
+export type Stop = { n: number; title: string; time: string; km: string; duration: string; note: string; at: number; coord?: LngLat; /** sunucudaki mola kimliği */ id?: string; /** mola kovasındaki fotoğraf yolları */ fotolar?: string[] };
 
 export type BirlikteKisi = { id: string | null; ad: string; kisa: string; kullanici: string; me?: boolean };
 

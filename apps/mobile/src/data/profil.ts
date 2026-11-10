@@ -5,6 +5,7 @@
 import { oturumuSagla, supabase } from '@/lib/supabase';
 
 export type ProfilBilgisi = { display_name: string; username: string; city: string | null; bio: string | null };
+export type ProfilVerisi = ProfilBilgisi & { avatar_url: string | null };
 
 export const KULLANICI_ADI_BICIMI = /^[a-z0-9_.]{3,30}$/;
 
@@ -23,11 +24,11 @@ export function kullaniciAdiSadelestir(metin: string) {
     .slice(0, 30);
 }
 
-export async function profilBilgim(): Promise<ProfilBilgisi | null> {
+export async function profilBilgim(): Promise<ProfilVerisi | null> {
   const uid = await oturumuSagla();
-  const { data, error } = await supabase.from('profiles').select('display_name,username,city,bio').eq('id', uid).maybeSingle();
+  const { data, error } = await supabase.from('profiles').select('display_name,username,city,bio,avatar_url').eq('id', uid).maybeSingle();
   if (error) throw new Error(error.message);
-  return data as ProfilBilgisi | null;
+  return data as ProfilVerisi | null;
 }
 
 export async function kullaniciAdiMusait(ad: string): Promise<boolean> {

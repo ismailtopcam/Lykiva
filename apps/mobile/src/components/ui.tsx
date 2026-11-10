@@ -2,8 +2,9 @@
  * Lykiva ortak arayüz parçaları. Değerler Design canvas'ındaki ekranlardan alındı.
  */
 import { router, type Href } from 'expo-router';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
+  Image,
   Pressable,
   StyleSheet,
   Switch,
@@ -39,6 +40,7 @@ export function Avatar({
   ring,
   square,
   border,
+  uri,
 }: {
   initials: string;
   tone?: AvatarTone;
@@ -46,9 +48,21 @@ export function Avatar({
   ring?: string;
   square?: boolean;
   border?: string;
+  /** Profil fotoğrafı; yüklenemezse baş harfler görünür */
+  uri?: string | null;
 }) {
   const t = toneMap[tone];
-  const inner = (
+  const [bozuk, setBozuk] = useState<string | null>(null);
+  const ic = ring ? size - 8 : size;
+  const foto = uri && bozuk !== uri ? (
+    <Image
+      source={{ uri }}
+      onError={() => setBozuk(uri)}
+      accessibilityIgnoresInvertColors
+      style={{ width: ic, height: ic, borderRadius: square ? size * 0.3 : size, borderWidth: border ? 2 : 0, borderColor: border, backgroundColor: t.bg }}
+    />
+  ) : null;
+  const inner = foto ?? (
     <View
       style={{
         width: ring ? size - 8 : size,
