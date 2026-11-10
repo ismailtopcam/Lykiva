@@ -75,6 +75,9 @@ export default function RootLayout() {
         <Stack.Screen name="kayit/index" options={{ presentation: 'modal' }} />
         <Stack.Screen name="grup/olustur" options={{ presentation: 'modal' }} />
         <Stack.Screen name="etkinlik/olustur" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="profil-duzenle" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="aktivite/[id]/duzenle" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="rota/[id]/duzenle" options={{ presentation: 'modal' }} />
         <Stack.Screen name="grup/[id]/rota-paylas" options={{ presentation: 'modal' }} />
         <Stack.Screen name="kayit/canli" options={{ gestureEnabled: false }} />
         <Stack.Screen name="kayit/duraklatildi" options={{ gestureEnabled: false, animation: 'fade' }} />

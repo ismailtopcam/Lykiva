@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { RouteThumb } from '@/components/charts';
@@ -10,7 +10,9 @@ import { Avatar, Button, Card } from '@/components/ui';
 import { aktivitelerim, haftaOzeti, profilim, type AktiviteSatiri, type Profilim } from '@/data/aktivite';
 import { myActivities, people, weekKm } from '@/data/ornek';
 import { rotalarim, type Rota } from '@/data/rota';
+import { gruplarim, type GrupOzeti } from '@/grup/gruplar';
 import { ACTIVITY_LABELS, DIFFICULTY_LABELS, formatKm, formatMeters } from '@lykiva/shared';
+import { baglantiPaylas, profilAdresi } from '@/lib/baglanti';
 import { useHesap } from '@/lib/giris';
 import { oturumuSagla, supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space } from '@/theme';
@@ -22,6 +24,7 @@ export default function ProfilScreen() {
   const [liste, setListe] = useState<AktiviteSatiri[] | null>(null);
   const [profil, setProfil] = useState<Profilim | null>(null);
   const [rotalar, setRotalar] = useState<Rota[] | null>(null);
+  const [gruplar, setGruplar] = useState<GrupOzeti[] | null>(null);
   const [uid, setUid] = useState<string | null>(null);
   const hesap = useHesap();
 
@@ -31,12 +34,18 @@ export default function ProfilScreen() {
       let acik = true;
       (async () => {
         const uid = supabaseHazir ? await oturumuSagla().catch(() => null) : null;
-        const [l, pr, ro] = await Promise.all([aktivitelerim(uid).catch(() => []), uid ? profilim(uid).catch(() => null) : null, rotalarim().catch(() => [])]);
+        const [l, pr, ro, gr] = await Promise.all([
+          aktivitelerim(uid).catch(() => []),
+          uid ? profilim(uid).catch(() => null) : null,
+          rotalarim().catch(() => []),
+          uid ? gruplarim().catch(() => []) : Promise.resolve([]),
+        ]);
         if (acik) {
           setUid(uid);
           setListe(l);
           setProfil(pr);
           setRotalar(ro);
+          setGruplar(gr);
         }
       })();
       return () => {
@@ -84,11 +93,21 @@ export default function ProfilScreen() {
         ['1.240', 'm'],
       ];
 
+  // Web profili yalnızca kalıcı hesaplarda var (geçici hesabın adresi açılmaz)
+  function profiliPaylas() {
+    if (!profil) return;
+    if (hesap?.gecici) {
+      Alert.alert('Önce giriş yap', 'Geçici hesabın web profili yok. Google ya da Apple ile giriş yapınca profilini paylaşabilirsin.');
+      return;
+    }
+    void baglantiPaylas(`${profil.displayName} Lykiva'da`, profilAdresi(profil.username));
+  }
+
   return (
     <SafeAreaView edges={['top']} style={styles.root}>
       <View style={styles.top}>
         {supabaseHazir ? <IconButton icon="search" label="Kişi ara" onPress={() => router.push('/kisiler')} /> : null}
-        <IconButton icon="share" label="Profili paylaş" />
+        {gercek && profil ? <IconButton icon="share" label="Profili paylaş" onPress={profiliPaylas} /> : null}
         <IconButton icon="more" label="Ayarlar" onPress={() => router.push('/ayarlar')} />
       </View>
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
@@ -112,6 +131,14 @@ export default function ProfilScreen() {
             </View>
           </View>
         </View>
+        {gercek && profil?.bio ? (
+          <Txt style={{ paddingHorizontal: space.lg, marginTop: -4, marginBottom: 12, fontSize: 14 }}>{profil.bio}</Txt>
+        ) : null}
+        {gercek && profil ? (
+          <View style={{ paddingHorizontal: space.lg, marginBottom: 14 }}>
+            <Button label="Profili düzenle" icon="user" variant="outline" href="/profil-duzenle" />
+          </View>
+        ) : null}
 
         {supabaseHazir && hesap?.gecici ? (
           <Card style={styles.gecici}>
@@ -200,9 +227,32 @@ export default function ProfilScreen() {
             ))}
           </View>
         ) : tab === 2 ? (
-          <Txt variant="muted" style={{ textAlign: 'center', padding: space.lg }}>
-            Gruplar sonraki aşamada geliyor.
-          </Txt>
+          <View style={{ padding: space.md, gap: space.sm }}>
+            {gruplar && gruplar.length === 0 ? (
+              <Txt variant="muted" style={{ textAlign: 'center', paddingVertical: space.lg }}>
+                Henüz bir gruba katılmadın. Gruplar sekmesinden grup kurabilir ya da topluluk bulabilirsin.
+              </Txt>
+            ) : null}
+            {!gercek ? (
+              <Txt variant="muted" style={{ textAlign: 'center', paddingVertical: space.lg }}>
+                Sunucu anahtarı girilince grupların burada görünür.
+              </Txt>
+            ) : null}
+            {(gruplar ?? []).map((g) => (
+              <Pressable key={g.id} accessibilityRole="link" onPress={() => router.push({ pathname: '/grup/[id]', params: { id: g.id } })} style={styles.row}>
+                <Avatar initials={g.name.slice(0, 2).toLocaleUpperCase('tr-TR')} tone={g.is_community ? 'sea' : 'terra'} size={48} square />
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }} numberOfLines={1}>
+                    {g.name}
+                  </Txt>
+                  <Txt variant="small">
+                    {g.is_community ? 'Topluluk' : 'Grup'} · {g.member_count} üye
+                    {g.my_role === 'owner' ? ' · Kurucu' : g.my_role === 'admin' ? ' · Yönetici' : ''}
+                  </Txt>
+                </View>
+              </Pressable>
+            ))}
+          </View>
         ) : (
         <View style={{ padding: space.md, gap: space.sm }}>
           {liste && satirlar.length === 0 ? (

@@ -146,8 +146,44 @@ export async function aktivitedenRota(aktiviteId: string, ad: string): Promise<s
   return data as string;
 }
 
+export type RotaAyari = { name: string; notes: string | null; visibility: Rota['visibility'] };
+
+const rotaDinleyicileri = new Set<(id: string, d: Partial<RotaAyari> | null) => void>();
+const rotaDegisti = (id: string, d: Partial<RotaAyari> | null) => rotaDinleyicileri.forEach((f) => f(id, d));
+/** Rota düzenlenince (d) ya da silinince (null) haber verir */
+export function rotaDegisikliginiDinle(f: (id: string, d: Partial<RotaAyari> | null) => void) {
+  rotaDinleyicileri.add(f);
+  return () => {
+    rotaDinleyicileri.delete(f);
+  };
+}
+
+/** Sahibi için: ad, not ve görünürlük */
+export async function rotaGuncelle(id: string, ayar: RotaAyari) {
+  const yeni = { name: ayar.name.trim().slice(0, 80), notes: ayar.notes?.trim() || null, visibility: ayar.visibility };
+  if (yeni.name.length < 1) throw new Error('Rotaya bir ad ver.');
+  const { error } = await supabase.from('routes').update(yeni).eq('id', id);
+  if (error) throw new Error(error.message);
+  rotaDegisti(id, yeni);
+}
+
+/** Sahibi için: rotayı kalıcı olarak siler (grup paylaşımları da gider; etkinlikler rotasız kalır) */
+export async function rotaSil(id: string) {
+  const { error, count } = await supabase.from('routes').delete({ count: 'exact' }).eq('id', id);
+  if (error) throw new Error(error.message);
+  if (!count) throw new Error('Rota silinemedi');
+  rotaDegisti(id, null);
+}
+
 export function useRota(id: string | undefined) {
   const [durum, setDurum] = useState<{ r: Rota | null; hata: string | null; id?: string }>({ r: null, hata: null });
+  useEffect(
+    () =>
+      rotaDegisikliginiDinle((degisen, d) => {
+        if (d) setDurum((x) => (x.r && x.r.id === degisen ? { ...x, r: { ...x.r, ...d } } : x));
+      }),
+    [],
+  );
   useEffect(() => {
     if (!id) return;
     let iptal = false;

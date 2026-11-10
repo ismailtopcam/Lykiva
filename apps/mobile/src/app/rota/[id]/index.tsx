@@ -127,6 +127,8 @@ export default function RotaDetayScreen() {
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <IconButton floating icon="share" label="Rotayı paylaş" onPress={() => router.push('/rota/ornek/paylas')} />
             </View>
+          ) : !ornek && supabaseHazir && hesap && r.ownerId === hesap.id ? (
+            <IconButton floating icon="more" label="Rotayı düzenle" onPress={() => router.push({ pathname: '/rota/[id]/duzenle', params: { id: r.id } })} />
           ) : undefined
         }
       />
