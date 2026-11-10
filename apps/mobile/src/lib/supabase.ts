@@ -1,5 +1,5 @@
 /**
- * Supabase istemcisi (kendi sunucumuz: api.lykiva.ismailtopcam.dev).
+ * Supabase istemcisi (kendi sunucumuz: api.lykiva.app).
  *
  * Anahtar .env dosyasından gelir: EXPO_PUBLIC_SUPABASE_ANON_KEY
  * (anon anahtarı herkese açık olacak şekilde tasarlanmıştır; veriyi veritabanı kuralları korur).
@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 import { AppState, Platform } from 'react-native';
 
-export const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://api.lykiva.ismailtopcam.dev';
+export const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://api.lykiva.app';
 const ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
 /** Anahtar girilmemişse uygulama örnek verilerle çalışır, kayıtlar telefonda bekler */

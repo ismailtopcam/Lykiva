@@ -26,7 +26,7 @@ try {
 }
 // Ortam değişkeni .env'deki değeri geçersiz kılar (deneme için)
 const deger = (ad) => process.env[ad] || env.match(new RegExp(`^${ad}=(.*)$`, 'm'))?.[1]?.trim() || '';
-const URL_ = deger('EXPO_PUBLIC_SUPABASE_URL') || 'https://api.lykiva.ismailtopcam.dev';
+const URL_ = deger('EXPO_PUBLIC_SUPABASE_URL') || 'https://api.lykiva.app';
 const ANAHTAR = deger('EXPO_PUBLIC_SUPABASE_ANON_KEY');
 if (!ANAHTAR) {
   console.log('EXPO_PUBLIC_SUPABASE_ANON_KEY boş. Coolify > lykiva-supabase > Environment Variables > SERVICE_SUPABASEANON_KEY değerini apps/mobile/.env dosyasına yaz.');

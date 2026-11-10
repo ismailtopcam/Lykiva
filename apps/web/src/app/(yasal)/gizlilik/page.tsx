@@ -16,7 +16,7 @@ export default function Gizlilik() {
       <p className={styles.tarih}>Son güncelleme: 10 Kasım 2026</p>
 
       <p>
-        Bu metin, Lykiva mobil uygulamasını ve lykiva.ismailtopcam.dev web sitesini kullanırken kişisel verilerinin nasıl işlendiğini
+        Bu metin, Lykiva mobil uygulamasını ve lykiva.app web sitesini kullanırken kişisel verilerinin nasıl işlendiğini
         6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) kapsamında açıklar.
       </p>
 
@@ -65,7 +65,7 @@ export default function Gizlilik() {
       <p>
         Her aktivite ve rota için kimin görebileceğini sen seçersin: yalnızca sen, takipçilerin, grupların ya da herkes. Başlangıç ve bitiş
         noktalarını gizleyebilirsin; o zaman izin baş ve son kısmı başkalarına gösterilmez. Paylaşım bağlantısı açtığın aktiviteyi bağlantıyı
-        bilen herkes görür; bağlantıyı istediğin an kapatabilirsin. Web profilinde (lykiva.ismailtopcam.dev/u/kullanıcı-adın) yalnızca adın,
+        bilen herkes görür; bağlantıyı istediğin an kapatabilirsin. Web profilinde (lykiva.app/u/kullanıcı-adın) yalnızca adın,
         sayıların ve herkese açık aktivitelerinin özeti görünür. Bu sayfalar arama motorlarına kapalıdır.
       </p>
 

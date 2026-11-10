@@ -16,7 +16,15 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil.
 
-1. **Coolify > lykiva-web > Redeploy** — `/gizlilik`, `/kosullar`, `/hesap-silme` canlıda henüz 404 (11 Kasım 2026).
+1. **Alan adı lykiva.app'e taşınıyor (ismailtopcam.dev kapanacak)** — DNS hazır (11 Kasım 2026). Coolify'da:
+   - lykiva-web > Domains: `https://lykiva.app,https://www.lykiva.app`; Environment: `SITE_URL=https://lykiva.app`,
+     `SUPABASE_URL=https://api.lykiva.app` (ya da sil; kodda varsayılan artık bu) → **Redeploy**.
+   - lykiva-supabase: Kong / API alan adı `https://api.lykiva.app`; ortam değişkenlerinde eski adres geçen yerler
+     (`API_EXTERNAL_URL`, `SITE_URL`, `SUPABASE_PUBLIC_URL` vb.) `https://api.lykiva.app` / `https://lykiva.app` → **Restart**.
+   - Bilgisayardaki `apps/mobile/.env`: `EXPO_PUBLIC_SUPABASE_URL=https://api.lykiva.app`.
+   - Sonra yasal sayfalar (`/gizlilik`, `/kosullar`, `/hesap-silme`) da yeni sürümle açılır.
+1a. **Zoho Mail (bilgi@lykiva.app):** MX, SPF ve DMARC kayıtları eklendi. Zoho yönetim panelinden (Mail Admin > Domains >
+   lykiva.app) alan doğrulama TXT değeri ve DKIM anahtarı alınıp Cloudflare'e eklenecek.
 2. **Yönetim paneli > Site ayarları** — veri sorumlusu ve adresi; `bilgi@lykiva.app` adresinin gerçekten e-posta aldığını doğrula.
 3. **Telefona geliştirme derlemesi** (`apps/mobile`): `npx eas-cli@latest device:create` (iPhone) →
    `npx eas-cli@latest build --profile development --platform all` → telefonlara kur → `npm run mobile`. Adımlar README'de.
@@ -72,4 +80,8 @@ Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde
 - **Derleme: EAS Build** (bulutta; Windows'tan da başlatılır). Mac'te yerel derleme de mümkün.
 - **Yönetim paneli** tam yetkili anahtar kullanmaz; her işlem yöneticinin kendi oturumuyla, yetkiyi veritabanı denetler.
 - **Yasal sayfalardaki iletişim bilgileri** panelden değişir (`site_ayarlari`); varsayılan `bilgi@lykiva.app`.
+- **Alan adları:** `lykiva.app` asıl adres (web), `api.lykiva.app` Supabase, `brouter.` / `photon.lykiva.app` kendi
+  sunucularımız (kurulunca). DNS Cloudflare'de, proxy kapalı (Coolify kendi sertifikasını alır; gosterge.app ile aynı düzen).
+  `lykiva.com` ve `www.lykiva.com` Cloudflare yönlendirme kuralıyla `https://lykiva.app`'e 301 (yol ve sorgu korunur).
+  E-posta Zoho Mail (AB sunucuları).
 - **Commit ve PR'larda** yalnızca yazarın adı; yapay zekâ / araç imzası eklenmez (`CLAUDE.md`).

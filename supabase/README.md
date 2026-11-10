@@ -1,6 +1,6 @@
 # Supabase
 
-Kendi sunucumuzda (Coolify, `lykiva-supabase` servisi): https://api.lykiva.ismailtopcam.dev
+Kendi sunucumuzda (Coolify, `lykiva-supabase` servisi): https://api.lykiva.app
 
 `migrations/` altındaki SQL dosyaları sırayla uygulanır. "Sunucuda" sütunu elle tutulur ve geride kalabilir;
 gerçek durum için aşağıdaki `uygula.sh` (durum modu) ya da `node scripts/sunucu-kontrol.mjs` kullanılır.
@@ -112,6 +112,6 @@ Geçici (anonim) giriş açık (`ENABLE_ANONYMOUS_USERS=true`). Uygulama Google 
 - Bundle id değişirse `APPLE_CLIENT_ID` değişkeni güncellenmeli.
 
 - Google Cloud Console: OAuth istemcisi türü **Web application**, yetkili yönlendirme adresi
-  `https://api.lykiva.ismailtopcam.dev/auth/v1/callback`.
+  `https://api.lykiva.app/auth/v1/callback`.
 - Apple Developer: `app.lykiva.mobile` App ID'sinde **Sign in with Apple** açık olmalı (ücretli hesapla Xcode'un otomatik imzalaması bunu kendisi açar).
   Bundle id değişirse `GOTRUE_EXTERNAL_APPLE_CLIENT_ID` da değişmeli.
