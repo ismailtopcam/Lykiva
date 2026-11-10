@@ -144,6 +144,37 @@
   margin-top: 4px;
 }
 
+.hava {
+  margin-top: 24px;
+}
+
+.havaListe {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px 16px;
+  margin: 8px 0 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.havaListe dt {
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+.havaListe dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+}
+
+.havaKaynak {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
 .social {
   display: flex;
   gap: 8px;

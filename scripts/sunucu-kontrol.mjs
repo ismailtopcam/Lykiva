@@ -80,6 +80,7 @@ const asamalar = [
   ['20261110090000_profil', 'herkese_acik_profil', { kullanici: 'yok-boyle-biri' }],
   ['20261110100000_fotograflar', 'mola_fotolari_gecerli', { aktivite: '00000000-0000-0000-0000-000000000000', yollar: [] }],
   ['20261110110000_yonetim_moderasyon', 'yonetim_engelle', { kisi: '00000000-0000-0000-0000-000000000000', engelli: false }],
+  ['20261110120000_hava_paylasim_push_temizligi', 'paylasilan_aktivite', { anahtar: '0' }],
 ];
 for (const [dosya, fn, govde] of asamalar) {
   try {

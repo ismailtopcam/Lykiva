@@ -1,4 +1,4 @@
-import { ACTIVITY_LABELS, formatKm } from '@lykiva/shared';
+import { ACTIVITY_LABELS, formatKm, havaAyrintilari, havaGecerliMi, havaOzeti } from '@lykiva/shared';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -89,6 +89,7 @@ function Aktivite({ a }: { a: PaylasilanAktivite }) {
       </dl>
 
       <Profil a={a} />
+      <Hava a={a} />
 
       <p className={styles.social}>
         <span>{a.like_count} beğeni</span>
@@ -160,6 +161,30 @@ function Profil({ a }: { a: PaylasilanAktivite }) {
         </span>
         <span>{formatKm(p.dMax)} km</span>
       </div>
+    </section>
+  );
+}
+
+function Hava({ a }: { a: PaylasilanAktivite }) {
+  if (!havaGecerliMi(a.weather)) return null;
+  const h = a.weather;
+  // Rüzgârın yola göre etkisi kırpılmış izden hesaplanır (konum gösterilmez)
+  const iz = a.track?.map(([lng, lat]) => ({ lat, lng }));
+  return (
+    <section className={styles.hava} aria-labelledby="hava-baslik">
+      <div className={styles.profileHead}>
+        <h2 id="hava-baslik">Hava</h2>
+        <span>{havaOzeti(h)}</span>
+      </div>
+      <dl className={styles.havaListe}>
+        {havaAyrintilari(h, iz).map(([etiket, deger]) => (
+          <div key={etiket}>
+            <dt>{etiket}</dt>
+            <dd>{deger}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className={styles.havaKaynak}>Kayıt başladığındaki hava · MET Norway</p>
     </section>
   );
 }
