@@ -35,6 +35,7 @@ MIGRATIONLAR=(
   "20261110040000_birlikte.sql|exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'birlikte_ekle')"
   "20261110050000_kesfet.sql|exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'kesfet_rotalar')"
   "20261110060000_yonetim.sql|exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'yonetim_ozet')"
+  "20261110070000_hava.sql|exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'activities' and column_name = 'weather')"
 )
 
 # Betik "curl ... | bash" ile çalışırken kendi girdisi betiğin geri kalanıdır: sorgular girdi okumamalı,

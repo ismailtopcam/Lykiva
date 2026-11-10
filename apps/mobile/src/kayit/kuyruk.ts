@@ -65,6 +65,7 @@ async function gonder(): Promise<number> {
       if (__DEV__) console.warn('[kuyruk] gönderilemedi', error?.message);
     } else {
       map[p.client_id] = data;
+      if (p.weather) await supabase.from('activities').update({ weather: p.weather }).eq('id', data).then(undefined, () => undefined);
     }
   }
   await AsyncStorage.setItem(GONDERILEN, JSON.stringify(map));

@@ -44,6 +44,7 @@ export type IconName =
   | 'video'
   | 'undo'
   | 'image'
+  | 'weather'
   | 'more';
 
 type Props = { name: IconName; size?: number; color?: string; strokeWidth?: number };
@@ -133,6 +134,14 @@ function render(name: IconName, p: Record<string, unknown>, color: string) {
         <>
           <Rect x={4} y={5} width={16} height={16} rx={2} {...p} />
           <Path d="M4 10h16M9 3v4M15 3v4" {...p} />
+        </>
+      );
+    case 'weather':
+      return (
+        <>
+          <Circle cx={9} cy={9} r={3.2} {...p} />
+          <Path d="M9 2.5v1.3M3.8 4.3l.9.9M2.5 9h1.3M14.2 4.3l-.9.9" {...p} />
+          <Path d="M8 20h9.5a3.5 3.5 0 0 0 .3-7 4.6 4.6 0 0 0-8.8.9A3 3 0 0 0 8 20z" {...p} />
         </>
       );
     case 'clock':

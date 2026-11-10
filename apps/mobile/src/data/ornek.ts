@@ -3,7 +3,7 @@
  * Kişiler ve sayılar uydurmadır; 3. aşamada Supabase'ten gelen verilerle değişecek.
  * Koordinatlar [boylam, enlem] (GeoJSON sırası).
  */
-import type { ActivityType } from '@lykiva/shared';
+import type { ActivityType, HavaDurumu } from '@lykiva/shared';
 
 export type LngLat = [number, number];
 export type AvatarTone = 'sea' | 'terra' | 'sand' | 'green' | 'ink';
@@ -84,6 +84,8 @@ export type Activity = {
   /** Sunucudaki sahibinin kimliği ve adı (başkasının aktivitesinde kişi sayfasına bağlantı) */
   ownerId?: string;
   ownerName?: string;
+  /** Kayıt başındaki hava (yoksa gösterilmez) */
+  hava?: HavaDurumu | null;
   /** Sunucudaki aktivitede birlikte yapılan kişiler (with alanı bunların kullanıcı adları) */
   birlikte?: BirlikteKisi[];
   /** 3B görünüm için yükseklikli iz [boylam, enlem, yükseklik | null] */
