@@ -66,4 +66,7 @@ npm test --workspace packages/shared
 - Uygulama sunucusunda (Coolify) diğer uygulamalara dokunma: artieksi, fatosunkitapligi, gosterge, tez ve paylaşılan
   postgres:18.
 - Kullanıcının ekranına uzaktan müdahale yok; dosya ve terminal işleri sorun değil.
+- Adresler: web `https://lykiva.app`, Supabase `https://api.lykiva.app` (DNS Cloudflare'de; `lykiva.com` → `lykiva.app`).
+- Coolify paneli ve API'si Tailscale üzerinden `http://coolify:8000` (sürüm 4.7.3). API anahtarı kullanıcıdan istenir; repoya,
+  dosyaya ya da hafızaya yazılmaz. Yalnızca lykiva-web ve lykiva-supabase'e dokunulur.
 - Sunucuya buradan SSH erişimi yok: migration'ları kullanıcı Coolify > Servers > uygulama > Terminal'de `uygula.sh` ile uygular.

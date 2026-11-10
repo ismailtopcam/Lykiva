@@ -16,16 +16,9 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil.
 
-1. **Alan adı lykiva.app'e taşınıyor (ismailtopcam.dev kapanacak)** — DNS hazır (11 Kasım 2026). Coolify'da:
-   - lykiva-web > Domains: `https://lykiva.app,https://www.lykiva.app`; Environment: `SITE_URL=https://lykiva.app`,
-     `SUPABASE_URL=https://api.lykiva.app` (ya da sil; kodda varsayılan artık bu) → **Redeploy**.
-   - lykiva-supabase: Kong / API alan adı `https://api.lykiva.app`; ortam değişkenlerinde eski adres geçen yerler
-     (`API_EXTERNAL_URL`, `SITE_URL`, `SUPABASE_PUBLIC_URL` vb.) `https://api.lykiva.app` / `https://lykiva.app` → **Restart**.
-   - Bilgisayardaki `apps/mobile/.env`: `EXPO_PUBLIC_SUPABASE_URL=https://api.lykiva.app`.
-   - Sonra yasal sayfalar (`/gizlilik`, `/kosullar`, `/hesap-silme`) da yeni sürümle açılır.
-1a. **Zoho Mail (bilgi@lykiva.app):** DNS kayıtlarının hepsi yerinde (MX, SPF, DMARC, doğrulama TXT, DKIM `zmail`).
+1. **Zoho Mail (bilgi@lykiva.app):** DNS kayıtlarının hepsi yerinde (MX, SPF, DMARC, doğrulama TXT, DKIM `zmail`).
    Zoho Mail Admin > Domains > lykiva.app'te doğrulama ve DKIM için **Verify**'a bas; bir deneme postası gönderip al.
-2. **Yönetim paneli > Site ayarları** — veri sorumlusu ve adresi; `bilgi@lykiva.app` adresinin gerçekten e-posta aldığını doğrula.
+2. **Yönetim paneli > Site ayarları** (`https://lykiva.app/admin`) — veri sorumlusu ve adresi.
 3. **Telefona geliştirme derlemesi** (`apps/mobile`): `npx eas-cli@latest device:create` (iPhone) →
    `npx eas-cli@latest build --profile development --platform all` → telefonlara kur → `npm run mobile`. Adımlar README'de.
 4. **Yedek:** S3 uyumlu kova aç, `/etc/lykiva-yedek.env` doldur, `yedekle.sh` ve `geri-yukle-dene.sh` çalıştır.
@@ -83,5 +76,7 @@ Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde
 - **Alan adları:** `lykiva.app` asıl adres (web), `api.lykiva.app` Supabase, `brouter.` / `photon.lykiva.app` kendi
   sunucularımız (kurulunca). DNS Cloudflare'de, proxy kapalı (Coolify kendi sertifikasını alır; gosterge.app ile aynı düzen).
   `lykiva.com` ve `www.lykiva.com` Cloudflare yönlendirme kuralıyla `https://lykiva.app`'e 301 (yol ve sorgu korunur).
-  E-posta Zoho Mail (AB sunucuları).
+  E-posta Zoho Mail (AB sunucuları). ismailtopcam.dev artık Lykiva'yı göstermiyor; Coolify'dan eski adresler kaldırıldı.
+- **Coolify paneli** Tailscale ağı üzerinden `http://coolify:8000` (eski `coolify.ismailtopcam.dev` kapalı).
+  lykiva-web uuid `pjrlciwlsjvr6fpl3lovbaoy`, lykiva-supabase uuid `nqyujqqkkjyba4flthzcf9uf`.
 - **Commit ve PR'larda** yalnızca yazarın adı; yapay zekâ / araç imzası eklenmez (`CLAUDE.md`).
