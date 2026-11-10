@@ -97,7 +97,8 @@ npm run test:sql             # migration'ları bellekteki veritabanında dener (
 19. **Yedekleme betikleri** — `supabase/yedek/`: gecelik veritabanı + dosya deposu yedeği, S3 uyumlu depolamaya kopya, eski yedek temizliği, canlıya dokunmadan geri yükleme denemesi; tek komutla kurulum (`kur.sh`). Sunucuya kurulması ve S3 kovası bağlanması bekliyor.
 20. **Hava durumu** — kayıt başlarken (ilk konumla) hava bir kez alınır ve aktiviteyle saklanır (MET Norway; anahtarsız, ticari kullanım ücretsiz): aktivite detayında Hava kartı (sıcaklık, hissedilen, rüzgâr yönü ve rotaya göre "çoğunlukla karşıdan / arkadan", nem, yağış, UV), akış kartında kısa özet, paylaşım kartında "Hava" seçeneği, etkinlik detayında buluşma noktası için tahmin (9 güne kadar). İnternet yoksa kayıt havasız kaydedilir.
 21. **Telefona anlık bildirim (push)** — her uygulama içi bildirim, alıcının telefonlarına Expo Push Service ile de gider (sunucuda pg_net; yoksa ya da başarısız olursa uygulama içi bildirim yine yazılır). İzin, Bildirimler ekranındaki "Telefonuna da gelsin mi?" kartından ya da Ayarlar > Telefona bildirim'den istenir; bildirime dokununca ilgili sayfa açılır; çıkışta bu telefonun jetonu silinir. Çalışması için EAS proje kimliği, Apple push anahtarı ve yeni telefon derlemesi gerekir (aşağıda).
-22. Sırada: kendi BRouter / Photon sunucumuz, Google/Apple giriş ayarı (en son).
+22. **Kendi rota ve yer arama sunucularımız (kurulum dosyaları)** — `altyapi/`: BRouter 1.7.10 ve Photon 1.3.0 için Dockerfile'lar ve Coolify Docker Compose; ilk açılışta Türkiye segmentlerini (~210 MB) ve Photon Türkiye verisini kendileri indirir, haftalık güncelleme betikleri. Komutlar yerelde gerçek veriyle denendi; Coolify'da kurulması bekliyor.
+23. Sırada: Google/Apple giriş ayarı (en son).
 
 ### Telefona bildirim için bir kerelik ayar
 
