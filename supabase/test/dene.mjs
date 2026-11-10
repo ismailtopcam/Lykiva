@@ -28,7 +28,7 @@ create schema if not exists extensions;
 create schema if not exists auth;
 create role anon nologin;
 create role authenticated nologin;
-create table auth.users (id uuid primary key, is_anonymous boolean not null default false, raw_user_meta_data jsonb default '{}');
+create table auth.users (id uuid primary key, is_anonymous boolean not null default false, raw_user_meta_data jsonb default '{}', email text, created_at timestamptz not null default now(), last_sign_in_at timestamptz);
 create function auth.uid() returns uuid language sql stable as $$
   select (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub')::uuid $$;
 create function auth.jwt() returns jsonb language sql stable as $$
@@ -428,6 +428,52 @@ ke = (await olarak(D, `select kesfet_etkinlikler() as j`)).rows[0].j;
 bekle('Grupta olmayan D grup etkinliğini görmez', ke.length === 1 && ke[0].title === 'Kaş gün batımı sürüşü', ke.map((x) => x.title));
 ke = (await olarak(B, `select kesfet_etkinlikler('meydan') as j`)).rows[0].j;
 bekle('Etkinlik araması buluşma yerinde de arar', ke.length === 1 && ke[0].title === 'Kaş gün batımı sürüşü', ke.map((x) => x.title));
+
+console.log('\nYönetim paneli ve şikayetler');
+await db.exec(`update auth.users set email = 'ayse@ornek.test' where id = '${A}'`);
+m = await hataMesaji(() => olarak(A, `select yonetim_ozet()`));
+bekle('Yönetici olmayan panel verisini alamaz', /Yönetim yetkisi yok/.test(m ?? ''), m);
+await db.exec(`update profiles set is_admin = true where id in ('${A}', '${G}')`);
+let oz = (await olarak(A, `select yonetim_ozet() as j`)).rows[0].j;
+bekle('Yönetici A genel bakışı görür (4 kalıcı, 1 geçici hesap; 14 günlük seri)', oz.kullanici === 4 && oz.gecici === 1 && oz.gunluk.length === 14 && oz.aktivite > 0, { kullanici: oz.kullanici, gecici: oz.gecici, gun: oz.gunluk.length });
+m = await hataMesaji(() => olarak(G, `select yonetim_ozet()`, [], true));
+bekle('Geçici hesap is_admin olsa da yönetici sayılmaz', /Yönetim yetkisi yok/.test(m ?? ''), m);
+let yk = (await olarak(A, `select yonetim_kullanicilar('ayse@') as j`)).rows[0].j;
+bekle('Kullanıcı araması e-postada da arar; yönetici e-postayı görür', yk.toplam === 1 && yk.satirlar[0].email === 'ayse@ornek.test' && yk.satirlar[0].is_admin === true, yk);
+yk = (await olarak(A, `select yonetim_kullanicilar() as j`)).rows[0].j;
+bekle('Varsayılan liste geçici hesapları göstermez', yk.toplam === 4, yk.toplam);
+
+m = await hataMesaji(() => olarak(C, `select sikayet_et('activity', $1, 'x')`, [aKas]));
+bekle('Çok kısa şikayet nedeni reddedilir', /3–500/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(C, `select sikayet_et('activity', $1, 'Uygunsuz içerik')`, ['00000000-0000-0000-0000-000000000000']));
+bekle('Olmayan içerik şikayet edilemez', /bulunamadı/.test(m ?? ''), m);
+const sk1 = (await olarak(C, `select sikayet_et('activity', $1, 'Uygunsuz içerik') as id`, [aKas])).rows[0].id;
+const sk2 = (await olarak(C, `select sikayet_et('activity', $1, 'Yine aynı') as id`, [aKas])).rows[0].id;
+bekle('Aynı hedefe açık şikayet tek', sk1 === sk2, [sk1, sk2]);
+m = await hataMesaji(() => olarak(C, `select * from reports`));
+bekle('Şikayet tablosu istemciye kapalı', /permission denied/.test(m ?? ''), m);
+let ys = (await olarak(A, `select yonetim_sikayetler('acik') as j`)).rows[0].j;
+bekle('Yönetici açık şikayeti hedef özetiyle görür', ys.toplam === 1 && ys.satirlar[0].hedef.ad === 'A Kaş herkese açık' && ys.satirlar[0].bildiren === 'Cem Kaya', ys.satirlar[0]);
+await olarak(A, `select yonetim_sikayet_guncelle($1, 'resolved', 'İncelendi, sorun yok')`, [sk1]);
+ys = (await olarak(A, `select yonetim_sikayetler('kapali') as j`)).rows[0].j;
+bekle('Şikayet kapatılınca kapalılar listesinde, notuyla', ys.toplam === 1 && ys.satirlar[0].admin_note === 'İncelendi, sorun yok' && (await olarak(A, `select yonetim_sikayetler('acik') as j`)).rows[0].j.toplam === 0, ys.satirlar[0]);
+
+const dRota = (await db.query(`select id from routes where name = 'D Kaş tepe rotası'`)).rows[0].id;
+await olarak(A, `select yonetim_rota_gizle($1)`, [dRota]);
+kr = (await olarak(C, `select kesfet_rotalar() as j`)).rows[0].j;
+bekle('Yönetici rotayı herkese kapatınca Keşfet\'ten düşer', !kr.some((x) => x.id === dRota), kr.map((x) => x.name));
+const dAkt = (await db.query(`select id from activities where title = 'D yabancı'`)).rows[0].id;
+m = await hataMesaji(() => olarak(B, `select yonetim_aktivite_sil($1)`, [dAkt]));
+bekle('Yönetici olmayan aktivite silemez', /Yönetim yetkisi yok/.test(m ?? ''), m);
+await olarak(A, `select yonetim_aktivite_sil($1)`, [dAkt]);
+bekle('Yönetici aktiviteyi siler', (await db.query(`select count(*)::int as n from activities where id = '${dAkt}'`)).rows[0].n === 0, null);
+m = await hataMesaji(() => olarak(A, `select yonetim_yetki($1, false)`, [A]));
+bekle('Kendi yönetici yetkini alamazsın', /alamazsın/.test(m ?? ''), m);
+await olarak(A, `select yonetim_yetki($1, true)`, [B]);
+oz = (await olarak(B, `select yonetim_ozet() as j`)).rows[0].j;
+bekle('A, B\'ye yetki verince B paneli görür', oz.kullanici === 4, oz.kullanici);
+m = await hataMesaji(() => anonOlarak(`select yonetim_ozet()`));
+bekle('Giriş yapmamış biri panel fonksiyonlarını çağıramaz', /permission denied/.test(m ?? ''), m);
 
 console.log('\nYetki');
 let anonHata = null;

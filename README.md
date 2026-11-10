@@ -92,10 +92,15 @@ npm run test:sql             # migration'ları bellekteki veritabanında dener (
 14. **Bildirimler (uygulama içi)** — yeni takipçi, beğeni, yorum, gruba katılma isteği ve kabulü, grupta yeni etkinlik; akışın üstündeki zilde okunmamış sayısı (yeni bildirim gelince canlı güncellenir), bildirimler ekranında dokununca ilgili sayfaya gider, takipçiye oradan geri takip. Telefona anlık bildirim (push) ayrı aşama.
 15. **Birlikte yapılan aktivite** — aktivitenin sahibi birlikte gittiği kişileri ekler (takipleştiği ya da ortak grubu olanlar); aynı saatlerde aynı yoldan geçen tanıdıklar öneri olarak çıkar. Eklenen kişi bildirim alır, aktiviteyi görür, akışında çıkar ve kendini kaldırabilir. Akış kartında "Mert ve 2 kişiyle", aktivite detayında "Ayşe ve Mert ile birlikte", paylaşım kartında @kullanıcı adları.
 16. **Keşfet gerçek veriden** — yaklaşan etkinlikler (herkese açık + gruplarının, 30 gün), herkese açık rotalar, katılabileceğin topluluklar ve kişi arama; konum izni varsa yakından uzağa sıralı ("Yakınındakileri önce göster" izni ister), tek arama kutusu hepsinde arar, Tümü / Rotalar / Topluluklar / Etkinlikler / Kişiler sekmeleri, topluluğa katıl / istek gönder, "Topluluk kur" açık topluluk seçili açılır.
-17. Sırada: telefona anlık bildirim (push), yönetim paneli girişi ve gerçek veri.
+17. **Yönetim paneli** — `lykiva.ismailtopcam.dev/admin`: e-posta + şifreyle giriş (yalnızca `is_admin` hesaplar; oturum HttpOnly çerezde, süresi dolarken yenilenir), genel bakış (sayılar, 14 günlük grafik), şikayetler (durum + not, içeriği kaldırma), kullanıcılar (e-posta ile arama, yönetici yap / yetkiyi al), aktiviteler (silme), rotalar (herkese kapatma), gruplar ve etkinlikler (silme). Yönetici hesabı `supabase/yonetici.sh` ile açılır. Sunucuda `sikayet_et` fonksiyonu hazır; uygulamada şikayet düğmesi henüz yok.
+18. Sırada: uygulamada "Şikayet et", telefona anlık bildirim (push).
 
 ## Sunucu
 
 - Supabase (kendi sunucumuzda, Coolify): https://api.lykiva.ismailtopcam.dev
-- Web: https://lykiva.ismailtopcam.dev (Coolify, `apps/web/Dockerfile`). Paylaşım sayfası (`/a/<anahtar>`) için web uygulamasının
+- Web: https://lykiva.ismailtopcam.dev (Coolify, `apps/web/Dockerfile`). Paylaşım sayfası (`/a/<anahtar>`) ve yönetim paneli (`/admin`) için web uygulamasının
   ortam değişkenlerinde `SUPABASE_ANON_KEY` (lykiva-supabase > `SERVICE_SUPABASEANON_KEY`) olmalı; isteğe bağlı `SUPABASE_URL`, `SITE_URL`.
+  Tam yetkili servis anahtarı web'e konmaz; panel her işlemi yöneticinin kendi oturumuyla yapar, yetkiyi veritabanı denetler.
+- Yönetici hesabı: Coolify > Terminal > uygulama sunucusunda
+  `curl -fsSL https://raw.githubusercontent.com/ismailtopcam/Lykiva/main/supabase/yonetici.sh -o /tmp/yonetici.sh && bash /tmp/yonetici.sh`
+  (e-posta ve şifre sorar, hesabı açar ve yönetici yapar).

@@ -9,6 +9,8 @@
 import { ACTIVITY_LABELS, formatDuration, formatKm, formatMeters, formatPace, formatSpeedKmh, type ActivityType } from '@lykiva/shared';
 import { cache } from 'react';
 
+import { supabaseAyari } from '@/lib/sunucu';
+
 export type PaylasilanAktivite = {
   title: string | null;
   activity: ActivityType;
@@ -43,9 +45,9 @@ export const ANAHTAR_BICIMI = /^[0-9a-f]{32}$/;
 /** Aynı istekte sayfa ve meta veri için tek sorgu (React cache). Her istekte taze: bağlantı kapatılınca hemen kapanır. */
 export const paylasilanAktivite = cache(async (anahtar: string): Promise<Sonuc> => {
   if (!ANAHTAR_BICIMI.test(anahtar)) return { durum: 'yok' };
-  const url = process.env.SUPABASE_URL || 'https://api.lykiva.ismailtopcam.dev';
-  const anahtarKey = process.env.SUPABASE_ANON_KEY;
-  if (!anahtarKey) return { durum: 'ayarsiz' };
+  const ayar = supabaseAyari();
+  if (!ayar) return { durum: 'ayarsiz' };
+  const { url, anahtar: anahtarKey } = ayar;
   try {
     const r = await fetch(`${url}/rest/v1/rpc/paylasilan_aktivite`, {
       method: 'POST',
