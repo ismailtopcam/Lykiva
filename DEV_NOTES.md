@@ -19,8 +19,9 @@ Aktivitenin hangi havada yapıldığı kaydedilecek ve gösterilecek.
   Rota detayı ve Etkinlik detayı ekranlarına eklenecek
 - Karar bekleyen: hangi hava durumu servisi kullanılacak (seçenekler araştırılacak)
 
-### [ ] Yedekleme
-Şu an Supabase veritabanının ve dosyalarının yedeği alınmıyor. Sunucu ya da disk kaybında veri geri gelmez.
+### [~] Yedekleme
+Betikler hazır (`supabase/yedek/`, nasıl kurulacağı `supabase/yedek/README.md`'de); sunucuya kurulup S3 kovası
+bağlanınca ve geri yükleme bir kez denenince [x] olacak. O zamana kadar yedek alınmıyor.
 
 - Supabase veritabanını (`lykiva-supabase` servisindeki `supabase-db`) her gece yedekle
 - Yedekleri sunucu dışında tut (S3 uyumlu depolama: Contabo Object Storage, Backblaze B2, Cloudflare R2…)
