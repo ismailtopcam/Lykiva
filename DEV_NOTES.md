@@ -23,8 +23,8 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
      (`API_EXTERNAL_URL`, `SITE_URL`, `SUPABASE_PUBLIC_URL` vb.) `https://api.lykiva.app` / `https://lykiva.app` → **Restart**.
    - Bilgisayardaki `apps/mobile/.env`: `EXPO_PUBLIC_SUPABASE_URL=https://api.lykiva.app`.
    - Sonra yasal sayfalar (`/gizlilik`, `/kosullar`, `/hesap-silme`) da yeni sürümle açılır.
-1a. **Zoho Mail (bilgi@lykiva.app):** MX, SPF ve DMARC kayıtları eklendi. Zoho yönetim panelinden (Mail Admin > Domains >
-   lykiva.app) alan doğrulama TXT değeri ve DKIM anahtarı alınıp Cloudflare'e eklenecek.
+1a. **Zoho Mail (bilgi@lykiva.app):** DNS kayıtlarının hepsi yerinde (MX, SPF, DMARC, doğrulama TXT, DKIM `zmail`).
+   Zoho Mail Admin > Domains > lykiva.app'te doğrulama ve DKIM için **Verify**'a bas; bir deneme postası gönderip al.
 2. **Yönetim paneli > Site ayarları** — veri sorumlusu ve adresi; `bilgi@lykiva.app` adresinin gerçekten e-posta aldığını doğrula.
 3. **Telefona geliştirme derlemesi** (`apps/mobile`): `npx eas-cli@latest device:create` (iPhone) →
    `npx eas-cli@latest build --profile development --platform all` → telefonlara kur → `npm run mobile`. Adımlar README'de.
