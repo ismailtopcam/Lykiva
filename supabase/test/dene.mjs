@@ -562,6 +562,45 @@ await olarak(C, `select push_jetonu_sil($1)`, [JETON_A]);
 bekle('Sahibi jetonunu siler (bildirimleri kapatınca)', (await db.query(`select count(*)::int as n from push_jetonlari`)).rows[0].n === 0, null);
 await db.exec(`drop schema net cascade`);
 
+console.log('\nGeçersiz jeton temizliği ve paylaşımda hava');
+await db.exec(`
+  create schema if not exists net;
+  delete from push_istekleri;
+  create sequence net.istek_sira;
+  create table net.cagri (id bigint, url text, body jsonb);
+  create table net._http_response (id bigint primary key, status_code integer, content text, created timestamptz default now());
+  create function net.http_post(url text, body jsonb default '{}'::jsonb, params jsonb default '{}'::jsonb, headers jsonb default '{}'::jsonb, timeout_milliseconds integer default 5000)
+  returns bigint language sql as $$ insert into net.cagri values (nextval('net.istek_sira'), url, body) returning id $$;
+`);
+const J1 = 'ExponentPushToken[eskiTelefon000000001]';
+const J2 = 'ExponentPushToken[yeniTelefon000000002]';
+await olarak(A, `select push_jetonu_kaydet($1, 'ios')`, [J1]);
+await olarak(A, `select push_jetonu_kaydet($1, 'android')`, [J2]);
+await olarak(D, `select yorum_yaz($1, 'İlk push')`, [aKas]);
+let ist = (await db.query(`select istek, jetonlar from push_istekleri`)).rows;
+const gid = (await db.query(`select id, body from net.cagri`)).rows;
+bekle('Gönderilen isteğin jetonları sırasıyla kaydedilir', ist.length === 1 && ist[0].istek == gid[0].id && JSON.stringify(ist[0].jetonlar) === JSON.stringify(gid[0].body.map((x) => x.to)) && ist[0].jetonlar.length === 2, { ist, gid });
+const olu = ist[0].jetonlar[1];
+const canli = ist[0].jetonlar[0];
+await db.query(`insert into net._http_response (id, status_code, content) values ($1, 200, $2)`, [ist[0].istek, JSON.stringify({ data: [{ status: 'ok', id: 'x1' }, { status: 'error', message: 'not registered', details: { error: 'DeviceNotRegistered' } }] })]);
+await olarak(D, `select yorum_yaz($1, 'İkinci push')`, [aKas]);
+r = await db.query(`select jeton from push_jetonlari where user_id = '${A}' order by jeton`);
+bekle('Sonraki bildirimde "DeviceNotRegistered" dönen jeton silinir, çalışan kalır', r.rows.length === 1 && r.rows[0].jeton === canli && canli !== olu, r.rows);
+const son = (await db.query(`select body from net.cagri order by id desc limit 1`)).rows[0].body;
+bekle('İkinci bildirim yalnızca çalışan jetona gider', son.length === 1 && son[0].to === canli, son);
+ist = (await db.query(`select istek from push_istekleri`)).rows;
+bekle('İşlenen yanıtın kaydı silinir, yenisi bekler', ist.length === 1 && ist[0].istek != gid[0].id, ist);
+await db.query(`insert into net._http_response (id, status_code, content) values ($1, 500, 'sunucu hatası')`, [ist[0].istek]);
+bekle('Hatalı yanıtta jeton silinmez', (await db.query(`select push_yanitlarini_isle() as n`)).rows[0].n === 0 && (await db.query(`select count(*)::int n from push_jetonlari where user_id = '${A}'`)).rows[0].n === 1, null);
+m = await hataMesaji(() => olarak(A, `select push_yanitlarini_isle()`));
+bekle('Temizlik fonksiyonu istemciye kapalı', /permission denied/.test(m ?? ''), m);
+await db.exec(`drop schema net cascade; delete from push_jetonlari;`);
+
+const anahtarKas = (await olarak(A, `select paylasim_baglantisi_ac($1) as k`, [aKas])).rows[0].k;
+const pk = (await anonOlarak(`select paylasilan_aktivite($1) as j`, [anahtarKas])).rows[0].j;
+bekle('Paylaşım sayfası kayıt başındaki havayı da alır', pk?.weather?.sicaklik === 14.2 && pk.weather.sembol === 'partlycloudy_day', pk?.weather);
+await olarak(A, `select paylasim_baglantisi_kapat($1)`, [aKas]);
+
 console.log('\nProfil ve güvenlik');
 m = await hataMesaji(() => olarak(D, `update profiles set is_admin = true where id = $1`, [D]));
 bekle('GÜVENLİK: kullanıcı kendini yönetici yapamaz (is_admin güncellenemez)', /permission denied/.test(m ?? ''), m);

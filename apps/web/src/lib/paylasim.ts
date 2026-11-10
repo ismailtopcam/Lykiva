@@ -6,7 +6,7 @@
  *   SUPABASE_URL       (varsayılan https://api.lykiva.ismailtopcam.dev)
  *   SUPABASE_ANON_KEY  (lykiva-supabase servisindeki SERVICE_SUPABASEANON_KEY)
  */
-import { ACTIVITY_LABELS, formatDuration, formatKm, formatMeters, formatPace, formatSpeedKmh, type ActivityType } from '@lykiva/shared';
+import { ACTIVITY_LABELS, formatDuration, formatKm, formatMeters, formatPace, formatSpeedKmh, type ActivityType, type HavaDurumu } from '@lykiva/shared';
 import { cache } from 'react';
 
 import { supabaseAyari } from '@/lib/sunucu';
@@ -25,6 +25,8 @@ export type PaylasilanAktivite = {
   max_speed_mps: number | null;
   owner_name: string;
   endpoints_hidden: boolean;
+  /** Kayıt başındaki hava (MET Norway); eski kayıtlarda ve eski sunucu fonksiyonunda yok */
+  weather?: HavaDurumu | null;
   /** [boylam, enlem]; başlangıç/bitiş gizliyse kırpılmış */
   track: [number, number][] | null;
   /** [mesafe m, yükseklik m] */
