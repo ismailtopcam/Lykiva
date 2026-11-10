@@ -9,6 +9,7 @@ import { FloatingHeader } from '@/components/Header';
 import { Icon, type IconName } from '@/components/Icon';
 import { IconButton } from '@/components/IconButton';
 import { OrnekGrup } from '@/components/OrnekGrup';
+import { useSikayet } from '@/components/SikayetPenceresi';
 import { Txt } from '@/components/Txt';
 import { Avatar, Button, DateBadge } from '@/components/ui';
 import { grupEtkinlikleri, kisaTarih, tarihRozeti, type EtkinlikOzeti } from '@/etkinlik/etkinlikler';
@@ -53,6 +54,7 @@ type Sekme = 'etkinlikler' | 'rotalar' | 'uyeler' | 'istekler';
 function GercekGrup({ id }: { id: string }) {
   const insets = useSafeAreaInsets();
   const hesap = useHesap();
+  const sikayet = useSikayet();
   const [g, setG] = useState<GrupDetayi | null | undefined>(undefined);
   const [uyeler, setUyeler] = useState<Uye[]>([]);
   const [rotalar, setRotalar] = useState<GrupRotasi[]>([]);
@@ -139,7 +141,8 @@ function GercekGrup({ id }: { id: string }) {
             Alert.alert('Yeni davet kodu', `${k}\nEski kod artık çalışmaz.`);
           }),
       });
-    secenekler.push({
+    if (!sahip) secenekler.push({ text: 'Şikayet et', onPress: () => sikayet.ac('group', grup.id, grup.name) });
+    if (uye) secenekler.push({
       text: 'Gruptan ayrıl',
       style: 'destructive',
       onPress: () =>
@@ -207,7 +210,7 @@ function GercekGrup({ id }: { id: string }) {
       <View style={[styles.hero, { paddingTop: insets.top + 6 }]}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: -8 }}>
           <IconButton icon="back" label="Geri" color="#FFFFFF" onPress={() => router.back()} />
-          {uye ? <IconButton icon="more" label="Grup seçenekleri" color="#FFFFFF" onPress={ayarlar} /> : null}
+          <IconButton icon="more" label="Grup seçenekleri" color="#FFFFFF" onPress={ayarlar} />
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 6 }}>
           <Avatar initials={basHarfler(grup.name)} tone={grupRengi(grup.id)} size={52} square />
@@ -358,6 +361,7 @@ function GercekGrup({ id }: { id: string }) {
         )}
         {hata ? <Txt style={{ color: colors.terraInk }}>{hata}</Txt> : null}
       </View>
+      {sikayet.pencere}
     </ScrollView>
   );
 }

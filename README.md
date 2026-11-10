@@ -93,7 +93,8 @@ npm run test:sql             # migration'ları bellekteki veritabanında dener (
 15. **Birlikte yapılan aktivite** — aktivitenin sahibi birlikte gittiği kişileri ekler (takipleştiği ya da ortak grubu olanlar); aynı saatlerde aynı yoldan geçen tanıdıklar öneri olarak çıkar. Eklenen kişi bildirim alır, aktiviteyi görür, akışında çıkar ve kendini kaldırabilir. Akış kartında "Mert ve 2 kişiyle", aktivite detayında "Ayşe ve Mert ile birlikte", paylaşım kartında @kullanıcı adları.
 16. **Keşfet gerçek veriden** — yaklaşan etkinlikler (herkese açık + gruplarının, 30 gün), herkese açık rotalar, katılabileceğin topluluklar ve kişi arama; konum izni varsa yakından uzağa sıralı ("Yakınındakileri önce göster" izni ister), tek arama kutusu hepsinde arar, Tümü / Rotalar / Topluluklar / Etkinlikler / Kişiler sekmeleri, topluluğa katıl / istek gönder, "Topluluk kur" açık topluluk seçili açılır.
 17. **Yönetim paneli** — `lykiva.ismailtopcam.dev/admin`: e-posta + şifreyle giriş (yalnızca `is_admin` hesaplar; oturum HttpOnly çerezde, süresi dolarken yenilenir), genel bakış (sayılar, 14 günlük grafik), şikayetler (durum + not, içeriği kaldırma), kullanıcılar (e-posta ile arama, yönetici yap / yetkiyi al), aktiviteler (silme), rotalar (herkese kapatma), gruplar ve etkinlikler (silme). Yönetici hesabı `supabase/yonetici.sh` ile açılır. Sunucuda `sikayet_et` fonksiyonu hazır; uygulamada şikayet düğmesi henüz yok.
-18. Sırada: uygulamada "Şikayet et", telefona anlık bildirim (push).
+18. **Şikayet et** — başkasının aktivitesi, kişi sayfası, rota ve etkinlik altında "… şikayet et" bağlantısı; yorum ve grup mesajında basılı tutunca "Şikayet et"; grup menüsünde "Şikayet et". Neden seçilir (+ isteğe bağlı açıklama), şikayet yönetim paneline düşer, şikayet edilen kişi görmez.
+19. Sırada: yedekleme, hava durumu, telefona anlık bildirim (push), kendi BRouter / Photon sunucumuz.
 
 ## Sunucu
 

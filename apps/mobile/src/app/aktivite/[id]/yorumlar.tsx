@@ -20,6 +20,7 @@ import {
   type YorumSayfasi,
 } from '@/akis/akis';
 import { Header } from '@/components/Header';
+import { useSikayet } from '@/components/SikayetPenceresi';
 import { Icon } from '@/components/Icon';
 import { Txt } from '@/components/Txt';
 import { Avatar } from '@/components/ui';
@@ -53,6 +54,7 @@ function Yorumlar({ id }: { id: string }) {
   const [gonderHatasi, setGonderHatasi] = useState<string | null>(null);
   const liste = useRef<FlatList<Yorum>>(null);
   const ilkKaydirma = useRef(false);
+  const sikayet = useSikayet();
 
   const yukle = useCallback(async () => {
     try {
@@ -109,11 +111,13 @@ function Yorumlar({ id }: { id: string }) {
   }
 
   function secenekler(y: Yorum) {
-    if (!sayfa || !(y.mine || sayfa.i_own_activity)) return;
+    if (!sayfa) return;
+    const silebilir = y.mine || sayfa.i_own_activity;
     Alert.alert(y.mine ? 'Yorumun' : `${y.display_name} yorumu`, undefined, [
-      {
+      ...(!y.mine ? [{ text: 'Şikayet et', onPress: () => sikayet.ac('comment', y.id, `${y.display_name}: ${y.body.slice(0, 80)}`) }] : []),
+      ...(!silebilir ? [] : [{
         text: 'Sil',
-        style: 'destructive',
+        style: 'destructive' as const,
         onPress: () =>
           void yorumSil(y.id)
             .then((silindi) => {
@@ -122,8 +126,8 @@ function Yorumlar({ id }: { id: string }) {
               aktiviteDegisti(id, { comment_count: Math.max(0, sayfa.comment_count - 1) });
             })
             .catch((e: unknown) => Alert.alert('Silinemedi', e instanceof Error ? e.message : String(e))),
-      },
-      { text: 'Vazgeç', style: 'cancel' },
+      }]),
+      { text: 'Vazgeç', style: 'cancel' as const },
     ]);
   }
 
@@ -178,7 +182,7 @@ function Yorumlar({ id }: { id: string }) {
           <Pressable
             onLongPress={() => secenekler(y)}
             accessibilityLabel={`${y.mine ? 'Sen' : y.display_name}, ${akisZamani(y.created_at)}: ${y.body}`}
-            accessibilityHint={y.mine || sayfa?.i_own_activity ? 'Silmek için basılı tut' : undefined}
+            accessibilityHint={y.mine || sayfa?.i_own_activity ? 'Silmek için basılı tut' : 'Şikayet etmek için basılı tut'}
             style={styles.yorum}>
             <Pressable
               accessibilityRole="link"
@@ -226,6 +230,7 @@ function Yorumlar({ id }: { id: string }) {
           {gonderiliyor ? <ActivityIndicator color="#FFFFFF" size="small" /> : <Icon name="send" size={20} color="#FFFFFF" />}
         </Pressable>
       </View>
+      {sikayet.pencere}
     </KeyboardAvoidingView>
   );
 }
