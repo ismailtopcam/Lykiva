@@ -1,4 +1,5 @@
 import { router, useFocusEffect } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import { useCallback, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -6,7 +7,9 @@ import { Header } from '@/components/Header';
 import { Txt } from '@/components/Txt';
 import { Button, Card, Label, ListRow, ToggleRow } from '@/components/ui';
 import { kuyruguGonder, yerelKayitlariTemizle } from '@/kayit/kuyruk';
+import { WEB_URL } from '@/lib/baglanti';
 import { cikisYap, useHesap, type Saglayici } from '@/lib/giris';
+import { hesabiSil } from '@/lib/hesap';
 import { pushAc, pushDurumu, pushKapat, type PushDurumu } from '@/lib/push';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, space } from '@/theme';
@@ -16,6 +19,7 @@ const adlar: Record<Saglayici, string> = { google: 'Google', apple: 'Apple' };
 export default function AyarlarScreen() {
   const hesap = useHesap();
   const [cikiliyor, setCikiliyor] = useState(false);
+  const [siliniyor, setSiliniyor] = useState(false);
   const [push, setPush] = useState<PushDurumu | null>(null);
 
   useFocusEffect(
@@ -87,6 +91,32 @@ export default function AyarlarScreen() {
     router.replace('/giris');
   }
 
+  function silmeyiSor() {
+    const gecici = !!hesap?.gecici;
+    Alert.alert(
+      'Hesabın kalıcı olarak silinsin mi?',
+      `${gecici ? 'Bu telefondaki geçici hesabın' : 'Hesabın'} ve ona bağlı her şey silinir: aktiviteler, rotalar, fotoğraflar, yorumlar, beğeniler, takipler, mesajlar ve bildirimler. Kurduğun gruplar en kıdemli yöneticiye ya da üyeye devredilir, oluşturduğun etkinlikler silinir. Bu işlem geri alınamaz.`,
+      [
+        { text: 'Vazgeç', style: 'cancel' },
+        { text: 'Kalıcı olarak sil', style: 'destructive' as const, onPress: () => void sil() },
+      ],
+    );
+  }
+
+  async function sil() {
+    setSiliniyor(true);
+    try {
+      await hesabiSil();
+      if (router.canDismiss()) router.dismissAll();
+      router.replace('/giris');
+      Alert.alert('Hesabın silindi', 'Hesabın ve verilerin silindi.');
+    } catch (e) {
+      Alert.alert('Hesap silinemedi', e instanceof Error ? e.message : String(e));
+    } finally {
+      setSiliniyor(false);
+    }
+  }
+
   const hesapMetni =
     hesap === undefined
       ? '…'
@@ -124,6 +154,24 @@ export default function AyarlarScreen() {
         ) : (
           <Button variant="outline" label={cikiliyor ? 'Çıkış yapılıyor…' : 'Çıkış yap'} onPress={() => void cik()} disabled={cikiliyor} />
         )}
+
+        <View>
+          <Label>Hakkında</Label>
+          <Card style={{ paddingHorizontal: space.lg }}>
+            <ListRow icon="shield" iconTone="sea" title="Gizlilik politikası" onPress={() => void WebBrowser.openBrowserAsync(`${WEB_URL}/gizlilik`)} />
+            <ListRow icon="lock" iconTone="sea" title="Kullanım koşulları" onPress={() => void WebBrowser.openBrowserAsync(`${WEB_URL}/kosullar`)} />
+          </Card>
+        </View>
+
+        {supabaseHazir && hesap ? (
+          <View>
+            <Label>Hesabı sil</Label>
+            <Card style={{ padding: space.lg, gap: space.md }}>
+              <Txt variant="small">Hesabını ve ona bağlı tüm verileri kalıcı olarak siler. Geri alınamaz.</Txt>
+              <Button variant="outline" label={siliniyor ? 'Siliniyor…' : 'Hesabımı sil'} onPress={silmeyiSor} disabled={siliniyor || cikiliyor} />
+            </Card>
+          </View>
+        ) : null}
       </ScrollView>
     </View>
   );

@@ -1,0 +1,73 @@
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 20px 48px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  padding: 18px 0 8px;
+}
+
+.metin {
+  line-height: 1.65;
+}
+
+.metin h1 {
+  margin-top: 20px;
+  font-size: clamp(1.9rem, 6vw, 2.5rem);
+  font-weight: 800;
+}
+
+.metin h2 {
+  margin-top: 28px;
+  font-size: 19px;
+}
+
+.metin p,
+.metin ul,
+.metin ol {
+  margin-top: 10px;
+}
+
+.metin ul,
+.metin ol {
+  padding-left: 22px;
+}
+
+.metin li + li {
+  margin-top: 4px;
+}
+
+.metin a {
+  color: var(--terra);
+}
+
+.tarih {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--ink-muted);
+}
+
+.kutu {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.alt {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.alt a {
+  color: var(--ink-muted);
+}

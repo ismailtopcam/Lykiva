@@ -682,5 +682,40 @@ try {
 }
 bekle('anon rolü akis() çağıramaz', /permission denied/.test(anonHata ?? ''), anonHata);
 
+console.log('\nHesap silme ve site ayarları');
+const E = 'e0000000-0000-0000-0000-00000000000e';
+await db.exec(`insert into auth.users (id, is_anonymous, raw_user_meta_data) values ('${E}', false, '{"full_name":"Ece Silinecek"}')`);
+const eGrup = (await olarak(E, `select grup_olustur('{"name":"Ece Kulübü"}'::jsonb) as id`)).rows[0].id;
+const eYalniz = (await olarak(E, `select grup_olustur('{"name":"Ece Yalnız"}'::jsonb) as id`)).rows[0].id;
+await db.query(`insert into group_members (group_id, user_id, role, joined_at) values ($1, $2, 'member', now() - interval '2 days'), ($1, $3, 'admin', now() - interval '1 day')`, [eGrup, C, B]);
+const eAkt = await aktivite(E, 'Ece sabah turu', 'public', 29.6, 36.2, 5);
+await db.query(`insert into activity_comments (activity_id, user_id, body) values ($1, $2, 'Ece yorumu')`, [aKas, E]);
+await olarak(E, `insert into follows (follower_id, followee_id) values ($1, $2)`, [E, A]);
+const eEtk = (await olarak(E, `select etkinlik_olustur($1::jsonb) as id`, [JSON.stringify({ title: 'Ece etkinliği', group_id: eGrup, starts_at: new Date(Date.now() + 86400000 * 3).toISOString(), activity: 'bike' })])).rows[0].id;
+m = await hataMesaji(() => anonOlarak(`select hesabimi_sil()`));
+bekle('Giriş yapmamış biri hesap silme fonksiyonunu çağıramaz', /permission denied/.test(m ?? ''), m);
+await olarak(E, `select hesabimi_sil()`);
+const say = async (sql) => (await db.query(sql)).rows[0].n;
+bekle('Hesap ve profil silinir', (await say(`select count(*)::int n from auth.users where id = '${E}'`)) === 0 && (await say(`select count(*)::int n from profiles where id = '${E}'`)) === 0, null);
+bekle('Aktiviteleri, yorumları ve takipleri silinir', (await say(`select count(*)::int n from activities where id = '${eAkt}'`)) === 0 && (await say(`select count(*)::int n from activity_comments where user_id = '${E}'`)) === 0 && (await say(`select count(*)::int n from follows where follower_id = '${E}'`)) === 0, null);
+r = await db.query(`select g.created_by, m.role from groups g join group_members m on m.group_id = g.id and m.user_id = g.created_by where g.id = $1`, [eGrup]);
+bekle('Kurduğu grup yöneticiye (B) devredilir; grup ve üyeler kalır', r.rows[0]?.created_by === B && r.rows[0]?.role === 'owner' && (await say(`select count(*)::int n from group_members where group_id = '${eGrup}'`)) === 2, r.rows);
+bekle('Başka üyesi olmayan grubu silinir', (await say(`select count(*)::int n from groups where id = '${eYalniz}'`)) === 0, null);
+bekle('Oluşturduğu etkinlik silinir', (await say(`select count(*)::int n from events where id = '${eEtk}'`)) === 0, null);
+bekle('Başkalarının verisi yerinde (A\'nın aktivitesi, B\'nin profili)', (await say(`select count(*)::int n from activities where id = '${aKas}'`)) === 1 && (await say(`select count(*)::int n from profiles where id = '${B}'`)) === 1, null);
+
+r = await anonOlarak(`select site_ayarlari() as j`);
+bekle('Site ayarlarını herkes okur (varsayılan iletişim e-postası)', r.rows[0].j.iletisim_eposta === 'bilgi@lykiva.app' && r.rows[0].j.veri_sorumlusu === '', r.rows[0].j);
+m = await hataMesaji(() => olarak(C, `select * from site_ayarlari`));
+bekle('Ayar tablosu istemciye kapalı', /permission denied/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(C, `select yonetim_site_ayarlari_guncelle('{"iletisim_eposta":"x@y.co"}'::jsonb)`));
+bekle('Yönetici olmayan ayarı değiştiremez', /Yönetim yetkisi yok/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(A, `select yonetim_site_ayarlari_guncelle('{"iletisim_eposta":"gecersiz"}'::jsonb)`));
+bekle('Geçersiz e-posta reddedilir', /geçersiz/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(A, `select yonetim_site_ayarlari_guncelle('{"baska":"x"}'::jsonb)`));
+bekle('Bilinmeyen ayar reddedilir', /Bilinmeyen/.test(m ?? ''), m);
+r = await olarak(A, `select yonetim_site_ayarlari_guncelle($1::jsonb) as j`, [JSON.stringify({ iletisim_eposta: ' destek@lykiva.app ', veri_sorumlusu: 'Örnek Kişi' })]);
+bekle('Yönetici iletişim e-postasını ve veri sorumlusunu değiştirir (kırpılır)', r.rows[0].j.iletisim_eposta === 'destek@lykiva.app' && r.rows[0].j.veri_sorumlusu === 'Örnek Kişi', r.rows[0].j);
+
 console.log(hata ? `\n${hata} senaryo başarısız` : '\nTüm senaryolar geçti');
 process.exit(hata ? 1 : 0);
