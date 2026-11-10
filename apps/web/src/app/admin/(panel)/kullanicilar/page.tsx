@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 
 import { liste, yonetimRpc, type KullaniciSatiri, type Sayfa } from '@/lib/yonetim/veri';
-import { yetkiDegistir } from '../actions';
+import { engelDegistir, yetkiDegistir } from '../actions';
 import styles from '../admin.module.css';
 import { OnayliDugme } from '../OnayliDugme';
 import { Arama, Baslik, Bos, Etiket, gun, Sayfalama, sayi, tarih, Yukleniyor } from '../ui';
@@ -37,7 +37,7 @@ async function Icerik({ searchParams }: { searchParams: PageProps<'/admin/kullan
                 <th className={styles.sag}>Aktivite</th>
                 <th className={styles.sag}>Takipçi</th>
                 <th className={styles.sag}>Şikayet</th>
-                <th className={styles.sag}>Yetki</th>
+                <th className={styles.sag}>İşlem</th>
               </tr>
             </thead>
             <tbody>
@@ -45,6 +45,7 @@ async function Icerik({ searchParams }: { searchParams: PageProps<'/admin/kullan
                 <tr key={k.id}>
                   <td>
                     {k.display_name} {k.is_admin ? <Etiket ton="koyu">Yönetici</Etiket> : null}
+                    {k.engelli ? <Etiket ton="toprak">Engelli</Etiket> : null}
                     <span className={styles.ikincil}>
                       @{k.username}
                       {k.city ? ` · ${k.city}` : ''}
@@ -66,6 +67,17 @@ async function Icerik({ searchParams }: { searchParams: PageProps<'/admin/kullan
                         tehlikeli={!k.is_admin}
                       />
                     </form>
+                    {!k.is_admin ? (
+                      <form action={engelDegistir} className={styles.islemler}>
+                        <input type="hidden" name="id" value={k.id} />
+                        <input type="hidden" name="engelli" value={k.engelli ? 'false' : 'true'} />
+                        <OnayliDugme
+                          etiket={k.engelli ? 'Engeli kaldır' : 'Engelle'}
+                          onay={k.engelli ? `${k.display_name} yeniden giriş yapabilecek. Devam edilsin mi?` : `${k.display_name} artık giriş yapamayacak (açık oturumu en geç 1 saat içinde kapanır). Devam edilsin mi?`}
+                          tehlikeli={!k.engelli}
+                        />
+                      </form>
+                    ) : null}
                   </td>
                 </tr>
               ))}

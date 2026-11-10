@@ -28,7 +28,7 @@ create schema if not exists extensions;
 create schema if not exists auth;
 create role anon nologin;
 create role authenticated nologin;
-create table auth.users (id uuid primary key, is_anonymous boolean not null default false, raw_user_meta_data jsonb default '{}', email text, created_at timestamptz not null default now(), last_sign_in_at timestamptz);
+create table auth.users (id uuid primary key, is_anonymous boolean not null default false, raw_user_meta_data jsonb default '{}', email text, created_at timestamptz not null default now(), last_sign_in_at timestamptz, banned_until timestamptz);
 create function auth.uid() returns uuid language sql stable as $$
   select (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub')::uuid $$;
 create function auth.jwt() returns jsonb language sql stable as $$
@@ -482,6 +482,33 @@ oz = (await olarak(B, `select yonetim_ozet() as j`)).rows[0].j;
 bekle('A, B\'ye yetki verince B paneli görür', oz.kullanici === 4, oz.kullanici);
 m = await hataMesaji(() => anonOlarak(`select yonetim_ozet()`));
 bekle('Giriş yapmamış biri panel fonksiyonlarını çağıramaz', /permission denied/.test(m ?? ''), m);
+const kotuYorum = (await db.query(`insert into activity_comments (activity_id, user_id, body) values ($1, $2, 'Kaba bir yorum') returning id`, [aKas, C])).rows[0].id;
+m = await hataMesaji(() => olarak(D, `select yonetim_yorum_sil($1)`, [kotuYorum]));
+bekle('Yönetici olmayan yorum kaldıramaz', /Yönetim yetkisi yok/.test(m ?? ''), m);
+await olarak(A, `select yonetim_yorum_sil($1)`, [kotuYorum]);
+bekle('Yönetici şikayet edilen yorumu kaldırır', (await db.query(`select count(*)::int n from activity_comments where id = '${kotuYorum}'`)).rows[0].n === 0, null);
+const kotuMesaj = (await db.query(`insert into messages (group_id, sender_id, body) values ($1, $2, 'Spam bağlantı') returning id`, [grup, B])).rows[0].id;
+await olarak(A, `select yonetim_mesaj_sil($1)`, [kotuMesaj]);
+bekle('Yönetici grup mesajını kaldırır', (await db.query(`select count(*)::int n from messages where id = '${kotuMesaj}'`)).rows[0].n === 0, null);
+m = await hataMesaji(() => olarak(A, `select yonetim_mesaj_sil($1)`, [kotuMesaj]));
+bekle('Olmayan mesaj için açık hata', /bulunamadı/.test(m ?? ''), m);
+
+await db.query(`insert into push_jetonlari (jeton, user_id, platform) values ('ExponentPushToken[engelDenemesi12]', $1, 'ios')`, [C]);
+await olarak(A, `select yonetim_engelle($1, true)`, [C]);
+r = await db.query(`select banned_until > now() + interval '50 years' as e from auth.users where id = '${C}'`);
+bekle('Yönetici kullanıcıyı engeller (Auth girişi ve yenilemeyi kapatır)', r.rows[0].e === true, r.rows[0]);
+bekle('Engellenenin telefon bildirim jetonları silinir', (await db.query(`select count(*)::int n from push_jetonlari where user_id = '${C}'`)).rows[0].n === 0, null);
+yk = (await olarak(A, `select yonetim_kullanicilar('cem') as j`)).rows[0].j;
+bekle('Kullanıcı listesinde engelli görünür', yk.satirlar[0]?.engelli === true, yk.satirlar[0]);
+m = await hataMesaji(() => olarak(A, `select yonetim_engelle($1, true)`, [A]));
+bekle('Kendini engelleyemezsin', /Kendini/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(A, `select yonetim_engelle($1, true)`, [B]));
+bekle('Yönetici engellenmeden önce yetkisi alınmalı', /yetkisini al/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(D, `select yonetim_engelle($1, true)`, [A]));
+bekle('Yönetici olmayan kimseyi engelleyemez', /Yönetim yetkisi yok/.test(m ?? ''), m);
+await olarak(A, `select yonetim_engelle($1, false)`, [C]);
+r = await db.query(`select banned_until from auth.users where id = '${C}'`);
+bekle('Engel kaldırılır', r.rows[0].banned_until === null, r.rows[0]);
 
 console.log('\nHava durumu');
 const hava = { t: '2026-11-11T06:00:00Z', sicaklik: 14.2, hissedilen: 13.1, ruzgar: 3.9, ruzgarYon: 271, nem: 62, yagis: 0, uv: 0.4, sembol: 'partlycloudy_day', kaynak: 'met.no' };

@@ -48,6 +48,8 @@ export type KullaniciSatiri = {
   created_at: string;
   last_sign_in_at: string | null;
   is_admin: boolean;
+  /** Supabase Auth'ta engelli (giriş yapamaz); eski sunucu fonksiyonunda gelmez */
+  engelli?: boolean;
   gecici: boolean;
   aktivite: number;
   takipci: number;
