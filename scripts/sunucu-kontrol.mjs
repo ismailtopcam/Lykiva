@@ -76,6 +76,7 @@ const asamalar = [
   ['20261110040000_birlikte', 'birlikte_ekle', {}],
   ['20261110050000_kesfet', 'kesfet_rotalar', {}],
   ['20261110060000_yonetim', 'yonetim_ozet', {}],
+  ['20261110080000_push', 'push_jetonu_kaydet', {}],
 ];
 for (const [dosya, fn, govde] of asamalar) {
   try {

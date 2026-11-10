@@ -1,12 +1,13 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Header } from '@/components/Header';
 import { Txt } from '@/components/Txt';
-import { Button, Card, Label, ListRow } from '@/components/ui';
+import { Button, Card, Label, ListRow, ToggleRow } from '@/components/ui';
 import { kuyruguGonder, yerelKayitlariTemizle } from '@/kayit/kuyruk';
 import { cikisYap, useHesap, type Saglayici } from '@/lib/giris';
+import { pushAc, pushDurumu, pushKapat, type PushDurumu } from '@/lib/push';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, space } from '@/theme';
 
@@ -15,6 +16,42 @@ const adlar: Record<Saglayici, string> = { google: 'Google', apple: 'Apple' };
 export default function AyarlarScreen() {
   const hesap = useHesap();
   const [cikiliyor, setCikiliyor] = useState(false);
+  const [push, setPush] = useState<PushDurumu | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      let acik = true;
+      pushDurumu()
+        .then((d) => acik && setPush(d))
+        .catch(() => undefined);
+      return () => {
+        acik = false;
+      };
+    }, []),
+  );
+
+  async function pushDegistir(ac: boolean) {
+    try {
+      if (ac) setPush(await pushAc());
+      else {
+        await pushKapat();
+        setPush('kapali');
+      }
+    } catch (e) {
+      Alert.alert('Yapılamadı', e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  const pushAlt =
+    push === 'acik'
+      ? 'Yorum, takip, etkinlik ve grup bildirimleri bu telefona gelir'
+      : push === 'reddedildi'
+        ? 'İzin verilmemiş. Telefonun Ayarlar > Lykiva > Bildirimler bölümünden açabilirsin'
+        : push === 'proje-yok'
+          ? 'Bu derlemede kapalı (EAS proje kimliği eklenmemiş)'
+          : push === 'desteklenmiyor'
+            ? 'Bu cihazda kullanılamıyor'
+            : 'Uygulama kapalıyken de bildirim al';
 
   async function cik() {
     setCikiliyor(true);
@@ -70,6 +107,15 @@ export default function AyarlarScreen() {
             {hesap?.eposta ? <Txt variant="small">{hesap.eposta}</Txt> : null}
           </Card>
         </View>
+
+        {push && push !== 'desteklenmiyor' ? (
+          <View>
+            <Label>Bildirimler</Label>
+            <Card style={{ paddingHorizontal: space.lg }}>
+              <ToggleRow title="Telefona bildirim" subtitle={pushAlt} value={push === 'acik'} onChange={(v) => void pushDegistir(v)} />
+            </Card>
+          </View>
+        ) : null}
 
         {!supabaseHazir ? (
           <Txt variant="muted">Sunucu anahtarı girilmemiş; uygulama örnek verilerle çalışıyor.</Txt>

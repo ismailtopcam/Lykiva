@@ -492,6 +492,41 @@ await olarak(C, `update activities set weather = '{"sicaklik": 99, "ruzgar": 0}'
 r = await db.query(`select weather ->> 'sicaklik' as s from activities where id = '${aKas}'`);
 bekle('Başkası hava bilgisini değiştiremez', r.rows[0].s === '14.2', r.rows[0]);
 
+console.log('\nTelefona bildirim (push)');
+const JETON_A = 'ExponentPushToken[aaaaaaaaaaaaaaaaaaaa]';
+m = await hataMesaji(() => olarak(A, `select push_jetonu_kaydet('sahte-jeton', 'ios')`));
+bekle('Geçersiz jeton reddedilir', /Geçersiz bildirim jetonu/.test(m ?? ''), m);
+await olarak(A, `select push_jetonu_kaydet($1, 'ios')`, [JETON_A]);
+m = await hataMesaji(() => olarak(C, `select * from push_jetonlari`));
+bekle('Jeton tablosu istemciye kapalı', /permission denied/.test(m ?? ''), m);
+// pg_net yokken (PGlite'ta yok) bildirim yine yazılır
+const onceSayi = (await db.query(`select count(*)::int as n from bildirimler where alici = '${A}'`)).rows[0].n;
+await olarak(B, `select yorum_yaz($1, 'pg_net yokken yorum')`, [aKas]);
+bekle('pg_net yokken uygulama içi bildirim yine yazılır', (await db.query(`select count(*)::int as n from bildirimler where alici = '${A}'`)).rows[0].n === onceSayi + 1, null);
+// pg_net'i taklit et: çağrıları tabloya yaz
+await db.exec(`
+  create schema if not exists net;
+  create table net.cagri (url text, body jsonb, headers jsonb);
+  create function net.http_post(url text, body jsonb default '{}'::jsonb, params jsonb default '{}'::jsonb, headers jsonb default '{}'::jsonb, timeout_milliseconds integer default 5000)
+  returns bigint language sql as $$ insert into net.cagri values (url, body, headers) returning 1::bigint $$;
+`);
+await olarak(B, `select yorum_yaz($1, 'Push ile gelen yorum')`, [aKas]);
+let cagri = (await db.query(`select * from net.cagri`)).rows;
+const mesaj = cagri[0]?.body?.[0];
+bekle('Yorum bildirimi Expo Push Service\'e gider (alıcının jetonu, Türkçe metin, rozet sayısı)', cagri.length === 1 && cagri[0].url === 'https://exp.host/--/api/v2/push/send' && mesaj?.to === JETON_A && mesaj.title === 'Burak Demir' && mesaj.body === 'Yorum yaptı: “Push ile gelen yorum”' && mesaj.data?.tur === 'yorum' && mesaj.data?.activity_id === aKas && mesaj.badge >= 1, cagri);
+await olarak(B, `select yorum_yaz($1, 'jetonsuz kişiye')`, [(await db.query(`select id from activities where title = 'C de oradaydı'`)).rows[0].id]);
+bekle('Jetonu olmayan alıcıya (C) istek gitmez, bildirim yine yazılır', (await db.query(`select count(*)::int as n from net.cagri`)).rows[0].n === 1 && (await db.query(`select count(*)::int as n from bildirimler where alici = '${C}' and tur = 'yorum'`)).rows[0].n >= 1, null);
+const icerik = (await db.query(`select push_icerigi(b) as j from bildirimler b where tur = 'etkinlik' and alici = '${B}' limit 1`)).rows[0]?.j;
+bekle('Etkinlik bildiriminin metni (başlık grup adı)', icerik?.title === 'Kaş Bisiklet' && icerik.body === 'Ayşe Yılmaz etkinlik oluşturdu: “Pazar turu”', icerik);
+await olarak(C, `select push_jetonu_kaydet($1, 'android')`, [JETON_A]);
+r = await db.query(`select user_id, platform from push_jetonlari where jeton = '${JETON_A}'`);
+bekle('Aynı cihaz başka hesaba geçince jeton yeni hesaba taşınır', r.rows[0].user_id === C && r.rows[0].platform === 'android', r.rows[0]);
+await olarak(A, `select push_jetonu_sil($1)`, [JETON_A]);
+bekle('Başkasının jetonu silinemez', (await db.query(`select count(*)::int as n from push_jetonlari where jeton = '${JETON_A}'`)).rows[0].n === 1, null);
+await olarak(C, `select push_jetonu_sil($1)`, [JETON_A]);
+bekle('Sahibi jetonunu siler (bildirimleri kapatınca)', (await db.query(`select count(*)::int as n from push_jetonlari`)).rows[0].n === 0, null);
+await db.exec(`drop schema net cascade`);
+
 console.log('\nYetki');
 let anonHata = null;
 try {
