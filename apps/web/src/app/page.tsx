@@ -99,6 +99,11 @@ export default function Home() {
 
       <footer className={styles.footer}>
         <Logo size={22} />
+        <nav aria-label="Yasal" className={styles.footerLinks}>
+          <Link href="/gizlilik">Gizlilik</Link>
+          <Link href="/kosullar">Koşullar</Link>
+          <Link href="/hesap-silme">Hesap silme</Link>
+        </nav>
         <span>© 2026 Lykiva</span>
       </footer>
     </div>

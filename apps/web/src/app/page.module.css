@@ -209,4 +209,15 @@
   border-top: 1px solid var(--line);
   color: var(--ink-muted);
   font-size: 14px;
+  flex-wrap: wrap;
+}
+
+.footerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+}
+
+.footerLinks a {
+  color: var(--ink-muted);
 }

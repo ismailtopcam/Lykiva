@@ -291,6 +291,12 @@ async function profiliTamamla({ ad }: { ad?: string | null }) {
 }
 
 /** Çıkış. Telefonda gönderilmemiş kayıt varken çağrılmamalı (bkz. ayarlar ekranı). */
+/** Hesap silindikten sonra: sunucuda oturum zaten yok; yalnızca bu telefondaki oturumu ve giriş tercihini siler */
+export async function yerelOturumuKapat() {
+  await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
+  await AsyncStorage.removeItem(ATLANDI).catch(() => undefined);
+}
+
 export async function cikisYap() {
   // Telefon bildirimleri önceki hesaba gitmesin (kalıcı kapatma değil; yeni hesapta yeniden açılır)
   await pushKapat(false).catch(() => undefined);

@@ -466,3 +466,32 @@ a.kart:hover {
   font-size: 13px;
   color: var(--ink);
 }
+
+.ayarForm {
+  display: grid;
+  gap: 18px;
+  max-width: 560px;
+}
+
+.ayarAlan {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ayarAlan small {
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+.ayarHata {
+  color: var(--terra-ink);
+  font-size: 14px;
+}
+
+.ayarMesaj {
+  color: var(--sea-ink, var(--ink));
+  font-size: 14px;
+}
