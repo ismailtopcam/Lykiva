@@ -14,21 +14,21 @@ veriler kalıcı birimlerde durur, yeniden başlatmada tekrar indirilmez.
 
 ## Kurulum (Coolify)
 
-1. **DNS:** `brouter.lykiva.ismailtopcam.dev` ve `photon.lykiva.ismailtopcam.dev` için A kaydı → uygulama sunucusu (91.90.81.195),
+1. **DNS:** `brouter.lykiva.app` ve `photon.lykiva.app` için A kaydı → uygulama sunucusu (91.90.81.195),
    diğer alt alan adları nasıl tanımlıysa öyle.
 2. **Coolify > + New > Docker Compose** (kaynak: bu GitHub deposu, dal `main`, dosya `altyapi/docker-compose.yml`), sunucu: "uygulama".
-3. Servislerin alan adlarını ver: `brouter` → `https://brouter.lykiva.ismailtopcam.dev:17777`, `photon` → `https://photon.lykiva.ismailtopcam.dev:2322`
+3. Servislerin alan adlarını ver: `brouter` → `https://brouter.lykiva.app:17777`, `photon` → `https://photon.lykiva.app:2322`
    (Coolify'da adresin sonundaki `:port`, isteği konteynerin o portuna yönlendirir).
 4. Deploy. İlk açılışta günlükte "segmentler hazır" ve Photon'un içe aktarma satırları görünür; sağlık kontrolü yeşile dönünce hazır.
 5. Dene:
    ```bash
-   curl "https://brouter.lykiva.ismailtopcam.dev/brouter?lonlats=29.6386,36.2018|29.6012,36.2088&profile=trekking&format=geojson" | head -c 300
-   curl "https://photon.lykiva.ismailtopcam.dev/api/?q=Kaş&limit=3"
+   curl "https://brouter.lykiva.app/brouter?lonlats=29.6386,36.2018|29.6012,36.2088&profile=trekking&format=geojson" | head -c 300
+   curl "https://photon.lykiva.app/api/?q=Kaş&limit=3"
    ```
 6. Uygulamayı yeni sunuculara bağla — `apps/mobile/.env`:
    ```
-   EXPO_PUBLIC_BROUTER_URL=https://brouter.lykiva.ismailtopcam.dev/brouter
-   EXPO_PUBLIC_PHOTON_URL=https://photon.lykiva.ismailtopcam.dev/api/
+   EXPO_PUBLIC_BROUTER_URL=https://brouter.lykiva.app/brouter
+   EXPO_PUBLIC_PHOTON_URL=https://photon.lykiva.app/api/
    ```
    ve telefona yeniden derle (`.env` derleme sırasında okunur).
 

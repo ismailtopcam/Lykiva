@@ -7,7 +7,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   // Paylaşım önizleme görsellerinin (og:image) tam adresi için; sunucuda localhost çıkmasın
-  metadataBase: new URL(process.env.SITE_URL || 'https://lykiva.ismailtopcam.dev'),
+  metadataBase: new URL(process.env.SITE_URL || 'https://lykiva.app'),
   title: {
     default: 'Lykiva — Rotanı kaydet, birlikte yol al',
     template: '%s · Lykiva',

@@ -16,7 +16,7 @@ export default function Kosullar() {
       <p className={styles.tarih}>Son güncelleme: 10 Kasım 2026</p>
 
       <p>
-        Lykiva&apos;yı (mobil uygulama ve lykiva.ismailtopcam.dev) kullanarak bu koşulları kabul etmiş olursun. Kişisel verilerin nasıl
+        Lykiva&apos;yı (mobil uygulama ve lykiva.app) kullanarak bu koşulları kabul etmiş olursun. Kişisel verilerin nasıl
         işlendiği <Link href="/gizlilik">Gizlilik politikası</Link>&apos;nda anlatılır.
       </p>
 

@@ -10,13 +10,13 @@
 # - Hesap açmak / şifre belirlemek için Supabase servis anahtarı gerekir; betik onu Kong konteynerinden okur.
 #   Okuyamazsa: LYKIVA_SERVICE_KEY=... bash /tmp/yonetici.sh
 #   (Coolify > lykiva-supabase > Environment Variables > SERVICE_SUPABASESERVICE_KEY). Anahtar hiçbir yere yazılmaz.
-# - Sonra giriş: https://lykiva.ismailtopcam.dev/admin
+# - Sonra giriş: https://lykiva.app/admin
 set -euo pipefail
 
 KIMLIK="${LYKIVA_SUPABASE_ID:-nqyujqqkkjyba4flthzcf9uf}"
 DB="${LYKIVA_DB:-supabase-db-$KIMLIK}"
 KONG="${LYKIVA_KONG:-supabase-kong-$KIMLIK}"
-URL="${LYKIVA_URL:-https://api.lykiva.ismailtopcam.dev}"
+URL="${LYKIVA_URL:-https://api.lykiva.app}"
 
 sorgu() { docker exec "$DB" psql -U postgres -tAq -v ON_ERROR_STOP=1 -c "$1" < /dev/null; }
 
@@ -119,5 +119,5 @@ fi
 
 echo ""
 echo "Tamam: $EPOSTA artık yönetici."
-echo "Giriş: https://lykiva.ismailtopcam.dev/admin"
+echo "Giriş: https://lykiva.app/admin"
 echo "Not: web uygulamasında SUPABASE_ANON_KEY ortam değişkeni tanımlı olmalı ve e-postayla giriş açık olmalı (node scripts/sunucu-kontrol.mjs)."

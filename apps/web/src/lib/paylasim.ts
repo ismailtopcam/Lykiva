@@ -3,7 +3,7 @@
  * Veri: Supabase'deki paylasilan_aktivite(anahtar) fonksiyonu (supabase/migrations/20261110020000_paylasim_baglantisi.sql).
  *
  * Sunucuda (Coolify > web uygulaması > Environment Variables):
- *   SUPABASE_URL       (varsayılan https://api.lykiva.ismailtopcam.dev)
+ *   SUPABASE_URL       (varsayılan https://api.lykiva.app)
  *   SUPABASE_ANON_KEY  (lykiva-supabase servisindeki SERVICE_SUPABASEANON_KEY)
  */
 import { ACTIVITY_LABELS, formatDuration, formatKm, formatMeters, formatPace, formatSpeedKmh, type ActivityType, type HavaDurumu } from '@lykiva/shared';

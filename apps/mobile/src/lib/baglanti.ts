@@ -1,5 +1,5 @@
 /**
- * Aktivite paylaşım bağlantısı: https://lykiva.ismailtopcam.dev/a/<anahtar>
+ * Aktivite paylaşım bağlantısı: https://lykiva.app/a/<anahtar>
  * Bağlantısı olan herkes giriş yapmadan web'de görür; sahibi kapatınca açılmaz.
  * Sunucu: supabase/migrations/20261110020000_paylasim_baglantisi.sql · Web: apps/web/src/app/a/[anahtar]
  */
@@ -8,7 +8,7 @@ import { Platform, Share } from 'react-native';
 import { oturumuSagla, supabase } from '@/lib/supabase';
 
 /** Web sitesinin adresi (.env ile değişir) */
-export const WEB_URL = (process.env.EXPO_PUBLIC_WEB_URL || 'https://lykiva.ismailtopcam.dev').replace(/\/$/, '');
+export const WEB_URL = (process.env.EXPO_PUBLIC_WEB_URL || 'https://lykiva.app').replace(/\/$/, '');
 
 async function rpc<T>(ad: string, args: Record<string, unknown>): Promise<T> {
   await oturumuSagla();

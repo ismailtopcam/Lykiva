@@ -9,7 +9,7 @@ import { Platform } from 'react-native';
 
 const HAVA_URL = process.env.EXPO_PUBLIC_HAVA_URL || 'https://api.met.no/weatherapi/locationforecast/2.0/compact';
 // MET kimliği bilinmeyen istemcileri engeller; uygulama adı ve web adresi (kişisel bilgi yok)
-const KIMLIK = 'Lykiva/0.1 (+https://lykiva.ismailtopcam.dev)';
+const KIMLIK = 'Lykiva/0.1 (+https://lykiva.app)';
 
 // Aynı yer için yarım saat içinde yeniden istek atma
 const onbellek = new Map<string, { zaman: number; yanit: MetYaniti }>();
