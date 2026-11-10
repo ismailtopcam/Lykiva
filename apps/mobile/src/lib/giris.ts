@@ -17,6 +17,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 
+import { pushKapat } from '@/lib/push';
 import { supabase, supabaseHazir } from '@/lib/supabase';
 
 /** Tarayıcıdan dönüş adresi. Supabase'de izinli yönlendirmeler listesinde olmalı. */
@@ -291,6 +292,8 @@ async function profiliTamamla({ ad }: { ad?: string | null }) {
 
 /** Çıkış. Telefonda gönderilmemiş kayıt varken çağrılmamalı (bkz. ayarlar ekranı). */
 export async function cikisYap() {
+  // Telefon bildirimleri önceki hesaba gitmesin (kalıcı kapatma değil; yeni hesapta yeniden açılır)
+  await pushKapat(false).catch(() => undefined);
   await supabase.auth.signOut();
   await AsyncStorage.removeItem(ATLANDI).catch(() => undefined);
 }

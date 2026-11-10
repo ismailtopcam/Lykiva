@@ -2,12 +2,13 @@
  * Bildirimler: takip, beğeni, yorum, gruba katılma isteği / kabulü, grupta yeni etkinlik.
  * Ekran açılınca hepsi okundu sayılır (rozet sıfırlanır); okunmamışlar bu açılışta vurgulu kalır.
  */
-import { router, useFocusEffect, type Href } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
 import { akisZamani } from '@/akis/akis';
-import { bildirimlerim, okunduSay, SAYFA, sayiyiBildir, type Bildirim } from '@/bildirim/bildirimler';
+import { bildirimHedefi, bildirimlerim, okunduSay, SAYFA, sayiyiBildir, type Bildirim } from '@/bildirim/bildirimler';
+import { pushAc, pushDurumu, type PushDurumu } from '@/lib/push';
 import { Header } from '@/components/Header';
 import { Icon, type IconName } from '@/components/Icon';
 import { TakipDugmesi } from '@/components/KisiSatiri';
@@ -65,13 +66,32 @@ const SIMGE: Record<Bildirim['tur'], IconName> = {
   birlikte: 'users',
 };
 
-function hedef(b: Bildirim): Href | null {
-  if (b.tur === 'takip' && b.aktor) return { pathname: '/kisi/[id]', params: { id: b.aktor } };
-  if ((b.tur === 'begeni' || b.tur === 'birlikte') && b.activity_id) return { pathname: '/aktivite/[id]', params: { id: b.activity_id } };
-  if (b.tur === 'yorum' && b.activity_id) return { pathname: '/aktivite/[id]/yorumlar', params: { id: b.activity_id } };
-  if ((b.tur === 'katilim_istegi' || b.tur === 'katilim_kabul') && b.group_id) return { pathname: '/grup/[id]', params: { id: b.group_id } };
-  if (b.tur === 'etkinlik' && b.event_id) return { pathname: '/etkinlik/[id]', params: { id: b.event_id } };
-  return null;
+const hedef = (b: Bildirim) => bildirimHedefi(b);
+
+/** Telefona bildirim izni henüz sorulmadıysa küçük bir öneri kartı */
+function PushOnerisi() {
+  const [durum, setDurum] = useState<PushDurumu | null>(null);
+  useEffect(() => {
+    let acik = true;
+    pushDurumu()
+      .then((d) => acik && setDurum(d))
+      .catch(() => undefined);
+    return () => {
+      acik = false;
+    };
+  }, []);
+  if (durum !== 'sorulmadi') return null;
+  return (
+    <View style={styles.oneri}>
+      <View style={{ flex: 1 }}>
+        <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14 }}>Telefonuna da gelsin mi?</Txt>
+        <Txt variant="small">Uygulama kapalıyken de yorum, takip ve etkinlik bildirimlerini al.</Txt>
+      </View>
+      <Pressable accessibilityRole="button" onPress={() => void pushAc().then(setDurum).catch(() => undefined)} style={styles.oneriBtn}>
+        <Txt style={{ color: '#FFFFFF', fontFamily: fontFamily.bodyBold, fontSize: 13 }}>Aç</Txt>
+      </Pressable>
+    </View>
+  );
 }
 
 function Bildirimler() {
@@ -132,6 +152,7 @@ function Bildirimler() {
         data={liste ?? []}
         keyExtractor={(b) => b.id}
         contentContainerStyle={{ paddingBottom: 60, flexGrow: 1 }}
+        ListHeaderComponent={<PushOnerisi />}
         onEndReachedThreshold={0.5}
         onEndReached={() => void devami()}
         refreshControl={<RefreshControl refreshing={yenileniyor} onRefresh={() => void yenile()} tintColor={colors.terra} />}
@@ -209,4 +230,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   nokta: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.terra },
+  oneri: { flexDirection: 'row', alignItems: 'center', gap: 12, margin: space.md, padding: 14, borderRadius: 16, backgroundColor: colors.seaSoft },
+  oneriBtn: { height: 36, paddingHorizontal: 16, borderRadius: 18, backgroundColor: colors.sea, alignItems: 'center', justifyContent: 'center' },
 });

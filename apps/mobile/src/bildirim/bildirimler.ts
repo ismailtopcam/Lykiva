@@ -3,7 +3,7 @@
  * (bildirimleri tetikleyiciler yazar; uygulama okur ve okundu işaretler).
  */
 import type { RealtimeChannel } from '@supabase/supabase-js';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, type Href } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { AppState } from 'react-native';
 
@@ -37,6 +37,16 @@ async function rpc<T>(ad: string, args?: Record<string, unknown>): Promise<T> {
 }
 
 export const SAYFA = 30;
+
+/** Bildirime dokununca açılacak sayfa (bildirimler ekranı ve telefona gelen bildirim için ortak) */
+export function bildirimHedefi(b: { tur?: string | null; aktor?: string | null; activity_id?: string | null; group_id?: string | null; event_id?: string | null }): Href | null {
+  if (b.tur === 'takip' && b.aktor) return { pathname: '/kisi/[id]', params: { id: b.aktor } };
+  if ((b.tur === 'begeni' || b.tur === 'birlikte') && b.activity_id) return { pathname: '/aktivite/[id]', params: { id: b.activity_id } };
+  if (b.tur === 'yorum' && b.activity_id) return { pathname: '/aktivite/[id]/yorumlar', params: { id: b.activity_id } };
+  if ((b.tur === 'katilim_istegi' || b.tur === 'katilim_kabul') && b.group_id) return { pathname: '/grup/[id]', params: { id: b.group_id } };
+  if (b.tur === 'etkinlik' && b.event_id) return { pathname: '/etkinlik/[id]', params: { id: b.event_id } };
+  return null;
+}
 export const bildirimlerim = (once?: string | null) => rpc<Bildirim[]>('bildirimlerim', { once: once ?? null, adet: SAYFA });
 export const bildirimSayisi = () => rpc<number>('bildirim_sayisi');
 export const okunduSay = (son?: string | null) => rpc<void>('bildirimleri_okundu_say', { son: son ?? null });

@@ -9,16 +9,19 @@ import {
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import * as Notifications from 'expo-notifications';
+import { router, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Arka plan konum görevi uygulama açılır açılmaz tanımlanmalı
 import { kaydiGeriYukle } from '@/kayit/kaydedici';
+import { bildirimHedefi } from '@/bildirim/bildirimler';
 import { kuyruguGonder } from '@/kayit/kuyruk';
+import { pushTazele } from '@/lib/push';
 import { colors } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
@@ -38,6 +41,19 @@ export default function RootLayout() {
   }, [loaded, error]);
 
   // Yarım kalan kaydı geri yükle; bekleyen kayıtları uygulama her öne geldiğinde göndermeyi dene
+  // Telefon bildirimi: jetonu tazele; bildirime dokununca ilgili sayfayı aç (uygulama kapalıyken de)
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    void pushTazele();
+    const ac = (r: Notifications.NotificationResponse | null) => {
+      const hedef = r ? bildirimHedefi(r.notification.request.content.data as Record<string, string>) : null;
+      if (hedef) router.push(hedef);
+    };
+    ac(Notifications.getLastNotificationResponse());
+    const sub = Notifications.addNotificationResponseReceivedListener(ac);
+    return () => sub.remove();
+  }, []);
+
   useEffect(() => {
     void kaydiGeriYukle();
     void kuyruguGonder().catch(() => undefined);

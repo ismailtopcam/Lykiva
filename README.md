@@ -96,7 +96,15 @@ npm run test:sql             # migration'ları bellekteki veritabanında dener (
 18. **Şikayet et** — başkasının aktivitesi, kişi sayfası, rota ve etkinlik altında "… şikayet et" bağlantısı; yorum ve grup mesajında basılı tutunca "Şikayet et"; grup menüsünde "Şikayet et". Neden seçilir (+ isteğe bağlı açıklama), şikayet yönetim paneline düşer, şikayet edilen kişi görmez.
 19. **Yedekleme betikleri** — `supabase/yedek/`: gecelik veritabanı + dosya deposu yedeği, S3 uyumlu depolamaya kopya, eski yedek temizliği, canlıya dokunmadan geri yükleme denemesi; tek komutla kurulum (`kur.sh`). Sunucuya kurulması ve S3 kovası bağlanması bekliyor.
 20. **Hava durumu** — kayıt başlarken (ilk konumla) hava bir kez alınır ve aktiviteyle saklanır (MET Norway; anahtarsız, ticari kullanım ücretsiz): aktivite detayında Hava kartı (sıcaklık, hissedilen, rüzgâr yönü ve rotaya göre "çoğunlukla karşıdan / arkadan", nem, yağış, UV), akış kartında kısa özet, paylaşım kartında "Hava" seçeneği, etkinlik detayında buluşma noktası için tahmin (9 güne kadar). İnternet yoksa kayıt havasız kaydedilir.
-21. Sırada: telefona anlık bildirim (push), kendi BRouter / Photon sunucumuz.
+21. **Telefona anlık bildirim (push)** — her uygulama içi bildirim, alıcının telefonlarına Expo Push Service ile de gider (sunucuda pg_net; yoksa ya da başarısız olursa uygulama içi bildirim yine yazılır). İzin, Bildirimler ekranındaki "Telefonuna da gelsin mi?" kartından ya da Ayarlar > Telefona bildirim'den istenir; bildirime dokununca ilgili sayfa açılır; çıkışta bu telefonun jetonu silinir. Çalışması için EAS proje kimliği, Apple push anahtarı ve yeni telefon derlemesi gerekir (aşağıda).
+22. Sırada: kendi BRouter / Photon sunucumuz, Google/Apple giriş ayarı (en son).
+
+### Telefona bildirim için bir kerelik ayar
+
+1. Expo hesabıyla EAS projesi: `cd apps/mobile && npx eas-cli@latest init` (app.json'a `extra.eas.projectId` yazar; commit'le).
+2. iOS: Apple Developer > Keys > yeni anahtar, "Apple Push Notifications service (APNs)" işaretli → `.p8` indir; `npx eas-cli@latest credentials` > iOS > Push Notifications ile yükle (ücretli Apple Developer hesabı gerekir).
+3. Telefona yeni derleme (yerel modül eklendi): `npx expo run:ios --device`.
+4. Uygulamada Bildirimler ekranında "Aç" → izin ver. Sunucuda `20261110080000_push.sql` uygulanmış ve `pg_net` eklentisi açık olmalı (`uygula.sh` kurmayı dener).
 
 ## Sunucu
 

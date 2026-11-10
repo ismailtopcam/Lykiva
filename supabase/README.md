@@ -23,6 +23,7 @@ gerçek durum için aşağıdaki `uygula.sh` (durum modu) ya da `node scripts/su
 | `20261110050000_kesfet.sql` | Keşfet: `kesfet_rotalar` (herkese açık rotalar, konuma göre yakından uzağa, önizleme izi), `kesfet_etkinlikler` (30 gün, herkese açık + grup etkinlikleri, buluşma noktası yakınlığı) | **henüz uygulanmadı** |
 | `20261110060000_yonetim.sql` | Yönetim paneli: `yonetici_mi`, `yonetim_ozet`, `yonetim_kullanicilar` / `aktiviteler` / `rotalar` / `gruplar` / `etkinlikler` / `sikayetler` (her biri yöneticiliği denetler), moderasyon (`yonetim_sikayet_guncelle`, `yonetim_aktivite_sil`, `yonetim_rota_gizle`, `yonetim_grup_sil`, `yonetim_etkinlik_sil`, `yonetim_yetki`), uygulamadan `sikayet_et`; `reports` istemciye kapalı | **henüz uygulanmadı** |
 | `20261110070000_hava.sql` | `activities.weather` (kayıt başındaki hava; biçim denetimi, konum içeremez), `aktivite_ozetleri` ve `akis` kartında | **henüz uygulanmadı** |
+| `20261110080000_push.sql` | Telefona bildirim: `push_jetonlari` (istemciye kapalı), `push_jetonu_kaydet` / `push_jetonu_sil`, `push_icerigi` (Türkçe metin), bildirim yazılınca pg_net ile Expo Push Service'e gönderim (pg_net yoksa atlanır) | **henüz uygulanmadı** |
 
 Tüm tabloların kuralları yazıldı (son: canlı konum, `20261109050000_canli_konum.sql`). Gruplar ve mesajlar `20261109030000_gruplar.sql` ile açılır.
 
@@ -64,7 +65,7 @@ npm run test:sql
 
 Bellekte PGlite + PostGIS ile boş bir veritabanı açar, Supabase'in `auth` şemasını ve rollerini taklit eder,
 tüm migration'ları sırayla uygular ve farklı kullanıcılar adına senaryoları dener (`supabase/test/dene.mjs`):
-akış süzgeçleri, görünürlük kuralları, baş/son 200 m kırpma, beğeni, sayfalama, kişi arama, hesap devri, yorumlar, paylaşım bağlantısı, bildirimler, birlikte yapılan aktivite, Keşfet, yönetim paneli ve şikayetler, hava, yetkiler.
+akış süzgeçleri, görünürlük kuralları, baş/son 200 m kırpma, beğeni, sayfalama, kişi arama, hesap devri, yorumlar, paylaşım bağlantısı, bildirimler, birlikte yapılan aktivite, Keşfet, yönetim paneli ve şikayetler, hava, telefona bildirim, yetkiler.
 Gerçek Supabase'in birebir aynısı değildir (GoTrue, Realtime yok). Yeni migration eklenince senaryoları da eklenmeli.
 
 ## Sunucuyu Mac'ten kontrol etmek
