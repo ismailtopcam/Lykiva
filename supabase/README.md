@@ -24,6 +24,7 @@ gerçek durum için aşağıdaki `uygula.sh` (durum modu) ya da `node scripts/su
 | `20261110060000_yonetim.sql` | Yönetim paneli: `yonetici_mi`, `yonetim_ozet`, `yonetim_kullanicilar` / `aktiviteler` / `rotalar` / `gruplar` / `etkinlikler` / `sikayetler` (her biri yöneticiliği denetler), moderasyon (`yonetim_sikayet_guncelle`, `yonetim_aktivite_sil`, `yonetim_rota_gizle`, `yonetim_grup_sil`, `yonetim_etkinlik_sil`, `yonetim_yetki`), uygulamadan `sikayet_et`; `reports` istemciye kapalı | **henüz uygulanmadı** |
 | `20261110070000_hava.sql` | `activities.weather` (kayıt başındaki hava; biçim denetimi, konum içeremez), `aktivite_ozetleri` ve `akis` kartında | **henüz uygulanmadı** |
 | `20261110080000_push.sql` | Telefona bildirim: `push_jetonlari` (istemciye kapalı), `push_jetonu_kaydet` / `push_jetonu_sil`, `push_icerigi` (Türkçe metin), bildirim yazılınca pg_net ile Expo Push Service'e gönderim (pg_net yoksa atlanır) | **henüz uygulanmadı** |
+| `20261110090000_profil.sql` | **Güvenlik:** `profiles` üzerinde istemci yalnızca `display_name` ve `avatar_url` yazabilir (önceden `is_admin` dahil her sütun yazılabiliyordu). `profil_guncelle` (ad, kullanıcı adı, şehir, hakkında; ayrılmış adlar ve `k_` ile başlayanlar reddedilir), `kullanici_adi_musait`, web için `herkese_acik_profil` (anon; yalnızca herkese açık aktivite özetleri), başlık/ad uzunluk sınırları | **henüz uygulanmadı — öncelikli** |
 
 Tüm tabloların kuralları yazıldı (son: canlı konum, `20261109050000_canli_konum.sql`). Gruplar ve mesajlar `20261109030000_gruplar.sql` ile açılır.
 

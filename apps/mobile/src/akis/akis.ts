@@ -151,7 +151,8 @@ export const yorumSil = (yorum: string) => rpc<boolean>('yorum_sil', { yorum });
 /* akış kartı yeniden yüklemeden güncellenir                           */
 /* ------------------------------------------------------------------ */
 
-export type AktiviteDegisikligi = Partial<Sosyal>;
+/** Ekranlar arası değişiklik: beğeni/yorum sayısı, yeni başlık ya da silinme */
+export type AktiviteDegisikligi = Partial<Sosyal> & { title?: string | null; silindi?: boolean };
 const dinleyiciler = new Set<(id: string, d: AktiviteDegisikligi) => void>();
 
 export function aktiviteDegisti(id: string, d: AktiviteDegisikligi) {

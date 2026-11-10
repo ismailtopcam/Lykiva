@@ -7,6 +7,7 @@
 import { ACTIVITY_LABELS, formatDuration, formatKm, formatSpeedKmh, havaGecerliMi, haversine, type ActivityType, type HavaDurumu } from '@lykiva/shared';
 import { useEffect, useState } from 'react';
 
+import { aktiviteDegisikliginiDinle, aktiviteDegisti } from '@/akis/akis';
 import { kuyruguGonder, kuyruktakiler, sunucuIdsi, yereldekiPaket } from '@/kayit/kuyruk';
 import { supabase, supabaseHazir } from '@/lib/supabase';
 import { kasKalkan, people, type Activity, type BirlikteKisi, type LngLat, type Stop } from './ornek';
@@ -257,6 +258,16 @@ export function useAktivite(id: string | undefined): AktiviteDurumu {
     };
   }, [id]);
 
+  // Düzenleme ekranında başlık değişince özet ekranı da güncellensin
+  useEffect(
+    () =>
+      aktiviteDegisikliginiDinle((degisen, d) => {
+        if (d.title === undefined) return;
+        setDurum((x) => (x.a && x.a.id === degisen ? { ...x, a: { ...x.a, title: d.title || x.a.title } } : x));
+      }),
+    [],
+  );
+
   if (ornek) return { a: kasKalkan, yukleniyor: false, hata: null, bekliyor: false };
   // Başka bir aktiviteye geçildiyse eski veriyi gösterme
   if (durum.a && durum.a.id !== id && !(id?.startsWith('yerel-') && durum.a)) return { a: null, yukleniyor: true, hata: null, bekliyor: false };
@@ -316,16 +327,16 @@ export async function aktivitelerim(userId: string | null): Promise<AktiviteSati
   return satirlar;
 }
 
-export type Profilim = { displayName: string; username: string; city: string | null; takipci: number; takip: number };
+export type Profilim = { displayName: string; username: string; city: string | null; bio: string | null; avatarUrl: string | null; takipci: number; takip: number };
 
 export async function profilim(userId: string): Promise<Profilim | null> {
   const [{ data: p }, { count: takipci }, { count: takip }] = await Promise.all([
-    supabase.from('profiles').select('display_name,username,city').eq('id', userId).maybeSingle(),
+    supabase.from('profiles').select('display_name,username,city,bio,avatar_url').eq('id', userId).maybeSingle(),
     supabase.from('follows').select('*', { count: 'exact', head: true }).eq('followee_id', userId),
     supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', userId),
   ]);
   if (!p) return null;
-  return { displayName: p.display_name, username: p.username, city: p.city, takipci: takipci ?? 0, takip: takip ?? 0 };
+  return { displayName: p.display_name, username: p.username, city: p.city, bio: p.bio, avatarUrl: p.avatar_url, takipci: takipci ?? 0, takip: takip ?? 0 };
 }
 
 /** Bu haftanın (Pzt–Paz) günlük km'si ve toplamları */
@@ -370,6 +381,22 @@ export async function aktiviteNoktalari(id: string): Promise<GpxNoktasi[]> {
 export async function aktiviteAyarla(id: string, ayar: { visibility?: Activity['visibility']; hide_endpoints?: boolean }) {
   const { error } = await supabase.from('activities').update(ayar).eq('id', id);
   if (error) throw new Error(error.message);
+}
+
+/** Sahibi için: aktiviteyi yeniden adlandırır (en fazla 80 karakter; boşsa aktivite türü gösterilir) */
+export async function aktiviteYenidenAdlandir(id: string, baslik: string) {
+  const title = baslik.trim().slice(0, 80) || null;
+  const { error } = await supabase.from('activities').update({ title }).eq('id', id);
+  if (error) throw new Error(error.message);
+  aktiviteDegisti(id, { title });
+}
+
+/** Sahibi için: aktiviteyi kalıcı olarak siler (molalar, beğeniler, yorumlar, paylaşım bağlantısı da gider) */
+export async function aktiviteSil(id: string) {
+  const { error, count } = await supabase.from('activities').delete({ count: 'exact' }).eq('id', id);
+  if (error) throw new Error(error.message);
+  if (!count) throw new Error('Aktivite silinemedi');
+  aktiviteDegisti(id, { silindi: true });
 }
 
 /** Birlikte yapılan kişiler: sunucudaki aktivitede gerçek kişiler, tasarım örneğinde örnek kişiler */

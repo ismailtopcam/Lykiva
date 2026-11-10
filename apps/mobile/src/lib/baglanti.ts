@@ -18,6 +18,8 @@ async function rpc<T>(ad: string, args: Record<string, unknown>): Promise<T> {
 }
 
 export const baglantiAdresi = (anahtar: string) => `${WEB_URL}/a/${anahtar}`;
+/** Herkese açık web profili (apps/web /u/<kullanıcı adı>) */
+export const profilAdresi = (kullaniciAdi: string) => `${WEB_URL}/u/${encodeURIComponent(kullaniciAdi)}`;
 
 /** Açık bağlantının anahtarı (yalnızca sahibi); yoksa null */
 export const baglantiDurumu = (aktivite: string) => rpc<string | null>('paylasim_baglantisi', { aktivite });

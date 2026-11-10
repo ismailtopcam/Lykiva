@@ -9,6 +9,7 @@ import { ElevationProfile } from '@/components/charts';
 import { HavaKarti } from '@/components/HavaKarti';
 import { FloatingHeader } from '@/components/Header';
 import { Icon } from '@/components/Icon';
+import { IconButton } from '@/components/IconButton';
 import { TopoMap } from '@/components/map/TopoMap';
 import { SikayetBaglantisi, useSikayet } from '@/components/SikayetPenceresi';
 import { SosyalSatiri } from '@/components/SosyalSatiri';
@@ -166,7 +167,13 @@ export default function AktiviteOzetiScreen() {
         ) : null}
       </ScrollView>
 
-      <FloatingHeader />
+      <FloatingHeader
+        right={
+          a.mine && supabaseHazir && sunucuAktivitesiMi(a.id) ? (
+            <IconButton floating icon="more" label="Aktiviteyi düzenle" onPress={() => router.push({ pathname: '/aktivite/[id]/duzenle', params: { id: a.id } })} />
+          ) : undefined
+        }
+      />
       <View style={[styles.bottom, { paddingBottom: insets.bottom + 16 }]}>
         <Button label="Hız & molalar" icon="gauge" variant="outline" href={{ pathname: '/aktivite/[id]/hiz', params: { id: a.id } }} style={{ flex: 1 }} />
         <Button label="Paylaş" icon="share" href={{ pathname: '/aktivite/[id]/paylas', params: { id: a.id } }} style={{ flex: 1 }} />

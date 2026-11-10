@@ -98,7 +98,11 @@ function GercekAkis() {
   useEffect(
     () =>
       aktiviteDegisikliginiDinle((id, d) => {
-        setListe((x) => (x?.some((o) => o.id === id) ? x.map((o) => (o.id === id ? { ...o, ...d } : o)) : x));
+        const { silindi, ...degisen } = d;
+        setListe((x) => {
+          if (!x?.some((o) => o.id === id)) return x;
+          return silindi ? x.filter((o) => o.id !== id) : x.map((o) => (o.id === id ? { ...o, ...degisen } : o));
+        });
       }),
     [],
   );
