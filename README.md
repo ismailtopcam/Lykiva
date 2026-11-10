@@ -34,13 +34,30 @@ npm install
 satırına Coolify'daki anon anahtarını yaz (Coolify > lykiva-supabase > Environment Variables >
 `SERVICE_SUPABASEANON_KEY`). Anahtar yoksa uygulama yine çalışır, kayıtlar telefonda bekler.
 
-GPS kaydı yerel modül kullandığı için **Expo Go'da arka plan kaydı çalışmaz**; geliştirme derlemesiyle dene:
+GPS kaydı, harita, fotoğraf ve bildirim yerel modül kullandığı için **Expo Go yetmez**; telefona Lykiva'nın
+geliştirme derlemesi kurulur. Derleme Expo'nun bulut sunucularında yapılır (EAS Build; Windows'tan da olur,
+Mac gerekmez). Proje: `@ismailtopcam/lykiva` (`apps/mobile/eas.json`, proje kimliği `app.json`'da).
+
+Bir kerelik (`apps/mobile` klasöründe):
 
 ```bash
-cd apps/mobile
-npx expo run:ios --device     # iPhone kabloyla bağlıyken (Xcode gerekli)
-npx expo run:android          # Android
+npx eas-cli@latest device:create
 ```
+
+iPhone'u kaydeder: çıkan bağlantıyı / QR'ı iPhone'da Safari ile aç, profili yükle (Ayarlar > Profil İndirildi).
+Android için gerekmez.
+
+```bash
+npx eas-cli@latest build --profile development --platform all
+```
+
+İlk iOS derlemesinde Apple hesabıyla giriş ister (ücretli Apple Developer hesabı); sertifikayı ve kayıtlı
+iPhone'ları içeren profili kendisi oluşturur. "Push Notifications" anahtarı sorulursa evet de (telefon
+bildirimleri için). Android imza anahtarını da kendisi üretir. Derleme bitince çıkan bağlantıyı / QR'ı
+telefonda açıp uygulamayı kur. iPhone'da ilk açılışta: Ayarlar > Gizlilik ve Güvenlik > **Geliştirici Modu**'nu aç.
+
+Yerel modül eklenmedikçe yeniden derlemek gerekmez; kod değişiklikleri aşağıdaki günlük komutla telefona gelir.
+Mac'te kabloyla yerel derleme de mümkün: `npx expo run:ios --device` (Xcode gerekir).
 
 iOS Simülatöründe konum: Features > Location > City Bicycle Ride / Freeway Drive.
 
@@ -50,7 +67,8 @@ iOS Simülatöründe konum: Features > Location > City Bicycle Ride / Freeway Dr
 npm run mobile
 ```
 
-Terminalde çıkan QR kodu telefondaki **Expo Go** uygulamasıyla okut. Telefon ve bilgisayar aynı ağda olmalı.
+Telefonda Lykiva geliştirme derlemesini aç; bilgisayardaki sunucuyu kendisi bulur. Bulamazsa terminaldeki
+QR kodu telefonun kamerasıyla okut. Telefon ve bilgisayar aynı Wi-Fi ağında olmalı.
 
 > **Harita:** Gerçek harita MapLibre ile çizilir ve Expo Go'da çalışmaz. Expo Go'da haritanın yerinde
 > tasarımdaki stilize çizim görünür. Gerçek haritayı görmek için uygulamanın geliştirme derlemesi
@@ -106,9 +124,9 @@ npm run test:sql             # migration'ları bellekteki veritabanında dener (
 
 ### Telefona bildirim için bir kerelik ayar
 
-1. Expo hesabıyla EAS projesi: `cd apps/mobile && npx eas-cli@latest init` (app.json'a `extra.eas.projectId` yazar; commit'le).
-2. iOS: Apple Developer > Keys > yeni anahtar, "Apple Push Notifications service (APNs)" işaretli → `.p8` indir; `npx eas-cli@latest credentials` > iOS > Push Notifications ile yükle (ücretli Apple Developer hesabı gerekir).
-3. Telefona yeni derleme (yerel modül eklendi): `npx expo run:ios --device`.
+1. EAS projesi bağlandı: `@ismailtopcam/lykiva` (proje kimliği `app.json` > `extra.eas.projectId`).
+2. iOS: ilk `eas build` sırasında push anahtarı sorulursa evet de; sorulmadıysa `npx eas-cli@latest credentials` > iOS > Push Notifications ile oluştur ya da Apple Developer > Keys'ten indirdiğin `.p8`'i yükle.
+3. Telefona geliştirme derlemesi (yukarıda, "Mobil uygulama — ilk kez").
 4. Uygulamada Bildirimler ekranında "Aç" → izin ver. Sunucuda `20261110080000_push.sql` uygulanmış ve `pg_net` eklentisi açık olmalı (`uygula.sh` kurmayı dener).
 
 ## Sunucu
