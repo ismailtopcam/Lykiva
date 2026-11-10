@@ -35,7 +35,9 @@ bağlanınca ve geri yükleme bir kez denenince [x] olacak. O zamana kadar yedek
 - Geri yükleme bir kez denenip doğrulanmalı
 - Gerçek kullanıcılar gelmeden önce yapılmalı
 
-### [ ] Kendi rota hesaplama ve yer arama sunucumuz
+### [~] Kendi rota hesaplama ve yer arama sunucumuz
+Kurulum dosyaları hazır: `altyapi/` (BRouter 1.7.10 + Photon 1.3.0, Coolify Docker Compose; adımlar `altyapi/README.md`).
+Coolify'da kurulup `.env` adresleri değiştirilince [x] olacak.
 Rota çizimi şu an herkese açık sunucuları kullanıyor: BRouter (brouter.de) ve Photon (photon.komoot.io).
 İkisi de ücretsiz ama "adil kullanım" ile sınırlı; kullanıcı sayısı artınca yetmez.
 

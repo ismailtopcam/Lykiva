@@ -1,0 +1,32 @@
+# Lykiva — kendi rota (BRouter) ve yer arama (Photon) sunucularımız.
+# Coolify > yeni kaynak > Docker Compose (Git deposu: bu repo, dosya: altyapi/docker-compose.yml).
+# Alan adlarını Coolify arayüzünde her servise ver (ör. brouter.lykiva.ismailtopcam.dev → 17777,
+# photon.lykiva.ismailtopcam.dev → 2322). Ayrıntı: altyapi/README.md
+services:
+  brouter:
+    build: ./brouter
+    restart: unless-stopped
+    environment:
+      - BROUTER_BELLEK=${BROUTER_BELLEK:-512M}
+      - BROUTER_ISLEM=${BROUTER_ISLEM:-4}
+      - BROUTER_ZAMAN_ASIMI=${BROUTER_ZAMAN_ASIMI:-60}
+      - BROUTER_SEGMENTLER=${BROUTER_SEGMENTLER:-E25_N35 E30_N35 E35_N35 E40_N35 E25_N40 E30_N40 E35_N40 E40_N40}
+    volumes:
+      - brouter-segmentler:/segments
+    expose:
+      - '17777'
+
+  photon:
+    build: ./photon
+    restart: unless-stopped
+    environment:
+      - PHOTON_BELLEK=${PHOTON_BELLEK:-2g}
+      - PHOTON_DILLER=${PHOTON_DILLER:-tr,en}
+    volumes:
+      - photon-veri:/veri
+    expose:
+      - '2322'
+
+volumes:
+  brouter-segmentler:
+  photon-veri:
