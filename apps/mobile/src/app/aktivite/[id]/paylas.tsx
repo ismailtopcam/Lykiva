@@ -23,6 +23,7 @@ const statDefs: [KartIstatistigi, string][] = [
   ['maks', 'Maks. hız'],
   ['ort', 'Ort. hız'],
   ['mola', 'Molalar'],
+  ['hava', 'Hava'],
   ['kisiler', 'Birlikte yaptıklarım'],
 ];
 
@@ -193,7 +194,7 @@ export default function PaylasimStudyosuScreen() {
             <Label>Kartta göster</Label>
             <View style={[styles.row, { flexWrap: 'wrap' }]}>
               {statDefs
-                .filter(([k]) => k !== 'kisiler' || a.with.length > 0)
+                .filter(([k]) => (k !== 'kisiler' || a.with.length > 0) && (k !== 'hava' || !!a.hava))
                 .map(([k, label]) => (
                   <Chip key={k} label={label} role="checkbox" tone="sea" icon={on[k] ? undefined : 'plus'} selected={!!on[k]} onPress={() => setOn({ ...on, [k]: !on[k] })} />
                 ))}

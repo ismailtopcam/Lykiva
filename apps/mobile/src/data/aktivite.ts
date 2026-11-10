@@ -4,7 +4,7 @@
  * - "yerel-<uuid>"    → telefonda bekleyen (henüz gönderilmemiş) kayıt; gönderildiyse sunucudakine geçer
  * - diğer (uuid)      → sunucudaki aktivite
  */
-import { ACTIVITY_LABELS, formatDuration, formatKm, formatSpeedKmh, haversine, type ActivityType } from '@lykiva/shared';
+import { ACTIVITY_LABELS, formatDuration, formatKm, formatSpeedKmh, havaGecerliMi, haversine, type ActivityType, type HavaDurumu } from '@lykiva/shared';
 import { useEffect, useState } from 'react';
 
 import { kuyruguGonder, kuyruktakiler, sunucuIdsi, yereldekiPaket } from '@/kayit/kuyruk';
@@ -37,6 +37,7 @@ type Ham = {
   ownerName?: string;
   ownerId?: string;
   birlikte?: BirlikteKisi[];
+  hava?: HavaDurumu | null;
   mine?: boolean;
   visibility?: Activity['visibility'];
   hideEndpoints?: boolean;
@@ -94,6 +95,7 @@ function goruntuyeCevir(h: Ham): Activity {
     owner: h.ownerName ?? 'me',
     with: (h.birlikte ?? []).map((k) => k.kullanici),
     birlikte: h.birlikte,
+    hava: h.hava ?? null,
     title: h.title ?? ACTIVITY_LABELS[h.activity],
     type: h.activity,
     place: '',
@@ -166,6 +168,7 @@ async function sunucudan(id: string): Promise<Activity> {
     stops: detay.stops.map((s) => ({ start: Date.parse(s.started_at), end: Date.parse(s.ended_at), distanceAt: s.distance_at_m, lng: s.lng, lat: s.lat, note: s.note })),
     ownerName: o.owner_name,
     ownerId: o.owner_id,
+    hava: havaGecerliMi(o.weather) ? o.weather : null,
     birlikte: ((bk ?? []) as { user_id: string; display_name: string; username: string; me: boolean }[]).map((k) => ({
       id: k.user_id,
       ad: k.display_name,
@@ -206,6 +209,7 @@ async function yerelden(clientId: string): Promise<Activity | null> {
     iz3b: p.points.map((pt) => [pt.lng, pt.lat, pt.alt ?? null] as [number, number, number | null]),
     profile,
     stops: p.stops.map((s) => ({ start: s.startT, end: s.endT, distanceAt: s.distanceAtM, lng: s.lng, lat: s.lat })),
+    hava: p.weather ?? null,
     visibility: p.visibility,
     hideEndpoints: p.hide_endpoints,
   });

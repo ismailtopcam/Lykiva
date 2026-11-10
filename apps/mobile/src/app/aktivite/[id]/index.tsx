@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { birlikteKisileri, sunucuAktivitesiMi } from '@/akis/akis';
 import { ElevationProfile } from '@/components/charts';
+import { HavaKarti } from '@/components/HavaKarti';
 import { FloatingHeader } from '@/components/Header';
 import { Icon } from '@/components/Icon';
 import { TopoMap } from '@/components/map/TopoMap';
@@ -93,6 +94,7 @@ export default function AktiviteOzetiScreen() {
         </View>
 
         <SosyalSatiri id={a.id} />
+        {a.hava ? <HavaKarti hava={a.hava} iz={a.route} /> : null}
 
         <View style={styles.grid}>
           {cells.map(([l, v, hi]) => (

@@ -1,7 +1,7 @@
 /**
  * Akıştaki tek aktivite kartı (gerçek veri). Tasarım: Akış ekranındaki gönderi kartı.
  */
-import { ACTIVITY_LABELS } from '@lykiva/shared';
+import { ACTIVITY_LABELS, havaGecerliMi, havaOzeti } from '@lykiva/shared';
 import { router } from 'expo-router';
 import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -56,6 +56,7 @@ function AkisKartiIc({ o, onBegen }: Props) {
           </Txt>
           <Txt variant="small" numberOfLines={1}>
             {akisZamani(o.started_at)}
+            {havaGecerliMi(o.weather) ? ` · ${havaOzeti(o.weather)}` : ''}
             {o.mine ? ` · ${GORUNURLUK[o.visibility]}` : ''}
           </Txt>
         </Pressable>

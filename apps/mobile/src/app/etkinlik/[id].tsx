@@ -1,6 +1,6 @@
-import { ACTIVITY_LABELS, formatKm } from '@lykiva/shared';
+import { ACTIVITY_LABELS, formatKm, havaOzeti, ruzgarMetni, type HavaDurumu } from '@lykiva/shared';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState, type ReactNode } from 'react';
+import { useEffect, useCallback, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -11,6 +11,7 @@ import { TopoMap, type MapMarker } from '@/components/map/TopoMap';
 import { OrnekEtkinlik } from '@/components/OrnekEtkinlik';
 import { SikayetBaglantisi, useSikayet } from '@/components/SikayetPenceresi';
 import { Txt } from '@/components/Txt';
+import { tahmin } from '@/lib/hava';
 import { Avatar } from '@/components/ui';
 import type { LngLat } from '@/data/ornek';
 import {
@@ -63,6 +64,21 @@ function GercekEtkinlik({ id }: { id: string }) {
   const [mesgul, setMesgul] = useState(false);
   const [mesaj, setMesaj] = useState<string | null>(null);
   const sikayet = useSikayet();
+  const [hava, setHava] = useState<HavaDurumu | null>(null);
+  const tahminAnahtari = e && e.meeting_lat != null && e.meeting_lng != null ? `${e.meeting_lat},${e.meeting_lng},${e.starts_at}` : null;
+
+  // Buluşma noktası ve saat belliyse tahmin (9 günden uzak ya da geçmişse gösterilmez)
+  useEffect(() => {
+    if (!tahminAnahtari) return;
+    const [lat, lng, zaman] = tahminAnahtari.split(',');
+    let acik = true;
+    tahmin(Number(lat), Number(lng), new Date(zaman))
+      .then((h) => acik && setHava(h))
+      .catch(() => undefined);
+    return () => {
+      acik = false;
+    };
+  }, [tahminAnahtari]);
 
   const yukle = useCallback(async () => {
     try {
@@ -161,6 +177,7 @@ function GercekEtkinlik({ id }: { id: string }) {
           <View style={{ gap: 10, marginBottom: 14 }}>
             <Bilgi icon="calendar" title={uzunTarih(ev.starts_at)} sub={bitti ? 'Etkinlik sona erdi' : `${ev.creator_name} düzenliyor`} />
             {ev.meeting_point_name || bulusma ? <Bilgi icon="pin" title={ev.meeting_point_name ?? 'Haritada işaretli nokta'} sub="Buluşma noktası" /> : null}
+            {hava && !bitti ? <Bilgi icon="weather" title={`${havaOzeti(hava)} · ${ruzgarMetni(hava)}`} sub="Hava tahmini (MET Norway)" /> : null}
             {ev.route ? (
               <Bilgi
                 icon="route"

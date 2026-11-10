@@ -475,6 +475,23 @@ bekle('A, B\'ye yetki verince B paneli görür', oz.kullanici === 4, oz.kullanic
 m = await hataMesaji(() => anonOlarak(`select yonetim_ozet()`));
 bekle('Giriş yapmamış biri panel fonksiyonlarını çağıramaz', /permission denied/.test(m ?? ''), m);
 
+console.log('\nHava durumu');
+const hava = { t: '2026-11-11T06:00:00Z', sicaklik: 14.2, hissedilen: 13.1, ruzgar: 3.9, ruzgarYon: 271, nem: 62, yagis: 0, uv: 0.4, sembol: 'partlycloudy_day', kaynak: 'met.no' };
+await olarak(A, `update activities set weather = $1::jsonb where id = $2`, [JSON.stringify(hava), aKas]);
+r = await olarak(B, `select weather from aktivite_ozetleri where id = $1`, [aKas]);
+bekle('Sahibi hava bilgisini yazar; aktiviteyi gören özet görünümünde okur', r.rows[0]?.weather?.sicaklik === 14.2 && r.rows[0].weather.sembol === 'partlycloudy_day', r.rows[0]);
+r = await olarak(B, `select akis('takip') as j`);
+bekle('Akış kartında hava bilgisi', r.rows[0].j.find((x) => x.id === aKas)?.weather?.ruzgarYon === 271, r.rows[0].j.find((x) => x.id === aKas)?.weather);
+m = await hataMesaji(() => olarak(A, `update activities set weather = '[1,2]'::jsonb where id = $1`, [aKas]));
+bekle('Nesne olmayan hava bilgisi reddedilir', /hava_bicimi/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(A, `update activities set weather = $1::jsonb where id = $2`, [JSON.stringify({ ...hava, lat: 36.2, lng: 29.6 }), aKas]));
+bekle('Konum içeren hava bilgisi reddedilir', /hava_bicimi/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(A, `update activities set weather = $1::jsonb where id = $2`, [JSON.stringify({ ...hava, not: 'x'.repeat(3000) }), aKas]));
+bekle('Çok büyük hava bilgisi reddedilir', /hava_bicimi/.test(m ?? ''), m);
+await olarak(C, `update activities set weather = '{"sicaklik": 99, "ruzgar": 0}'::jsonb where id = $1`, [aKas]);
+r = await db.query(`select weather ->> 'sicaklik' as s from activities where id = '${aKas}'`);
+bekle('Başkası hava bilgisini değiştiremez', r.rows[0].s === '14.2', r.rows[0]);
+
 console.log('\nYetki');
 let anonHata = null;
 try {

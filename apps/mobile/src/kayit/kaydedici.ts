@@ -8,12 +8,14 @@
  * - Duraklatma yeni bir "parça" başlatır; parçalar arası yol mesafeye eklenmez.
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { acceptPoint, prepareRoute, trackOnRoute, type ActivityType, type PreparedRoute, type RouteProgress, type RoutePoint, type TrackPoint } from '@lykiva/shared';
+import { acceptPoint, prepareRoute, trackOnRoute, type ActivityType, type HavaDurumu, type PreparedRoute, type RouteProgress, type RoutePoint, type TrackPoint } from '@lykiva/shared';
 import { randomUUID } from 'expo-crypto';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 import { useSyncExternalStore } from 'react';
 import { Platform } from 'react-native';
+
+import { simdikiHava } from '@/lib/hava';
 
 import { hemenYayinla, konumYayinla, paylasimiBitir, type PaylasimGrubu } from './canliPaylasim';
 import { kuyrugaEkle, kuyruguGonder, sunucuIdsi } from './kuyruk';
@@ -44,6 +46,8 @@ export type Kayit = {
   rotaIlerleme: RouteProgress | null;
   /** Canlı konumun paylaşıldığı grup (yoksa paylaşılmıyor) */
   paylasim: PaylasimGrubu | null;
+  /** Kayıt başlarken alınan hava (internet yoksa null kalır) */
+  hava: HavaDurumu | null;
 };
 
 export type KayitRotasi = { id: string; name: string; points: RoutePoint[] };
@@ -61,6 +65,7 @@ const BOS: Kayit = {
   rota: null,
   rotaIlerleme: null,
   paylasim: null,
+  hava: null,
 };
 
 // Hazırlanmış rota (birikmiş mesafeler) — rota başına bir kez hesaplanır
@@ -142,7 +147,22 @@ function noktalarEkle(locs: Location.LocationObject[]) {
   }
   segments[segments.length - 1] = seg;
   degistir({ segments, sonKonum, rotaIlerleme });
+  if (!kayit.hava) havayiYakala();
   if (kayit.paylasim) konumYayinla(paylasimDurumu());
+}
+
+// Kayıt başına bir kez dene (internet yoksa sessizce vazgeç; kayıt hava bilgisiz kaydedilir)
+let havaIstenen: string | null = null;
+function havayiYakala() {
+  const k = kayit.sonKonum;
+  if (!k || kayit.durum === 'bos' || havaIstenen === kayit.clientId) return;
+  const clientId = kayit.clientId;
+  havaIstenen = clientId;
+  simdikiHava(k.lat, k.lng)
+    .then((hava) => {
+      if (hava && kayit.clientId === clientId) degistir({ hava });
+    })
+    .catch(() => undefined);
 }
 
 function paylasimDurumu() {
@@ -229,6 +249,7 @@ export async function baslat(activity: ActivityType, rota: KayitRotasi | null = 
     paylasim,
   });
   if (paylasim) hemenYayinla(paylasimDurumu());
+  havayiYakala();
   const arkaPlan = await izlemeyiBaslat();
   degistir({ arkaPlan });
 }
@@ -257,7 +278,7 @@ export async function devamEt() {
  */
 export async function bitir(title?: string): Promise<string | null> {
   await izlemeyiDurdur();
-  const paket = paketOlustur({ clientId: kayit.clientId, activity: kayit.activity, segments: kayit.segments, title, routeId: kayit.rota?.id });
+  const paket = paketOlustur({ clientId: kayit.clientId, activity: kayit.activity, segments: kayit.segments, title, routeId: kayit.rota?.id, hava: kayit.hava });
   const clientId = kayit.clientId;
   const paylasiyordu = !!kayit.paylasim;
   degistir({ ...BOS, sonKonum: kayit.sonKonum });

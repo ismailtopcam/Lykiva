@@ -5,7 +5,13 @@ Ekran tasarımları: Lykiva — Mobil Uygulama (Claude Design canvas'ı).
 
 ## Yapılacaklar
 
-### [ ] Hava durumu
+### [x] Hava durumu (20. aşama)
+Servis: **MET Norway** (api.met.no locationforecast 2.0) — anahtarsız, ticari kullanım dahil ücretsiz, CC BY 4.0
+(uygulamada "Kaynak: MET Norway"). Open-Meteo'nun ücretsiz katmanı ticari olmayan kullanımla sınırlı olduğu için seçilmedi.
+Kurallar: tanıtıcı User-Agent (`Lykiva/0.1 (+https://lykiva.ismailtopcam.dev)`), koordinat en fazla 4 ondalık (3 kullanılıyor),
+aynı yer için 30 dk önbellek. Adres `EXPO_PUBLIC_HAVA_URL` ile değişir. Yapılmayan: rota detayında tahmin (rotanın planlanan
+tarihi yok), web paylaşım sayfasında hava, aktivite boyunca aralıklarla ölçüm (yalnızca başta bir kez).
+
 Aktivitenin hangi havada yapıldığı kaydedilecek ve gösterilecek.
 
 - Kayıt başlarken (ve gerekirse aktivite boyunca aralıklarla) o konumun hava bilgisini al:

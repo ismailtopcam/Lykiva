@@ -2,7 +2,7 @@
  * Akış ve takip: sunucu fonksiyonları supabase/migrations/20261110000000_akis_takip.sql içinde.
  * Takip etme / bırakma ve beğeni doğrudan tablo yazımıyla yapılır (veritabanı kuralları korur).
  */
-import { ACTIVITY_LABELS, formatDuration, formatKm, formatSpeedKmh, type ActivityType } from '@lykiva/shared';
+import { ACTIVITY_LABELS, formatDuration, formatKm, formatSpeedKmh, type ActivityType, type HavaDurumu } from '@lykiva/shared';
 import * as Location from 'expo-location';
 
 import type { LngLat } from '@/data/ornek';
@@ -34,6 +34,7 @@ export type AkisOgesi = {
   with?: { id: string; ad: string }[];
   with_count?: number;
   tagged_me?: boolean;
+  weather?: HavaDurumu | null;
 };
 
 export type KisiOzeti = {

@@ -1,7 +1,7 @@
 /**
  * Bitmiş bir kaydı sunucuya gidecek pakete çevirir (kaydet_aktivite fonksiyonunun beklediği biçim).
  */
-import { computeSegmentedStats, detectStops, type ActivityType, type TrackPoint, type TrackStop, haversine } from '@lykiva/shared';
+import { computeSegmentedStats, detectStops, type ActivityType, type HavaDurumu, type TrackPoint, type TrackStop, haversine } from '@lykiva/shared';
 
 export type KayitPaketi = {
   client_id: string;
@@ -23,6 +23,8 @@ export type KayitPaketi = {
   hide_endpoints: boolean;
   points: TrackPoint[];
   stops: TrackStop[];
+  /** Kayıt başındaki hava (sunucuda activities.weather) */
+  weather?: HavaDurumu | null;
 };
 
 const r1 = (n: number) => Math.round(n * 10) / 10;
@@ -49,6 +51,7 @@ export function paketOlustur(opts: {
   segments: TrackPoint[][];
   title?: string;
   routeId?: string | null;
+  hava?: HavaDurumu | null;
 }): KayitPaketi | null {
   const segments = opts.segments.filter((s) => s.length > 0);
   const points = segments.flat();
@@ -97,5 +100,6 @@ export function paketOlustur(opts: {
       speed: p.speed == null || p.speed < 0 ? null : r2(p.speed),
     })),
     stops: stops.sort((a, b) => a.startT - b.startT),
+    weather: opts.hava ?? null,
   };
 }

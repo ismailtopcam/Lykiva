@@ -18,7 +18,7 @@ export const KART_SABLONLARI = [
   { name: 'Kaya', bg: '#B04E25', fg: '#FFFFFF', route: '#FBF8F2', contour: '#C26A44' },
 ] as const;
 
-export type KartIstatistigi = 'mesafe' | 'sure' | 'tirmanis' | 'maks' | 'ort' | 'mola' | 'kisiler';
+export type KartIstatistigi = 'mesafe' | 'sure' | 'tirmanis' | 'maks' | 'ort' | 'mola' | 'hava' | 'kisiler';
 
 /** Baştan ve sondan metre kadar kırpar (ev / iş konumu görünmesin) */
 export function uclariKirp(route: LngLat[], metre = 200): LngLat[] {
@@ -90,6 +90,7 @@ export function PaylasimKarti({ a, sablon, goster, uclariGizle, genislik = 196, 
       goster.maks && ['Maks.', a.maxSpeed],
       goster.ort && ['Ort.', a.avgSpeed],
       goster.mola && ['Mola', String(a.stops.length)],
+      goster.hava && a.hava && ['Hava', `${Math.round(a.hava.sicaklik)}°C`],
     ].filter(Boolean) as [string, string][]
   ).slice(0, 3);
 
