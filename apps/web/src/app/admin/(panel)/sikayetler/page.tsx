@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 
 import { liste, yonetimRpc, type Sayfa, type SikayetSatiri } from '@/lib/yonetim/veri';
-import { aktiviteSil, etkinlikSil, grupSil, rotaGizle, sikayetGuncelle } from '../actions';
+import { aktiviteSil, engelDegistir, etkinlikSil, grupSil, mesajSil, rotaGizle, sikayetGuncelle, yorumSil } from '../actions';
 import styles from '../admin.module.css';
 import { OnayliDugme } from '../OnayliDugme';
 import { Baslik, Bos, Etiket, Sayfalama, tarih, Yukleniyor } from '../ui';
@@ -118,11 +118,18 @@ function Kaldir({ r }: { r: SikayetSatiri }) {
           ? { action: grupSil, etiket: 'Grubu sil', onay: 'Grup, üyelikleri ve mesajlarıyla kalıcı olarak silinsin mi? Geri alınamaz.' }
           : r.target_type === 'event'
             ? { action: etkinlikSil, etiket: 'Etkinliği sil', onay: 'Etkinlik kalıcı olarak silinsin mi? Geri alınamaz.' }
-            : null;
+            : r.target_type === 'comment'
+              ? { action: yorumSil, etiket: 'Yorumu kaldır', onay: 'Yorum kalıcı olarak silinsin mi? Geri alınamaz.' }
+              : r.target_type === 'message'
+                ? { action: mesajSil, etiket: 'Mesajı kaldır', onay: 'Mesaj gruptan kalıcı olarak silinsin mi? Geri alınamaz.' }
+                : r.target_type === 'user'
+                  ? { action: engelDegistir, etiket: 'Kullanıcıyı engelle', onay: 'Kullanıcı artık giriş yapamayacak (açık oturumu en geç 1 saat içinde kapanır). Engeli Kullanıcılar sayfasından kaldırabilirsin. Devam edilsin mi?' }
+                  : null;
   if (!islem) return null;
   return (
     <form action={islem.action}>
       <input type="hidden" name="id" value={r.target_id} />
+      {r.target_type === 'user' ? <input type="hidden" name="engelli" value="true" /> : null}
       <OnayliDugme etiket={islem.etiket} onay={islem.onay} tehlikeli />
     </form>
   );

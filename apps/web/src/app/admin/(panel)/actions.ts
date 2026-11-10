@@ -35,6 +35,21 @@ export async function etkinlikSil(f: FormData) {
   revalidatePath('/admin', 'layout');
 }
 
+export async function yorumSil(f: FormData) {
+  await yonetimRpc('yonetim_yorum_sil', { yorum: kimlik(f) });
+  revalidatePath('/admin', 'layout');
+}
+
+export async function mesajSil(f: FormData) {
+  await yonetimRpc('yonetim_mesaj_sil', { mesaj: kimlik(f) });
+  revalidatePath('/admin', 'layout');
+}
+
+export async function engelDegistir(f: FormData) {
+  await yonetimRpc('yonetim_engelle', { kisi: kimlik(f), engelli: f.get('engelli') === 'true' });
+  revalidatePath('/admin', 'layout');
+}
+
 export async function yetkiDegistir(f: FormData) {
   await yonetimRpc('yonetim_yetki', { kisi: kimlik(f), yonetici: f.get('yonetici') === 'true' });
   revalidatePath('/admin', 'layout');

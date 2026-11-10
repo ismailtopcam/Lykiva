@@ -39,6 +39,7 @@ MIGRATIONLAR=(
   "20261110080000_push.sql|to_regclass('public.push_jetonlari') is not null"
   "20261110090000_profil.sql|exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'profil_guncelle')"
   "20261110100000_fotograflar.sql|exists (select 1 from storage.buckets where id = 'mola')"
+  "20261110110000_yonetim_moderasyon.sql|exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'yonetim_engelle')"
 )
 
 # Betik "curl ... | bash" ile çalışırken kendi girdisi betiğin geri kalanıdır: sorgular girdi okumamalı,
