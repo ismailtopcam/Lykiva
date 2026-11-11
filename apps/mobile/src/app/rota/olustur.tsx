@@ -166,6 +166,7 @@ export default function RotaOlusturScreen() {
         follow={odak?.c ?? null}
         followZoom={odak?.z}
         onPress={(c) => setDuraklar((d) => [...d, c])}
+        katmanDugmesi={{ top: insets.top + 58 }}
         padding={{ top: 120, bottom: panelH + 40 }}
         accessibilityLabel={$t('rota_olustur.rota_cizim_haritasi_nokta', { length: duraklar.length })}
       />

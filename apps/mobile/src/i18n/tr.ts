@@ -1260,6 +1260,15 @@ export const tr = {
     begeni_2: '{like_count} beğeni',
     yorum: '{comment_count} yorum',
   },
+  haritaTuru: {
+    harita_turu: 'Harita türü',
+    harita_turu_secili: 'Harita türü: {tur}',
+    standart: 'Standart',
+    uydu: 'Uydu',
+    hibrit: 'Hibrit',
+    kis: 'Kış',
+    kis_aciklama: 'Kayak pistleri, kızak ve kar ayakkabısı yolları OpenSnowMap verisinden.',
+  },
   zilDugmesi: {
     bildirimler_okunmamis: 'Bildirimler, {n} okunmamış',
   },

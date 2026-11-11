@@ -71,6 +71,7 @@ export default function AktiviteOzetiScreen() {
                 ]
               : []
           }
+          katmanDugmesi={{ top: insets.top + 58 }}
           padding={{ top: insets.top + 70, bottom: 30 }}
           accessibilityLabel={$t('aktivite.rota_haritasi', { a: a.stops.length ? $t('aktivite.mola_noktasi_isaretli', { length: a.stops.length }) : '' })}
         />

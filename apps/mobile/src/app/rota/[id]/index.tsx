@@ -76,6 +76,7 @@ export default function RotaDetayScreen() {
           route={route}
           routeColors={egim?.renkler}
           markers={isaretler}
+          katmanDugmesi={{ top: insets.top + 58 }}
           padding={{ top: insets.top + 70, bottom: 30 }}
           accessibilityLabel={$t('rota.rotasinin_haritasi', { name: r.name })}
         />

@@ -1259,6 +1259,15 @@ export const en: Sozluk = {
     begeni_2: '{like_count} like|{like_count} likes',
     yorum: '{comment_count} comment|{comment_count} comments',
   },
+  haritaTuru: {
+    harita_turu: 'Map type',
+    harita_turu_secili: 'Map type: {tur}',
+    standart: 'Standard',
+    uydu: 'Satellite',
+    hibrit: 'Hybrid',
+    kis: 'Winter',
+    kis_aciklama: 'Ski pistes, sledding and snowshoe trails from OpenSnowMap data.',
+  },
   zilDugmesi: {
     bildirimler_okunmamis: 'Notifications, {n} unread',
   },

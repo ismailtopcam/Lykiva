@@ -162,6 +162,7 @@ function GercekEtkinlik({ id }: { id: string }) {
             style={{ height: 240 + insets.top }}
             route={rotaYolu}
             markers={isaretler}
+            katmanDugmesi={{ top: insets.top + 58 }}
             padding={{ top: insets.top + 70, bottom: 24 }}
             accessibilityLabel={$t('etkinlik.etkinlik_haritasi', { a: ev.route ? $t('etkinlik.rota') : '', a2: bulusma ? $t('etkinlik.ve_bulusma_noktasi') : '' })}
           />

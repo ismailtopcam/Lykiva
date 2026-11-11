@@ -11,6 +11,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | Kim | İş | Dal |
 | --- | --- | --- |
 | İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |
+| Gökhan | Harita türleri: standart, uydu, hibrit, kış (`apps/mobile/src/components/map`) | `harita-turleri` |
 
 ## Gökhan için: 11 Kasım 2026'da değişenler (İsmail)
 
@@ -89,6 +90,11 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
 - Kişisel rekorlar: Profil > Kişisel rekorlar açılıyor mu, değerler aktivite sayfalarıyla tutuyor mu, tür süzgeci çalışıyor mu?
   Yeni bir kayıtta rekor kırınca aktivite sayfasında rozet çıkıyor mu (o türde en az 2 aktivite gerekir)? Almanca / Rusça uzun
   rekor adları kartlara sığıyor mu?
+- Harita türleri: haritadaki katman düğmesinden uydu / hibrit / kış seç; bütün haritalarda değişiyor mu, uygulama kapanıp
+  açılınca seçim kalıyor mu? Hibritte yol ve yer adları okunuyor mu? Kışı bir kayak merkezinde aç (Uludağ, Kartalkaya,
+  Palandöken): pistler görünüyor mu? Tür değişince rota çizgisi ve işaretler kayboluyor mu (stil yeniden yüklenirken)?
+  Yalnızca geliştirme / mağaza derlemesinde; Expo Go'da düğme çıkmaz. Türetilen stiller MapLibre stil doğrulayıcısından
+  hatasız geçti; telefonda görülmedi.
 
 ### [~] Google Play — dahili test
 Play Console'da **Lykiva** oluşturuldu (kişisel geliştirici hesabı, paket `app.lykiva.mobile`, Türkçe, ücretsiz).
@@ -105,6 +111,9 @@ Kalan: testerların kurup denemesi; sonra kapalı teste geçiş (bkz. Mağazaya 
   (taslaklar `MAGAZA.md`'de).
 - Arka plan konum beyanı için YouTube videosu: bilgilendirme penceresi → izin ekranı → ekran kapalıyken süren kayıt.
 - Mağaza grafikleri: 512 px simge, 1024×500 öne çıkan grafik, en az 2 telefon ekran görüntüsü.
+- Harita türlerinin kaynak koşullarını oku: Esri World Imagery (uydu / hibrit) ve OpenSnowMap pist döşemeleri (kış)
+  mağazadaki ücretsiz bir uygulamada bu şekilde (anahtarsız, doğrudan döşeme) kullanılabiliyor mu? Uymuyorsa uydu için
+  anahtarlı bir servise geç (ör. Esri ArcGIS Location Platform ya da MapTiler Satellite); adres `haritaTurleri.ts`'te tek yerde.
 
 ### [~] Yedekleme
 Betikler sunucuya kuruldu (`supabase/yedek/kur.sh`; her gece 03:30, yerel 14 gün). Kalan: sunucu dışı S3 kopyası ve
@@ -182,7 +191,9 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
 **Keşif**
 - [ ] Rota üzerinde önerilen noktalar: su kaynağı, kamp yeri, manzara (fotoğraf + not; Komoot "Highlights" gibi).
 - [ ] Rota kartında fotoğraf ve gerçek "kaç kişi yaptı" (şu an yalnızca örnek veride).
-- [ ] Harita katmanı seçimi: topoğrafik, uydu, eş yükselti eğrileri.
+- [~] Harita katmanı seçimi: standart, uydu, hibrit, kış yapıldı (haritadaki katman düğmesi). Kalan: topoğrafik
+  (eş yükselti eğrileri, tepe gölgesi; yükselti verisi / DEM kaynağı gerekir); çevrimdışı paketler yalnızca standart
+  stille iner (uydu çevrimdışında boş görünür).
 
 **Platform**
 - [ ] Kayıtta kilit ekranında hız / mesafe / süre: iOS Live Activity, Android kalıcı bildirimde değerler (D).
@@ -262,6 +273,10 @@ Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde
 - **Hava servisi: MET Norway** (api.met.no locationforecast 2.0) — anahtarsız, ticari kullanım dahil ücretsiz, CC BY 4.0
   ("Kaynak: MET Norway"). Open-Meteo'nun ücretsiz katmanı ticari olmayan kullanımla sınırlı olduğu için seçilmedi.
   Tanıtıcı User-Agent, koordinat 3 ondalık, aynı yer için 30 dk önbellek. Adres `EXPO_PUBLIC_HAVA_URL` ile değişir.
+- **Harita türleri** (`apps/mobile/src/components/map/haritaTurleri.ts`): standart = OpenFreeMap Liberty; uydu = Esri
+  World Imagery (anahtarsız döşeme); hibrit = uydu + Liberty'nin yol, sınır ve yazı katmanları (stil JSON'u bir kez indirilip
+  uygulamada türetilir); kış = Liberty karlı renklerle + OpenSnowMap pist döşemeleri. Seçim telefonda saklanır, bütün
+  haritalara uygulanır. Koşullar mağaza öncesi kontrol edilecek (bkz. Mağazaya çıkmadan önce).
 - **Derleme: EAS Build** (bulutta; Windows'tan da başlatılır). Mac'te yerel derleme de mümkün.
 - **Yönetim paneli** tam yetkili anahtar kullanmaz; her işlem yöneticinin kendi oturumuyla, yetkiyi veritabanı denetler.
 - **Yasal sayfalardaki iletişim bilgileri** panelden değişir (`site_ayarlari`); varsayılan `bilgi@lykiva.app`.

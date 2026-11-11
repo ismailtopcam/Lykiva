@@ -1259,6 +1259,15 @@ export const de: Sozluk = {
     begeni_2: '{like_count} Like|{like_count} Likes',
     yorum: '{comment_count} Kommentar|{comment_count} Kommentare',
   },
+  haritaTuru: {
+    harita_turu: 'Kartentyp',
+    harita_turu_secili: 'Kartentyp: {tur}',
+    standart: 'Standard',
+    uydu: 'Satellit',
+    hibrit: 'Hybrid',
+    kis: 'Winter',
+    kis_aciklama: 'Skipisten, Rodel- und Schneeschuhwege aus OpenSnowMap-Daten.',
+  },
   zilDugmesi: {
     bildirimler_okunmamis: 'Benachrichtigungen, {n} ungelesen',
   },
