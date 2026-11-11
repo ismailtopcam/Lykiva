@@ -16,6 +16,7 @@ import { SosyalSatiri } from '@/components/SosyalSatiri';
 import { Txt } from '@/components/Txt';
 import { AvatarStack, Button } from '@/components/ui';
 import { adListesi, birlikteKisiler, useAktivite } from '@/data/aktivite';
+import { rekorAdi, useAktiviteRekorlari } from '@/data/rekor';
 import type { Activity, BirlikteKisi } from '@/data/ornek';
 import { aktivitedenRota } from '@/data/rota';
 import { basHarfler, grupRengi } from '@/grup/gruplar';
@@ -30,6 +31,7 @@ export default function AktiviteOzetiScreen() {
   const insets = useSafeAreaInsets();
   const [rotaDurumu, setRotaDurumu] = useState<'bos' | 'kaydediyor' | string>('bos');
   const sikayet = useSikayet();
+  const rekorlar = useAktiviteRekorlari(a?.id, a?.mine ? (a.ownerId ?? null) : null, !!a && (!!a.mine || a.id.startsWith('yerel-')));
 
   if (!a) {
     return (
@@ -92,6 +94,16 @@ export default function AktiviteOzetiScreen() {
             {a.title}
           </Txt>
           <BirlikteSatiri a={a} />
+          {rekorlar.length ? (
+            <Pressable accessibilityRole="link" onPress={() => router.push('/rekorlar')} style={styles.rekor} hitSlop={6}>
+              <Icon name="trophy" size={18} color={colors.terraInk} strokeWidth={2} />
+              <Txt style={{ flex: 1, fontSize: 13, color: colors.terraInk }}>
+                <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 13, color: colors.terraInk }}>{$t('rekorlar.kisisel_rekor')}</Txt>
+                {' · '}
+                {rekorlar.map(rekorAdi).join(' · ')}
+              </Txt>
+            </Pressable>
+          ) : null}
         </View>
 
         <SosyalSatiri id={a.id} />
@@ -222,6 +234,7 @@ function BirlikteSatiri({ a }: { a: Activity }) {
 
 const styles = StyleSheet.create({
   birlikte: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 40, marginTop: 4 },
+  rekor: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: colors.terraSoft },
   root: { flex: 1, backgroundColor: colors.ground },
   center: { alignItems: 'center', justifyContent: 'center', padding: space.lg },
   grid: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: space.lg, marginTop: 14, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: colors.lineStrong, backgroundColor: colors.lineStrong, gap: 1 },

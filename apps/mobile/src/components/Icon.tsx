@@ -10,6 +10,7 @@ export type IconName =
   | 'home'
   | 'compass'
   | 'plus'
+  | 'trophy'
   | 'users'
   | 'user'
   | 'search'
@@ -77,6 +78,8 @@ function render(name: IconName, p: Record<string, unknown>, color: string) {
       );
     case 'plus':
       return <Path d="M12 5v14M5 12h14" {...p} />;
+    case 'trophy':
+      return <Path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3.3 3M17 6h3v1a3 3 0 0 1-3.3 3M12 14v4M8 20h8" {...p} />;
     case 'users':
       return (
         <>

@@ -4,6 +4,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { RouteThumb } from '@/components/charts';
+import { Icon } from '@/components/Icon';
 import { IconButton } from '@/components/IconButton';
 import { Txt } from '@/components/Txt';
 import { Avatar, Button, Card } from '@/components/ui';
@@ -185,6 +186,15 @@ export default function ProfilScreen() {
           </View>
         </Card>
 
+        <Pressable accessibilityRole="link" onPress={() => router.push('/rekorlar')} style={({ pressed }) => [styles.rekorlar, pressed && { opacity: 0.8 }]}>
+          <Icon name="trophy" color={colors.terraInk} />
+          <View style={{ flex: 1 }}>
+            <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }}>{$t('rekorlar.baslik')}</Txt>
+            <Txt variant="small">{$t('rekorlar.profil_alt')}</Txt>
+          </View>
+          <Icon name="chevron" size={18} color={colors.inkMuted} strokeWidth={2} />
+        </Pressable>
+
         <View accessibilityRole="tablist" style={styles.tabs}>
           {tabs().map((t, i) => (
             <Pressable
@@ -277,6 +287,7 @@ const styles = StyleSheet.create({
   identity: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: space.lg, paddingBottom: 14 },
   gecici: { marginHorizontal: space.md, padding: space.lg, marginBottom: 14 },
   week: { marginHorizontal: space.md, padding: space.lg, marginBottom: 14 },
+  rekorlar: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: space.md, marginBottom: 14, padding: 14, borderRadius: 16, backgroundColor: colors.terraSoft },
   bars: { flexDirection: 'row', gap: 8, height: 76, alignItems: 'flex-end' },
   tabs: { flexDirection: 'row', marginHorizontal: space.lg, borderBottomWidth: 1, borderBottomColor: colors.lineStrong },
   tab: { flex: 1, height: 44, alignItems: 'center', justifyContent: 'center', borderBottomWidth: 2.5, borderBottomColor: 'transparent' },
