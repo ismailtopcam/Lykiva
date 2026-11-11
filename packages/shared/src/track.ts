@@ -269,13 +269,62 @@ export function computeSegmentedStats(segments: TrackPoint[][]): TrackStats {
   };
 }
 
-/** Anlık hız: son birkaç saniyedeki noktalardan (cihaz hızı varsa onun medyanı) */
-export function currentSpeed(points: TrackPoint[], windowS = 5): number {
+/**
+ * Kayıt sırasında konum ancak bu kadar ilerleyince gelir (m) — kaydedicideki distanceInterval.
+ * Durunca yeni nokta gelmez; anlık hızın ne zaman sıfırlanacağı buna göre hesaplanır.
+ */
+export const LOCATION_DISTANCE_INTERVAL_M = 3;
+/** Cihaz hızlarının medyanı için pencere (s) ve en fazla nokta sayısı */
+export const CURRENT_SPEED_WINDOW_S = 3;
+const CURRENT_SPEED_MAX_POINTS = 3;
+/** Cihaz hızı yoksa konum farkından hesap için pencere (s) — konum gürültülü, daha uzun bakılır */
+const CURRENT_SPEED_POSITION_WINDOW_S = 5;
+/** Yeni nokta gelmeyince hızın sıfırlanması için alt ve üst sınır (s) */
+const CURRENT_SPEED_STALE_MIN_S = 3;
+const CURRENT_SPEED_STALE_MAX_S = 10;
+
+const validDeviceSpeed = (p: TrackPoint) => p.speed != null && p.speed >= 0 && p.speed <= MAX_PLAUSIBLE_SPEED;
+
+/**
+ * Bu hızda giderken bir sonraki noktanın en geç ne zaman gelmesi beklenir (s)?
+ * Konum ancak LOCATION_DISTANCE_INTERVAL_M ilerleyince geldiği için yavaşken aralık uzar.
+ * Bu süre geçip nokta gelmediyse kullanıcı durmuştur.
+ */
+export function staleAfterS(speed: number): number {
+  if (speed < MOVING_SPEED) return CURRENT_SPEED_STALE_MIN_S;
+  const expected = Math.max(1, LOCATION_DISTANCE_INTERVAL_M / speed);
+  return Math.min(CURRENT_SPEED_STALE_MAX_S, Math.max(CURRENT_SPEED_STALE_MIN_S, 2 * expected + 1));
+}
+
+/**
+ * Anlık hız (m/s).
+ * - Cihaz hızı (uydu sinyalinin Doppler kaymasından; konum farkından çok daha kararlı) varsa
+ *   son CURRENT_SPEED_WINDOW_S saniyedeki en fazla 3 cihaz hızının medyanı — tek tük sıçrama bastırılır,
+ *   gecikme yaklaşık bir saniye.
+ * - Son noktanın cihaz hızı "duruyor" diyorsa hemen 0.
+ * - Cihaz hızı yoksa son 5 sn'de gidilen yol / geçen süre.
+ * - `now` verilirse: beklenen sürede yeni nokta gelmediyse (durdu, konum gelmiyor) 0.
+ */
+export function currentSpeed(points: TrackPoint[], now?: number): number {
   if (!points.length) return 0;
   const last = points[points.length - 1];
-  const recent = points.filter((p) => last.t - p.t <= windowS * 1000);
-  if (recent.length < 2) {
-    return last.speed != null && last.speed >= 0 ? last.speed : 0;
+  let speed: number;
+  if (validDeviceSpeed(last)) {
+    if ((last.speed as number) < MOVING_SPEED) return 0;
+    const recent = points
+      .filter((p) => last.t - p.t <= CURRENT_SPEED_WINDOW_S * 1000 && validDeviceSpeed(p))
+      .slice(-CURRENT_SPEED_MAX_POINTS)
+      .map((p) => p.speed as number);
+    speed = median(recent);
+  } else {
+    const recent = points.filter((p) => last.t - p.t <= CURRENT_SPEED_POSITION_WINDOW_S * 1000);
+    const dt = (last.t - recent[0].t) / 1000;
+    if (recent.length < 2 || dt <= 0) return 0;
+    let d = 0;
+    for (let i = 1; i < recent.length; i++) d += haversine(recent[i - 1], recent[i]);
+    speed = Math.min(MAX_PLAUSIBLE_SPEED, d / dt);
   }
-  return median(pointSpeeds(recent).slice(1));
+  if (speed < MOVING_SPEED) return 0;
+  if (now != null && (now - last.t) / 1000 > staleAfterS(speed)) return 0;
+  return speed;
 }

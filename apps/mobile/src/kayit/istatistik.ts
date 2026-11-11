@@ -1,4 +1,4 @@
-import { computeSegmentedStats, currentSpeed, haversine, type RoutePoint, type TrackStats } from '@lykiva/shared';
+import { computeSegmentedStats, currentSpeed, haversine, MAX_ACCURACY_M, type RoutePoint, type TrackStats } from '@lykiva/shared';
 import { useEffect, useMemo, useState } from 'react';
 
 import type { LngLat } from '@/data/ornek';
@@ -17,7 +17,8 @@ export function useSaat(aralikMs = 1000) {
 export type CanliVeri = {
   kayit: Kayit;
   stats: TrackStats;
-  anlikHiz: number;
+  /** m/s; null = sinyal zayıf ya da henüz konum yok, hız bilinmiyor */
+  anlikHiz: number | null;
   aktifS: number;
   iz: LngLat[];
   ben: LngLat | null;
@@ -30,11 +31,16 @@ export function useCanliVeri(): CanliVeri {
   const simdi = useSaat();
   const stats = useMemo(() => computeSegmentedStats(kayit.segments), [kayit.segments]);
   const son = kayit.segments[kayit.segments.length - 1] ?? [];
-  // 10 sn'den eski son nokta varsa hız 0 kabul edilir (sinyal yok ya da duruyor)
-  const taze = son.length > 0 && simdi - son[son.length - 1].t < 10_000;
-  const anlikHiz = kayit.durum === 'kayitta' && taze ? currentSpeed(son) : 0;
-  const iz = useMemo(() => kayit.segments.flat().map((p) => [p.lng, p.lat] as LngLat), [kayit.segments]);
   const sk = kayit.sonKonum;
+  // Beklenen sürede yeni nokta gelmediyse currentSpeed 0 döner (durdu). Ama son konum zayıfsa
+  // noktalar elendiği için de gelmiyor olabilir: o zaman "duruyorsun" demek yerine bilinmiyor (null).
+  const zayif = sk?.acc == null || sk.acc > MAX_ACCURACY_M;
+  let anlikHiz: number | null = 0;
+  if (kayit.durum === 'kayitta') {
+    const hiz = currentSpeed(son, simdi);
+    anlikHiz = son.length === 0 || (hiz === 0 && zayif) ? null : hiz;
+  }
+  const iz = useMemo(() => kayit.segments.flat().map((p) => [p.lng, p.lat] as LngLat), [kayit.segments]);
   return {
     kayit,
     stats,
