@@ -86,6 +86,7 @@ const asamalar = [
   ['20261110120000_hava_paylasim_push_temizligi', 'paylasilan_aktivite', { anahtar: '0' }],
   ['20261111000000_hesap_silme_ayarlar', 'hesabimi_sil', {}],
   ['20261112000000_dil', 'dil_ayarla', { p_dil: 'tr' }],
+  ['20261113000000_hedefler_meydan_okumalar', 'meydan_okumalar_listesi', {}],
 ];
 for (const [dosya, fn, govde] of asamalar) {
   try {

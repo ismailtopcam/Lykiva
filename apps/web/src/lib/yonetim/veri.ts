@@ -113,6 +113,20 @@ export type EtkinlikSatiri = {
   sikayet: number;
 };
 
+export type MeydanOkumaSatiri = {
+  id: string;
+  baslik: string;
+  olcu: 'mesafe' | 'sure' | 'sayi' | 'tirmanis';
+  hedef: number;
+  turler: string[];
+  baslangic: string;
+  bitis: string;
+  grup: string | null;
+  olusturan: string | null;
+  durum: 'baslamadi' | 'suruyor' | 'bitti';
+  katilimci: number;
+};
+
 export type SikayetSatiri = {
   id: string;
   target_type: 'user' | 'activity' | 'route' | 'message' | 'group' | 'event' | 'comment';

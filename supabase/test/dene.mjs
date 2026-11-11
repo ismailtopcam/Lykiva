@@ -754,5 +754,135 @@ bekle('Metni henüz olmayan dilde (Arapça) bildirim İngilizce gider', cagri[0]
 await olarak(C, `select dil_ayarla('tr')`);
 await db.exec(`drop schema net cascade; delete from push_jetonlari; delete from push_istekleri;`);
 
+console.log('\nHedefler');
+const H = 'e1000000-0000-0000-0000-0000000000e1';
+const K = 'e2000000-0000-0000-0000-0000000000e2';
+const L = 'e3000000-0000-0000-0000-0000000000e3';
+const N = 'e4000000-0000-0000-0000-0000000000e4'; // geçici hesap
+await db.exec(`
+  insert into auth.users (id, is_anonymous, raw_user_meta_data) values
+    ('${H}', false, '{"full_name":"Hande Er"}'), ('${K}', false, '{"full_name":"Kaan Ak"}'),
+    ('${L}', false, '{"full_name":"Lale Su"}'), ('${N}', true, '{}');
+`);
+const hedef1 = (await olarak(H, `select hedef_kaydet('hafta', 'mesafe', 100000) as id`)).rows[0].id;
+const hedef1b = (await olarak(H, `select hedef_kaydet('hafta', 'mesafe', 150000) as id`)).rows[0].id;
+r = await olarak(H, `select id, hedef from hedefler`);
+bekle('Aynı dönem + ölçü + tür yeniden kaydedilince güncellenir (tek satır)', hedef1 === hedef1b && r.rows.length === 1 && r.rows[0].hedef === 150000, r.rows);
+await olarak(H, `select hedef_kaydet('ay', 'sayi', 12, 'run')`);
+await olarak(H, `select hedef_kaydet('ay', 'sayi', 20)`);
+bekle('Türlü ve türsüz hedef ayrı tutulur', (await olarak(H, `select count(*)::int as n from hedefler`)).rows[0].n === 3, null);
+bekle('Başkasının hedefleri görünmez', (await olarak(K, `select count(*)::int as n from hedefler`)).rows[0].n === 0, null);
+m = await hataMesaji(() => olarak(H, `select hedef_kaydet('ay', 'sayi', 2.5)`));
+bekle('Aktivite sayısı tam sayı olmalı', /geçersiz/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(H, `select hedef_kaydet('gun', 'mesafe', 1000)`));
+bekle('Geçersiz dönem reddedilir', /dönemi geçersiz/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(H, `insert into hedefler (owner_id, donem, olcu, hedef) values ($1, 'yil', 'mesafe', 1)`, [H]));
+bekle('Hedef doğrudan tablo yazımıyla eklenemez', /permission denied/.test(m ?? ''), m);
+m = await hataMesaji(() => anonOlarak(`select hedef_kaydet('hafta', 'mesafe', 1000)`));
+bekle('Giriş yapmamış biri hedef koyamaz', /permission denied/.test(m ?? ''), m);
+for (const [d, o] of [['hafta', 'sure'], ['hafta', 'sayi'], ['hafta', 'tirmanis'], ['ay', 'mesafe'], ['ay', 'sure'], ['ay', 'tirmanis'], ['yil', 'mesafe'], ['yil', 'sure'], ['yil', 'sayi']]) {
+  await olarak(H, `select hedef_kaydet($1, $2, 100)`, [d, o]);
+}
+m = await hataMesaji(() => olarak(H, `select hedef_kaydet('yil', 'tirmanis', 100)`));
+bekle('En fazla 12 hedef', /En fazla 12/.test(m ?? ''), m);
+await olarak(K, `select hedef_sil($1)`, [hedef1]);
+bekle('Başkasının hedefi silinemez', (await db.query(`select count(*)::int as n from hedefler where id = '${hedef1}'`)).rows[0].n === 1, null);
+await olarak(H, `select hedef_sil($1)`, [hedef1]);
+bekle('Sahibi hedefini siler', (await db.query(`select count(*)::int as n from hedefler where id = '${hedef1}'`)).rows[0].n === 0, null);
+
+console.log('\nMeydan okumalar');
+// Aktiviteler doğrudan (şimdiye göre): H 2 gün önce 30 km bisiklet + 1 gün önce 10 km koşu, K 1 gün önce 50 km bisiklet (gizli), L 40 gün önce 80 km
+await db.exec(`
+  insert into activities (owner_id, title, activity, started_at, ended_at, moving_time_s, elapsed_time_s, distance_m, elevation_gain_m, visibility) values
+    ('${H}', 'H sürüş', 'bike', now() - interval '2 days', now() - interval '2 days' + interval '1 hour', 3600, 3700, 30000, 300, 'public'),
+    ('${H}', 'H koşu', 'run', now() - interval '1 day', now() - interval '1 day' + interval '1 hour', 3000, 3100, 10000, 50, 'public'),
+    ('${K}', 'K gizli sürüş', 'bike', now() - interval '1 day', now() - interval '1 day' + interval '2 hours', 7000, 7200, 50000, 600, 'private'),
+    ('${L}', 'L eski sürüş', 'bike', now() - interval '40 days', now() - interval '40 days' + interval '3 hours', 10000, 10800, 80000, 900, 'public');
+`);
+const genel = { baslik: 'Bu ay 100 km bisiklet', olcu: 'mesafe', hedef: 100000, turler: ['bike', 'mtb'], baslangic: new Date(Date.now() - 7 * 86400000).toISOString(), bitis: new Date(Date.now() + 20 * 86400000).toISOString() };
+m = await hataMesaji(() => olarak(H, `select meydan_okuma_olustur($1::jsonb)`, [JSON.stringify(genel)]));
+bekle('Herkese açık meydan okumayı yalnızca yönetici açar', /Yönetim yetkisi yok/.test(m ?? ''), m);
+const mGenel = (await olarak(A, `select meydan_okuma_olustur($1::jsonb) as id`, [JSON.stringify(genel)])).rows[0].id;
+m = await hataMesaji(() => olarak(A, `select meydan_okuma_olustur($1::jsonb)`, [JSON.stringify({ ...genel, turler: ['ucak'] })]));
+bekle('Geçersiz aktivite türü reddedilir', /türü geçersiz/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(A, `select meydan_okuma_olustur($1::jsonb)`, [JSON.stringify({ ...genel, bitis: new Date(Date.now() - 86400000).toISOString() })]));
+bekle('Bitmiş tarihle meydan okuma açılamaz', /gelecekte|sonra/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(A, `select meydan_okuma_olustur($1::jsonb)`, [JSON.stringify({ ...genel, baslangic: new Date(Date.now() - 60 * 86400000).toISOString() })]));
+bekle('Başlangıç en fazla bir ay önce olabilir', /bir ay önce/.test(m ?? ''), m);
+
+let ml = (await olarak(H, `select meydan_okumalar_listesi() as j`)).rows[0].j;
+bekle('Herkese açık meydan okuma herkesin listesinde; katılmadan değer yok', ml.some((x) => x.id === mGenel && x.katildim === false && x.degerim === null && x.katilimci_sayisi === 0), ml);
+await olarak(H, `select meydan_okumaya_katil($1)`, [mGenel]);
+await olarak(H, `select meydan_okumaya_katil($1)`, [mGenel]);
+await olarak(K, `select meydan_okumaya_katil($1)`, [mGenel]);
+await olarak(L, `select meydan_okumaya_katil($1)`, [mGenel]);
+await olarak(N, `select meydan_okumaya_katil($1)`, [mGenel], true);
+let md = (await olarak(H, `select meydan_okuma_detay($1) as j`, [mGenel])).rows[0].j;
+bekle('Yalnızca aralıktaki ve türdeki aktiviteler sayılır (H: 30 km bisiklet, koşu sayılmaz)', md.degerim === 30000 && md.katildim === true, md.degerim);
+bekle('Sıralama: K (50 km, gizli aktivite de sayılır) > H > L ve N (0); eşitler aynı sırada', md.siralama.map((x) => `${x.display_name}:${x.sira}`).join(',') === 'Kaan Ak:1,Hande Er:2,Lale Su:3,' + md.siralama[3].display_name + ':3' && md.katilimci_sayisi === 4, md.siralama);
+bekle('Benim yerim ayrıca dönüyor; sıralamada aktivite ayrıntısı yok', md.benim?.sira === 2 && md.benim.ben === true && !('title' in md.siralama[0]) && !('activity_id' in md.siralama[0]), md.benim);
+bekle('Yalnızca açan / yönetici yönetebilir', md.yonetebilir === false && (await olarak(A, `select meydan_okuma_detay($1) as j`, [mGenel])).rows[0].j.yonetebilir === true, null);
+m = await hataMesaji(() => olarak(H, `select meydan_okuma_sil($1)`, [mGenel]));
+bekle('Katılımcı herkese açık meydan okumayı silemez', /yetkin yok/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(H, `select * from meydan_okuma_katilimcilari`));
+bekle('Katılımcı tablosu doğrudan okunamaz', /permission denied/.test(m ?? ''), m);
+m = await hataMesaji(() => anonOlarak(`select meydan_okumalar_listesi()`));
+bekle('Giriş yapmamış biri meydan okumaları göremez', /permission denied/.test(m ?? ''), m);
+await olarak(L, `select meydan_okumadan_ayril($1)`, [mGenel]);
+md = (await olarak(H, `select meydan_okuma_detay($1) as j`, [mGenel])).rows[0].j;
+bekle('Ayrılan sıralamadan çıkar', md.katilimci_sayisi === 3 && !md.siralama.some((x) => x.display_name === 'Lale Su'), md.siralama);
+
+// Grup meydan okuması
+const hGrup = (await olarak(H, `select grup_olustur('{"name":"Hafta sonu koşucuları"}'::jsonb) as id`)).rows[0].id;
+const hKod = (await olarak(H, `select grup_detay($1) ->> 'invite_code' as code`, [hGrup])).rows[0].code;
+await olarak(K, `select davetle_katil($1)`, [hKod]);
+const grupMO = { baslik: 'Bu hafta 5 aktivite', olcu: 'sayi', hedef: 5, turler: [], baslangic: new Date(Date.now() - 3 * 86400000).toISOString(), bitis: new Date(Date.now() + 4 * 86400000).toISOString(), group_id: hGrup };
+m = await hataMesaji(() => olarak(L, `select meydan_okuma_olustur($1::jsonb)`, [JSON.stringify(grupMO)]));
+bekle('Grup üyesi olmayan grup meydan okuması açamaz', /üyesi değilsin/.test(m ?? ''), m);
+const mGrup = (await olarak(K, `select meydan_okuma_olustur($1::jsonb) as id`, [JSON.stringify(grupMO)])).rows[0].id;
+md = (await olarak(K, `select meydan_okuma_detay($1) as j`, [mGrup])).rows[0].j;
+bekle('Grup üyesi açar ve kendiliğinden katılır; değer = aktivite sayısı', md.katildim === true && md.degerim === 1 && md.grup_adi === 'Hafta sonu koşucuları' && md.yonetebilir === true, md);
+bekle('Grup dışındakiler grup meydan okumasını göremez', (await olarak(L, `select meydan_okuma_detay($1) as j`, [mGrup])).rows[0].j === null
+  && !(await olarak(L, `select meydan_okumalar_listesi() as j`)).rows[0].j.some((x) => x.id === mGrup), null);
+m = await hataMesaji(() => olarak(L, `select meydan_okumaya_katil($1)`, [mGrup]));
+bekle('Grup dışındaki katılamaz', /bulunamadı/.test(m ?? ''), m);
+ml = (await olarak(H, `select meydan_okumalar_listesi($1) as j`, [hGrup])).rows[0].j;
+bekle('Grup süzgeci yalnızca o grubunkileri verir', ml.length === 1 && ml[0].id === mGrup, ml.map((x) => x.baslik));
+await olarak(H, `select meydan_okumaya_katil($1)`, [mGrup]);
+await olarak(K, `select gruptan_ayril($1)`, [hGrup]);
+md = (await olarak(H, `select meydan_okuma_detay($1) as j`, [mGrup])).rows[0].j;
+bekle('Gruptan ayrılan grup meydan okumasından da çıkar (herkese açıktaki katılımı sürer)', md.katilimci_sayisi === 1
+  && (await db.query(`select count(*)::int as n from meydan_okuma_katilimcilari where user_id = '${K}' and meydan_okuma_id = '${mGenel}'`)).rows[0].n === 1, md.siralama);
+bekle('Grup yöneticisi (H), başkasının açtığı meydan okumayı yönetebilir', md.yonetebilir === true, md);
+
+// Bitmiş meydan okuma: katılım kapalı, katıldıysan listede kalır
+const bitmis = (await db.query(`insert into meydan_okumalar (baslik, olcu, hedef, baslangic, bitis) values ('Geçen ay', 'mesafe', 50000, now() - interval '70 days', now() - interval '40 days') returning id`)).rows[0].id;
+const bitmis2 = (await db.query(`insert into meydan_okumalar (baslik, olcu, hedef, baslangic, bitis) values ('Çok eski', 'mesafe', 50000, now() - interval '90 days', now() - interval '60 days') returning id`)).rows[0].id;
+await db.exec(`insert into meydan_okuma_katilimcilari (meydan_okuma_id, user_id) values ('${bitmis}', '${L}')`);
+m = await hataMesaji(() => olarak(H, `select meydan_okumaya_katil($1)`, [bitmis]));
+bekle('Bitmiş meydan okumaya katılınamaz', /bitti/.test(m ?? ''), m);
+ml = (await olarak(L, `select meydan_okumalar_listesi() as j`)).rows[0].j;
+const lBitmis = ml.find((x) => x.id === bitmis);
+bekle('Katıldığın bitmiş meydan okuma listede kalır, değeri tamamlanmış (80 km)', lBitmis?.degerim === 80000 && !ml.some((x) => x.id === bitmis2), ml.map((x) => x.baslik));
+
+// Yönetim
+let ymo = (await olarak(A, `select yonetim_meydan_okumalar('koşucu') as j`)).rows[0].j;
+bekle('Yönetimde grup meydan okuması da aranır', ymo.toplam === 1 && ymo.satirlar[0].grup === 'Hafta sonu koşucuları' && ymo.satirlar[0].katilimci === 1, ymo);
+m = await hataMesaji(() => olarak(H, `select yonetim_meydan_okumalar()`));
+bekle('Yönetici olmayan yönetim listesini göremez', /Yönetim yetkisi yok/.test(m ?? ''), m);
+await olarak(A, `select meydan_okuma_sil($1)`, [mGrup]);
+bekle('Site yöneticisi grup meydan okumasını siler', (await db.query(`select count(*)::int as n from meydan_okumalar where id = '${mGrup}'`)).rows[0].n === 0, null);
+
+console.log('\nHesap devri: hedefler ve meydan okumalar');
+await olarak(N, `select hedef_kaydet('hafta', 'sayi', 3)`, [], true);
+await olarak(N, `select hedef_kaydet('yil', 'mesafe', 2000000)`, [], true);
+await olarak(L, `select hedef_kaydet('yil', 'mesafe', 1000000)`);
+const devirN = (await olarak(N, `select devir_kodu_al() as k`, [], true)).rows[0].k;
+await olarak(L, `select hesabi_devral($1)`, [devirN]);
+r = await db.query(`select donem, olcu, hedef from hedefler where owner_id = '${L}' order by donem`);
+bekle('Geçici hesabın hedefi taşınır; asıl hesapta aynısı varsa asıl hesabınki kalır', r.rows.length === 2 && r.rows.find((x) => x.donem === 'yil').hedef === 1000000 && r.rows.find((x) => x.donem === 'hafta').hedef === 3, r.rows);
+md = (await olarak(L, `select meydan_okuma_detay($1) as j`, [mGenel])).rows[0].j;
+bekle('Meydan okuma katılımı asıl hesaba taşınır', md.katildim === true && (await db.query(`select count(*)::int as n from meydan_okuma_katilimcilari where user_id = '${N}'`)).rows[0].n === 0, md.katildim);
+
 console.log(hata ? `\n${hata} senaryo başarısız` : '\nTüm senaryolar geçti');
 process.exit(hata ? 1 : 0);
