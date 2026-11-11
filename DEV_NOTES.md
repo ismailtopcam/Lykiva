@@ -64,6 +64,10 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
     okuma açılabilir (ör. "Aralık'ta 200 km"; yönetici hesabıyla, kod / sunucu işi değil).
 11. **İsmail uygulayacak — ısı haritaları migration'ı:** `20261114000000_isi_haritalari.sql` (`uygula.sh`, durum modu sonra
     `uygula`). Uygulanana kadar uygulamada ısı haritası seçilince haritada hiçbir şey çıkmaz, Ayarlar'da "Gizlilik" görünmez.
+12. **İsmail yapacak — Gökhan'ı EAS projesine ekle:** expo.dev > `ismailtopcam` hesabı > Members > Invite: Gökhan'ın Expo
+    hesabı `quatroo06` (Developer rolü yeter). O zamana kadar Gökhan EAS derlemesi alamıyor ("Entity not authorized").
+    İlk iş: `kilit-ekrani` dalından Android derlemesi (yeni yerel modül, PR #51). Not: Gökhan'ın bilgisayarında PowerShell
+    betikleri kapalı, `npx` yerine `npx.cmd` yazılıyor.
 
 ## Yapılacaklar
 
