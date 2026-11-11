@@ -57,11 +57,10 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
      lykiva-supabase > `SMTP_PASS`'ı da güncelle ve servisi yeniden başlat.
    - Sohbette paylaşılan Coolify API anahtarlarını (bu da dahil) Coolify > Keys & Tokens'tan sil.
    - SMTP çalışıyor: deneme şifre sıfırlama postası Gmail'e geldi (11 Kas 2026). Kalan: yeni derlemede uygulamadan dene.
-10. **Dil desteği migration'ı:** Coolify > Servers > uygulama > Terminal'de `uygula.sh` ile `20261112000000_dil.sql`'i uygula
-    (profiles.dil, dil_ayarla, bildirim metni alıcının dilinde). Uygulanmazsa uygulama yine çalışır, bildirimler Türkçe gider.
-11. **Hedefler ve meydan okumalar migration'ı:** aynı yoldan (`uygula.sh`) `20261113000000_hedefler_meydan_okumalar.sql`'i uygula.
-    Uygulanmazsa hedefler / meydan okumalar ekranında "sunucu henüz güncellenmedi" yazar, rozetler yine çalışır.
-    Sonra `https://lykiva.app/admin/meydan-okumalar`'dan ilk herkese açık meydan okumayı aç (ör. "Aralık'ta 200 km").
+10. **İsmail uygulayacak — hedefler ve meydan okumalar migration'ı:** `20261113000000_hedefler_meydan_okumalar.sql`
+    (`uygula.sh`, durum modu sonra `uygula`). Uygulanana kadar uygulamada hedefler / meydan okumalar ekranı "sunucu henüz
+    güncellenmedi" der, rozetler yine çalışır. Sonra `https://lykiva.app/admin/meydan-okumalar`'dan ilk herkese açık meydan
+    okuma açılabilir (ör. "Aralık'ta 200 km"; yönetici hesabıyla, kod / sunucu işi değil).
 
 ## Yapılacaklar
 
@@ -218,6 +217,12 @@ Tırmanış bölümü: en az 20 m kazanç, 200 m uzunluk, ort. %3; tepeden 10 m 
 Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde; web paylaşım sayfasında da.
 
 ## Kararlar
+
+- **Migration'ları Claude uygular** (11 Kasım 2026): İsmail'in bilgisayarından Tailscale üzerinden `ssh root@uygulama`
+  çalışıyor; `uygula.sh` önce durum modunda, sonra `uygula` ile çalıştırılır. Migration main'e girince uygulanır.
+  `20261112000000_dil.sql` bu yolla uygulandı; sunucuda bütün migration'lar tamam.
+  **Sunucuyla ilgili işleri İsmail yapar, Gökhan yapmaz** (migration, Coolify, sunucu ayarları). Gökhan'ın PR'ında
+  migration varsa merge sonrası İsmail uygular.
 
 - **Hedefler ve meydan okumalar sunucuda, rozetler telefonda** (33. aşama). Hedefin ilerlemesi ve rozetler kişisel rekorlarla
   aynı veriden telefonda hesaplanır (telefonda bekleyen kayıtlar da sayılır); hedeflerin kendisi sunucuda (`hedefler`, yalnızca
