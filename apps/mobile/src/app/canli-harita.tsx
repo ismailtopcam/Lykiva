@@ -124,6 +124,7 @@ function GrupCanliHaritasi({ grupId }: { grupId: string }) {
           markers={isaretler}
           follow={odak}
           followZoom={15}
+          katmanDugmesi={{ top: insets.top + 58 }}
           padding={{ top: 140, bottom: 380 }}
           accessibilityLabel={$t('canli_harita.canli_haritasi_kisi_konum', { a: ad ?? $t('ortak.grup'), length: digerleri.length })}
         />

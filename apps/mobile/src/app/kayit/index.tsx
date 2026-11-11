@@ -103,6 +103,7 @@ export default function KayitBaslatScreen() {
         route={rota ? rota.points.map((p) => [p.lng, p.lat] as [number, number]) : undefined}
         markers={ben ? [{ id: 'me', coord: ben, kind: 'me' }] : []}
         follow={rota ? null : ben}
+        katmanDugmesi={{ top: insets.top + 58 }}
         padding={{ top: 110, bottom: 420 }}
         accessibilityLabel={$t('kayit.bulundugun_konumun_haritasi')}
       />

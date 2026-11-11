@@ -74,6 +74,8 @@ QR kodu telefonun kamerasıyla okut. Telefon ve bilgisayar aynı Wi-Fi ağında 
 > tasarımdaki stilize çizim görünür. Gerçek haritayı görmek için uygulamanın geliştirme derlemesi
 > (development build) gerekir: `npx eas-cli build --profile development`. Harita stili
 > `apps/mobile/.env` içindeki `EXPO_PUBLIC_MAP_STYLE_URL` ile değişir (örnek: `.env.example`).
+> Kullanıcı haritadaki katman düğmesinden standart, uydu, hibrit ya da kış türünü seçer
+> (`apps/mobile/src/components/map/haritaTurleri.ts`); bu adres standart türün stilidir.
 
 **Web (karşılama + yönetim paneli)**
 

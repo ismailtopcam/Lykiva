@@ -5,7 +5,8 @@
  * - Expo Go'da MapLibre'nin yerel modülü olmadığı için tasarımdaki stilize SVG haritaya düşer;
  *   böylece uygulama Expo Go'da da denenebilir.
  *
- * Harita stili EXPO_PUBLIC_MAP_STYLE_URL ile değiştirilir (ör. MapTiler Outdoor).
+ * Harita türü (standart, uydu, hibrit, kış) kullanıcının seçimidir: bkz. haritaTurleri.ts.
+ * Standart stil EXPO_PUBLIC_MAP_STYLE_URL ile değiştirilir (ör. MapTiler Outdoor).
  * Varsayılan: OpenFreeMap Liberty (anahtarsız, OSM verisi).
  */
 import Constants, { ExecutionEnvironment } from 'expo-constants';
@@ -14,6 +15,10 @@ import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from 'reac
 
 import type { LngLat } from '@/data/ornek';
 import { FallbackMap } from './FallbackMap';
+import { HaritaTuruDugmesi } from './HaritaTuruSecici';
+import { MAP_STYLE_URL, useHaritaStili } from './haritaTurleri';
+
+export { MAP_STYLE_URL };
 
 export type MapMarker = {
   id: string;
@@ -48,10 +53,10 @@ export type TopoMapProps = {
   followZoom?: number;
   /** Haritaya dokununca (yalnızca gerçek haritada) */
   onPress?: (coord: LngLat) => void;
+  /** Sağ üstte harita türü (katman) düğmesi; top: haritanın üst kenarından uzaklık. Yalnızca gerçek haritada. */
+  katmanDugmesi?: { top: number };
   accessibilityLabel: string;
 };
-
-export const MAP_STYLE_URL = process.env.EXPO_PUBLIC_MAP_STYLE_URL || 'https://tiles.openfreemap.org/styles/liberty';
 
 // Expo Go ve web'de MapLibre'nin yerel modülü yok → stilize SVG harita
 const useFallback = Constants.executionEnvironment === ExecutionEnvironment.StoreClient || Platform.OS === 'web';
@@ -61,12 +66,13 @@ export const gercekHarita = !useFallback;
 
 export function TopoMap(props: TopoMapProps) {
   return (
-    <View
-      style={[styles.root, props.style]}
-      accessible
-      accessibilityRole="image"
-      accessibilityLabel={props.accessibilityLabel}>
-      {useFallback ? <FallbackMap {...props} /> : <NativeMap {...props} />}
+    <View style={[styles.root, props.style]}>
+      <View style={StyleSheet.absoluteFill} accessible accessibilityRole="image" accessibilityLabel={props.accessibilityLabel}>
+        {useFallback ? <FallbackMap {...props} /> : <NativeMap {...props} />}
+      </View>
+      {props.katmanDugmesi && !useFallback ? (
+        <HaritaTuruDugmesi style={[styles.katman, { top: props.katmanDugmesi.top }]} />
+      ) : null}
     </View>
   );
 }
@@ -75,6 +81,7 @@ function NativeMap(props: TopoMapProps) {
   // Yerel modül yalnızca burada yüklenir; Expo Go bu satıra hiç gelmez.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const ML = require('@maplibre/maplibre-react-native') as typeof import('@maplibre/maplibre-react-native');
+  const mapStyle = useHaritaStili();
   const { route = [], progress, markers = [], interactive = true, padding } = props;
   const pts = route.length ? route : markers.map((m) => m.coord);
   const bounds = boundsOf(pts);
@@ -106,7 +113,7 @@ function NativeMap(props: TopoMapProps) {
   return (
     <ML.Map
       style={StyleSheet.absoluteFill}
-      mapStyle={MAP_STYLE_URL}
+      mapStyle={mapStyle}
       logo={false}
       compass={false}
       scaleBar={false}
@@ -232,4 +239,5 @@ function lineOf(coords: LngLat[]) {
 
 const styles = StyleSheet.create({
   root: { overflow: 'hidden' },
+  katman: { position: 'absolute', right: 16 },
 });

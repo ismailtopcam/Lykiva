@@ -1259,6 +1259,15 @@ export const ru: Sozluk = {
     begeni_2: '{like_count} отметка «нравится»|{like_count} отметки «нравится»|{like_count} отметок «нравится»',
     yorum: '{comment_count} комментарий|{comment_count} комментария|{comment_count} комментариев',
   },
+  haritaTuru: {
+    harita_turu: 'Тип карты',
+    harita_turu_secili: 'Тип карты: {tur}',
+    standart: 'Стандартная',
+    uydu: 'Спутник',
+    hibrit: 'Гибрид',
+    kis: 'Зима',
+    kis_aciklama: 'Горнолыжные трассы, санные и снегоступные маршруты по данным OpenSnowMap.',
+  },
   zilDugmesi: {
     bildirimler_okunmamis: 'Уведомления, непрочитанных: {n}',
   },

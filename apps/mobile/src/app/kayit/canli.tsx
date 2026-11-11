@@ -50,6 +50,7 @@ export default function CanliTakipScreen() {
           ...(ben ? [{ id: 'me', coord: ben, kind: 'me' as const }] : []),
         ]}
         follow={takip ? ben : null}
+        katmanDugmesi={{ top: insets.top + 58 }}
         padding={{ top: 110, bottom: 40 }}
         accessibilityLabel={rb ? $t('kayit_canli.canli_rota_haritasi_tamamlanan', { ad: rb.ad }) : $t('kayit_canli.canli_kayit_haritasi_simdiye')}
       />
