@@ -11,7 +11,6 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | Kim | İş | Dal |
 | --- | --- | --- |
 | İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |
-| İsmail | Google Play dahili test: Play Console kaydı, ilk AAB | `claude/mobile-app-play-store-8433c7` |
 
 ## Bekleyen elle yapılacaklar
 
