@@ -9,12 +9,12 @@ gerçek durum için aşağıdaki `uygula.sh` (durum modu) ya da `node scripts/su
 | --- | --- | --- |
 | `20261107000000_ilk_sema.sql` | Tablolar, PostGIS, RLS açık | uygulandı |
 | `20261108000000_kayit_ve_kurallar.sql` | Profil tetikleyicisi, aktivite/rota/takip kuralları, `kaydet_aktivite`, `aktivite_detay`, `aktivite_ozetleri` | uygulandı (8 Kasım 2026) |
-| `20261109000000_giris.sql` | Hesap devri: `devir_kodu_al`, `hesabi_devral` (geçici hesaptaki kayıtları asıl hesaba taşır) | doğrulanmadı — `uygula.sh` ile bak |
+| `20261109000000_giris.sql` | Hesap devri: `devir_kodu_al`, `hesabi_devral` (geçici hesaptaki kayıtları asıl hesaba taşır) | uygulandı (11 Kasım 2026 `uygula.sh` ile doğrulandı) |
 | `20261109010000_rotalar.sql` | `kaydet_rota`, `aktiviteden_rota`, `rota_ozetleri`; aktiviteye `route_id` | uygulandı (8 Kasım 2026) |
 | `20261109020000_paylasim.sql` | `aktivite_noktalari` (GPX dışa aktarımı; yalnızca sahibi nokta alır) | uygulandı (8 Kasım 2026, elle) |
-| `20261109030000_gruplar.sql` | Grup / üyelik / sohbet kuralları, davet kodu, katılma istekleri, okundu bilgisi, gruba rota paylaşma, "gruplar" görünürlüğü; `messages` Realtime yayınında | doğrulanmadı — `uygula.sh` ile bak |
-| `20261109040000_etkinlikler.sql` | Etkinlik ve katılım kuralları, `etkinlik_olustur`, `etkinlik_detay`, `katilim_bildir` (kontenjan + bekleme listesi), `grup_etkinlikleri`, `yaklasan_etkinlikler`, `etkinlik_sil` | doğrulanmadı — `uygula.sh` ile bak |
-| `20261109050000_canli_konum.sql` | Canlı konum kuralları (yalnızca grup üyeleri, 15 dk tazelik), `canli_konum_gonder`, `canli_konum_bitir`, `grup_canli_konumlari`, `grup_canli_sayisi`; gruptan ayrılınca paylaşım silinir | doğrulanmadı — `uygula.sh` ile bak |
+| `20261109030000_gruplar.sql` | Grup / üyelik / sohbet kuralları, davet kodu, katılma istekleri, okundu bilgisi, gruba rota paylaşma, "gruplar" görünürlüğü; `messages` Realtime yayınında | uygulandı (11 Kasım 2026 `uygula.sh` ile doğrulandı) |
+| `20261109040000_etkinlikler.sql` | Etkinlik ve katılım kuralları, `etkinlik_olustur`, `etkinlik_detay`, `katilim_bildir` (kontenjan + bekleme listesi), `grup_etkinlikleri`, `yaklasan_etkinlikler`, `etkinlik_sil` | uygulandı (11 Kasım 2026 `uygula.sh` ile doğrulandı) |
+| `20261109050000_canli_konum.sql` | Canlı konum kuralları (yalnızca grup üyeleri, 15 dk tazelik), `canli_konum_gonder`, `canli_konum_bitir`, `grup_canli_konumlari`, `grup_canli_sayisi`; gruptan ayrılınca paylaşım silinir | uygulandı (11 Kasım 2026 `uygula.sh` ile doğrulandı) |
 | `20261110000000_akis_takip.sql` | Akış (`akis`: takip ettiklerim / gruplarım / yakınımda, sayfalı), `kisi_profili`, `kisi_ara` (geçici hesaplar görünmez), `takip_listesi`; hesap devrinde takipler, grup üyelikleri, etkinlik katılımları ve mesajlar da taşınır | uygulandı (10 Kasım 2026) |
 | `20261110010000_yorumlar.sql` | Yorumlar: `yorum_yaz` (1–1000 karakter, dakikada en fazla 10), `yorum_sil` (yazan ya da aktivitenin sahibi), `aktivite_yorumlari`, `aktivite_sosyal` (beğeni / yorum sayısı); tabloya doğrudan yorum yazma kapalı | uygulandı (10 Kasım 2026) |
 | `20261110020000_paylasim_baglantisi.sql` | Web paylaşım bağlantısı: `paylasim_baglantisi_ac` / `paylasim_baglantisi` / `paylasim_baglantisi_kapat` (yalnızca sahibi), `paylasilan_aktivite(anahtar)` (anon okur; iz kırpılmış, kimlik yok); anahtarlar istemciye kapalı `aktivite_baglantilari` tablosunda | uygulandı (10 Kasım 2026) |
@@ -28,8 +28,8 @@ gerçek durum için aşağıdaki `uygula.sh` (durum modu) ya da `node scripts/su
 | `20261110100000_fotograflar.sql` | Depolama kovaları `profil` (herkese açık, `<kullanıcı id>/<uuid>.jpg`, yalnızca kendi klasörüne yazar) ve `mola` (gizli, `<aktivite id>/<uuid>.jpg`; aktiviteyi görebilen okur, sahibi yükler / siler), `storage.objects` kuralları, mola fotoğrafı sınırı (6, yalnızca o aktivitenin klasörü), profil fotoğrafı adresi yalnızca https, `aktivite_detay` molanın kimliğini ve fotoğraflarını döner. Depolama servisi (storage şeması) çalışıyor olmalı | uygulandı (10 Kasım 2026) |
 | `20261110110000_yonetim_moderasyon.sql` | Panelden `yonetim_yorum_sil`, `yonetim_mesaj_sil`, `yonetim_engelle` (auth.users.banned_until, 100 yıl; kendini ve yöneticiyi engelleyemez; jetonları siler); `yonetim_kullanicilar` satırında `engelli` | uygulandı (10 Kasım 2026) |
 | `20261110120000_hava_paylasim_push_temizligi.sql` | `paylasilan_aktivite` havayı da döner; `push_istekleri` (istemciye kapalı) + `push_yanitlarini_isle`: pg_net yanıtlarından "DeviceNotRegistered" dönen jetonları siler (bir sonraki bildirimde); `push_gonder` istek kimliğini ve jetonları kaydeder | uygulandı (10 Kasım 2026) |
-| `20261111000000_hesap_silme_ayarlar.sql` | `hesabimi_sil` (uygulama içinden hesap silme; kurduğu gruplar devredilir, etkinlikleri silinir, gerisi zincirleme), `site_ayarlari` (yasal sayfalardaki iletişim e-postası ve veri sorumlusu; herkes okur, yönetici `yonetim_site_ayarlari_guncelle` ile değiştirir) | **henüz uygulanmadı** |
-| `20261112000000_dil.sql` | Dil desteği: `profiles.dil` (tr, en, de, ru, ar; varsayılan tr), `dil_ayarla` (uygulama dili değişince ve açılışta kaydeder), `push_icerigi` telefon bildirimini alıcının dilinde yazar (Arapça metinleri gelene kadar İngilizce) | **henüz uygulanmadı** |
+| `20261111000000_hesap_silme_ayarlar.sql` | `hesabimi_sil` (uygulama içinden hesap silme; kurduğu gruplar devredilir, etkinlikleri silinir, gerisi zincirleme), `site_ayarlari` (yasal sayfalardaki iletişim e-postası ve veri sorumlusu; herkes okur, yönetici `yonetim_site_ayarlari_guncelle` ile değiştirir) | uygulandı (11 Kasım 2026) |
+| `20261112000000_dil.sql` | Dil desteği: `profiles.dil` (tr, en, de, ru, ar; varsayılan tr), `dil_ayarla` (uygulama dili değişince ve açılışta kaydeder), `push_icerigi` telefon bildirimini alıcının dilinde yazar (Arapça metinleri gelene kadar İngilizce) | uygulandı (11 Kasım 2026) |
 
 Tüm tabloların kuralları yazıldı (son: canlı konum, `20261109050000_canli_konum.sql`). Gruplar ve mesajlar `20261109030000_gruplar.sql` ile açılır.
 
@@ -41,7 +41,14 @@ açıksa baştan ve sondan 200 m kırpılır (ev / iş adresi görünmesin diye)
 
 ## Migration'ları uygulamak
 
-Coolify > Terminal > `uygulama` sunucusu. Önce durumu gör (hiçbir şey değiştirmez):
+İsmail'in bilgisayarından (Tailscale + SSH anahtarı) doğrudan:
+
+```bash
+ssh root@uygulama 'curl -fsSL https://raw.githubusercontent.com/ismailtopcam/Lykiva/main/supabase/uygula.sh | bash'
+```
+
+Sona `-s -- uygula` eklenince eksikleri uygular. Bu erişim yoksa Coolify > Terminal > `uygulama` sunucusunda
+aşağıdaki komutlar çalıştırılır. Önce durumu gör (hiçbir şey değiştirmez):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ismailtopcam/Lykiva/main/supabase/uygula.sh | bash
