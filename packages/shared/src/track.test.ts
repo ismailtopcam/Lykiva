@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { acceptPoint, computeSegmentedStats, computeStats, currentSpeed, detectStops, haversine, routeProgress, thin, type TrackPoint } from './track';
+import { acceptPoint, computeSegmentedStats, computeStats, currentSpeed, detectStops, haversine, routeProgress, staleAfterS, thin, type TrackPoint } from './track';
 
 const START = { lat: 36.2, lng: 29.6 };
 /** Kuzeye doğru 1 m ≈ bu kadar enlem */
@@ -114,7 +114,59 @@ describe('computeSegmentedStats', () => {
 });
 
 describe('currentSpeed', () => {
+  /** 1 sn aralıklı, kuzeye giden iz; her saniyenin hızı (m/s) verilir, cihaz hızı isteğe bağlı */
+  function iz(hizlar: number[], cihazHizi = true): TrackPoint[] {
+    let northM = 0;
+    return hizlar.map((v, i) => {
+      northM += v;
+      return { t: i * 1000, lat: START.lat + northM * DEG_PER_M, lng: START.lng, acc: 5, speed: cihazHizi ? v : null };
+    });
+  }
+
   it('son saniyelerdeki hızı verir', () => {
     expect(currentSpeed(synthetic())).toBeCloseTo(5, 1);
+  });
+
+  it('boş izde 0', () => expect(currentSpeed([])).toBe(0));
+
+  it('hızlanmayı bir saniye içinde yakalar (uzun pencerenin gecikmesi yok)', () => {
+    // 5 sn 4 m/s, sonra 8 m/s: eski 5 sn'lik medyan hâlâ 4 derdi
+    const p = iz([4, 4, 4, 4, 4, 8, 8]);
+    expect(currentSpeed(p)).toBe(8);
+  });
+
+  it('tek bir sıçramayı bastırır', () => {
+    expect(currentSpeed(iz([5, 5, 5, 25, 5]))).toBe(5);
+  });
+
+  it('cihaz hızı "duruyor" deyince hemen 0', () => {
+    expect(currentSpeed(iz([6, 6, 6, 3, 0.2]))).toBe(0);
+  });
+
+  it('cihaz hızı yoksa konum farkından', () => {
+    expect(currentSpeed(iz([5, 5, 5, 5, 5, 5, 5], false))).toBeCloseTo(5, 1);
+  });
+
+  it('geçersiz cihaz hızında (-1, iOS) konum farkına döner', () => {
+    const p = iz([4, 4, 4, 4, 4, 4]).map((x) => ({ ...x, speed: -1 }));
+    expect(currentSpeed(p)).toBeCloseTo(4, 1);
+  });
+
+  it('yeni nokta gelmeyince (durdu) bisiklet hızında 3 sn sonra 0', () => {
+    const p = iz([6, 6, 6, 6]);
+    const son = p[p.length - 1].t;
+    expect(currentSpeed(p, son + 2000)).toBe(6);
+    expect(currentSpeed(p, son + 3500)).toBe(0);
+  });
+
+  it("yürüyüşte noktalar seyrek gelir: bekleme süresi uzar, ama 10 sn'yi geçmez", () => {
+    // 1,2 m/s'te 3 m için ~2,5 sn → 2×2,5+1 = 6 sn beklenir
+    expect(staleAfterS(1.2)).toBeCloseTo(6, 5);
+    expect(staleAfterS(6)).toBe(3);
+    expect(staleAfterS(0.6)).toBe(10);
+    const p = iz([1.2, 1.2, 1.2]);
+    const son = p[p.length - 1].t;
+    expect(currentSpeed(p, son + 4000)).toBe(1.2);
+    expect(currentSpeed(p, son + 7000)).toBe(0);
   });
 });
