@@ -1,5 +1,5 @@
 /**
- * Google ve Apple ile giriş.
+ * Google ve Apple ile giriş (e-posta + şifre: `epostaGiris.ts`).
  *
  * - Apple (yalnızca iOS): telefonun kendi "Apple ile giriş" penceresi; gelen kimlik jetonu Supabase'e verilir.
  * - Google (iOS + Android): Supabase'in giriş sayfası uygulama içi tarayıcıda açılır (PKCE akışı).
@@ -25,7 +25,7 @@ export const GIRIS_DONUS = 'lykiva://giris-donus';
 
 const ATLANDI = 'lykiva.giris.atlandi.v1';
 
-export type Saglayici = 'google' | 'apple';
+export type Saglayici = 'google' | 'apple' | 'email';
 
 export type Hesap = {
   id: string;
@@ -52,9 +52,8 @@ export class GirisIptal extends Error {
 
 function hesapOlustur(user: User | null | undefined): Hesap | null {
   if (!user) return null;
-  const saglayicilar = (user.identities ?? [])
-    .map((i) => i.provider)
-    .filter((p): p is Saglayici => p === 'google' || p === 'apple');
+  const adaylar = [...(user.identities ?? []).map((i) => i.provider), ...((user.app_metadata?.providers as string[] | undefined) ?? [])];
+  const saglayicilar = [...new Set(adaylar)].filter((p): p is Saglayici => p === 'google' || p === 'apple' || p === 'email');
   return {
     id: user.id,
     gecici: !!user.is_anonymous && saglayicilar.length === 0,
@@ -235,17 +234,17 @@ export function adrestenParametreler(adres: string): Record<string, string> {
 /* Yardımcılar                                                         */
 /* ------------------------------------------------------------------ */
 
-function baskaHesaptaMi(e: AuthError): boolean {
+export function baskaHesaptaMi(e: AuthError): boolean {
   return e.code === 'identity_already_exists' || /already linked/i.test(e.message);
 }
 
-async function devirKoduAl(): Promise<string> {
+export async function devirKoduAl(): Promise<string> {
   const { data, error } = await supabase.rpc('devir_kodu_al');
   if (error || typeof data !== 'string') throw error ?? new Error('Devir kodu alınamadı');
   return data;
 }
 
-async function devral(kod: string): Promise<number> {
+export async function devral(kod: string): Promise<number> {
   const { data, error } = await supabase.rpc('hesabi_devral', { p_kod: kod });
   if (error) {
     // Giriş başarılı; taşıma başarısız olsa da kullanıcıyı içeride bırak
@@ -259,7 +258,7 @@ async function devral(kod: string): Promise<number> {
  * Profil yeni açıldıysa (ad "Yeni kullanıcı", fotoğraf yok) Google / Apple'dan gelen ad ve
  * fotoğrafla doldurur. Daha önce düzenlenmiş profile dokunmaz.
  */
-async function profiliTamamla({ ad }: { ad?: string | null }) {
+export async function profiliTamamla({ ad }: { ad?: string | null }) {
   try {
     const { data } = await supabase.auth.getUser();
     const user = data.user;

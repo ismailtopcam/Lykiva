@@ -52,6 +52,13 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
 7. **Coolify API anahtarı:** sohbette paylaşılan anahtarı Coolify > Keys & Tokens'tan sil, gerekirse yenisini oluştur.
 8. **TestFlight:** derleme işlenince App Store Connect > Lykiva > TestFlight'ta testerları ekle (iç test: ekip üyeleri;
    dış test: e-posta ile, ilk sürümde Apple'ın kısa beta incelemesi gerekir). iPhone'da Apple ile ve Google ile girişi dene.
+9. **E-posta (SMTP + şablonlar)** — `supabase/README.md` > E-posta:
+   - Zoho'da `noreply@lykiva.app` açıldı; sohbette paylaşılan şifresini **değiştir**, uygulama şifresi (App Passwords) al.
+   - Coolify > lykiva-supabase > Environment Variables: `SMTP_HOST=smtp.zoho.eu`, `SMTP_PORT=465`, `SMTP_USER` ve
+     `SMTP_ADMIN_EMAIL` = `noreply@lykiva.app`, `SMTP_PASS` (uygulama şifresi), `SMTP_SENDER_NAME=Lykiva`.
+   - Compose'a `GOTRUE_MAILER_TEMPLATES_*`, `GOTRUE_MAILER_SUBJECTS_*`, `GOTRUE_MAILER_OTP_EXP=3600` satırlarını ekle
+     (bu PR merge edilip web yayımlandıktan sonra; şablonlar `https://lykiva.app/eposta/...` adresinden okunur).
+   - Servisi yeniden başlat, uygulamadan hesap aç, kodun geldiğini ve spam'e düşmediğini kontrol et.
 
 ## Yapılacaklar
 
@@ -103,6 +110,14 @@ Kurulum dosyaları hazır: `altyapi/` (BRouter 1.7.10 + Photon 1.3.0, Coolify Do
   `ENABLE_GOOGLE_SIGNIN=true`. Kontrol: `/auth/v1/settings` → `google: true`.
 - **Apple:** sunucuda açık; App ID'de Sign in with Apple yetkisi açıldı. Kalan: TestFlight sürümünde iPhone'da denemek.
 - Telefonda henüz uçtan uca denenmedi (Google ve Apple).
+
+### [~] Giriş: e-posta + şifre
+Kod hazır (`apps/mobile/src/lib/epostaGiris.ts`, `src/components/EpostaGiris.tsx`): giriş, kayıt, şifremi unuttum;
+doğrulama ve sıfırlama e-postadaki kodla. Geçici hesaptan kayıtta e-posta o hesaba eklenir; var olan hesaba girişte
+kayıtlar `hesabi_devral` ile taşınır. Şablonlar `apps/web/public/eposta/` (web Docker imajına `public/` eklendi).
+Kalan: SMTP ve şablon ayarı (Bekleyen elle yapılacaklar 9), telefonda uçtan uca deneme: yeni hesap, geçici hesaptan
+kayıt (kayıtlar duruyor mu), var olan hesaba giriş (kayıtlar taşınıyor mu), şifre sıfırlama, doğrulanmamış hesaba giriş.
+Sonra: Ayarlar'da şifre değiştirme, web'de kullanıcı girişi (gerekirse).
 
 ### [~] iOS — TestFlight
 App Store Connect'te **Lykiva** (Apple kimliği `6833386986`, SKU `lykiva`, Türkçe). Bundle ID `app.lykiva.mobile` kayıtlı;
@@ -189,6 +204,8 @@ Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde
 - **Paket adı / bundle ID: `app.lykiva.mobile`** (Android ve iOS) — Play'e ilk AAB yüklenince kalıcı.
 - **Mağaza imzası:** Android yükleme anahtarı EAS'ta (Expo sunucusu), uygulama imzası Play App Signing'de.
   iOS dağıtım sertifikası ve push anahtarı EAS'ta, Gösterge ile ortak (Apple Team ID `CK7TA62JQQ`, bireysel hesap).
+- **E-posta doğrulaması kodla, bağlantıyla değil:** posta bilgisayarda açılsa da çalışır, uygulamaya dönüş
+  bağlantısı (deep link) ve PKCE eşleşmesi gerekmez. Gönderen `noreply@lykiva.app` (Zoho SMTP, `smtp.zoho.eu`).
 - **Google girişi ayrı Google Cloud projesinde** (`lykiva`): giriş ekranında "Gösterge" adı görünmesin diye.
 - **App Store Connect API anahtarı** "EAS Lykiva (yerel)" (Key ID `28M4P34RVL`, Admin): dosyası yalnızca İsmail'in
   bilgisayarında (kullanıcı klasörü > `.lykiva`), repoda değil. iOS derleme / gönderimde `EXPO_ASC_API_KEY_PATH`,

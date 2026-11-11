@@ -1,9 +1,10 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { EpostaGiris } from '@/components/EpostaGiris';
 import { Icon, type IconName } from '@/components/Icon';
 import { Logo } from '@/components/Logo';
 import { Txt } from '@/components/Txt';
@@ -18,13 +19,14 @@ const maddeler: [IconName, string][] = [
 ];
 
 /**
- * Giriş: Apple (iOS) ve Google. Geçici hesapla başlanmışsa kayıtlar yeni hesaba bağlanır.
+ * Giriş: Apple (iOS), Google ve e-posta + şifre. Geçici hesapla başlanmışsa kayıtlar yeni hesaba bağlanır.
  * Açılışta bir kez gösterilir; "Şimdilik geç" denirse profilden tekrar açılabilir.
  */
 export default function GirisScreen() {
   const [apple, setApple] = useState(false);
   const [bekleyen, setBekleyen] = useState<'apple' | 'google' | null>(null);
   const [hata, setHata] = useState<string | null>(null);
+  const [eposta, setEposta] = useState(false);
 
   useEffect(() => {
     void appleKullanilabilir().then(setApple);
@@ -35,16 +37,19 @@ export default function GirisScreen() {
     else router.replace('/');
   }
 
+  function tamam(sonuc: GirisSonucu) {
+    if (sonuc.tasinan > 0) {
+      Alert.alert('Hesabına giriş yapıldı', `Bu telefondaki ${sonuc.tasinan} kayıt hesabına taşındı.`);
+    }
+    bitti();
+  }
+
   async function giris(tur: 'apple' | 'google') {
     if (bekleyen) return;
     setHata(null);
     setBekleyen(tur);
     try {
-      const sonuc: GirisSonucu = tur === 'apple' ? await appleIleGiris() : await googleIleGiris();
-      if (sonuc.tasinan > 0) {
-        Alert.alert('Hesabına giriş yapıldı', `Bu telefondaki ${sonuc.tasinan} kayıt hesabına taşındı.`);
-      }
-      bitti();
+      tamam(tur === 'apple' ? await appleIleGiris() : await googleIleGiris());
     } catch (e) {
       if (!(e instanceof GirisIptal)) setHata(hataMetni(e));
     } finally {
@@ -55,6 +60,21 @@ export default function GirisScreen() {
   async function atla() {
     await girisiAtla();
     bitti();
+  }
+
+  if (eposta) {
+    return (
+      <SafeAreaView style={styles.root}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+          <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.epostaIcerik}>
+            <View style={[styles.ust, { marginBottom: space.xl }]}>
+              <Logo size={34} />
+            </View>
+            <EpostaGiris onBitti={tamam} onVazgec={() => setEposta(false)} />
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    );
   }
 
   return (
@@ -107,6 +127,17 @@ export default function GirisScreen() {
           style={{ borderRadius: radius.lg }}
         />
 
+        <Button
+          variant="outline"
+          label="E-postayla devam et"
+          onPress={() => {
+            setHata(null);
+            setEposta(true);
+          }}
+          disabled={!!bekleyen}
+          style={{ borderRadius: radius.lg }}
+        />
+
         <Pressable accessibilityRole="button" onPress={() => void atla()} disabled={!!bekleyen} hitSlop={8} style={styles.atla}>
           <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: colors.inkMuted }}>Şimdilik geç</Txt>
         </Pressable>
@@ -136,4 +167,5 @@ const styles = StyleSheet.create({
   dugme: { height: 54, width: '100%' },
   atla: { alignSelf: 'center', paddingVertical: space.sm, minHeight: 44, justifyContent: 'center' },
   hata: { backgroundColor: colors.terraSoft, borderRadius: radius.md, padding: space.md },
+  epostaIcerik: { flexGrow: 1, paddingBottom: space.xl },
 });
