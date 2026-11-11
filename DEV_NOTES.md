@@ -11,7 +11,6 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | Kim | İş | Dal |
 | --- | --- | --- |
 | İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |
-
 ## Gökhan için: 11 Kasım 2026'da değişenler (İsmail)
 
 - **Play dahili test yayında** (sürüm 2, 0.1.0). Tester listesi "Gösterge test". Katılma bağlantısı aşağıda (Bekleyen elle yapılacaklar 6).
@@ -75,6 +74,8 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   dar ekranda dört istatistiğin sığması, rota detayında tırmanış listesi.
 - Anlık hız: bir bisiklet hız göstergesiyle yan yana sür; kırmızı ışıkta ~3 sn'de 0'a düşüyor mu, ağaç altında "—" çıkıyor mu?
   Android'de cihaz hız veremediğinde `coords.speed` boş yerine 0 geliyorsa hareket ederken 0 görünür — kontrol et.
+- Çevrimdışı harita: bir rotayı indir, uçak moduna al; rota sayfası, harita ve "Bu rotayı başlat" açılıyor mu?
+  İndirme boyutu makul mü (stil, yazı tipi dosyaları da iner)? User-Agent başlığı OpenFreeMap isteklerinde görünüyor mu?
 
 ### [~] Google Play — dahili test
 Play Console'da **Lykiva** oluşturuldu (kişisel geliştirici hesabı, paket `app.lykiva.mobile`, Türkçe, ücretsiz).
@@ -144,8 +145,9 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
 Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. Sıra öneri sırasıdır; (D) = yeni yerel modül, telefona yeni derleme gerekir.
 
 **Önce — doğada güvenle kullanılabilmek için**
-- [ ] Çevrimdışı harita: rotanın çevresini telefona indir (MapLibre çevrimdışı paketleri). Önce harita kaynağının
-  (OpenFreeMap / MapTiler) toplu indirmeye izin verip vermediğine bak.
+- [x] Çevrimdışı harita: rotanın çevresini telefona indir (30. aşama, `lib/cevrimdisi.ts`). Kalan: telefonda deneme;
+  OpenFreeMap'in "en fazla 4 paralel istek" kuralını MapLibre'den ayarlayamıyoruz (bkz. Kararlar).
+  Sonra: haritada serbest alan seçip indirme (rotasız), kayıt başlatırken "bu rota indirilmemiş" uyarısı.
 - [ ] Rotadan çıkınca titreşim + bildirim (telefon cepteyken de); sonra sesli yönlendirme (dönüş dönüş). Şu an uyarı yalnızca ekranda.
 - [ ] Aileyle canlı konum: gruba üye olmayan birine web bağlantısıyla canlı konum (AllTrails Live Share / Garmin LiveTrack gibi);
   uzun süre hareketsiz kalınca uyarı.
@@ -186,6 +188,13 @@ Tırmanış bölümü: en az 20 m kazanç, 200 m uzunluk, ort. %3; tepeden 10 m 
 Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde; web paylaşım sayfasında da.
 
 ## Kararlar
+
+- **Çevrimdışı harita: OpenFreeMap + MapLibre çevrimdışı paketleri.** OpenFreeMap (openfreemap.org/tos) uygulama içi
+  çevrimdışı indirmeye izin veriyor: bir indirme en fazla 3.000 kare ya da 50 MB, en fazla 4 paralel istek, uygulamayı
+  tanıtan User-Agent. Bizde: kare sayısı indirmeden önce hesaplanır (bütçe 2.500), kare boyutu indirirken izlenir (50 MB'ta
+  durur), paketler sırayla iner, OpenFreeMap isteklerine `User-Agent: Lykiva/<sürüm> (+https://lykiva.app)` eklenir.
+  Bir paketin içindeki paralel istek sayısını MapLibre belirliyor, buradan ayarlanamıyor. Kullanıcı artınca ya
+  OpenFreeMap'e (info@openfreemap.org) yazılmalı ya da Türkiye kareleri kendi sunucumuzda barındırılmalı (OpenFreeMap açık kaynak).
 
 - **Hava servisi: MET Norway** (api.met.no locationforecast 2.0) — anahtarsız, ticari kullanım dahil ücretsiz, CC BY 4.0
   ("Kaynak: MET Norway"). Open-Meteo'nun ücretsiz katmanı ticari olmayan kullanımla sınırlı olduğu için seçilmedi.

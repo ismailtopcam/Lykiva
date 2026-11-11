@@ -21,6 +21,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { kaydiGeriYukle } from '@/kayit/kaydedici';
 import { bildirimHedefi } from '@/bildirim/bildirimler';
 import { kuyruguGonder } from '@/kayit/kuyruk';
+import { haritaIstekleriniAyarla } from '@/lib/cevrimdisi';
 import { pushTazele } from '@/lib/push';
 import { colors } from '@/theme';
 
@@ -55,6 +56,7 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
+    haritaIstekleriniAyarla();
     void kaydiGeriYukle();
     void kuyruguGonder().catch(() => undefined);
     const sub = AppState.addEventListener('change', (s) => {

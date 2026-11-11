@@ -5,6 +5,7 @@
 import { routeStats, type ActivityType, type Difficulty, type RoutePoint } from '@lykiva/shared';
 import { useEffect, useState } from 'react';
 
+import { cevrimdisiSil, kayitliRota, kayitliRotalar, kayitliRotayiTazele } from '@/lib/cevrimdisi';
 import type { Zemin } from '@/lib/yonlendirme';
 import { oturumuSagla, supabase, supabaseHazir } from '@/lib/supabase';
 import { faralyaKabak, faralyaKabakRoute } from './ornek';
@@ -89,19 +90,34 @@ function cevir(s: Satir): Rota {
 
 export async function rotaGetir(id: string): Promise<Rota> {
   if (id === 'ornek') return ornekRota;
-  const { data, error } = await supabase.from('rota_ozetleri').select('*').eq('id', id).maybeSingle();
-  if (error) throw error;
-  if (!data) throw new Error('Rota bulunamadı ya da görme iznin yok');
-  return cevir(data as Satir);
+  try {
+    const { data, error } = await supabase.from('rota_ozetleri').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
+    if (!data) throw new Error('Rota bulunamadı ya da görme iznin yok');
+    const r = cevir(data as Satir);
+    void kayitliRotayiTazele(r);
+    return r;
+  } catch (e) {
+    // İnternet yoksa çevrimdışı indirilmiş kopya
+    const yerel = await kayitliRota(id);
+    if (yerel) return yerel;
+    throw e;
+  }
 }
 
-/** Kendi rotalarım (yeniden eskiye) */
+/** Kendi rotalarım (yeniden eskiye); internet yoksa çevrimdışı indirilmiş rotalar */
 export async function rotalarim(): Promise<Rota[]> {
   if (!supabaseHazir) return [ornekRota];
-  const uid = await oturumuSagla();
-  const { data, error } = await supabase.from('rota_ozetleri').select('*').eq('owner_id', uid).order('created_at', { ascending: false }).limit(100);
-  if (error) throw error;
-  return (data as Satir[]).map(cevir);
+  try {
+    const uid = await oturumuSagla();
+    const { data, error } = await supabase.from('rota_ozetleri').select('*').eq('owner_id', uid).order('created_at', { ascending: false }).limit(100);
+    if (error) throw error;
+    return (data as Satir[]).map(cevir);
+  } catch (e) {
+    const yerel = await kayitliRotalar();
+    if (yerel.length) return yerel;
+    throw e;
+  }
 }
 
 export type RotaPaketi = {
@@ -172,6 +188,7 @@ export async function rotaSil(id: string) {
   const { error, count } = await supabase.from('routes').delete({ count: 'exact' }).eq('id', id);
   if (error) throw new Error(error.message);
   if (!count) throw new Error('Rota silinemedi');
+  void cevrimdisiSil(id).catch(() => undefined);
   rotaDegisti(id, null);
 }
 

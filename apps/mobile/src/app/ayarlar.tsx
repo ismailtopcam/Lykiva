@@ -1,3 +1,4 @@
+import { formatBytes } from '@lykiva/shared';
 import { router, useFocusEffect } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useCallback, useState } from 'react';
@@ -8,6 +9,7 @@ import { Txt } from '@/components/Txt';
 import { Button, Card, Label, ListRow, ToggleRow } from '@/components/ui';
 import { kuyruguGonder, yerelKayitlariTemizle } from '@/kayit/kuyruk';
 import { WEB_URL } from '@/lib/baglanti';
+import { cevrimdisiDestekleniyor, useIndirilenRotalar } from '@/lib/cevrimdisi';
 import { cikisYap, useHesap, type Saglayici } from '@/lib/giris';
 import { hesabiSil } from '@/lib/hesap';
 import { pushAc, pushDurumu, pushKapat, type PushDurumu } from '@/lib/push';
@@ -21,6 +23,7 @@ export default function AyarlarScreen() {
   const [cikiliyor, setCikiliyor] = useState(false);
   const [siliniyor, setSiliniyor] = useState(false);
   const [push, setPush] = useState<PushDurumu | null>(null);
+  const indirilenler = useIndirilenRotalar();
 
   useFocusEffect(
     useCallback(() => {
@@ -154,6 +157,35 @@ export default function AyarlarScreen() {
         ) : (
           <Button variant="outline" label={cikiliyor ? 'Çıkış yapılıyor…' : 'Çıkış yap'} onPress={() => void cik()} disabled={cikiliyor} />
         )}
+
+        {cevrimdisiDestekleniyor ? (
+          <View>
+            <Label>Çevrimdışı haritalar</Label>
+            <Card style={{ paddingHorizontal: space.lg }}>
+              {indirilenler.length ? (
+                indirilenler.map((k) => (
+                  <ListRow
+                    key={k.rotaId}
+                    icon="download"
+                    iconTone="sea"
+                    caption={formatBytes(k.bayt)}
+                    title={k.ad}
+                    href={{ pathname: '/rota/[id]', params: { id: k.rotaId } }}
+                  />
+                ))
+              ) : (
+                <Txt variant="small" style={{ paddingVertical: space.lg }}>
+                  Henüz indirilen rota yok. Bir rotanın sayfasından “Haritayı indir”e bas; çekmeyen yerde de harita ve rota açılır.
+                </Txt>
+              )}
+            </Card>
+            {indirilenler.length ? (
+              <Txt variant="small" style={{ marginTop: 6 }}>
+                Toplam {formatBytes(indirilenler.reduce((t, k) => t + k.bayt, 0))}. Silmek için rotanın sayfasını aç.
+              </Txt>
+            ) : null}
+          </View>
+        ) : null}
 
         <View>
           <Label>Hakkında</Label>

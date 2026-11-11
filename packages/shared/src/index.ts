@@ -6,3 +6,4 @@ export * from './route';
 export * from './ucBoyut';
 export * from './hava';
 export * from './egim';
+export * from './cevrimdisi';
