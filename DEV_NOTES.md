@@ -11,7 +11,6 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | Kim | İş | Dal |
 | --- | --- | --- |
 | İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |
-| İsmail | E-posta + şifreyle giriş / kayıt / doğrulama (`apps/mobile` giriş ekranı, `apps/web/public/eposta`) | `claude/email-password-login-signup-000249` |
 
 ## Gökhan için: 11 Kasım 2026'da değişenler (İsmail)
 
