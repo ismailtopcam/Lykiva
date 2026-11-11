@@ -10,6 +10,7 @@ import { Header } from '@/components/Header';
 import { KisiSatiri } from '@/components/KisiSatiri';
 import { Txt } from '@/components/Txt';
 import { colors, space } from '@/theme';
+import { $t } from '@/i18n';
 
 export default function TakipListesiScreen() {
   const { id, yon: yonParam } = useLocalSearchParams<{ id: string; yon?: string }>();
@@ -25,7 +26,7 @@ export default function TakipListesiScreen() {
         .then((l) => acik && setListe(l))
         .catch((e) => {
           if (!acik) return;
-          setHata(e instanceof Error ? e.message : 'Yüklenemedi');
+          setHata(e instanceof Error ? e.message : $t('ortak.yuklenemedi'));
           setListe([]);
         });
       return () => {
@@ -36,7 +37,7 @@ export default function TakipListesiScreen() {
 
   return (
     <View style={styles.root}>
-      <Header title={yon === 'takip' ? 'Takip ettikleri' : 'Takipçiler'} />
+      <Header title={yon === 'takip' ? $t('kisi_takip.takip_ettikleri') : $t('ortak.takipciler')} />
       <ScrollView contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 60 }}>
         {hata ? (
           <Txt accessibilityRole="alert" style={{ color: colors.terraInk, marginVertical: space.md }}>
@@ -46,7 +47,7 @@ export default function TakipListesiScreen() {
         {liste === null ? <ActivityIndicator color={colors.terra} style={{ marginVertical: space.lg }} /> : null}
         {liste && liste.length === 0 && !hata ? (
           <Txt variant="muted" style={{ textAlign: 'center', paddingVertical: space.lg }}>
-            {yon === 'takip' ? 'Henüz kimseyi takip etmiyor.' : 'Henüz takipçisi yok.'}
+            {yon === 'takip' ? $t('kisi_takip.henuz_kimseyi_takip_etmiyor') : $t('kisi_takip.henuz_takipcisi_yok')}
           </Txt>
         ) : null}
         {liste?.map((k) => (

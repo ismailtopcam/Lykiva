@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View, type ColorValue } from 'react-native';
 import { Icon, type IconName } from '@/components/Icon';
 import { useGirisGerekli } from '@/lib/giris';
 import { colors, fontFamily } from '@/theme';
+import { $t } from '@/i18n';
 
 function tabIcon(name: IconName) {
   function TabIcon({ color, focused }: { color: ColorValue; focused: boolean }) {
@@ -43,18 +44,18 @@ export default function TabsLayout() {
         },
         sceneStyle: { backgroundColor: colors.ground },
       }}>
-      <Tabs.Screen name="index" options={{ title: 'Akış', tabBarIcon: tabIcon('home') }} />
-      <Tabs.Screen name="kesfet" options={{ title: 'Keşfet', tabBarIcon: tabIcon('compass') }} />
+      <Tabs.Screen name="index" options={{ title: $t('sekmeler.akis'), tabBarIcon: tabIcon('home') }} />
+      <Tabs.Screen name="kesfet" options={{ title: $t('sekmeler.kesfet'), tabBarIcon: tabIcon('compass') }} />
       <Tabs.Screen
         name="kaydet"
         options={{
-          title: 'Kayıt',
-          tabBarAccessibilityLabel: 'Kayıt başlat',
+          title: $t('sekmeler.kayit'),
+          tabBarAccessibilityLabel: $t('sekmeler.kayit_baslat'),
           tabBarButton: () => (
             <View style={styles.recordSlot}>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Kayıt başlat"
+                accessibilityLabel={$t('sekmeler.kayit_baslat')}
                 onPress={() => router.push('/kayit')}
                 style={({ pressed }) => [styles.recordButton, pressed && { backgroundColor: colors.terraPressed }]}>
                 <Icon name="plus" color="#FFFFFF" size={26} strokeWidth={2.4} />
@@ -69,8 +70,8 @@ export default function TabsLayout() {
           },
         }}
       />
-      <Tabs.Screen name="gruplar" options={{ title: 'Gruplar', tabBarIcon: tabIcon('users') }} />
-      <Tabs.Screen name="profil" options={{ title: 'Profil', tabBarIcon: tabIcon('user') }} />
+      <Tabs.Screen name="gruplar" options={{ title: $t('sekmeler.gruplar'), tabBarIcon: tabIcon('users') }} />
+      <Tabs.Screen name="profil" options={{ title: $t('sekmeler.profil'), tabBarIcon: tabIcon('user') }} />
     </Tabs>
   );
 }

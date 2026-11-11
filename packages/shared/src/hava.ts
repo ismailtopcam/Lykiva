@@ -3,6 +3,8 @@
  * Servis seçimi: anahtarsız, ticari kullanım dahil ücretsiz (CC BY 4.0; uygulamada "Kaynak: MET Norway" yazılır).
  * Ağ isteği burada değil, uygulamada yapılır (apps/mobile/src/lib/hava.ts).
  */
+import { aktifDil, doldur, type Dil } from './dil';
+import { formatDecimal, formatPercent, speedUnit } from './format';
 import { haversine } from './track';
 
 /** Aktiviteyle saklanan hava bilgisi (activities.weather) */
@@ -85,16 +87,193 @@ export function metYanitindanHava(yanit: MetYaniti, hedef: Date = new Date()): H
 /** MET aynı tahminin bu kadar ileriye kadar dilimlerini verir; daha uzak tarih için tahmin gösterilmez */
 export const TAHMIN_UFKU_GUN = 9;
 
-const YONLER = ['kuzey', 'kuzeydoğu', 'doğu', 'güneydoğu', 'güney', 'güneybatı', 'batı', 'kuzeybatı'] as const;
-const YON_KISA = ['K', 'KD', 'D', 'GD', 'G', 'GB', 'B', 'KB'] as const;
+const YONLER: Record<Dil, readonly string[]> = {
+  tr: ['kuzey', 'kuzeydoğu', 'doğu', 'güneydoğu', 'güney', 'güneybatı', 'batı', 'kuzeybatı'],
+  en: ['north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest'],
+  de: ['Nord', 'Nordost', 'Ost', 'Südost', 'Süd', 'Südwest', 'West', 'Nordwest'],
+  // Rusçada sıfat biçimi: "западный ветер"
+  ru: ['северный', 'северо-восточный', 'восточный', 'юго-восточный', 'южный', 'юго-западный', 'западный', 'северо-западный'],
+};
+const YON_KISA: Record<Dil, readonly string[]> = {
+  tr: ['K', 'KD', 'D', 'GD', 'G', 'GB', 'B', 'KB'],
+  en: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'],
+  de: ['N', 'NO', 'O', 'SO', 'S', 'SW', 'W', 'NW'],
+  ru: ['С', 'СВ', 'В', 'ЮВ', 'Ю', 'ЮЗ', 'З', 'СЗ'],
+};
+const yonIndisi = (derece: number) => Math.round((((derece % 360) + 360) % 360) / 45) % 8;
 
 /** Rüzgârın geldiği yönün adı: 270 → "batı" */
-export function yonAdi(derece: number): (typeof YONLER)[number] {
-  return YONLER[Math.round((((derece % 360) + 360) % 360) / 45) % 8];
+export function yonAdi(derece: number, dil: Dil = aktifDil()): string {
+  return YONLER[dil][yonIndisi(derece)];
 }
-export function yonKisa(derece: number): (typeof YON_KISA)[number] {
-  return YON_KISA[Math.round((((derece % 360) + 360) % 360) / 45) % 8];
+export function yonKisa(derece: number, dil: Dil = aktifDil()): string {
+  return YON_KISA[dil][yonIndisi(derece)];
 }
+
+/** Hava metinleri */
+const HAVA_SOZLUK: Record<Dil, Record<string, string>> = {
+  tr: {
+    gok: ' ve gök gürültüsü',
+    ruzgarsiz: 'Rüzgârsız',
+    ruzgar: '{hiz} {birim} {yon} rüzgârı',
+    sicaklik: 'Sıcaklık',
+    hissedilen: 'Hissedilen',
+    ruzgarEtiket: 'Rüzgâr',
+    nem: 'Nem',
+    yagis: 'Yağış',
+    mmsa: 'mm/sa',
+    karşıdan: 'çoğunlukla karşıdan',
+    arkadan: 'çoğunlukla arkadan',
+    yandan: 'çoğunlukla yandan',
+  },
+  en: {
+    gok: ' with thunder',
+    ruzgarsiz: 'Calm',
+    ruzgar: '{hiz} {birim} wind from the {yon}',
+    sicaklik: 'Temperature',
+    hissedilen: 'Feels like',
+    ruzgarEtiket: 'Wind',
+    nem: 'Humidity',
+    yagis: 'Precipitation',
+    mmsa: 'mm/h',
+    karşıdan: 'mostly headwind',
+    arkadan: 'mostly tailwind',
+    yandan: 'mostly crosswind',
+  },
+  de: {
+    gok: ' mit Gewitter',
+    ruzgarsiz: 'Windstill',
+    ruzgar: '{hiz} {birim} Wind aus {yon}',
+    sicaklik: 'Temperatur',
+    hissedilen: 'Gefühlt',
+    ruzgarEtiket: 'Wind',
+    nem: 'Luftfeuchtigkeit',
+    yagis: 'Niederschlag',
+    mmsa: 'mm/h',
+    karşıdan: 'meist Gegenwind',
+    arkadan: 'meist Rückenwind',
+    yandan: 'meist Seitenwind',
+  },
+  ru: {
+    gok: ' с грозой',
+    ruzgarsiz: 'Безветренно',
+    ruzgar: '{yon} ветер, {hiz} {birim}',
+    sicaklik: 'Температура',
+    hissedilen: 'Ощущается как',
+    ruzgarEtiket: 'Ветер',
+    nem: 'Влажность',
+    yagis: 'Осадки',
+    mmsa: 'мм/ч',
+    karşıdan: 'в основном встречный',
+    arkadan: 'в основном попутный',
+    yandan: 'в основном боковой',
+  },
+};
+
+/** MET sembol kodlarının adları */
+const SEMBOLLER: Record<Dil, Record<string, string>> = {
+  tr: {
+    clearsky: 'Açık',
+    fair: 'Az bulutlu',
+    partlycloudy: 'Parçalı bulutlu',
+    cloudy: 'Bulutlu',
+    fog: 'Sisli',
+    lightrain: 'Hafif yağmurlu',
+    rain: 'Yağmurlu',
+    heavyrain: 'Kuvvetli yağmurlu',
+    lightrainshowers: 'Hafif sağanak',
+    rainshowers: 'Sağanak',
+    heavyrainshowers: 'Kuvvetli sağanak',
+    lightsleet: 'Hafif karla karışık yağmur',
+    sleet: 'Karla karışık yağmur',
+    heavysleet: 'Kuvvetli karla karışık yağmur',
+    lightsleetshowers: 'Hafif karla karışık sağanak',
+    sleetshowers: 'Karla karışık sağanak',
+    heavysleetshowers: 'Kuvvetli karla karışık sağanak',
+    lightsnow: 'Hafif karlı',
+    snow: 'Karlı',
+    heavysnow: 'Yoğun karlı',
+    lightsnowshowers: 'Hafif kar sağanağı',
+    snowshowers: 'Kar sağanağı',
+    heavysnowshowers: 'Yoğun kar sağanağı',
+  },
+  en: {
+    clearsky: 'Clear',
+    fair: 'Fair',
+    partlycloudy: 'Partly cloudy',
+    cloudy: 'Cloudy',
+    fog: 'Fog',
+    lightrain: 'Light rain',
+    rain: 'Rain',
+    heavyrain: 'Heavy rain',
+    lightrainshowers: 'Light showers',
+    rainshowers: 'Showers',
+    heavyrainshowers: 'Heavy showers',
+    lightsleet: 'Light sleet',
+    sleet: 'Sleet',
+    heavysleet: 'Heavy sleet',
+    lightsleetshowers: 'Light sleet showers',
+    sleetshowers: 'Sleet showers',
+    heavysleetshowers: 'Heavy sleet showers',
+    lightsnow: 'Light snow',
+    snow: 'Snow',
+    heavysnow: 'Heavy snow',
+    lightsnowshowers: 'Light snow showers',
+    snowshowers: 'Snow showers',
+    heavysnowshowers: 'Heavy snow showers',
+  },
+  de: {
+    clearsky: 'Klar',
+    fair: 'Heiter',
+    partlycloudy: 'Teilweise bewölkt',
+    cloudy: 'Bewölkt',
+    fog: 'Nebel',
+    lightrain: 'Leichter Regen',
+    rain: 'Regen',
+    heavyrain: 'Starker Regen',
+    lightrainshowers: 'Leichte Schauer',
+    rainshowers: 'Schauer',
+    heavyrainshowers: 'Starke Schauer',
+    lightsleet: 'Leichter Schneeregen',
+    sleet: 'Schneeregen',
+    heavysleet: 'Starker Schneeregen',
+    lightsleetshowers: 'Leichte Schneeregenschauer',
+    sleetshowers: 'Schneeregenschauer',
+    heavysleetshowers: 'Starke Schneeregenschauer',
+    lightsnow: 'Leichter Schneefall',
+    snow: 'Schneefall',
+    heavysnow: 'Starker Schneefall',
+    lightsnowshowers: 'Leichte Schneeschauer',
+    snowshowers: 'Schneeschauer',
+    heavysnowshowers: 'Starke Schneeschauer',
+  },
+  ru: {
+    clearsky: 'Ясно',
+    fair: 'Малооблачно',
+    partlycloudy: 'Переменная облачность',
+    cloudy: 'Облачно',
+    fog: 'Туман',
+    lightrain: 'Небольшой дождь',
+    rain: 'Дождь',
+    heavyrain: 'Сильный дождь',
+    lightrainshowers: 'Небольшой ливень',
+    rainshowers: 'Ливень',
+    heavyrainshowers: 'Сильный ливень',
+    lightsleet: 'Небольшой мокрый снег',
+    sleet: 'Мокрый снег',
+    heavysleet: 'Сильный мокрый снег',
+    lightsleetshowers: 'Небольшой ливневый мокрый снег',
+    sleetshowers: 'Ливневый мокрый снег',
+    heavysleetshowers: 'Сильный ливневый мокрый снег',
+    lightsnow: 'Небольшой снег',
+    snow: 'Снег',
+    heavysnow: 'Сильный снег',
+    lightsnowshowers: 'Небольшой снегопад',
+    snowshowers: 'Снегопад',
+    heavysnowshowers: 'Сильный снегопад',
+  },
+};
+const hs = (dil: Dil, k: string) => HAVA_SOZLUK[dil][k] ?? HAVA_SOZLUK.tr[k] ?? k;
 
 /** İki nokta arasındaki gidiş yönü (derece, 0 = kuzey) */
 export function gidisYonu(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
@@ -132,63 +311,43 @@ export function izdeRuzgar(iz: { lat: number; lng: number }[], ruzgarGeldigi: nu
   return { ...oran, baskin: baskin[1] >= 0.55 ? baskin[0] : null };
 }
 
-/** MET sembol kodunun Türkçesi: "lightrainshowers_day" → "Hafif sağanak" */
-export function sembolMetni(sembol: string | null | undefined): string | null {
+/** MET sembol kodunun adı: "lightrainshowers_day" → "Hafif sağanak" */
+export function sembolMetni(sembol: string | null | undefined, dil: Dil = aktifDil()): string | null {
   if (!sembol) return null;
   const s = sembol.replace(/_(day|night|polartwilight)$/, '');
-  const gok = /thunder/.test(s) ? ' ve gök gürültüsü' : '';
+  const gok = /thunder/.test(s) ? hs(dil, 'gok') : '';
   const temel = s.replace(/andthunder$/, '');
-  const tablo: Record<string, string> = {
-    clearsky: 'Açık',
-    fair: 'Az bulutlu',
-    partlycloudy: 'Parçalı bulutlu',
-    cloudy: 'Bulutlu',
-    fog: 'Sisli',
-    lightrain: 'Hafif yağmurlu',
-    rain: 'Yağmurlu',
-    heavyrain: 'Kuvvetli yağmurlu',
-    lightrainshowers: 'Hafif sağanak',
-    rainshowers: 'Sağanak',
-    heavyrainshowers: 'Kuvvetli sağanak',
-    lightsleet: 'Hafif karla karışık yağmur',
-    sleet: 'Karla karışık yağmur',
-    heavysleet: 'Kuvvetli karla karışık yağmur',
-    lightsleetshowers: 'Hafif karla karışık sağanak',
-    sleetshowers: 'Karla karışık sağanak',
-    heavysleetshowers: 'Kuvvetli karla karışık sağanak',
-    lightsnow: 'Hafif karlı',
-    snow: 'Karlı',
-    heavysnow: 'Yoğun karlı',
-    lightsnowshowers: 'Hafif kar sağanağı',
-    snowshowers: 'Kar sağanağı',
-    heavysnowshowers: 'Yoğun kar sağanağı',
-  };
-  const ad = tablo[temel];
+  const ad = SEMBOLLER[dil][temel] ?? SEMBOLLER.tr[temel];
   return ad ? ad + gok : null;
 }
 
 const kmsa = (mps: number) => Math.round(mps * 3.6);
 
 /** "24°C · Parçalı bulutlu" */
-export function havaOzeti(h: HavaDurumu): string {
-  const s = sembolMetni(h.sembol);
+export function havaOzeti(h: HavaDurumu, dil: Dil = aktifDil()): string {
+  const s = sembolMetni(h.sembol, dil);
   return `${Math.round(h.sicaklik)}°C${s ? ` · ${s}` : ''}`;
 }
 
 /** "14 km/sa batı rüzgârı"; rüzgâr çok hafifse "Rüzgârsız" */
-export function ruzgarMetni(h: HavaDurumu): string {
-  if (h.ruzgar < 0.5) return 'Rüzgârsız';
-  return `${kmsa(h.ruzgar)} km/sa ${yonAdi(h.ruzgarYon)} rüzgârı`;
+export function ruzgarMetni(h: HavaDurumu, dil: Dil = aktifDil()): string {
+  if (h.ruzgar < 0.5) return hs(dil, 'ruzgarsiz');
+  return doldur(hs(dil, 'ruzgar'), { hiz: kmsa(h.ruzgar), birim: speedUnit(dil), yon: yonAdi(h.ruzgarYon, dil) });
+}
+
+/** Rüzgârın yola göre etkisi: "çoğunlukla karşıdan" */
+export function ruzgarEtkisiMetni(etki: RuzgarEtkisi, dil: Dil = aktifDil()): string {
+  return hs(dil, etki);
 }
 
 /** Aktivite özeti için satırlar: [etiket, değer] */
-export function havaAyrintilari(h: HavaDurumu, iz?: { lat: number; lng: number }[]): [string, string][] {
-  const satirlar: [string, string][] = [['Sıcaklık', `${Math.round(h.sicaklik)}°C`]];
-  if (h.hissedilen != null && Math.abs(h.hissedilen - h.sicaklik) >= 1) satirlar.push(['Hissedilen', `${Math.round(h.hissedilen)}°C`]);
+export function havaAyrintilari(h: HavaDurumu, iz?: { lat: number; lng: number }[], dil: Dil = aktifDil()): [string, string][] {
+  const satirlar: [string, string][] = [[hs(dil, 'sicaklik'), `${Math.round(h.sicaklik)}°C`]];
+  if (h.hissedilen != null && Math.abs(h.hissedilen - h.sicaklik) >= 1) satirlar.push([hs(dil, 'hissedilen'), `${Math.round(h.hissedilen)}°C`]);
   const etki = iz && iz.length > 1 && h.ruzgar >= 2 ? izdeRuzgar(iz, h.ruzgarYon).baskin : null;
-  satirlar.push(['Rüzgâr', `${ruzgarMetni(h)}${etki ? ` · çoğunlukla ${etki}` : ''}`]);
-  if (h.nem != null) satirlar.push(['Nem', `%${h.nem}`]);
-  if (h.yagis != null && h.yagis > 0) satirlar.push(['Yağış', `${h.yagis.toLocaleString('tr-TR')} mm/sa`]);
+  satirlar.push([hs(dil, 'ruzgarEtiket'), `${ruzgarMetni(h, dil)}${etki ? ` · ${ruzgarEtkisiMetni(etki, dil)}` : ''}`]);
+  if (h.nem != null) satirlar.push([hs(dil, 'nem'), formatPercent(h.nem, dil)]);
+  if (h.yagis != null && h.yagis > 0) satirlar.push([hs(dil, 'yagis'), `${formatDecimal(h.yagis, 1, dil)} ${hs(dil, 'mmsa')}`]);
   if (h.uv != null && h.uv >= 3) satirlar.push(['UV', `${Math.round(h.uv)}`]);
   return satirlar;
 }

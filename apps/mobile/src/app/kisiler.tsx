@@ -12,6 +12,7 @@ import { KisiSatiri } from '@/components/KisiSatiri';
 import { Txt } from '@/components/Txt';
 import { SectionHeader } from '@/components/ui';
 import { colors, fontFamily, space } from '@/theme';
+import { $t } from '@/i18n';
 
 export default function KisilerScreen() {
   const [arama, setArama] = useState('');
@@ -32,7 +33,7 @@ export default function KisilerScreen() {
           .then((l) => no === istekNo.current && setSonuc(l))
           .catch((e) => {
             if (no !== istekNo.current) return;
-            setHata(e instanceof Error ? e.message : 'Aranamadı');
+            setHata(e instanceof Error ? e.message : $t('kisiler.aranamadi'));
             setSonuc([]);
           });
       },
@@ -45,19 +46,19 @@ export default function KisilerScreen() {
 
   return (
     <View style={styles.root}>
-      <Header title="Kişiler" />
+      <Header title={$t('kisiler.kisiler')} />
       <ScrollView contentContainerStyle={{ padding: space.lg, paddingTop: space.sm, paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
         <View style={styles.search}>
           <Icon name="search" size={18} color={colors.inkMuted} />
           <TextInput
             value={arama}
             onChangeText={setArama}
-            placeholder="Ad ya da kullanıcı adı"
+            placeholder={$t('kisiler.ad_ya_da_kullanici')}
             placeholderTextColor={colors.inkMuted}
             autoCapitalize="none"
             autoCorrect={false}
             returnKeyType="search"
-            accessibilityLabel="Kişi ara"
+            accessibilityLabel={$t('ortak.kisi_ara')}
             style={styles.input}
             autoFocus
           />
@@ -69,13 +70,13 @@ export default function KisilerScreen() {
           </Txt>
         ) : null}
 
-        <SectionHeader title={araniyor ? 'Sonuçlar' : 'Tanıyor olabileceklerin'} />
+        <SectionHeader title={araniyor ? $t('kisiler.sonuclar') : $t('kisiler.taniyor_olabileceklerin')} />
         {sonuc === null ? <ActivityIndicator color={colors.terra} style={{ marginVertical: space.lg }} /> : null}
         {sonuc && sonuc.length === 0 && !hata ? (
           <Txt variant="muted" style={{ paddingVertical: space.md }}>
             {araniyor
-              ? 'Bu adla kimse bulunamadı. Arkadaşın henüz giriş yapmadıysa aramada görünmez.'
-              : 'Şimdilik önerimiz yok. Bir gruba katıldığında grup arkadaşların burada görünür; adıyla da arayabilirsin.'}
+              ? $t('kisiler.bu_adla_kimse_bulunamadi')
+              : $t('kisiler.simdilik_onerimiz_yok_bir')}
           </Txt>
         ) : null}
         {sonuc?.map((k) => (

@@ -24,6 +24,7 @@ import {
 } from '@/grup/gruplar';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space } from '@/theme';
+import { $t } from '@/i18n';
 
 /** Sunucu anahtarı yoksa tasarım örneği, varsa gerçek gruplar */
 export default function GruplarScreen() {
@@ -31,8 +32,8 @@ export default function GruplarScreen() {
 }
 
 function sonMesaj(g: GrupOzeti) {
-  if (!g.last_message_at) return `${grupEtiketi(g)} · ${uyeSayisi(g.member_count)}${g.is_private ? ' · Özel' : ''}`;
-  const icerik = g.last_message_type === 'route' ? 'bir rota paylaştı' : g.last_message_type === 'event' ? 'bir etkinlik oluşturdu' : (g.last_message ?? '');
+  if (!g.last_message_at) return `${grupEtiketi(g)} · ${uyeSayisi(g.member_count)}${g.is_private ? $t('gruplar.ozel') : ''}`;
+  const icerik = g.last_message_type === 'route' ? $t('gruplar.bir_rota_paylasti') : g.last_message_type === 'event' ? $t('gruplar.bir_etkinlik_olusturdu') : (g.last_message ?? '');
   return `${g.last_sender ? g.last_sender + ': ' : ''}${icerik}`;
 }
 
@@ -53,7 +54,7 @@ function GercekGruplar() {
       setKesfet(k);
       setEtkinlikler(e);
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Gruplar yüklenemedi');
+      setHata(e instanceof Error ? e.message : $t('gruplar.gruplar_yuklenemedi'));
       setBenim((x) => x ?? []);
       setKesfet((x) => x ?? []);
     }
@@ -74,7 +75,7 @@ function GercekGruplar() {
       setKod('');
       router.push({ pathname: '/grup/[id]', params: { id } });
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Katılınamadı');
+      setHata(e instanceof Error ? e.message : $t('gruplar.katilinamadi'));
     } finally {
       setBekleyen(null);
     }
@@ -93,7 +94,7 @@ function GercekGruplar() {
       }
       await yukle(arama);
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'İşlem yapılamadı');
+      setHata(e instanceof Error ? e.message : $t('gruplar.islem_yapilamadi'));
     } finally {
       setBekleyen(null);
     }
@@ -104,11 +105,10 @@ function GercekGruplar() {
       <ScrollView contentContainerStyle={{ padding: space.lg, paddingBottom: 120 }} keyboardShouldPersistTaps="handled">
         <View style={styles.head}>
           <Txt variant="display" accessibilityRole="header">
-            Gruplar
-          </Txt>
+            {$t('gruplar.gruplar')}</Txt>
           <Pressable accessibilityRole="button" onPress={() => router.push('/grup/olustur')} style={styles.newBtn}>
             <Icon name="plus" size={16} strokeWidth={2.2} />
-            <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 13 }}>Yeni grup</Txt>
+            <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 13 }}>{$t('gruplar.yeni_grup')}</Txt>
           </Pressable>
         </View>
 
@@ -118,16 +118,16 @@ function GercekGruplar() {
             value={kod}
             onChangeText={setKod}
             onSubmitEditing={() => void koddanKatil()}
-            placeholder="Davet koduyla katıl"
+            placeholder={$t('gruplar.davet_koduyla_katil')}
             placeholderTextColor={colors.inkMuted}
             autoCapitalize="characters"
             autoCorrect={false}
             returnKeyType="go"
-            accessibilityLabel="Davet kodu"
+            accessibilityLabel={$t('gruplar.davet_kodu')}
             style={styles.kodInput}
           />
           <Pressable accessibilityRole="button" onPress={() => void koddanKatil()} disabled={!kod.trim() || !!bekleyen} style={[styles.kodBtn, !kod.trim() && { opacity: 0.4 }]}>
-            {bekleyen === 'kod' ? <ActivityIndicator color="#FFFFFF" size="small" /> : <Txt style={{ color: '#FFFFFF', fontFamily: fontFamily.bodyBold, fontSize: 13 }}>Katıl</Txt>}
+            {bekleyen === 'kod' ? <ActivityIndicator color="#FFFFFF" size="small" /> : <Txt style={{ color: '#FFFFFF', fontFamily: fontFamily.bodyBold, fontSize: 13 }}>{$t('gruplar.katil')}</Txt>}
           </Pressable>
         </View>
 
@@ -139,7 +139,7 @@ function GercekGruplar() {
 
         {etkinlikler.length ? (
           <View style={{ marginBottom: space.lg }}>
-            <SectionHeader title="Yaklaşan etkinlikler" />
+            <SectionHeader title={$t('gruplar.yaklasan_etkinlikler')} />
             {etkinlikler.slice(0, 3).map((e) => {
               const r = tarihRozeti(e.starts_at);
               return (
@@ -150,10 +150,7 @@ function GercekGruplar() {
                       {e.title}
                     </Txt>
                     <Txt variant="small" numberOfLines={1}>
-                      {kisaTarih(e.starts_at)}
-                      {e.group_name ? ` · ${e.group_name}` : ''} · {e.going_count} kişi
-                      {e.my_status === 'going' ? ' · gidiyorsun' : e.my_status === 'waitlist' ? ' · bekleme listesi' : ''}
-                    </Txt>
+                      {$t('gruplar.kisi', { kisaTarih: kisaTarih(e.starts_at), a: e.group_name ? ` · ${e.group_name}` : '', going_count: e.going_count, a2: e.my_status === 'going' ? $t('gruplar.gidiyorsun') : e.my_status === 'waitlist' ? $t('gruplar.bekleme_listesi') : '' })}</Txt>
                   </View>
                   <Icon name="chevron" size={20} color={colors.inkMuted} strokeWidth={2} />
                 </Pressable>
@@ -162,18 +159,17 @@ function GercekGruplar() {
           </View>
         ) : null}
 
-        <SectionHeader title="Grupların ve toplulukların" />
+        <SectionHeader title={$t('gruplar.gruplarin_ve_topluluklarin')} />
         {benim === null ? <ActivityIndicator color={colors.terra} style={{ marginVertical: space.lg }} /> : null}
         {benim && benim.length === 0 ? (
           <Txt variant="muted" style={{ paddingVertical: space.md }}>
-            Henüz bir grubun yok. Yeni bir grup kur, davet koduyla katıl ya da aşağıdan bir topluluğa katıl.
-          </Txt>
+            {$t('gruplar.henuz_bir_grubun_yok')}</Txt>
         ) : null}
         {benim?.map((g) => (
           <Pressable
             key={g.id}
             accessibilityRole="link"
-            accessibilityLabel={`${g.name}${g.unread ? `, ${g.unread} okunmamış mesaj` : ''}`}
+            accessibilityLabel={`${g.name}${g.unread ? $t('gruplar.okunmamis_mesaj', { unread: g.unread }) : ''}`}
             onPress={() => router.push({ pathname: '/grup/[id]', params: { id: g.id } })}
             style={styles.row}>
             <Avatar initials={basHarfler(g.name)} tone={grupRengi(g.id)} size={48} square />
@@ -197,11 +193,11 @@ function GercekGruplar() {
         ))}
 
         <View style={{ marginTop: space.lg }}>
-          <Button label="Etkinlik oluştur" icon="calendar" variant="outline" href="/etkinlik/olustur" />
+          <Button label={$t('gruplar.etkinlik_olustur')} icon="calendar" variant="outline" href="/etkinlik/olustur" />
         </View>
 
         <View style={{ marginTop: space.xl }}>
-          <SectionHeader title="Toplulukları keşfet" />
+          <SectionHeader title={$t('gruplar.topluluklari_kesfet')} />
         </View>
         <View style={styles.ara}>
           <Icon name="search" size={18} color={colors.inkMuted} strokeWidth={2} />
@@ -209,16 +205,16 @@ function GercekGruplar() {
             value={arama}
             onChangeText={setArama}
             onSubmitEditing={() => void yukle(arama)}
-            placeholder="Ad ya da şehir ara"
+            placeholder={$t('gruplar.ad_ya_da_sehir')}
             placeholderTextColor={colors.inkMuted}
             returnKeyType="search"
-            accessibilityLabel="Topluluk ara"
+            accessibilityLabel={$t('gruplar.topluluk_ara')}
             style={styles.kodInput}
           />
         </View>
         {kesfet && kesfet.length === 0 ? (
           <Txt variant="muted" style={{ paddingVertical: space.md }}>
-            {arama.trim() ? 'Aramana uyan açık topluluk yok.' : 'Şimdilik katılabileceğin açık topluluk yok. İlkini sen kur!'}
+            {arama.trim() ? $t('gruplar.aramana_uyan_acik_topluluk') : $t('gruplar.simdilik_katilabilecegin_acik_topluluk')}
           </Txt>
         ) : null}
         {kesfet?.map((g) => (
@@ -231,13 +227,13 @@ function GercekGruplar() {
                 </Txt>
                 <Txt variant="small" numberOfLines={1}>
                   {grupEtiketi(g)} · {uyeSayisi(g.member_count)}
-                  {g.requires_approval ? ' · Onaylı katılım' : ''}
+                  {g.requires_approval ? $t('gruplar.onayli_katilim') : ''}
                 </Txt>
               </View>
             </Pressable>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={g.requested ? `${g.name}: isteği geri al` : `${g.name} topluluğuna katıl`}
+              accessibilityLabel={g.requested ? $t('gruplar.istegi_geri_al', { name: g.name }) : $t('gruplar.topluluguna_katil', { name: g.name })}
               onPress={() => void katil(g)}
               disabled={!!bekleyen}
               style={[styles.katil, g.requested && styles.katilPasif]}>
@@ -245,7 +241,7 @@ function GercekGruplar() {
                 <ActivityIndicator size="small" color={g.requested ? colors.ink : '#FFFFFF'} />
               ) : (
                 <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 12, color: g.requested ? colors.ink : '#FFFFFF' }}>
-                  {g.requested ? 'İstek gönderildi' : g.requires_approval ? 'İstek gönder' : 'Katıl'}
+                  {g.requested ? $t('gruplar.istek_gonderildi') : g.requires_approval ? $t('gruplar.istek_gonder') : $t('gruplar.katil')}
                 </Txt>
               )}
             </Pressable>

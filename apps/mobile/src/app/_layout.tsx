@@ -13,7 +13,7 @@ import * as Notifications from 'expo-notifications';
 import { router, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { AppState, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -21,7 +21,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { kaydiGeriYukle } from '@/kayit/kaydedici';
 import { bildirimHedefi } from '@/bildirim/bildirimler';
 import { kuyruguGonder } from '@/kayit/kuyruk';
+import { dilDegisikliginiDinle, dilYukle, useDil } from '@/i18n';
 import { haritaIstekleriniAyarla } from '@/lib/cevrimdisi';
+import { bildirimDiliniGuncelle } from '@/lib/dilSunucu';
 import { pushTazele } from '@/lib/push';
 import { colors } from '@/theme';
 
@@ -37,9 +39,20 @@ export default function RootLayout() {
     BricolageGrotesque_800ExtraBold,
   });
 
+  // Saklanan dil seçimini oku; o zamana kadar açılış ekranı kalır. Dil değişince bütün ekranlar yeniden kurulur.
+  const [dilHazir, setDilHazir] = useState(false);
+  const dil = useDil();
   useEffect(() => {
-    if (loaded || error) SplashScreen.hideAsync();
-  }, [loaded, error]);
+    void dilYukle().finally(() => {
+      setDilHazir(true);
+      void bildirimDiliniGuncelle();
+    });
+    return dilDegisikliginiDinle(() => void bildirimDiliniGuncelle());
+  }, []);
+
+  useEffect(() => {
+    if ((loaded || error) && dilHazir) SplashScreen.hideAsync();
+  }, [loaded, error, dilHazir]);
 
   // Yarım kalan kaydı geri yükle; bekleyen kayıtları uygulama her öne geldiğinde göndermeyi dene
   // Telefon bildirimi: jetonu tazele; bildirime dokununca ilgili sayfayı aç (uygulama kapalıyken de)
@@ -65,12 +78,12 @@ export default function RootLayout() {
     return () => sub.remove();
   }, []);
 
-  if (!loaded && !error) return null;
+  if ((!loaded && !error) || !dilHazir) return null;
 
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.ground } }}>
+      <Stack key={dil} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.ground } }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="giris" options={{ gestureEnabled: false, animation: 'fade' }} />
         <Stack.Screen name="giris-donus" options={{ animation: 'none' }} />

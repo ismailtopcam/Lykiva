@@ -12,6 +12,7 @@ import { aktiviteFotograflariniSil } from '@/lib/foto';
 import { kuyruguGonder, kuyruktakiler, sunucuIdsi, yereldekiPaket } from '@/kayit/kuyruk';
 import { supabase, supabaseHazir } from '@/lib/supabase';
 import { kasKalkan, people, type Activity, type BirlikteKisi, type LngLat, type Stop } from './ornek';
+import { $t, yerel } from '@/i18n';
 
 type ProfilNoktasi = { t: number; d: number; alt: number | null; speed: number | null };
 type Mola = { id?: string; start: number; end: number; distanceAt: number; lng: number; lat: number; note?: string | null; photos?: string[] };
@@ -45,15 +46,12 @@ type Ham = {
   hideEndpoints?: boolean;
 };
 
-const saat = (ms: number) => new Date(ms).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+const saat = (ms: number) => new Date(ms).toLocaleTimeString(yerel(), { hour: '2-digit', minute: '2-digit' });
 
-const GUNLER = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
-const AYLAR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-
-/** "Cumartesi, 7 Kasım · 08:12" */
+/** "7 Kasım Cumartesi · 08:12" (dilin tarih düzeniyle) */
 function ne(ms: number) {
   const d = new Date(ms);
-  return `${GUNLER[d.getDay()]}, ${d.getDate()} ${AYLAR[d.getMonth()]} · ${saat(ms)}`;
+  return `${d.toLocaleDateString(yerel(), { weekday: 'long', day: 'numeric', month: 'long' })} · ${saat(ms)}`;
 }
 
 /** Değerleri n kutuya böler; boş kutu 0 olur (hız grafiğinde mola bandı) */
@@ -83,7 +81,7 @@ function goruntuyeCevir(h: Ham): Activity {
   const speed = hizli.length > 1 ? kutula(hizli.map((x) => x.t), hizli.map((x) => (x.speed as number) * 3.6), h.started, h.ended, 60, 0) : [0, 0];
   const stops: Stop[] = h.stops.map((s, i) => ({
     n: i + 1,
-    title: `Mola ${i + 1}`,
+    title: $t('data_aktivite.mola', { a: i + 1 }),
     time: saat(s.start),
     km: formatKm(s.distanceAt),
     duration: formatDuration((s.end - s.start) / 1000),
@@ -142,7 +140,7 @@ async function sunucudan(id: string): Promise<Activity> {
     supabase.rpc('birlikte_kisiler', { aktivite: id }),
   ]);
   if (error || e2) throw error ?? e2;
-  if (!o) throw new Error('Aktivite bulunamadı ya da görme iznin yok');
+  if (!o) throw new Error($t('data_aktivite.aktivite_bulunamadi_ya_da'));
   const detay = (d ?? { stops: [], profile: [] }) as {
     stops: { id?: string; started_at: string; ended_at: string; distance_at_m: number; lng: number; lat: number; note: string | null; photos?: string[] }[];
     profile: ProfilNoktasi[];
@@ -247,13 +245,13 @@ export function useAktivite(id: string | undefined): AktiviteDurumu {
             return;
           }
           const a = await yerelden(cid);
-          if (!iptal) setDurum({ a, yukleniyor: false, hata: a ? null : 'Kayıt bulunamadı', bekliyor: !!a });
+          if (!iptal) setDurum({ a, yukleniyor: false, hata: a ? null : $t('data_aktivite.kayit_bulunamadi'), bekliyor: !!a });
           return;
         }
         const a = await sunucudan(id);
         if (!iptal) setDurum({ a, yukleniyor: false, hata: null, bekliyor: false });
       } catch (e) {
-        if (!iptal) setDurum({ a: null, yukleniyor: false, hata: e instanceof Error ? e.message : 'Yüklenemedi', bekliyor: false });
+        if (!iptal) setDurum({ a: null, yukleniyor: false, hata: e instanceof Error ? e.message : $t('ortak.yuklenemedi'), bekliyor: false });
       }
     })();
     return () => {
@@ -296,8 +294,8 @@ export async function aktivitelerim(userId: string | null): Promise<AktiviteSati
   const satirlar: AktiviteSatiri[] = bekleyen.map((p) => ({
     id: `yerel-${p.client_id}`,
     title: p.title ?? ACTIVITY_LABELS[p.activity],
-    meta: `${ne(Date.parse(p.started_at))} · gönderilmeyi bekliyor`,
-    stats: `${formatKm(p.distance_m)} km · ${formatDuration(p.moving_time_s)} · ${Math.round(p.elevation_gain_m)} m`,
+    meta: $t('data_aktivite.gonderilmeyi_bekliyor', { ne: ne(Date.parse(p.started_at)) }),
+    stats: $t('data_aktivite.km_m', { km: formatKm(p.distance_m), duration: formatDuration(p.moving_time_s), round: Math.round(p.elevation_gain_m) }),
     route: p.points.filter((_, i) => i % 10 === 0).map((pt) => [pt.lng, pt.lat] as LngLat),
     bekliyor: true,
     startedAt: Date.parse(p.started_at),
@@ -318,7 +316,7 @@ export async function aktivitelerim(userId: string | null): Promise<AktiviteSati
         id: o.id,
         title: o.title ?? ACTIVITY_LABELS[o.activity as ActivityType],
         meta: `${ne(Date.parse(o.started_at))} · ${ACTIVITY_LABELS[o.activity as ActivityType]}`,
-        stats: `${formatKm(o.distance_m)} km · ${formatDuration(o.moving_time_s)} · ${Math.round(o.elevation_gain_m ?? 0)} m`,
+        stats: $t('data_aktivite.km_m', { km: formatKm(o.distance_m), duration: formatDuration(o.moving_time_s), round: Math.round(o.elevation_gain_m ?? 0) }),
         route: coords.filter((_, i) => i % 5 === 0).map((c) => [c[0], c[1]] as LngLat),
         startedAt: Date.parse(o.started_at),
         distanceM: o.distance_m,
@@ -349,7 +347,8 @@ export function haftaOzeti(satirlar: AktiviteSatiri[], simdi = new Date()) {
   bas.setDate(bas.getDate() - ((bas.getDay() + 6) % 7));
   const bit = new Date(bas);
   bit.setDate(bit.getDate() + 7);
-  const gunler = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].map((day) => ({ day, km: 0 }));
+  // Pazartesiden başlayarak günlerin kısa adı (dile göre)
+  const gunler = Array.from({ length: 7 }, (_, i) => ({ day: new Date(bas.getTime() + i * 86_400_000 + 12 * 3_600_000).toLocaleDateString(yerel(), { weekday: 'short' }), km: 0 }));
   let km = 0;
   let sn = 0;
   let m = 0;
@@ -362,7 +361,8 @@ export function haftaOzeti(satirlar: AktiviteSatiri[], simdi = new Date()) {
     m += s.gainM ?? 0;
   }
   const son = new Date(bit.getTime() - 86400000);
-  const aralik = `${bas.getDate()} ${bas.getMonth() !== son.getMonth() ? AYLAR[bas.getMonth()] + ' ' : ''}– ${son.getDate()} ${AYLAR[son.getMonth()]}`;
+  const basMetni = bas.toLocaleDateString(yerel(), bas.getMonth() !== son.getMonth() ? { day: 'numeric', month: 'long' } : { day: 'numeric' });
+  const aralik = `${basMetni} – ${son.toLocaleDateString(yerel(), { day: 'numeric', month: 'long' })}`;
   return { gunler, km, sn, m, aralik };
 }
 
@@ -399,7 +399,7 @@ export async function aktiviteSil(id: string) {
   await aktiviteFotograflariniSil(id).catch(() => undefined);
   const { error, count } = await supabase.from('activities').delete({ count: 'exact' }).eq('id', id);
   if (error) throw new Error(error.message);
-  if (!count) throw new Error('Aktivite silinemedi');
+  if (!count) throw new Error($t('data_aktivite.aktivite_silinemedi'));
   aktiviteDegisti(id, { silindi: true });
 }
 
@@ -411,5 +411,5 @@ export function birlikteKisiler(a: Activity): BirlikteKisi[] {
 
 /** "Cem, Burak ve Deniz" */
 export function adListesi(adlar: string[]) {
-  return adlar.length > 1 ? `${adlar.slice(0, -1).join(', ')} ve ${adlar[adlar.length - 1]}` : (adlar[0] ?? '');
+  return adlar.length > 1 ? $t('data_aktivite.ve', { slice: adlar.slice(0, -1).join(', '), a: adlar[adlar.length - 1] }) : (adlar[0] ?? '');
 }

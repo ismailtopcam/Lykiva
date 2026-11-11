@@ -12,6 +12,7 @@ import { profilAdresi } from '@/lib/baglanti';
 import { fotoSec, profilFotografiniKaldir, profilFotografiYukle, type Kaynak } from '@/lib/foto';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, radius, space } from '@/theme';
+import { $t } from '@/i18n';
 
 type AdDurumu = 'ayni' | 'bakiliyor' | 'musait' | 'alinmis' | 'gecersiz';
 
@@ -41,7 +42,7 @@ export default function ProfilDuzenleScreen() {
         setBio(p.bio ?? '');
         setFoto(p.avatar_url);
       })
-      .catch((e) => setHata(e instanceof Error ? e.message : 'Profil yüklenemedi'))
+      .catch((e) => setHata(e instanceof Error ? e.message : $t('profil_duzenle.profil_yuklenemedi')))
       .finally(() => setYuklendi(true));
   }, []);
 
@@ -71,7 +72,7 @@ export default function ProfilDuzenleScreen() {
       setFotoIsliyor(true);
       setFoto(await profilFotografiYukle(uri, foto));
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Fotoğraf yüklenemedi');
+      setHata(e instanceof Error ? e.message : $t('profil_duzenle.fotograf_yuklenemedi'));
     } finally {
       setFotoIsliyor(false);
     }
@@ -84,18 +85,18 @@ export default function ProfilDuzenleScreen() {
       await profilFotografiniKaldir(foto);
       setFoto(null);
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Fotoğraf kaldırılamadı');
+      setHata(e instanceof Error ? e.message : $t('profil_duzenle.fotograf_kaldirilamadi'));
     } finally {
       setFotoIsliyor(false);
     }
   }
 
   function fotoMenusu() {
-    Alert.alert('Profil fotoğrafı', undefined, [
-      { text: 'Galeriden seç', onPress: () => void fotoDegistir('galeri') },
-      { text: 'Fotoğraf çek', onPress: () => void fotoDegistir('kamera') },
-      ...(foto ? [{ text: 'Fotoğrafı kaldır', style: 'destructive' as const, onPress: () => void fotoKaldir() }] : []),
-      { text: 'Vazgeç', style: 'cancel' as const },
+    Alert.alert($t('profil_duzenle.profil_fotografi'), undefined, [
+      { text: $t('profil_duzenle.galeriden_sec'), onPress: () => void fotoDegistir('galeri') },
+      { text: $t('profil_duzenle.fotograf_cek'), onPress: () => void fotoDegistir('kamera') },
+      ...(foto ? [{ text: $t('profil_duzenle.fotografi_kaldir'), style: 'destructive' as const, onPress: () => void fotoKaldir() }] : []),
+      { text: $t('ortak.vazgec'), style: 'cancel' as const },
     ]);
   }
 
@@ -108,37 +109,37 @@ export default function ProfilDuzenleScreen() {
 
   async function kaydet() {
     setHata(null);
-    if (ad.trim().length < 2) return setHata('Adın en az 2 karakter olmalı.');
-    if (!KULLANICI_ADI_BICIMI.test(kadi)) return setHata('Kullanıcı adı 3–30 karakter olmalı; yalnızca harf, rakam, nokta ve alt çizgi.');
-    if (adDurumu === 'alinmis') return setHata('Bu kullanıcı adı kullanılamıyor, başka bir tane dene.');
+    if (ad.trim().length < 2) return setHata($t('profil_duzenle.adin_en_az_2'));
+    if (!KULLANICI_ADI_BICIMI.test(kadi)) return setHata($t('profil_duzenle.kullanici_adi_3_30'));
+    if (adDurumu === 'alinmis') return setHata($t('profil_duzenle.bu_kullanici_adi_kullanilamiyor'));
     setKaydediyor(true);
     try {
       await profilGuncelle({ display_name: ad.trim(), username: kadi, city: sehir.trim() || null, bio: bio.trim() || null });
       router.back();
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Kaydedilemedi');
+      setHata(e instanceof Error ? e.message : $t('ortak.kaydedilemedi'));
     } finally {
       setKaydediyor(false);
     }
   }
 
   const adNotu: Record<AdDurumu, string> = {
-    ayni: `Web profilin: ${profilAdresi(kadi || eskiKadi)}`,
-    bakiliyor: 'Bakılıyor…',
-    musait: 'Bu kullanıcı adı boş.',
-    alinmis: 'Bu kullanıcı adı alınmış ya da kullanılamaz.',
-    gecersiz: '3–30 karakter: harf, rakam, nokta, alt çizgi.',
+    ayni: $t('profil_duzenle.web_profilin', { profilAdresi: profilAdresi(kadi || eskiKadi) }),
+    bakiliyor: $t('profil_duzenle.bakiliyor'),
+    musait: $t('profil_duzenle.bu_kullanici_adi_bos'),
+    alinmis: $t('profil_duzenle.bu_kullanici_adi_alinmis'),
+    gecersiz: $t('profil_duzenle.m_3_30_karakter_harf'),
   };
 
   return (
     <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Header title="Profili düzenle" backIcon="close" center />
+      <Header title={$t('profil_duzenle.profili_duzenle')} backIcon="close" center />
       {!yuklendi && supabaseHazir ? (
         <ActivityIndicator color={colors.terra} style={{ marginTop: space.xl }} />
       ) : (
         <ScrollView contentContainerStyle={{ padding: space.lg, paddingTop: 4, gap: 18, paddingBottom: insets.bottom + 110 }} keyboardShouldPersistTaps="handled">
           <View style={styles.fotoSatir}>
-            <Pressable accessibilityRole="button" accessibilityLabel="Profil fotoğrafını değiştir" onPress={fotoMenusu} disabled={fotoIsliyor || !supabaseHazir}>
+            <Pressable accessibilityRole="button" accessibilityLabel={$t('profil_duzenle.profil_fotografini_degistir')} onPress={fotoMenusu} disabled={fotoIsliyor || !supabaseHazir}>
               <Avatar initials={basHarf} tone="ink" size={84} uri={foto} />
               {fotoIsliyor ? (
                 <View style={styles.fotoPerde}>
@@ -147,16 +148,16 @@ export default function ProfilDuzenleScreen() {
               ) : null}
             </Pressable>
             <View style={{ flex: 1, gap: 6 }}>
-              <Button label={foto ? 'Fotoğrafı değiştir' : 'Fotoğraf ekle'} icon="camera" variant="outline" onPress={fotoMenusu} disabled={fotoIsliyor || !supabaseHazir} />
-              <Txt variant="small">Profil fotoğrafın herkese görünür. Fotoğraftaki konum bilgisi yüklenmez.</Txt>
+              <Button label={foto ? $t('profil_duzenle.fotografi_degistir') : $t('profil_duzenle.fotograf_ekle')} icon="camera" variant="outline" onPress={fotoMenusu} disabled={fotoIsliyor || !supabaseHazir} />
+              <Txt variant="small">{$t('profil_duzenle.profil_fotografin_herkese_gorunur')}</Txt>
             </View>
           </View>
           <View>
-            <Label>Adın</Label>
-            <TextInput value={ad} onChangeText={setAd} placeholder="ör. Ayşe Yılmaz" placeholderTextColor={colors.inkMuted} maxLength={40} accessibilityLabel="Adın" style={styles.input} autoComplete="name" />
+            <Label>{$t('profil_duzenle.adin')}</Label>
+            <TextInput value={ad} onChangeText={setAd} placeholder={$t('profil_duzenle.or_ayse_yilmaz')} placeholderTextColor={colors.inkMuted} maxLength={40} accessibilityLabel={$t('profil_duzenle.adin')} style={styles.input} autoComplete="name" />
           </View>
           <View>
-            <Label>Kullanıcı adı</Label>
+            <Label>{$t('profil_duzenle.kullanici_adi')}</Label>
             <View style={styles.kadiKutu}>
               <Txt style={{ color: colors.inkMuted, fontSize: 15 }}>@</Txt>
               <TextInput
@@ -165,7 +166,7 @@ export default function ProfilDuzenleScreen() {
                 autoCapitalize="none"
                 autoCorrect={false}
                 maxLength={30}
-                accessibilityLabel="Kullanıcı adı"
+                accessibilityLabel={$t('profil_duzenle.kullanici_adi')}
                 style={[styles.input, { flex: 1, borderWidth: 0, paddingHorizontal: 4, backgroundColor: 'transparent' }]}
               />
             </View>
@@ -174,28 +175,28 @@ export default function ProfilDuzenleScreen() {
             </Txt>
           </View>
           <View>
-            <Label>Şehir</Label>
-            <TextInput value={sehir} onChangeText={setSehir} placeholder="ör. Antalya" placeholderTextColor={colors.inkMuted} maxLength={40} accessibilityLabel="Şehir" style={styles.input} />
+            <Label>{$t('profil_duzenle.sehir')}</Label>
+            <TextInput value={sehir} onChangeText={setSehir} placeholder={$t('profil_duzenle.or_antalya')} placeholderTextColor={colors.inkMuted} maxLength={40} accessibilityLabel={$t('ortak.sehir')} style={styles.input} />
           </View>
           <View>
-            <Label>Hakkında</Label>
+            <Label>{$t('profil_duzenle.hakkinda')}</Label>
             <TextInput
               value={bio}
               onChangeText={setBio}
-              placeholder="ör. Hafta sonları Likya Yolu'ndayım"
+              placeholder={$t('profil_duzenle.or_hafta_sonlari_likya')}
               placeholderTextColor={colors.inkMuted}
               maxLength={160}
               multiline
-              accessibilityLabel="Hakkında"
+              accessibilityLabel={$t('profil_duzenle.hakkinda')}
               style={[styles.input, { height: 96, paddingTop: 12, textAlignVertical: 'top' }]}
             />
             <Txt variant="small" style={{ marginTop: 4, textAlign: 'right' }}>
               {bio.length}/160
             </Txt>
           </View>
-          <Txt variant="small">Adın, kullanıcı adın, şehrin, hakkında yazın ve herkese açık aktivitelerin web profilinde görünür. Geçici hesapların web profili yoktur.</Txt>
+          <Txt variant="small">{$t('profil_duzenle.adin_kullanici_adin_sehrin')}</Txt>
 
-          {!supabaseHazir ? <Txt variant="muted">Sunucu anahtarı girilmemiş; profil düzenlenemez.</Txt> : null}
+          {!supabaseHazir ? <Txt variant="muted">{$t('profil_duzenle.sunucu_anahtari_girilmemis_profil')}</Txt> : null}
           {hata ? (
             <View style={styles.hata} accessibilityRole="alert">
               <Icon name="shield" size={18} color={colors.terraInk} />
@@ -205,7 +206,7 @@ export default function ProfilDuzenleScreen() {
         </ScrollView>
       )}
       <View style={[styles.bottom, { paddingBottom: insets.bottom + 16 }]}>
-        <Button label={kaydediyor ? 'Kaydediliyor…' : 'Kaydet'} icon="user" onPress={() => void kaydet()} disabled={kaydediyor || !supabaseHazir || !yuklendi} />
+        <Button label={kaydediyor ? $t('ortak.kaydediliyor') : $t('ortak.kaydet')} icon="user" onPress={() => void kaydet()} disabled={kaydediyor || !supabaseHazir || !yuklendi} />
       </View>
     </KeyboardAvoidingView>
   );

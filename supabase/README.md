@@ -29,6 +29,7 @@ gerçek durum için aşağıdaki `uygula.sh` (durum modu) ya da `node scripts/su
 | `20261110110000_yonetim_moderasyon.sql` | Panelden `yonetim_yorum_sil`, `yonetim_mesaj_sil`, `yonetim_engelle` (auth.users.banned_until, 100 yıl; kendini ve yöneticiyi engelleyemez; jetonları siler); `yonetim_kullanicilar` satırında `engelli` | uygulandı (10 Kasım 2026) |
 | `20261110120000_hava_paylasim_push_temizligi.sql` | `paylasilan_aktivite` havayı da döner; `push_istekleri` (istemciye kapalı) + `push_yanitlarini_isle`: pg_net yanıtlarından "DeviceNotRegistered" dönen jetonları siler (bir sonraki bildirimde); `push_gonder` istek kimliğini ve jetonları kaydeder | uygulandı (10 Kasım 2026) |
 | `20261111000000_hesap_silme_ayarlar.sql` | `hesabimi_sil` (uygulama içinden hesap silme; kurduğu gruplar devredilir, etkinlikleri silinir, gerisi zincirleme), `site_ayarlari` (yasal sayfalardaki iletişim e-postası ve veri sorumlusu; herkes okur, yönetici `yonetim_site_ayarlari_guncelle` ile değiştirir) | **henüz uygulanmadı** |
+| `20261112000000_dil.sql` | Dil desteği: `profiles.dil` (tr, en, de, ru, ar; varsayılan tr), `dil_ayarla` (uygulama dili değişince ve açılışta kaydeder), `push_icerigi` telefon bildirimini alıcının dilinde yazar (Arapça metinleri gelene kadar İngilizce) | **henüz uygulanmadı** |
 
 Tüm tabloların kuralları yazıldı (son: canlı konum, `20261109050000_canli_konum.sql`). Gruplar ve mesajlar `20261109030000_gruplar.sql` ile açılır.
 

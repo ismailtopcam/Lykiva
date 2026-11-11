@@ -2,7 +2,7 @@
  * Paylaşım kartı — aktivitenin gerçek izi ve seçilen istatistiklerle.
  * Önizlemede 196 pt genişlikte; görsel üretirken aynı kart daha büyük çizilip yakalanır.
  */
-import { ACTIVITY_LABELS, haversine } from '@lykiva/shared';
+import { ACTIVITY_LABELS, haversine, mUnit } from '@lykiva/shared';
 import type { Ref } from 'react';
 import { View, type HostInstance } from 'react-native';
 import Svg, { Circle, G, Path } from 'react-native-svg';
@@ -10,12 +10,13 @@ import Svg, { Circle, G, Path } from 'react-native-svg';
 import type { Activity, LngLat } from '@/data/ornek';
 import { fontFamily } from '@/theme';
 import { Txt } from './Txt';
+import { $t, yerel } from '@/i18n';
 
-export const KART_SABLONLARI = [
-  { name: 'Gece', bg: '#16201B', fg: '#F2EDE3', route: '#E07A4A', contour: '#33413A' },
-  { name: 'Kireçtaşı', bg: '#F2EDE3', fg: '#16201B', route: '#B04E25', contour: '#D3C7B0' },
-  { name: 'Deniz', bg: '#0B6A6A', fg: '#FFFFFF', route: '#F6D9A8', contour: '#2A8282' },
-  { name: 'Kaya', bg: '#B04E25', fg: '#FFFFFF', route: '#FBF8F2', contour: '#C26A44' },
+export const KART_SABLONLARI = () => [
+  { name: $t('paylasimKarti.gece'), bg: '#16201B', fg: '#F2EDE3', route: '#E07A4A', contour: '#33413A' },
+  { name: $t('paylasimKarti.kirectasi'), bg: '#F2EDE3', fg: '#16201B', route: '#B04E25', contour: '#D3C7B0' },
+  { name: $t('paylasimKarti.deniz'), bg: '#0B6A6A', fg: '#FFFFFF', route: '#F6D9A8', contour: '#2A8282' },
+  { name: $t('paylasimKarti.kaya'), bg: '#B04E25', fg: '#FFFFFF', route: '#FBF8F2', contour: '#C26A44' },
 ] as const;
 
 export type KartIstatistigi = 'mesafe' | 'sure' | 'tirmanis' | 'maks' | 'ort' | 'mola' | 'hava' | 'kisiler';
@@ -61,7 +62,7 @@ function izYolu(route: LngLat[], w: number, h: number, pad: number) {
 function kisaSure(s: string) {
   const p = s.split(':');
   if (p.length === 3) return `${p[0]}:${p[1]}`;
-  return Number(p[0]) > 0 ? `${Number(p[0])} dk` : `${Number(p[1])} sn`;
+  return Number(p[0]) > 0 ? $t('paylasimKarti.dk', { number: Number(p[0]) }) : $t('paylasimKarti.sn', { number: Number(p[1]) });
 }
 
 type Props = {
@@ -76,7 +77,7 @@ type Props = {
 };
 
 export function PaylasimKarti({ a, sablon, goster, uclariGizle, genislik = 196, ref }: Props) {
-  const L = KART_SABLONLARI[sablon];
+  const L = KART_SABLONLARI()[sablon];
   const k = genislik / 196;
   const route = uclariGizle ? uclariKirp(a.route) : a.route;
   const W = 164 * k;
@@ -85,23 +86,23 @@ export function PaylasimKarti({ a, sablon, goster, uclariGizle, genislik = 196, 
 
   const istatistikler = (
     [
-      goster.sure && ['Süre', kisaSure(a.durationMoving)],
-      goster.tirmanis && a.hasElevation !== false && ['Tırmanış', `${a.climbM} m`],
-      goster.maks && ['Maks.', a.maxSpeed],
-      goster.ort && ['Ort.', a.avgSpeed],
-      goster.mola && ['Mola', String(a.stops.length)],
-      goster.hava && a.hava && ['Hava', `${Math.round(a.hava.sicaklik)}°C`],
+      goster.sure && [$t('ortak.sure'), kisaSure(a.durationMoving)],
+      goster.tirmanis && a.hasElevation !== false && [$t('ortak.tirmanis'), `${a.climbM} ${mUnit()}`],
+      goster.maks && [$t('paylasimKarti.maks'), a.maxSpeed],
+      goster.ort && [$t('paylasimKarti.ort'), a.avgSpeed],
+      goster.mola && [$t('paylasimKarti.mola'), String(a.stops.length)],
+      goster.hava && a.hava && [$t('ortak.hava'), $t('paylasimKarti.c', { round: Math.round(a.hava.sicaklik) })],
     ].filter(Boolean) as [string, string][]
   ).slice(0, 3);
 
-  const etiket = `${ACTIVITY_LABELS[a.type]} · ${a.title}`.toLocaleUpperCase('tr-TR');
+  const etiket = `${ACTIVITY_LABELS[a.type]} · ${a.title}`.toLocaleUpperCase(yerel());
 
   return (
     <View
       ref={ref}
       collapsable={false}
       accessible
-      accessibilityLabel={`Paylaşım kartı, ${L.name} şablonu: ${a.title}, ${a.distanceKm} kilometre`}
+      accessibilityLabel={$t('paylasimKarti.paylasim_karti_sablonu_kilometre', { name: L.name, title: a.title, distanceKm: a.distanceKm })}
       style={{ width: genislik, height: 300 * k, borderRadius: 18 * k, padding: 16 * k, backgroundColor: L.bg, justifyContent: 'space-between', overflow: 'hidden' }}>
       <Svg width={W} height={H}>
         <G fill="none" stroke={L.contour} strokeWidth={0.8 * k}>
@@ -122,7 +123,7 @@ export function PaylasimKarti({ a, sablon, goster, uclariGizle, genislik = 196, 
           {etiket}
         </Txt>
         {goster.mesafe ? (
-          <Txt style={{ fontFamily: fontFamily.displayHeavy, fontSize: 40 * k, lineHeight: 44 * k, color: L.fg, letterSpacing: -1.2 * k }}>{a.distanceKm} km</Txt>
+          <Txt style={{ fontFamily: fontFamily.displayHeavy, fontSize: 40 * k, lineHeight: 44 * k, color: L.fg, letterSpacing: -1.2 * k }}>{$t('paylasimKarti.km', { distanceKm: a.distanceKm })}</Txt>
         ) : null}
         <View style={{ flexDirection: 'row', gap: 10 * k, marginTop: 6 * k }}>
           {istatistikler.map(([l, v]) => (
@@ -148,7 +149,7 @@ export function PaylasimKarti({ a, sablon, goster, uclariGizle, genislik = 196, 
  * 360 × 640 pt çizilir, 1080 × 1920 px yakalanır.
  */
 export function HikayeGorseli({ ref, ...p }: Omit<Props, 'genislik'>) {
-  const L = KART_SABLONLARI[p.sablon];
+  const L = KART_SABLONLARI()[p.sablon];
   return (
     <View ref={ref} collapsable={false} style={{ width: 360, height: 640, backgroundColor: L.bg, alignItems: 'center', justifyContent: 'center' }}>
       <PaylasimKarti {...p} genislik={316} />

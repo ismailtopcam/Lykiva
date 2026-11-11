@@ -6,6 +6,7 @@ import { ACTIVITY_LABELS, type ActivityType } from '@lykiva/shared';
 
 import type { AvatarTone, LngLat } from '@/data/ornek';
 import { oturumuSagla, supabase } from '@/lib/supabase';
+import { $t, yerel } from '@/i18n';
 
 export type Rol = 'owner' | 'admin' | 'member';
 
@@ -111,7 +112,7 @@ export const rotayiGrubaPaylas = (rota: string, grup: string, notu?: string) => 
 /* Görünüm yardımcıları                                                */
 /* ------------------------------------------------------------------ */
 
-export const ROL_ADI: Record<Rol, string> = { owner: 'Sahip', admin: 'Yönetici', member: 'Üye' };
+export const ROL_ADI = (): Record<Rol, string> => ({ owner: $t('grup_gruplar.sahip'), admin: $t('grup_gruplar.yonetici'), member: $t('grup_gruplar.uye') });
 
 /** "PK" gibi baş harfler */
 export function basHarfler(ad: string) {
@@ -135,12 +136,12 @@ export function grupRengi(id: string): AvatarTone {
 }
 
 export function uyeSayisi(n: number) {
-  return n >= 1000 ? `${(n / 1000).toLocaleString('tr-TR', { maximumFractionDigits: 1 })} B üye` : `${n} üye`;
+  return n >= 1000 ? $t('grup_gruplar.b_uye', { a: (n / 1000).toLocaleString(yerel(), { maximumFractionDigits: 1 }) }) : $t('grup_gruplar.uye_2', { n });
 }
 
 /** "Bisiklet grubu · Kaş" / "Topluluk · Antalya" */
 export function grupEtiketi(g: { is_community: boolean; primary_activity: ActivityType | null; city: string | null }) {
-  const tur = g.is_community ? 'Topluluk' : g.primary_activity ? `${ACTIVITY_LABELS[g.primary_activity]} grubu` : 'Grup';
+  const tur = g.is_community ? $t('grup_gruplar.topluluk') : g.primary_activity ? $t('grup_gruplar.grubu', { a: ACTIVITY_LABELS[g.primary_activity] }) : $t('ortak.grup');
   return [tur, g.city].filter(Boolean).join(' · ');
 }
 
@@ -148,7 +149,7 @@ export const onizleme = (p: number[][] | null): LngLat[] => (p ?? []).map((c) =>
 
 /** Paylaşılacak davet metni */
 export function davetMetni(ad: string, kod: string) {
-  return `Lykiva'da "${ad}" grubuna katıl.\nDavet kodu: ${kod}\nlykiva://davet/${kod}`;
+  return $t('grup_gruplar.lykiva_da_grubuna_katil', { ad, kod, kod2: kod });
 }
 
 /** "14:05", "Dün", "12 Kas" */
@@ -158,7 +159,7 @@ export function kisaZaman(iso: string | null) {
   const simdi = new Date();
   const gun = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
   const fark = Math.round((gun(simdi) - gun(d)) / 86_400_000);
-  if (fark === 0) return d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-  if (fark === 1) return 'Dün';
-  return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+  if (fark === 0) return d.toLocaleTimeString(yerel(), { hour: '2-digit', minute: '2-digit' });
+  if (fark === 1) return $t('grup_gruplar.dun');
+  return d.toLocaleDateString(yerel(), { day: 'numeric', month: 'short' });
 }

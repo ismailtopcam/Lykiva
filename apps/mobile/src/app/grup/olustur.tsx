@@ -11,10 +11,11 @@ import { Button, Chip, Label, ToggleRow } from '@/components/ui';
 import { grupOlustur } from '@/grup/gruplar';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, radius, space } from '@/theme';
+import { $t } from '@/i18n';
 
-const turler: { id: 'ozel' | 'acik'; ad: string; aciklama: string; icon: IconName }[] = [
-  { id: 'ozel', ad: 'Özel grup', aciklama: 'Arkadaşlar, ekip. Yalnızca davet koduyla katılınır, keşfette görünmez.', icon: 'lock' },
-  { id: 'acik', ad: 'Açık topluluk', aciklama: 'Kulüp, şehir topluluğu. Keşfette görünür, herkes katılabilir.', icon: 'users' },
+const turler = (): { id: 'ozel' | 'acik'; ad: string; aciklama: string; icon: IconName }[] => [
+  { id: 'ozel', ad: $t('grup_olustur.ozel_grup'), aciklama: $t('grup_olustur.arkadaslar_ekip_yalnizca_davet'), icon: 'lock' },
+  { id: 'acik', ad: $t('grup_olustur.acik_topluluk'), aciklama: $t('grup_olustur.kulup_sehir_toplulugu_kesfette'), icon: 'users' },
 ];
 
 export default function GrupOlusturScreen() {
@@ -32,7 +33,7 @@ export default function GrupOlusturScreen() {
 
   async function olustur() {
     if (ad.trim().length < 2) {
-      setHata('Grup adı en az 2 karakter olmalı.');
+      setHata($t('grup_olustur.grup_adi_en_az'));
       return;
     }
     setKaydediyor(true);
@@ -49,7 +50,7 @@ export default function GrupOlusturScreen() {
       });
       router.replace({ pathname: '/grup/[id]', params: { id } });
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Grup oluşturulamadı');
+      setHata(e instanceof Error ? e.message : $t('grup_olustur.grup_olusturulamadi'));
     } finally {
       setKaydediyor(false);
     }
@@ -57,31 +58,31 @@ export default function GrupOlusturScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Header title="Yeni grup" backIcon="close" />
+      <Header title={$t('grup_olustur.yeni_grup')} backIcon="close" />
       <ScrollView contentContainerStyle={{ padding: space.lg, paddingBottom: insets.bottom + 24, gap: space.md }} keyboardShouldPersistTaps="handled">
         <View>
-          <Label>Grup adı</Label>
-          <TextInput value={ad} onChangeText={setAd} placeholder="ör. Pedal Kaş" placeholderTextColor={colors.inkMuted} maxLength={60} accessibilityLabel="Grup adı" style={styles.input} />
+          <Label>{$t('grup_olustur.grup_adi')}</Label>
+          <TextInput value={ad} onChangeText={setAd} placeholder={$t('grup_olustur.or_pedal_kas')} placeholderTextColor={colors.inkMuted} maxLength={60} accessibilityLabel={$t('grup_olustur.grup_adi')} style={styles.input} />
         </View>
         <View>
-          <Label>Açıklama (isteğe bağlı)</Label>
+          <Label>{$t('grup_olustur.aciklama_istege_bagli')}</Label>
           <TextInput
             value={aciklama}
             onChangeText={setAciklama}
-            placeholder="Ne yaparsınız, ne sıklıkla çıkarsınız?"
+            placeholder={$t('grup_olustur.ne_yaparsiniz_ne_siklikla')}
             placeholderTextColor={colors.inkMuted}
             maxLength={500}
             multiline
-            accessibilityLabel="Açıklama"
+            accessibilityLabel={$t('ortak.aciklama')}
             style={[styles.input, { height: 88, textAlignVertical: 'top', paddingTop: 12 }]}
           />
         </View>
         <View>
-          <Label>Şehir (isteğe bağlı)</Label>
-          <TextInput value={sehir} onChangeText={setSehir} placeholder="ör. Kaş" placeholderTextColor={colors.inkMuted} maxLength={60} accessibilityLabel="Şehir" style={styles.input} />
+          <Label>{$t('grup_olustur.sehir_istege_bagli')}</Label>
+          <TextInput value={sehir} onChangeText={setSehir} placeholder={$t('grup_olustur.or_kas')} placeholderTextColor={colors.inkMuted} maxLength={60} accessibilityLabel={$t('ortak.sehir')} style={styles.input} />
         </View>
         <View>
-          <Label>Ana aktivite</Label>
+          <Label>{$t('grup_olustur.ana_aktivite')}</Label>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }} accessibilityRole="radiogroup">
             {ACTIVITY_TYPES.map((t) => (
               <Chip key={t} label={ACTIVITY_LABELS[t]} role="radio" selected={aktivite === t} onPress={() => setAktivite(aktivite === t ? null : t)} />
@@ -90,8 +91,8 @@ export default function GrupOlusturScreen() {
         </View>
 
         <View accessibilityRole="radiogroup" style={{ gap: space.sm }}>
-          <Label>Grup türü</Label>
-          {turler.map((t) => {
+          <Label>{$t('grup_olustur.grup_turu')}</Label>
+          {turler().map((t) => {
             const on = t.id === tur;
             return (
               <Pressable key={t.id} accessibilityRole="radio" accessibilityState={{ checked: on }} onPress={() => setTur(t.id)} style={[styles.tur, on && styles.turOn]}>
@@ -104,15 +105,15 @@ export default function GrupOlusturScreen() {
             );
           })}
         </View>
-        {tur === 'acik' ? <ToggleRow title="Katılım onaylı olsun" subtitle="Katılmak isteyenleri sen onaylarsın" value={onay} onChange={setOnay} /> : null}
+        {tur === 'acik' ? <ToggleRow title={$t('grup_olustur.katilim_onayli_olsun')} subtitle={$t('grup_olustur.katilmak_isteyenleri_sen_onaylarsin')} value={onay} onChange={setOnay} /> : null}
 
-        {!supabaseHazir ? <Txt variant="muted">Sunucu anahtarı girilmemiş; grup kurulamaz.</Txt> : null}
+        {!supabaseHazir ? <Txt variant="muted">{$t('grup_olustur.sunucu_anahtari_girilmemis_grup')}</Txt> : null}
         {hata ? (
           <Txt accessibilityRole="alert" style={{ color: colors.terraInk }}>
             {hata}
           </Txt>
         ) : null}
-        <Button label={kaydediyor ? 'Kuruluyor…' : 'Grubu kur'} icon="users" onPress={() => void olustur()} disabled={kaydediyor || !supabaseHazir} />
+        <Button label={kaydediyor ? $t('grup_olustur.kuruluyor') : $t('grup_olustur.grubu_kur')} icon="users" onPress={() => void olustur()} disabled={kaydediyor || !supabaseHazir} />
       </ScrollView>
     </KeyboardAvoidingView>
   );

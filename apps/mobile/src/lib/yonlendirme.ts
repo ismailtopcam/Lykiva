@@ -8,15 +8,16 @@
 import type { ActivityType, RoutePoint } from '@lykiva/shared';
 
 import type { LngLat } from '@/data/ornek';
+import { $t } from '@/i18n';
 
 const BROUTER = process.env.EXPO_PUBLIC_BROUTER_URL || 'https://brouter.de/brouter';
 
 export type CizimModu = 'patika' | 'yol' | 'serbest';
 
-export const CIZIM_MODLARI: { id: CizimModu; label: string }[] = [
-  { id: 'patika', label: 'Patikaya yapış' },
-  { id: 'yol', label: 'Yola yapış' },
-  { id: 'serbest', label: 'Serbest çiz' },
+export const CIZIM_MODLARI = (): { id: CizimModu; label: string }[] => [
+  { id: 'patika', label: $t('lib_yonlendirme.patikaya_yapis') },
+  { id: 'yol', label: $t('lib_yonlendirme.yola_yapis') },
+  { id: 'serbest', label: $t('lib_yonlendirme.serbest_ciz') },
 ];
 
 /** Zemin payları (0..1) */
@@ -59,7 +60,7 @@ export async function rotaHesapla(duraklar: LngLat[], mod: CizimModu, activity: 
   const res = await fetch(url, { signal });
   if (!res.ok) {
     const t = await res.text().catch(() => '');
-    throw new Error(t.includes('not mapped') || t.includes('target') ? 'Bu noktalar arasında yol veya patika bulunamadı' : 'Rota hesaplanamadı');
+    throw new Error(t.includes('not mapped') || t.includes('target') ? $t('lib_yonlendirme.bu_noktalar_arasinda_yol') : $t('lib_yonlendirme.rota_hesaplanamadi'));
   }
   const j = await res.json();
   const f = j.features?.[0];

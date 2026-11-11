@@ -2,6 +2,7 @@
  * Bitmiş bir kaydı sunucuya gidecek pakete çevirir (kaydet_aktivite fonksiyonunun beklediği biçim).
  */
 import { computeSegmentedStats, detectStops, type ActivityType, type HavaDurumu, type TrackPoint, type TrackStop, haversine } from '@lykiva/shared';
+import { $t } from '@/i18n';
 
 export type KayitPaketi = {
   client_id: string;
@@ -33,16 +34,17 @@ const r2 = (n: number) => Math.round(n * 100) / 100;
 /** Ayrıntılı başlık: saat ve aktivite türüne göre */
 export function varsayilanBaslik(type: ActivityType, start: Date): string {
   const h = start.getHours();
-  const zaman = h < 6 ? 'Gece' : h < 11 ? 'Sabah' : h < 14 ? 'Öğle' : h < 18 ? 'Öğleden sonra' : 'Akşam';
+  const zaman = h < 6 ? $t('kayit_paket.gece') : h < 11 ? $t('kayit_paket.sabah') : h < 14 ? $t('kayit_paket.ogle') : h < 18 ? $t('kayit_paket.ogleden_sonra') : $t('kayit_paket.aksam');
   const ad: Record<ActivityType, string> = {
-    bike: 'bisiklet turu',
-    mtb: 'dağ bisikleti turu',
-    run: 'koşusu',
-    walk: 'yürüyüşü',
-    hike: 'doğa yürüyüşü',
-    trail_run: 'patika koşusu',
+    bike: $t('kayit_paket.bisiklet_turu'),
+    mtb: $t('kayit_paket.dag_bisikleti_turu'),
+    run: $t('kayit_paket.kosusu'),
+    walk: $t('kayit_paket.yuruyusu'),
+    hike: $t('kayit_paket.doga_yuruyusu'),
+    trail_run: $t('kayit_paket.patika_kosusu'),
   };
-  return `${zaman} ${ad[type]}`;
+  // "Sabah koşusu", "Morning run", Almancada bitişik: "Morgenlauf"
+  return $t('kayit_paket.baslik', { zaman, tur: ad[type] });
 }
 
 export function paketOlustur(opts: {

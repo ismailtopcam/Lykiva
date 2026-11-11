@@ -3,7 +3,7 @@
  * Veri: Supabase'deki herkese_acik_profil(kullanici) (supabase/migrations/20261110090000_profil.sql):
  * ad, şehir, hakkında, sayılar ve yalnızca "herkese açık" aktivitelerin özeti (iz yok). Geçici hesapların profili yok.
  */
-import type { ActivityType } from '@lykiva/shared';
+import { YEREL_AYAR, type ActivityType, type Dil } from '@lykiva/shared';
 import { cache } from 'react';
 
 import { supabaseAyari } from '@/lib/sunucu';
@@ -55,10 +55,10 @@ export const herkeseAcikProfil = cache(async (kullanici: string): Promise<Profil
   }
 });
 
-export function uyelikMetni(iso: string) {
-  return new Intl.DateTimeFormat('tr-TR', { timeZone: 'Europe/Istanbul', month: 'long', year: 'numeric' }).format(new Date(iso));
+export function uyelikMetni(iso: string, dil: Dil) {
+  return new Intl.DateTimeFormat(YEREL_AYAR[dil], { timeZone: 'Europe/Istanbul', month: 'long', year: 'numeric' }).format(new Date(iso));
 }
 
-export function kisaTarih(iso: string) {
-  return new Intl.DateTimeFormat('tr-TR', { timeZone: 'Europe/Istanbul', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(iso));
+export function kisaTarih(iso: string, dil: Dil) {
+  return new Intl.DateTimeFormat(YEREL_AYAR[dil], { timeZone: 'Europe/Istanbul', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(iso));
 }

@@ -12,6 +12,7 @@ import { Card, SectionHeader } from '@/components/ui';
 import { useAktivite } from '@/data/aktivite';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space } from '@/theme';
+import { $t } from '@/i18n';
 
 export default function HizMolalarScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -22,7 +23,7 @@ export default function HizMolalarScreen() {
   if (!a) {
     return (
       <View style={styles.root}>
-        <Header title="Hız & molalar" />
+        <Header title={$t('aktivite_hiz.hiz_molalar')} />
         <View style={{ padding: space.lg, alignItems: 'center' }}>{hata ? <Txt variant="muted">{hata}</Txt> : <ActivityIndicator color={colors.terra} />}</View>
       </View>
     );
@@ -34,37 +35,37 @@ export default function HizMolalarScreen() {
 
   return (
     <View style={styles.root}>
-      <Header title="Hız & molalar" />
+      <Header title={$t('aktivite_hiz.hiz_molalar')} />
       <ScrollView contentContainerStyle={{ padding: space.lg, paddingTop: 6, paddingBottom: insets.bottom + 40 }}>
         <View style={{ flexDirection: 'row', gap: 8, marginBottom: 14 }}>
           <View style={[styles.kpi, { backgroundColor: colors.terra, borderColor: colors.terra }]}>
-            <Txt style={styles.kpiLabelLight}>Maks.</Txt>
+            <Txt style={styles.kpiLabelLight}>{$t('aktivite_hiz.maks')}</Txt>
             <Txt style={[styles.kpiValue, { color: '#FFFFFF' }]}>{a.maxSpeed}</Txt>
-            <Txt style={styles.kpiLabelLight}>{ornek ? 'Sarıbelen inişi' : 'en yüksek'}</Txt>
+            <Txt style={styles.kpiLabelLight}>{ornek ? 'Sarıbelen inişi' : $t('aktivite_hiz.en_yuksek')}</Txt>
           </View>
           <View style={styles.kpi}>
-            <Txt variant="small">Ortalama</Txt>
+            <Txt variant="small">{$t('aktivite_hiz.ortalama')}</Txt>
             <Txt style={styles.kpiValue}>{a.avgSpeed}</Txt>
-            <Txt variant="small">hareketteyken</Txt>
+            <Txt variant="small">{$t('aktivite_hiz.hareketteyken')}</Txt>
           </View>
           <View style={styles.kpi}>
-            <Txt variant="small">Min.</Txt>
+            <Txt variant="small">{$t('aktivite_hiz.min')}</Txt>
             <Txt style={styles.kpiValue}>{a.minSpeed}</Txt>
-            <Txt variant="small">{ornek ? 'dik yokuşta' : 'hareketteyken'}</Txt>
+            <Txt variant="small">{ornek ? $t('aktivite_hiz.dik_yokusta') : 'hareketteyken'}</Txt>
           </View>
         </View>
 
         <Card style={{ padding: 12, marginBottom: 18 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
-            <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14 }}>Hız (km/sa)</Txt>
+            <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14 }}>{$t('aktivite_hiz.hiz_km_sa')}</Txt>
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <View style={styles.legend}>
                 <View style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: '#EADFC9' }} />
-                <Txt variant="small">Mola</Txt>
+                <Txt variant="small">{$t('aktivite_hiz.mola')}</Txt>
               </View>
               <View style={styles.legend}>
                 <View style={{ width: 12, borderTopWidth: 1.5, borderStyle: 'dashed', borderColor: colors.sea }} />
-                <Txt variant="small">Ortalama</Txt>
+                <Txt variant="small">{$t('aktivite_hiz.ortalama')}</Txt>
               </View>
             </View>
           </View>
@@ -75,13 +76,13 @@ export default function HizMolalarScreen() {
             maxIndex={maxIndex}
             start={a.startClock}
             end={a.endClock}
-            label={`Hız grafiği: ${a.stops.length} molada hız sıfıra düşüyor, en yüksek hız ${a.maxSpeed} km/sa`}
+            label={$t('aktivite_hiz.hiz_grafigi_molada_hiz', { length: a.stops.length, maxSpeed: a.maxSpeed })}
           />
         </Card>
 
-        <SectionHeader title="Nerede durdun?" />
+        <SectionHeader title={$t('aktivite_hiz.nerede_durdun')} />
         <Txt variant="small" style={{ marginTop: -6, marginBottom: 10 }}>
-          {a.stops.length ? `Toplam mola ${a.stopTotal}` : '1 dakikadan uzun mola yok'}
+          {a.stops.length ? $t('aktivite_hiz.toplam_mola', { stopTotal: a.stopTotal }) : $t('aktivite_hiz.m_1_dakikadan_uzun_mola')}
         </Txt>
         {a.stops.map((s) => (
           <View key={s.n} style={styles.stop}>
@@ -94,11 +95,10 @@ export default function HizMolalarScreen() {
             <View style={{ flex: 1, paddingBottom: 14 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
                 <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15, flex: 1 }}>{s.title}</Txt>
-                <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14 }}>{s.duration} dk</Txt>
+                <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14 }}>{$t('aktivite_hiz.dk', { duration: s.duration })}</Txt>
               </View>
               <Txt variant="small">
-                {s.time} · {s.km}. km{s.note ? ` · ${s.note}` : ''}
-              </Txt>
+                {$t('aktivite_hiz.km', { time: s.time, km: s.km, a: s.note ? ` · ${s.note}` : '' })}</Txt>
               {ornek && s.n === 1 ? (
                 <View style={{ flexDirection: 'row', gap: 6, marginTop: 8 }}>
                   {[colors.water, colors.sand].map((bg) => (
@@ -117,10 +117,10 @@ export default function HizMolalarScreen() {
           <View style={[styles.num, styles.numDashed]} />
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }}>Kısa duraklamalar</Txt>
-              <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14 }}>0:25 dk</Txt>
+              <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }}>{$t('aktivite_hiz.kisa_duraklamalar')}</Txt>
+              <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14 }}>{$t('aktivite_hiz.m_0_25_dk')}</Txt>
             </View>
-            <Txt variant="small">4 kez, her biri 1 dakikadan kısa</Txt>
+            <Txt variant="small">{$t('aktivite_hiz.m_4_kez_her_biri')}</Txt>
           </View>
         </View>
         ) : null}

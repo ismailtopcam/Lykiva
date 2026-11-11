@@ -4,6 +4,7 @@
 import type { ActivityType } from '@lykiva/shared';
 
 import { oturumuSagla, supabase } from '@/lib/supabase';
+import { $t, yerel } from '@/i18n';
 
 export type Katilim = 'going' | 'waitlist' | 'maybe' | 'declined';
 export type Zorluk = 'easy' | 'moderate' | 'hard';
@@ -71,23 +72,19 @@ export const etkinlikSil = (id: string) => rpc<void>('etkinlik_sil', { e: id });
 /* Biçimlendirme                                                       */
 /* ------------------------------------------------------------------ */
 
-const AY_KISA = ['OCA', 'ŞUB', 'MAR', 'NİS', 'MAY', 'HAZ', 'TEM', 'AĞU', 'EYL', 'EKİ', 'KAS', 'ARA'];
-const AYLAR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-const GUNLER = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
-const GUN_KISA = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
-
-export const saatMetni = (d: Date) => d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+export const saatMetni = (d: Date) => d.toLocaleTimeString(yerel(), { hour: '2-digit', minute: '2-digit' });
 
 /** Tarih rozeti için: { ay: 'KAS', gun: '14' } */
 export function tarihRozeti(iso: string) {
   const d = new Date(iso);
-  return { ay: AY_KISA[d.getMonth()], gun: String(d.getDate()) };
+  return { ay: d.toLocaleDateString(yerel(), { month: 'short' }).replace('.', '').toLocaleUpperCase(yerel()), gun: String(d.getDate()) };
 }
 
-/** "Cumartesi, 14 Kasım · 06:45" */
+/** "14 Kasım Cumartesi · 06:45" (dilin tarih düzeniyle) */
 export function uzunTarih(iso: string) {
   const d = new Date(iso);
-  return `${GUNLER[d.getDay()]}, ${d.getDate()} ${AYLAR[d.getMonth()]}${d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''} · ${saatMetni(d)}`;
+  const yil = d.getFullYear() !== new Date().getFullYear();
+  return `${d.toLocaleDateString(yerel(), { weekday: 'long', day: 'numeric', month: 'long', ...(yil ? { year: 'numeric' } : {}) })} · ${saatMetni(d)}`;
 }
 
 /** "Cmt 06:45" ya da "Bugün 06:45", "Yarın 06:45" */
@@ -95,15 +92,15 @@ export function kisaTarih(iso: string) {
   const d = new Date(iso);
   const g = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
   const fark = Math.round((g(d) - g(new Date())) / 86_400_000);
-  const gun = fark === 0 ? 'Bugün' : fark === 1 ? 'Yarın' : fark > 1 && fark < 7 ? GUN_KISA[d.getDay()] : `${d.getDate()} ${AYLAR[d.getMonth()].slice(0, 3)}`;
+  const gun = fark === 0 ? $t('etkinlik_etkinlikler.bugun') : fark === 1 ? $t('etkinlik_etkinlikler.yarin') : fark > 1 && fark < 7 ? gunKisa(d) : d.toLocaleDateString(yerel(), { day: 'numeric', month: 'short' });
   return `${gun} ${saatMetni(d)}`;
 }
 
-export const gunKisa = (d: Date) => GUN_KISA[d.getDay()];
+export const gunKisa = (d: Date) => d.toLocaleDateString(yerel(), { weekday: 'short' });
 
-export const ZORLUK_ADI: Record<Zorluk, string> = { easy: 'Kolay', moderate: 'Orta', hard: 'Zor' };
+export const ZORLUK_ADI = (): Record<Zorluk, string> => ({ easy: $t('etkinlik_etkinlikler.kolay'), moderate: $t('etkinlik_etkinlikler.orta'), hard: $t('etkinlik_etkinlikler.zor') });
 
-export const KATILIM_ADI: Record<Katilim, string> = { going: 'Katılıyor', waitlist: 'Bekleme listesinde', maybe: 'Belki', declined: 'Gelemiyor' };
+export const KATILIM_ADI = (): Record<Katilim, string> => ({ going: $t('etkinlik_etkinlikler.katiliyor'), waitlist: $t('etkinlik_etkinlikler.bekleme_listesinde'), maybe: $t('etkinlik_etkinlikler.belki'), declined: $t('etkinlik_etkinlikler.gelemiyor') });
 
 /** Etkinlik bitti mi (başlangıçtan 12 saat sonra katılım kapanır) */
 export const bittiMi = (iso: string) => Date.parse(iso) < Date.now() - 12 * 3600_000;
@@ -112,9 +109,9 @@ export function paylasimMetni(e: EtkinlikDetayi) {
   return [
     `${e.title}`,
     uzunTarih(e.starts_at),
-    e.meeting_point_name ? `Buluşma: ${e.meeting_point_name}` : null,
+    e.meeting_point_name ? $t('etkinlik_etkinlikler.bulusma', { meeting_point_name: e.meeting_point_name }) : null,
     e.meeting_lat != null && e.meeting_lng != null ? `https://www.openstreetmap.org/?mlat=${e.meeting_lat.toFixed(5)}&mlon=${e.meeting_lng.toFixed(5)}#map=16/${e.meeting_lat.toFixed(5)}/${e.meeting_lng.toFixed(5)}` : null,
-    e.group_name ? `${e.group_name} · Lykiva` : 'Lykiva',
+    e.group_name ? $t('etkinlik_etkinlikler.lykiva', { group_name: e.group_name }) : 'Lykiva',
   ]
     .filter(Boolean)
     .join('\n');

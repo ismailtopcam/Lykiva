@@ -11,13 +11,14 @@ import { aktivitelerim, haftaOzeti, profilim, type AktiviteSatiri, type Profilim
 import { myActivities, people, weekKm } from '@/data/ornek';
 import { rotalarim, type Rota } from '@/data/rota';
 import { gruplarim, type GrupOzeti } from '@/grup/gruplar';
-import { ACTIVITY_LABELS, DIFFICULTY_LABELS, formatKm, formatMeters } from '@lykiva/shared';
+import { ACTIVITY_LABELS, DIFFICULTY_LABELS, formatKm, formatMeters, kmUnit, mUnit } from '@lykiva/shared';
 import { baglantiPaylas, profilAdresi } from '@/lib/baglanti';
 import { useHesap } from '@/lib/giris';
 import { oturumuSagla, supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space } from '@/theme';
+import { $t } from '@/i18n';
 
-const tabs = ['Aktiviteler', 'Rotalarım', 'Gruplar'];
+const tabs = () => [$t('profil.aktiviteler'), $t('profil.rotalarim'), $t('profil.gruplar')];
 
 export default function ProfilScreen() {
   const [tab, setTab] = useState(0);
@@ -58,57 +59,57 @@ export default function ProfilScreen() {
   const gercek = supabaseHazir || (liste?.length ?? 0) > 0;
   const satirlar: AktiviteSatiri[] = gercek ? (liste ?? []) : myActivities;
   const hafta = haftaOzeti(satirlar);
-  const ad = gercek ? (profil?.displayName ?? 'Sen') : people.me.name;
+  const ad = gercek ? (profil?.displayName ?? $t('ortak.sen')) : people.me.name;
   const bas = ad
     .split(' ')
     .map((w) => w.charAt(0))
     .join('')
     .slice(0, 2)
     .toLocaleUpperCase('tr-TR');
-  const altBaslik = gercek ? (profil ? `@${profil.username}${profil.city ? ' · ' + profil.city : ''}` : 'Geçici hesap') : 'Antalya · Bisiklet, doğa yürüyüşü';
+  const altBaslik = gercek ? (profil ? `@${profil.username}${profil.city ? ' · ' + profil.city : ''}` : $t('profil.gecici_hesap')) : 'Antalya · Bisiklet, doğa yürüyüşü';
   // Takipçi / takip sayısına dokununca liste açılır (gerçek hesapta)
   const takipListesi = (yon: 'takipci' | 'takip') => (uid ? () => router.push({ pathname: '/kisi/[id]/takip', params: { id: uid, yon } }) : undefined);
   const sayilar: [string, string, (() => void)?][] = gercek
     ? [
         [String(satirlar.length), 'aktivite'],
-        [String(profil?.takipci ?? 0), 'takipçi', takipListesi('takipci')],
+        [String(profil?.takipci ?? 0), $t('profil.takipci'), takipListesi('takipci')],
         [String(profil?.takip ?? 0), 'takip', takipListesi('takip')],
       ]
     : [
         ['128', 'aktivite'],
-        ['342', 'takipçi'],
+        ['342', $t('profil.takipci')],
         ['210', 'takip'],
       ];
   const gunler = gercek ? hafta.gunler : weekKm;
   const maxKm = Math.max(0.001, ...gunler.map((d) => d.km));
   const haftaToplam: [string, string][] = gercek
     ? [
-        [formatKm(hafta.km * 1000), 'km'],
-        [`${Math.floor(hafta.sn / 3600)}:${String(Math.floor((hafta.sn % 3600) / 60)).padStart(2, '0')}`, 'sa'],
-        [formatMeters(hafta.m), 'm'],
+        [formatKm(hafta.km * 1000), kmUnit()],
+        [`${Math.floor(hafta.sn / 3600)}:${String(Math.floor((hafta.sn % 3600) / 60)).padStart(2, '0')}`, $t('ortak.birim_sa')],
+        [formatMeters(hafta.m), mUnit()],
       ]
     : [
-        ['64,2', 'km'],
-        ['5:12', 'sa'],
-        ['1.240', 'm'],
+        ['64,2', kmUnit()],
+        ['5:12', $t('ortak.birim_sa')],
+        ['1.240', mUnit()],
       ];
 
   // Web profili yalnızca kalıcı hesaplarda var (geçici hesabın adresi açılmaz)
   function profiliPaylas() {
     if (!profil) return;
     if (hesap?.gecici) {
-      Alert.alert('Önce giriş yap', 'Geçici hesabın web profili yok. Giriş yapınca ya da hesap açınca profilini paylaşabilirsin.');
+      Alert.alert($t('profil.once_giris_yap'), $t('profil.gecici_hesabin_web_profili'));
       return;
     }
-    void baglantiPaylas(`${profil.displayName} Lykiva'da`, profilAdresi(profil.username));
+    void baglantiPaylas($t('profil.lykiva_da', { displayName: profil.displayName }), profilAdresi(profil.username));
   }
 
   return (
     <SafeAreaView edges={['top']} style={styles.root}>
       <View style={styles.top}>
-        {supabaseHazir ? <IconButton icon="search" label="Kişi ara" onPress={() => router.push('/kisiler')} /> : null}
-        {gercek && profil ? <IconButton icon="share" label="Profili paylaş" onPress={profiliPaylas} /> : null}
-        <IconButton icon="more" label="Ayarlar" onPress={() => router.push('/ayarlar')} />
+        {supabaseHazir ? <IconButton icon="search" label={$t('ortak.kisi_ara')} onPress={() => router.push('/kisiler')} /> : null}
+        {gercek && profil ? <IconButton icon="share" label={$t('profil.profili_paylas')} onPress={profiliPaylas} /> : null}
+        <IconButton icon="more" label={$t('profil.ayarlar')} onPress={() => router.push('/ayarlar')} />
       </View>
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         <View style={styles.identity}>
@@ -136,27 +137,25 @@ export default function ProfilScreen() {
         ) : null}
         {gercek && profil ? (
           <View style={{ paddingHorizontal: space.lg, marginBottom: 14 }}>
-            <Button label="Profili düzenle" icon="user" variant="outline" href="/profil-duzenle" />
+            <Button label={$t('profil.profili_duzenle')} icon="user" variant="outline" href="/profil-duzenle" />
           </View>
         ) : null}
 
         {supabaseHazir && hesap?.gecici ? (
           <Card style={styles.gecici}>
-            <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }}>Geçici hesaptasın</Txt>
+            <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }}>{$t('profil.gecici_hesaptasin')}</Txt>
             <Txt variant="small" style={{ marginTop: 2, marginBottom: space.md }}>
-              Kayıtların şimdilik yalnızca bu telefona bağlı. Giriş yaparsan hesabında saklanır, telefon değişse de kaybolmaz.
-            </Txt>
-            <Button label="Giriş yap ya da hesap aç" href="/giris" />
+              {$t('profil.kayitlarin_simdilik_yalnizca_bu')}</Txt>
+            <Button label={$t('profil.giris_yap_ya_da')} href="/giris" />
           </Card>
         ) : null}
 
         <Card dark style={styles.week}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Txt variant="label" color="#B9C2BA">
-              Bu hafta
-            </Txt>
+              {$t('profil.bu_hafta')}</Txt>
             <Txt variant="small" color="#B9C2BA">
-              {gercek ? hafta.aralik : '3 – 9 Kasım'}
+              {gercek ? hafta.aralik : $t('profil.m_3_9_kasim')}
             </Txt>
           </View>
           <View style={{ flexDirection: 'row', gap: 20, marginVertical: 10 }}>
@@ -167,7 +166,7 @@ export default function ProfilScreen() {
               </Txt>
             ))}
           </View>
-          <View style={styles.bars} accessible accessibilityLabel="Bu haftanın günlük mesafe grafiği">
+          <View style={styles.bars} accessible accessibilityLabel={$t('profil.bu_haftanin_gunluk_mesafe')}>
             {gunler.map((d) => (
               <View key={d.day} style={{ flex: 1, alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
                 <View
@@ -187,7 +186,7 @@ export default function ProfilScreen() {
         </Card>
 
         <View accessibilityRole="tablist" style={styles.tabs}>
-          {tabs.map((t, i) => (
+          {tabs().map((t, i) => (
             <Pressable
               key={t}
               accessibilityRole="tab"
@@ -201,11 +200,10 @@ export default function ProfilScreen() {
 
         {tab === 1 ? (
           <View style={{ padding: space.md, gap: space.sm }}>
-            <Button label="Yeni rota çiz" icon="route" variant="outline" href="/rota/olustur" />
+            <Button label={$t('profil.yeni_rota_ciz')} icon="route" variant="outline" href="/rota/olustur" />
             {rotalar && rotalar.length === 0 ? (
               <Txt variant="muted" style={{ textAlign: 'center', paddingVertical: space.lg }}>
-                Henüz rotan yok. Yeni bir rota çizebilir ya da bir aktiviteni rota olarak kaydedebilirsin.
-              </Txt>
+                {$t('profil.henuz_rotan_yok_yeni')}</Txt>
             ) : null}
             {(rotalar ?? []).map((r) => (
               <Pressable key={r.id} accessibilityRole="link" onPress={() => router.push({ pathname: '/rota/[id]', params: { id: r.id } })} style={styles.row}>
@@ -217,11 +215,10 @@ export default function ProfilScreen() {
                   <Txt variant="small">
                     {ACTIVITY_LABELS[r.activity]}
                     {r.difficulty ? ` · ${DIFFICULTY_LABELS[r.difficulty]}` : ''}
-                    {r.isLoop ? ' · Döngü' : ''}
+                    {r.isLoop ? $t('profil.dongu') : ''}
                   </Txt>
                   <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 13, marginTop: 4 }}>
-                    {formatKm(r.distanceM)} km · ↑ {formatMeters(r.gainM)} m
-                  </Txt>
+                    {$t('profil.km_m', { km: formatKm(r.distanceM), meters: formatMeters(r.gainM) })}</Txt>
                 </View>
               </Pressable>
             ))}
@@ -230,13 +227,11 @@ export default function ProfilScreen() {
           <View style={{ padding: space.md, gap: space.sm }}>
             {gruplar && gruplar.length === 0 ? (
               <Txt variant="muted" style={{ textAlign: 'center', paddingVertical: space.lg }}>
-                Henüz bir gruba katılmadın. Gruplar sekmesinden grup kurabilir ya da topluluk bulabilirsin.
-              </Txt>
+                {$t('profil.henuz_bir_gruba_katilmadin')}</Txt>
             ) : null}
             {!gercek ? (
               <Txt variant="muted" style={{ textAlign: 'center', paddingVertical: space.lg }}>
-                Sunucu anahtarı girilince grupların burada görünür.
-              </Txt>
+                {$t('profil.sunucu_anahtari_girilince_gruplarin')}</Txt>
             ) : null}
             {(gruplar ?? []).map((g) => (
               <Pressable key={g.id} accessibilityRole="link" onPress={() => router.push({ pathname: '/grup/[id]', params: { id: g.id } })} style={styles.row}>
@@ -246,9 +241,7 @@ export default function ProfilScreen() {
                     {g.name}
                   </Txt>
                   <Txt variant="small">
-                    {g.is_community ? 'Topluluk' : 'Grup'} · {g.member_count} üye
-                    {g.my_role === 'owner' ? ' · Kurucu' : g.my_role === 'admin' ? ' · Yönetici' : ''}
-                  </Txt>
+                    {$t('profil.uye', { a: g.is_community ? $t('profil.topluluk') : $t('ortak.grup'), member_count: g.member_count, a2: g.my_role === 'owner' ? $t('profil.kurucu') : g.my_role === 'admin' ? $t('profil.yonetici') : '' })}</Txt>
                 </View>
               </Pressable>
             ))}
@@ -257,8 +250,7 @@ export default function ProfilScreen() {
         <View style={{ padding: space.md, gap: space.sm }}>
           {liste && satirlar.length === 0 ? (
             <Txt variant="muted" style={{ textAlign: 'center', paddingVertical: space.lg }}>
-              Henüz kaydın yok. Ortadaki düğmeyle ilk kaydını başlat.
-            </Txt>
+              {$t('profil.henuz_kaydin_yok_ortadaki')}</Txt>
           ) : null}
           {satirlar.map((a) => (
             <Pressable key={a.id} accessibilityRole="link" onPress={() => router.push({ pathname: '/aktivite/[id]', params: { id: a.id } })} style={styles.row}>

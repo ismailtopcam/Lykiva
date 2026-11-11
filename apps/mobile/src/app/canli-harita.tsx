@@ -2,7 +2,7 @@
  * Canlı grup haritası: grubun şu an kayıtta olan ve konumunu paylaşan üyeleri.
  * 10 saniyede bir yenilenir; 15 dakikadan eski konumlar sunucuda zaten gizlenir.
  */
-import { ACTIVITY_LABELS, formatDuration, formatKm, formatSpeedKmh, type ActivityType } from '@lykiva/shared';
+import { ACTIVITY_LABELS, formatDuration, formatKm, formatSpeedKmh, type ActivityType, kmUnit } from '@lykiva/shared';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -21,6 +21,7 @@ import { useHesap } from '@/lib/giris';
 import { oturumuSagla, supabase } from '@/lib/supabase';
 import { useKayit } from '@/kayit/kaydedici';
 import { colors, fontFamily, radius, space } from '@/theme';
+import { $t } from '@/i18n';
 
 const uuidMi = (id: string | undefined) => !!id && /^[0-9a-f-]{36}$/i.test(id);
 const YENILEME_MS = 10_000;
@@ -46,7 +47,7 @@ export default function CanliHaritaScreen() {
 /** "az önce", "3 dk önce" */
 function once(ms: number) {
   const dk = Math.floor(ms / 60_000);
-  return dk < 1 ? 'az önce' : `${dk} dk önce`;
+  return dk < 1 ? $t('canli_harita.az_once') : $t('canli_harita.dk_once', { dk });
 }
 
 function GrupCanliHaritasi({ grupId }: { grupId: string }) {
@@ -69,7 +70,7 @@ function GrupCanliHaritasi({ grupId }: { grupId: string }) {
       setSimdi(Date.now());
       setHata(null);
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Konumlar alınamadı');
+      setHata(e instanceof Error ? e.message : $t('canli_harita.konumlar_alinamadi'));
       setUyeler((u) => u ?? []);
     }
   }, [grupId]);
@@ -99,7 +100,7 @@ function GrupCanliHaritasi({ grupId }: { grupId: string }) {
         <View style={{ alignItems: 'center', gap: 4 }}>
           <View style={[styles.tag, u.is_paused && styles.tagMola]}>
             <Txt numberOfLines={1} style={{ fontSize: 11, fontFamily: fontFamily.bodySemiBold, color: u.is_paused ? colors.ink : colors.ground }}>
-              {u.display_name.split(' ')[0]} · {u.is_paused ? 'molada' : u.speed_mps != null ? `${formatSpeedKmh(u.speed_mps)} km/sa` : 'yolda'}
+              {u.display_name.split(' ')[0]} · {u.is_paused ? $t('ortak.molada') : u.speed_mps != null ? $t('canli_harita.km_sa', { speedKmh: formatSpeedKmh(u.speed_mps) }) : $t('ortak.yolda')}
             </Txt>
           </View>
           <View style={[styles.pin, { borderColor: u.is_paused ? '#9C9282' : colors.terra }]}>
@@ -124,14 +125,14 @@ function GrupCanliHaritasi({ grupId }: { grupId: string }) {
           follow={odak}
           followZoom={15}
           padding={{ top: 140, bottom: 380 }}
-          accessibilityLabel={`${ad ?? 'Grup'} canlı haritası: ${digerleri.length} kişi konum paylaşıyor`}
+          accessibilityLabel={$t('canli_harita.canli_haritasi_kisi_konum', { a: ad ?? $t('ortak.grup'), length: digerleri.length })}
         />
       )}
       <FloatingHeader
         middle={
           <View style={styles.baslik}>
             <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14 }} numberOfLines={1}>
-              {ad ?? 'Grup'}
+              {ad ?? $t('ortak.grup')}
             </Txt>
           </View>
         }
@@ -139,7 +140,7 @@ function GrupCanliHaritasi({ grupId }: { grupId: string }) {
           <IconButton
             floating
             icon="users"
-            label="Herkesi göster"
+            label={$t('canli_harita.herkesi_goster')}
             onPress={() => {
               setOdak(null);
               setHaritaAnahtari((k) => k + 1);
@@ -152,25 +153,23 @@ function GrupCanliHaritasi({ grupId }: { grupId: string }) {
         <View style={styles.grip} />
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
           <Txt variant="heading" style={{ fontSize: 20 }}>
-            Şu an yolda
-          </Txt>
-          <Txt variant="small">{digerleri.length ? `${digerleri.length} kişi canlı paylaşıyor` : 'Kimse paylaşmıyor'}</Txt>
+            {$t('canli_harita.su_an_yolda')}</Txt>
+          <Txt variant="small">{digerleri.length ? $t('canli_harita.kisi_canli_paylasiyor', { length: digerleri.length }) : $t('canli_harita.kimse_paylasmiyor')}</Txt>
         </View>
         <ScrollView style={{ maxHeight: 220 }}>
           {digerleri.length === 0 && uyeler ? (
             <Txt variant="muted" style={{ paddingVertical: space.md }}>
-              Grubundan şu an kayıtta olup konumunu paylaşan kimse yok. Kayıt başlatırken “Canlı konum”dan bu grubu seçen üyeler burada görünür.
-            </Txt>
+              {$t('canli_harita.grubundan_su_an_kayitta')}</Txt>
           ) : null}
           {digerleri.map((u) => {
             const sure = u.started_at ? (simdi - Date.parse(u.started_at)) / 1000 : null;
             const yas = simdi - Date.parse(u.updated_at);
             const ayrinti = [
               u.activity ? ACTIVITY_LABELS[u.activity] : null,
-              u.distance_m != null ? `${formatKm(u.distance_m)} km` : null,
+              u.distance_m != null ? `${formatKm(u.distance_m)} ${kmUnit()}` : null,
               sure != null && sure > 0 ? formatDuration(sure) : null,
-              u.is_paused ? 'molada' : null,
-              yas > 90_000 ? `son konum ${once(yas)}` : null,
+              u.is_paused ? $t('ortak.molada') : null,
+              yas > 90_000 ? $t('canli_harita.son_konum', { once: once(yas) }) : null,
             ]
               .filter(Boolean)
               .join(' · ');
@@ -178,7 +177,7 @@ function GrupCanliHaritasi({ grupId }: { grupId: string }) {
               <Pressable
                 key={u.user_id}
                 accessibilityRole="button"
-                accessibilityLabel={`${u.display_name}: ${ayrinti}. Haritada göster`}
+                accessibilityLabel={$t('canli_harita.haritada_goster', { display_name: u.display_name, ayrinti })}
                 onPress={() => setOdak([u.lng, u.lat])}
                 style={styles.row}>
                 <Avatar initials={basHarfler(u.display_name)} tone={grupRengi(u.user_id)} size={44} />
@@ -203,11 +202,11 @@ function GrupCanliHaritasi({ grupId }: { grupId: string }) {
           <Icon name="shield" size={20} color={colors.sea} />
           <Txt style={{ flex: 1, fontSize: 13 }}>
             {benPaylasiyorum
-              ? 'Senin konumun da bu grupla paylaşılıyor; kayıt bitince kapanır.'
-              : 'Konumun paylaşılmıyor. Paylaşmak için kayıt başlatırken “Canlı konum”dan bu grubu seç.'}
+              ? $t('canli_harita.senin_konumun_da_bu')
+              : $t('canli_harita.konumun_paylasilmiyor_paylasmak_icin')}
           </Txt>
         </View>
-        {kayit.durum === 'bos' ? <Button label="Kayıt başlat" icon="play" variant="dark" href="/kayit" style={{ marginTop: 10 }} /> : null}
+        {kayit.durum === 'bos' ? <Button label={$t('canli_harita.kayit_baslat')} icon="play" variant="dark" href="/kayit" style={{ marginTop: 10 }} /> : null}
       </View>
     </View>
   );

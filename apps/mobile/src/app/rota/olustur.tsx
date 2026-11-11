@@ -1,15 +1,4 @@
-import {
-  ACTIVITY_LABELS,
-  ACTIVITY_TYPES,
-  DIFFICULTY_LABELS,
-  estimateDifficulty,
-  estimateDuration,
-  formatKm,
-  formatMeters,
-  routeStats,
-  type ActivityType,
-  type RoutePoint,
-} from '@lykiva/shared';
+import { ACTIVITY_LABELS, ACTIVITY_TYPES, DIFFICULTY_LABELS, estimateDifficulty, estimateDuration, formatKm, formatMeters, routeStats, type ActivityType, type RoutePoint, kmUnit } from '@lykiva/shared';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Keyboard, Pressable, ScrollView, StyleSheet, TextInput, View, useWindowDimensions } from 'react-native';
@@ -28,18 +17,19 @@ import { konumOnizlemeBaslat, useKayit } from '@/kayit/kaydedici';
 import { yerAra, type YerSonucu } from '@/lib/yerArama';
 import { CIZIM_MODLARI, rotaHesapla, type CizimModu, type HesaplananRota } from '@/lib/yonlendirme';
 import { colors, fontFamily, radius, space } from '@/theme';
+import { $t } from '@/i18n';
 
-const GORUNURLUK: { id: Rota['visibility']; label: string }[] = [
-  { id: 'private', label: 'Sadece ben' },
-  { id: 'followers', label: 'Takipçiler' },
-  { id: 'public', label: 'Herkese açık' },
+const GORUNURLUK = (): { id: Rota['visibility']; label: string }[] => [
+  { id: 'private', label: $t('ortak.sadece_ben') },
+  { id: 'followers', label: $t('ortak.takipciler') },
+  { id: 'public', label: $t('ortak.herkese_acik') },
 ];
 
 /** "5 sa 10 dk" */
 function sureMetni(s: number) {
   const dk = Math.round(s / 60);
   const sa = Math.floor(dk / 60);
-  return sa > 0 ? `${sa} sa ${dk % 60} dk` : `${dk} dk`;
+  return sa > 0 ? $t('rota_olustur.sa_dk', { sa, a: dk % 60 }) : $t('rota_olustur.dk', { dk });
 }
 
 export default function RotaOlusturScreen() {
@@ -84,7 +74,7 @@ export default function RotaOlusturScreen() {
       rotaHesapla(duraklar, mod, activity, ac.signal)
         .then((r) => setSonuc(r))
         .catch((e) => {
-          if (e?.name !== 'AbortError') setHata(e instanceof Error ? e.message : 'Rota hesaplanamadı');
+          if (e?.name !== 'AbortError') setHata(e instanceof Error ? e.message : $t('rota_olustur.rota_hesaplanamadi'));
         })
         .finally(() => !ac.signal.aborted && setHesapliyor(false));
     }, 250);
@@ -133,9 +123,9 @@ export default function RotaOlusturScreen() {
   const zemin = yeterli ? sonuc?.surface : null;
   const zeminler = zemin
     ? [
-        { label: 'Asfalt', pct: Math.round(zemin.asphalt * 100), color: colors.ink },
-        { label: 'Toprak yol', pct: Math.round(zemin.gravel * 100), color: colors.ochre },
-        { label: 'Patika', pct: Math.round(zemin.trail * 100), color: colors.sea },
+        { label: $t('rota_olustur.asfalt'), pct: Math.round(zemin.asphalt * 100), color: colors.ink },
+        { label: $t('rota_olustur.toprak_yol'), pct: Math.round(zemin.gravel * 100), color: colors.ochre },
+        { label: $t('rota_olustur.patika'), pct: Math.round(zemin.trail * 100), color: colors.sea },
       ].filter((z) => z.pct > 0)
     : [];
 
@@ -145,7 +135,7 @@ export default function RotaOlusturScreen() {
     setHata(null);
     try {
       const id = await rotaKaydet({
-        name: ad.trim() || `${ACTIVITY_LABELS[activity]} rotası`,
+        name: ad.trim() || $t('rota_olustur.rotasi', { a: ACTIVITY_LABELS[activity] }),
         activity,
         points,
         difficulty: zorluk,
@@ -154,7 +144,7 @@ export default function RotaOlusturScreen() {
       });
       router.replace({ pathname: '/rota/[id]', params: { id } });
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Kaydedilemedi');
+      setHata(e instanceof Error ? e.message : $t('ortak.kaydedilemedi'));
       setKaydediyor(false);
     }
   }
@@ -177,25 +167,25 @@ export default function RotaOlusturScreen() {
         followZoom={odak?.z}
         onPress={(c) => setDuraklar((d) => [...d, c])}
         padding={{ top: 120, bottom: panelH + 40 }}
-        accessibilityLabel={`Rota çizim haritası: ${duraklar.length} nokta`}
+        accessibilityLabel={$t('rota_olustur.rota_cizim_haritasi_nokta', { length: duraklar.length })}
       />
       <FloatingHeader
-        left={<IconButton floating icon="close" label="Kapat" onPress={() => router.back()} />}
+        left={<IconButton floating icon="close" label={$t('ortak.kapat')} onPress={() => router.back()} />}
         middle={
           <View style={styles.search}>
             <Icon name="search" size={18} color={colors.inkMuted} strokeWidth={2} />
             <TextInput
               value={q}
               onChangeText={setQ}
-              placeholder="Yer, patika veya zirve ara"
+              placeholder={$t('rota_olustur.yer_patika_veya_zirve')}
               placeholderTextColor={colors.inkMuted}
-              accessibilityLabel="Yer ara"
+              accessibilityLabel={$t('rota_olustur.yer_ara')}
               returnKeyType="search"
               style={styles.searchInput}
             />
           </View>
         }
-        right={<IconButton floating icon="undo" label="Son noktayı geri al" onPress={() => setDuraklar((d) => d.slice(0, -1))} />}
+        right={<IconButton floating icon="undo" label={$t('rota_olustur.son_noktayi_geri_al')} onPress={() => setDuraklar((d) => d.slice(0, -1))} />}
       />
 
       {gorunenSonuclar.length ? (
@@ -215,7 +205,7 @@ export default function RotaOlusturScreen() {
       ) : null}
 
       <View style={[styles.modes, { bottom: panelH + 12 }]} accessibilityRole="radiogroup">
-        {CIZIM_MODLARI.map((m) => (
+        {CIZIM_MODLARI().map((m) => (
           <View key={m.id} style={styles.modeWrap}>
             <Chip label={m.label} role="radio" selected={m.id === mod} onPress={() => setMod(m.id)} />
           </View>
@@ -226,15 +216,14 @@ export default function RotaOlusturScreen() {
         <View style={styles.grip} />
         {!gercekHarita ? (
           <Txt variant="small" style={styles.note}>
-            Haritaya dokunarak rota çizmek için uygulamanın telefon derlemesi gerekir (Expo Go ve web’de çizilemez).
-          </Txt>
+            {$t('rota_olustur.haritaya_dokunarak_rota_cizmek')}</Txt>
         ) : duraklar.length < 2 ? (
           <Txt variant="small" style={styles.note}>
-            {duraklar.length === 0 ? 'Başlangıç noktası için haritaya dokun.' : 'Sonraki noktaya dokun; patika ya da yol otomatik bulunur.'}
+            {duraklar.length === 0 ? $t('rota_olustur.baslangic_noktasi_icin_haritaya') : $t('rota_olustur.sonraki_noktaya_dokun_patika')}
           </Txt>
         ) : null}
 
-        <TextInput value={ad} onChangeText={setAd} placeholder="Rota adı" placeholderTextColor={colors.inkMuted} accessibilityLabel="Rota adı" style={styles.nameInput} />
+        <TextInput value={ad} onChangeText={setAd} placeholder={$t('rota_olustur.rota_adi')} placeholderTextColor={colors.inkMuted} accessibilityLabel={$t('rota_olustur.rota_adi')} style={styles.nameInput} />
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingVertical: 10 }} accessibilityRole="radiogroup">
           {ACTIVITY_TYPES.map((t) => (
@@ -243,10 +232,10 @@ export default function RotaOlusturScreen() {
         </ScrollView>
 
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 8, columnGap: 10, marginBottom: 12 }}>
-          <Stat label="Mesafe" size={18} value={stats ? `${formatKm(stats.distanceM)} km` : '–'} />
-          <Stat label="Tırmanış" size={18} value={stats && rakimVar ? `↑ ${formatMeters(stats.gainM)} m` : '–'} />
-          <Stat label="İniş" size={18} value={stats && rakimVar ? `↓ ${formatMeters(stats.lossM)} m` : '–'} />
-          <Stat label="Tahmini süre" size={18} value={stats ? sureMetni(estimateDuration(activity, stats.distanceM, rakimVar ? stats.gainM : 0)) : '–'} />
+          <Stat label={$t('ortak.mesafe')} size={18} value={stats ? `${formatKm(stats.distanceM)} ${kmUnit()}` : '–'} />
+          <Stat label={$t('ortak.tirmanis')} size={18} value={stats && rakimVar ? $t('rota_olustur.m', { meters: formatMeters(stats.gainM) }) : '–'} />
+          <Stat label={$t('ortak.inis')} size={18} value={stats && rakimVar ? $t('rota_olustur.m_2', { meters: formatMeters(stats.lossM) }) : '–'} />
+          <Stat label={$t('rota_olustur.tahmini_sure')} size={18} value={stats ? sureMetni(estimateDuration(activity, stats.distanceM, rakimVar ? stats.gainM : 0)) : '–'} />
         </View>
 
         {egim ? (
@@ -255,13 +244,12 @@ export default function RotaOlusturScreen() {
           </View>
         ) : stats && mod === 'serbest' ? (
           <Txt variant="small" style={{ marginBottom: 12 }}>
-            Serbest çizimde yükseklik ve eğim yok; “Patikaya yapış” ya da “Yola yapış” seç.
-          </Txt>
+            {$t('rota_olustur.serbest_cizimde_yukseklik_ve')}</Txt>
         ) : null}
 
         {zeminler.length ? (
           <>
-            <View style={styles.bar} accessible accessibilityLabel={zeminler.map((s) => `${s.label} yüzde ${s.pct}`).join(', ')}>
+            <View style={styles.bar} accessible accessibilityLabel={zeminler.map((s) => $t('rota_olustur.yuzde', { label: s.label, pct: s.pct })).join(', ')}>
               {zeminler.map((s) => (
                 <View key={s.label} style={{ flex: s.pct, backgroundColor: s.color }} />
               ))}
@@ -281,7 +269,7 @@ export default function RotaOlusturScreen() {
         ) : null}
 
         <View style={{ flexDirection: 'row', gap: 6, marginTop: 12 }} accessibilityRole="radiogroup">
-          {GORUNURLUK.map((g) => (
+          {GORUNURLUK().map((g) => (
             <Chip key={g.id} label={g.label} role="radio" tone="sea" selected={g.id === gorunurluk} onPress={() => setGorunurluk(g.id)} />
           ))}
         </View>
@@ -295,7 +283,7 @@ export default function RotaOlusturScreen() {
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 12, alignItems: 'center' }}>
           {hesapliyor && yeterli ? <ActivityIndicator color={colors.terra} /> : null}
           <Button
-            label={kaydediyor ? 'Kaydediliyor…' : 'Rotayı kaydet'}
+            label={kaydediyor ? $t('ortak.kaydediliyor') : $t('rota_olustur.rotayi_kaydet')}
             icon="route"
             onPress={onKaydet}
             disabled={!stats || (hesapliyor && yeterli) || kaydediyor}

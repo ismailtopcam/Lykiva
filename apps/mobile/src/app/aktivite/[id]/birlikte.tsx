@@ -25,15 +25,16 @@ import { useAktivite } from '@/data/aktivite';
 import { basHarfler, grupRengi } from '@/grup/gruplar';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space } from '@/theme';
+import { $t } from '@/i18n';
 
 export default function BirlikteScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   if (!supabaseHazir || !sunucuAktivitesiMi(id)) {
     return (
       <View style={styles.root}>
-        <Header title="Birlikte" />
+        <Header title={$t('aktivite_birlikte.birlikte')} />
         <Txt variant="muted" style={{ textAlign: 'center', padding: space.xl }}>
-          {id?.startsWith('yerel-') ? 'Kayıt sunucuya gönderilince kişi ekleyebilirsin.' : 'Birlikte yapılanlar sunucuya bağlıyken çalışır.'}
+          {id?.startsWith('yerel-') ? $t('aktivite_birlikte.kayit_sunucuya_gonderilince_kisi') : $t('aktivite_birlikte.birlikte_yapilanlar_sunucuya_bagliyken')}
         </Txt>
       </View>
     );
@@ -58,7 +59,7 @@ function Birlikte({ id }: { id: string }) {
       setKisiler(k);
       setOneriler(o);
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Yüklenemedi');
+      setHata(e instanceof Error ? e.message : $t('ortak.yuklenemedi'));
       setKisiler((x) => x ?? []);
     }
   }, [id, sahip]);
@@ -93,7 +94,7 @@ function Birlikte({ id }: { id: string }) {
       await birlikteEkle(id, [kisi]);
       await yukle();
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Eklenemedi');
+      setHata(e instanceof Error ? e.message : $t('aktivite_birlikte.eklenemedi'));
     } finally {
       setBekleyen(null);
     }
@@ -111,14 +112,14 @@ function Birlikte({ id }: { id: string }) {
         }
         await yukle();
       } catch (e) {
-        setHata(e instanceof Error ? e.message : 'Kaldırılamadı');
+        setHata(e instanceof Error ? e.message : $t('aktivite_birlikte.kaldirilamadi'));
       } finally {
         setBekleyen(null);
       }
     };
-    Alert.alert(k.me ? 'Kendini bu aktiviteden kaldır?' : `${k.display_name} kaldırılsın mı?`, k.me ? 'Aktivite artık senin akışında ve profilinde birlikte görünmez.' : undefined, [
-      { text: 'Vazgeç', style: 'cancel' },
-      { text: 'Kaldır', style: 'destructive', onPress: () => void yap() },
+    Alert.alert(k.me ? $t('aktivite_birlikte.kendini_bu_aktiviteden_kaldir') : $t('aktivite_birlikte.kaldirilsin_mi', { display_name: k.display_name }), k.me ? $t('aktivite_birlikte.aktivite_artik_senin_akisinda') : undefined, [
+      { text: $t('ortak.vazgec'), style: 'cancel' },
+      { text: $t('aktivite_birlikte.kaldir'), style: 'destructive', onPress: () => void yap() },
     ]);
   }
 
@@ -128,7 +129,7 @@ function Birlikte({ id }: { id: string }) {
 
   return (
     <View style={styles.root}>
-      <Header title="Birlikte" />
+      <Header title={$t('aktivite_birlikte.birlikte')} />
       <ScrollView contentContainerStyle={{ padding: space.lg, paddingTop: space.sm, paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
         {hata ? (
           <Txt accessibilityRole="alert" style={{ color: colors.terraInk, marginBottom: space.md }}>
@@ -136,37 +137,36 @@ function Birlikte({ id }: { id: string }) {
           </Txt>
         ) : null}
 
-        <SectionHeader title="Birlikte yapanlar" />
+        <SectionHeader title={$t('aktivite_birlikte.birlikte_yapanlar')} />
         {kisiler === null ? <ActivityIndicator color={colors.terra} style={{ marginVertical: space.md }} /> : null}
         {kisiler && kisiler.length === 0 ? (
           <Txt variant="muted" style={{ paddingVertical: space.sm }}>
-            {sahip ? 'Henüz kimseyi eklemedin. Aşağıdan birlikte gittiğin kişileri ekle; onlara bildirim gider.' : 'Kimse eklenmemiş.'}
+            {sahip ? $t('aktivite_birlikte.henuz_kimseyi_eklemedin_asagidan') : $t('aktivite_birlikte.kimse_eklenmemis')}
           </Txt>
         ) : null}
         {kisiler?.map((k) => (
           <Satir
             key={k.user_id}
             id={k.user_id}
-            ad={k.me ? `${k.display_name} (sen)` : k.display_name}
+            ad={k.me ? $t('aktivite_birlikte.sen', { display_name: k.display_name }) : k.display_name}
             alt={`@${k.username}`}
-            dugme={sahip || k.me ? { etiket: 'Kaldır', ikincil: true, onPress: () => cikar(k) } : undefined}
+            dugme={sahip || k.me ? { etiket: $t('aktivite_birlikte.kaldir'), ikincil: true, onPress: () => cikar(k) } : undefined}
             bekliyor={bekleyen === k.user_id}
           />
         ))}
 
         {sahip && oneriler.length ? (
           <View style={{ marginTop: space.lg }}>
-            <SectionHeader title="Seninle aynı yoldaydı" />
+            <SectionHeader title={$t('aktivite_birlikte.seninle_ayni_yoldaydi')} />
             <Txt variant="small" style={{ marginTop: -4, marginBottom: 4 }}>
-              Aynı saatlerde aynı yoldan geçen tanıdıkların
-            </Txt>
+              {$t('aktivite_birlikte.ayni_saatlerde_ayni_yoldan')}</Txt>
             {oneriler.map((o) => (
               <Satir
                 key={o.user_id}
                 id={o.user_id}
                 ad={o.display_name}
                 alt={o.title ? `“${o.title}”` : `@${o.username}`}
-                dugme={{ etiket: 'Ekle', onPress: () => void ekle(o.user_id) }}
+                dugme={{ etiket: $t('aktivite_birlikte.ekle'), onPress: () => void ekle(o.user_id) }}
                 bekliyor={bekleyen === o.user_id}
               />
             ))}
@@ -175,24 +175,24 @@ function Birlikte({ id }: { id: string }) {
 
         {sahip ? (
           <View style={{ marginTop: space.lg }}>
-            <SectionHeader title="Kişi ekle" />
+            <SectionHeader title={$t('aktivite_birlikte.kisi_ekle')} />
             <View style={styles.search}>
               <Icon name="search" size={18} color={colors.inkMuted} />
               <TextInput
                 value={arama}
                 onChangeText={setArama}
-                placeholder="Ad ya da kullanıcı adı"
+                placeholder={$t('aktivite_birlikte.ad_ya_da_kullanici')}
                 placeholderTextColor={colors.inkMuted}
                 autoCapitalize="none"
                 autoCorrect={false}
-                accessibilityLabel="Eklenecek kişiyi ara"
+                accessibilityLabel={$t('aktivite_birlikte.eklenecek_kisiyi_ara')}
                 style={styles.input}
               />
             </View>
             {sonuc === null ? <ActivityIndicator color={colors.terra} style={{ marginVertical: space.md }} /> : null}
             {sonuc && aramaListesi.length === 0 ? (
               <Txt variant="muted" style={{ paddingVertical: space.sm }}>
-                {arama.trim().length >= 2 ? 'Bu adla eklenebilecek kimse yok.' : 'Takipleştiğin ve grup arkadaşın olan kişileri ekleyebilirsin; adıyla ara.'}
+                {arama.trim().length >= 2 ? $t('aktivite_birlikte.bu_adla_eklenebilecek_kimse') : $t('aktivite_birlikte.takiplestigin_ve_grup_arkadasin')}
               </Txt>
             ) : null}
             {aramaListesi.map((k) => (
@@ -200,8 +200,8 @@ function Birlikte({ id }: { id: string }) {
                 key={k.id}
                 id={k.id}
                 ad={k.display_name}
-                alt={tanidik(k) ? `@${k.username}` : `@${k.username} · eklemek için takipleşmeniz ya da ortak grubunuz olmalı`}
-                dugme={tanidik(k) ? { etiket: 'Ekle', onPress: () => void ekle(k.id) } : undefined}
+                alt={tanidik(k) ? `@${k.username}` : $t('aktivite_birlikte.eklemek_icin_takiplesmeniz_ya', { username: k.username })}
+                dugme={tanidik(k) ? { etiket: $t('aktivite_birlikte.ekle'), onPress: () => void ekle(k.id) } : undefined}
                 bekliyor={bekleyen === k.id}
               />
             ))}
@@ -229,7 +229,7 @@ function Satir({
     <View style={styles.row}>
       <Pressable
         accessibilityRole="link"
-        accessibilityLabel={`${ad} profili`}
+        accessibilityLabel={$t('aktivite_birlikte.profili', { ad })}
         onPress={() => router.push({ pathname: '/kisi/[id]', params: { id } })}
         style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <Avatar initials={basHarfler(ad)} tone={grupRengi(id)} size={42} />

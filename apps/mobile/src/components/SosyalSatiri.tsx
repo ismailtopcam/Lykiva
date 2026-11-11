@@ -11,6 +11,7 @@ import { Icon } from '@/components/Icon';
 import { Txt } from '@/components/Txt';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space } from '@/theme';
+import { $t } from '@/i18n';
 
 export function SosyalSatiri({ id }: { id: string }) {
   const [s, setS] = useState<Sosyal | null>(null);
@@ -51,19 +52,19 @@ export function SosyalSatiri({ id }: { id: string }) {
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ selected: s.liked }}
-        accessibilityLabel={`${s.liked ? 'Beğeniyi geri al' : 'Beğen'}, ${s.like_count} beğeni`}
+        accessibilityLabel={$t('sosyalSatiri.begeni', { a: s.liked ? $t('ortak.begeniyi_geri_al') : $t('ortak.begen'), like_count: s.like_count })}
         onPress={() => void begeniDegistir()}
         style={styles.item}>
         <Icon name="heart" size={20} color={s.liked ? colors.terra : colors.ink} />
-        <Txt style={[styles.text, s.liked && { color: colors.terra }]}>{s.like_count} beğeni</Txt>
+        <Txt style={[styles.text, s.liked && { color: colors.terra }]}>{$t('sosyalSatiri.begeni_2', { like_count: s.like_count })}</Txt>
       </Pressable>
       <Pressable
         accessibilityRole="link"
-        accessibilityLabel={`${s.comment_count} yorum, yorumları aç`}
+        accessibilityLabel={$t('sosyalSatiri.yorum_yorumlari_ac', { comment_count: s.comment_count })}
         onPress={() => router.push({ pathname: '/aktivite/[id]/yorumlar', params: { id } })}
         style={[styles.item, { flex: 1, justifyContent: 'flex-end' }]}>
         <Icon name="chat" size={20} />
-        <Txt style={styles.text}>{s.comment_count ? `${s.comment_count} yorum` : 'Yorum yaz'}</Txt>
+        <Txt style={styles.text}>{s.comment_count ? $t('sosyalSatiri.yorum', { comment_count: s.comment_count }) : $t('sosyalSatiri.yorum_yaz')}</Txt>
         <Icon name="chevron" size={18} color={colors.inkMuted} strokeWidth={2} />
       </Pressable>
     </View>

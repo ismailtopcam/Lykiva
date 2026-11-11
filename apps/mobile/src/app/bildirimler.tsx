@@ -18,15 +18,15 @@ import { kisaTarih } from '@/etkinlik/etkinlikler';
 import { basHarfler, grupRengi } from '@/grup/gruplar';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space } from '@/theme';
+import { $t } from '@/i18n';
 
 export default function BildirimlerScreen() {
   if (!supabaseHazir) {
     return (
       <View style={styles.root}>
-        <Header title="Bildirimler" />
+        <Header title={$t('ortak.bildirimler')} />
         <Txt variant="muted" style={{ textAlign: 'center', padding: space.xl }}>
-          Bildirimler sunucuya bağlıyken çalışır.
-        </Txt>
+          {$t('bildirimler.bildirimler_sunucuya_bagliyken_calisir')}</Txt>
       </View>
     );
   }
@@ -37,22 +37,22 @@ const tirnak = (s: string | null | undefined) => (s ? `“${s}”` : '');
 
 /** Satırın metni: [kalın ad, devamı] */
 function metin(b: Bildirim): [string | null, string] {
-  const ad = b.aktor_adi ?? 'Biri';
+  const ad = b.aktor_adi ?? $t('bildirimler.biri');
   switch (b.tur) {
     case 'takip':
-      return [ad, ' seni takip etmeye başladı'];
+      return [ad, $t('bildirimler.seni_takip_etmeye_basladi')];
     case 'begeni':
-      return [ad, b.aktivite_adi ? ` ${tirnak(b.aktivite_adi)} aktiviteni beğendi` : ' aktiviteni beğendi'];
+      return [ad, b.aktivite_adi ? $t('bildirimler.aktiviteni_begendi_2', { tirnak: tirnak(b.aktivite_adi) }) : $t('bildirimler.aktiviteni_begendi')];
     case 'yorum':
-      return [ad, `${b.aktivite_adi ? ` ${tirnak(b.aktivite_adi)} aktivitene` : ' aktivitene'} yorum yaptı${b.yorum ? `: ${tirnak(b.yorum)}` : ''}`];
+      return [ad, $t('bildirimler.yorum_yapti', { a: b.aktivite_adi ? $t('bildirimler.aktivitene_2', { tirnak: tirnak(b.aktivite_adi) }) : $t('bildirimler.aktivitene'), a2: b.yorum ? `: ${tirnak(b.yorum)}` : '' })];
     case 'katilim_istegi':
-      return [ad, ` ${tirnak(b.grup_adi)} grubuna katılmak istiyor`];
+      return [ad, $t('bildirimler.grubuna_katilmak_istiyor', { tirnak: tirnak(b.grup_adi) })];
     case 'katilim_kabul':
-      return [null, `${tirnak(b.grup_adi)} grubuna katılma isteğin kabul edildi`];
+      return [null, $t('bildirimler.grubuna_katilma_istegin_kabul', { tirnak: tirnak(b.grup_adi) })];
     case 'birlikte':
-      return [ad, b.aktivite_adi ? ` seni ${tirnak(b.aktivite_adi)} aktivitesine birlikte yapanlar arasına ekledi` : ' seni bir aktivitesine birlikte yapanlar arasına ekledi'];
+      return [ad, b.aktivite_adi ? $t('bildirimler.seni_aktivitesine_birlikte_yapanlar', { tirnak: tirnak(b.aktivite_adi) }) : $t('bildirimler.seni_bir_aktivitesine_birlikte')];
     case 'etkinlik':
-      return [ad, ` ${tirnak(b.grup_adi)} grubunda etkinlik oluşturdu: ${tirnak(b.etkinlik_adi)}${b.etkinlik_zamani ? ` · ${kisaTarih(b.etkinlik_zamani)}` : ''}`];
+      return [ad, $t('bildirimler.grubunda_etkinlik_olusturdu', { tirnak: tirnak(b.grup_adi), tirnak2: tirnak(b.etkinlik_adi), a: b.etkinlik_zamani ? ` · ${kisaTarih(b.etkinlik_zamani)}` : '' })];
   }
 }
 
@@ -84,11 +84,11 @@ function PushOnerisi() {
   return (
     <View style={styles.oneri}>
       <View style={{ flex: 1 }}>
-        <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14 }}>Telefonuna da gelsin mi?</Txt>
-        <Txt variant="small">Uygulama kapalıyken de yorum, takip ve etkinlik bildirimlerini al.</Txt>
+        <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14 }}>{$t('bildirimler.telefonuna_da_gelsin_mi')}</Txt>
+        <Txt variant="small">{$t('bildirimler.uygulama_kapaliyken_de_yorum')}</Txt>
       </View>
       <Pressable accessibilityRole="button" onPress={() => void pushAc().then(setDurum).catch(() => undefined)} style={styles.oneriBtn}>
-        <Txt style={{ color: '#FFFFFF', fontFamily: fontFamily.bodyBold, fontSize: 13 }}>Aç</Txt>
+        <Txt style={{ color: '#FFFFFF', fontFamily: fontFamily.bodyBold, fontSize: 13 }}>{$t('bildirimler.ac')}</Txt>
       </Pressable>
     </View>
   );
@@ -113,7 +113,7 @@ function Bildirimler() {
         await okunduSay(l[0].created_at).catch(() => undefined);
       }
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Bildirimler yüklenemedi');
+      setHata(e instanceof Error ? e.message : $t('bildirimler.bildirimler_yuklenemedi'));
       setListe((x) => x ?? []);
     }
   }, []);
@@ -147,7 +147,7 @@ function Bildirimler() {
 
   return (
     <View style={styles.root}>
-      <Header title="Bildirimler" />
+      <Header title={$t('ortak.bildirimler')} />
       <FlatList
         data={liste ?? []}
         keyExtractor={(b) => b.id}
@@ -165,8 +165,7 @@ function Bildirimler() {
             </Txt>
           ) : (
             <Txt variant="muted" style={{ textAlign: 'center', padding: space.xl }}>
-              Henüz bildirim yok. Biri seni takip ettiğinde, aktiviteni beğendiğinde ya da yorum yaptığında burada görünür.
-            </Txt>
+              {$t('bildirimler.henuz_bildirim_yok_biri')}</Txt>
           )
         }
         ListFooterComponent={devamYukleniyor ? <ActivityIndicator color={colors.terra} style={{ marginVertical: space.lg }} /> : undefined}
@@ -183,7 +182,7 @@ function Satir({ b }: { b: Bildirim }) {
   return (
     <Pressable
       accessibilityRole={git ? 'link' : undefined}
-      accessibilityLabel={`${b.okundu ? '' : 'Yeni. '}${tamMetin}, ${akisZamani(b.created_at)}`}
+      accessibilityLabel={`${b.okundu ? '' : $t('bildirimler.yeni')}${tamMetin}, ${akisZamani(b.created_at)}`}
       onPress={git ? () => router.push(git) : undefined}
       style={({ pressed }) => [styles.row, !b.okundu && styles.yeni, pressed && { opacity: 0.7 }]}>
       <View>

@@ -6,6 +6,7 @@
  */
 import { metYanitindanHava, TAHMIN_UFKU_GUN, type HavaDurumu, type MetYaniti } from '@lykiva/shared';
 import { Platform } from 'react-native';
+import { $t } from '@/i18n';
 
 const HAVA_URL = process.env.EXPO_PUBLIC_HAVA_URL || 'https://api.met.no/weatherapi/locationforecast/2.0/compact';
 // MET kimliği bilinmeyen istemcileri engeller; uygulama adı ve web adresi (kişisel bilgi yok)
@@ -29,7 +30,7 @@ async function tahminAl(lat: number, lng: number): Promise<MetYaniti> {
       headers: Platform.OS === 'web' ? {} : { 'User-Agent': KIMLIK },
       signal: kontrol.signal,
     });
-    if (!r.ok) throw new Error(`Hava servisi yanıt vermedi (${r.status})`);
+    if (!r.ok) throw new Error($t('lib_hava.hava_servisi_yanit_vermedi', { status: r.status }));
     const yanit = (await r.json()) as MetYaniti;
     onbellek.set(anahtar, { zaman: Date.now(), yanit });
     return yanit;

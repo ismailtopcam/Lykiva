@@ -16,6 +16,7 @@ import { AndroidImportance } from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { oturumuSagla, supabase, supabaseHazir } from '@/lib/supabase';
+import { $t } from '@/i18n';
 
 const JETON_DEPO = 'lykiva.push.jeton.v1';
 const KAPALI_DEPO = 'lykiva.push.kapali.v1';
@@ -48,7 +49,7 @@ export async function pushDurumu(): Promise<PushDurumu> {
 
 async function kanaliHazirla() {
   if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('varsayilan', { name: 'Bildirimler', importance: AndroidImportance.DEFAULT });
+    await Notifications.setNotificationChannelAsync('varsayilan', { name: $t('ortak.bildirimler'), importance: AndroidImportance.DEFAULT });
   }
 }
 

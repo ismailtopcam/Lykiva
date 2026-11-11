@@ -717,5 +717,42 @@ bekle('Bilinmeyen ayar reddedilir', /Bilinmeyen/.test(m ?? ''), m);
 r = await olarak(A, `select yonetim_site_ayarlari_guncelle($1::jsonb) as j`, [JSON.stringify({ iletisim_eposta: ' destek@lykiva.app ', veri_sorumlusu: 'Örnek Kişi' })]);
 bekle('Yönetici iletişim e-postasını ve veri sorumlusunu değiştirir (kırpılır)', r.rows[0].j.iletisim_eposta === 'destek@lykiva.app' && r.rows[0].j.veri_sorumlusu === 'Örnek Kişi', r.rows[0].j);
 
+console.log('\nDil ve bildirim dili');
+bekle('Yeni profilin dili Türkçe', (await db.query(`select dil from profiles where id = '${C}'`)).rows[0].dil === 'tr', null);
+m = await hataMesaji(() => anonOlarak(`select dil_ayarla('en')`));
+bekle('Giriş yapmamış biri dil ayarlayamaz', /permission denied/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(C, `select dil_ayarla('fr')`));
+bekle('Desteklenmeyen dil reddedilir', /Desteklenmeyen dil/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(C, `update profiles set dil = 'en' where id = $1`, [C]));
+bekle('Dil doğrudan tablo yazımıyla değiştirilemez', /permission denied/.test(m ?? ''), m);
+await olarak(C, `select dil_ayarla('de')`);
+bekle('Kullanıcı kendi dilini kaydeder', (await db.query(`select dil from profiles where id = '${C}'`)).rows[0].dil === 'de', null);
+const cAkt = (await db.query(`select id from activities where title = 'C de oradaydı'`)).rows[0].id;
+await db.exec(`
+  create schema if not exists net;
+  delete from push_istekleri;
+  create sequence net.istek_sira;
+  create table net.cagri (id bigint, url text, body jsonb);
+  create table net._http_response (id bigint primary key, status_code integer, content text, created timestamptz default now());
+  create function net.http_post(url text, body jsonb default '{}'::jsonb, params jsonb default '{}'::jsonb, headers jsonb default '{}'::jsonb, timeout_milliseconds integer default 5000)
+  returns bigint language sql as $$ insert into net.cagri values (nextval('net.istek_sira'), url, body) returning id $$;
+`);
+await olarak(C, `select push_jetonu_kaydet($1, 'android')`, ['ExponentPushToken[dilTelefonu00000003]']);
+await olarak(B, `select yorum_yaz($1, 'Guten Morgen')`, [cAkt]);
+cagri = (await db.query(`select * from net.cagri`)).rows;
+bekle('Telefon bildirimi alıcının dilinde gider (Almanca)', cagri[0]?.body?.[0]?.body === 'Hat kommentiert: „Guten Morgen“' && cagri[0]?.body?.[0]?.title === 'Burak Demir', cagri[0]?.body);
+await olarak(C, `select dil_ayarla('ru')`);
+await db.exec(`delete from net.cagri`);
+await olarak(B, `select yorum_yaz($1, 'Привет')`, [cAkt]);
+cagri = (await db.query(`select * from net.cagri`)).rows;
+bekle('Telefon bildirimi alıcının dilinde gider (Rusça)', cagri[0]?.body?.[0]?.body === 'Комментарий: «Привет»', cagri[0]?.body);
+await olarak(C, `select dil_ayarla('ar')`);
+await db.exec(`delete from net.cagri`);
+await olarak(B, `select yorum_yaz($1, 'Hello')`, [cAkt]);
+cagri = (await db.query(`select * from net.cagri`)).rows;
+bekle('Metni henüz olmayan dilde (Arapça) bildirim İngilizce gider', cagri[0]?.body?.[0]?.body === 'Commented: “Hello”', cagri[0]?.body);
+await olarak(C, `select dil_ayarla('tr')`);
+await db.exec(`drop schema net cascade; delete from push_jetonlari; delete from push_istekleri;`);
+
 console.log(hata ? `\n${hata} senaryo başarısız` : '\nTüm senaryolar geçti');
 process.exit(hata ? 1 : 0);

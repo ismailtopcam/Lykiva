@@ -1,10 +1,12 @@
 /**
  * Bağlantı önizleme görseli (WhatsApp, Telegram, X…): rota + başlık + temel değerler.
  */
-import { ACTIVITY_LABELS, colors, formatDuration, formatKm, formatMeters } from '@lykiva/shared';
+import { activityLabel, colors, formatDuration, formatKm, formatMeters, kmUnit, mUnit } from '@lykiva/shared';
 import { ImageResponse } from 'next/og';
 
+import { istekDili } from '@/lib/dil';
 import { baslik, izCiz, paylasilanAktivite } from '@/lib/paylasim';
+import { metinler } from '@/lib/sozluk';
 
 export const alt = 'Lykiva aktivitesi';
 export const size = { width: 1200, height: 630 };
@@ -12,14 +14,17 @@ export const contentType = 'image/png';
 
 export default async function Image({ params }: { params: Promise<{ anahtar: string }> }) {
   const { anahtar } = await params;
+  // Önizleme botları çoğu zaman dil göndermez: o zaman Türkçe
+  const dil = await istekDili();
+  const m = metinler(dil);
   const s = await paylasilanAktivite(anahtar);
   const a = s.durum === 'var' ? s.a : null;
   const iz = a?.track && a.track.length > 1 ? izCiz(a.track, 520, 550, 40) : null;
   const degerler: [string, string][] = a
     ? [
-        [`${formatKm(a.distance_m)} km`, 'Mesafe'],
-        [formatDuration(a.moving_time_s), 'Süre'],
-        [`${formatMeters(Math.round(a.elevation_gain_m ?? 0))} m`, 'Tırmanış'],
+        [`${formatKm(a.distance_m, dil)} ${kmUnit(dil)}`, m('mesafe')],
+        [formatDuration(a.moving_time_s), m('sure')],
+        [`${formatMeters(Math.round(a.elevation_gain_m ?? 0), dil)} ${mUnit(dil)}`, m('tirmanis')],
       ]
     : [];
 
@@ -37,9 +42,9 @@ export default async function Image({ params }: { params: Promise<{ anahtar: str
           {a ? (
             <div style={{ display: 'flex', flexDirection: 'column', marginTop: 'auto' }}>
               <span style={{ fontSize: 28, color: colors.inkMuted }}>
-                {a.owner_name} · {ACTIVITY_LABELS[a.activity]}
+                {a.owner_name} · {activityLabel(a.activity, dil)}
               </span>
-              <span style={{ fontSize: 60, fontWeight: 800, lineHeight: 1.05, marginTop: 8, letterSpacing: -1.5 }}>{baslik(a).slice(0, 60)}</span>
+              <span style={{ fontSize: 60, fontWeight: 800, lineHeight: 1.05, marginTop: 8, letterSpacing: -1.5 }}>{baslik(a, dil).slice(0, 60)}</span>
               <div style={{ display: 'flex', gap: 40, marginTop: 36 }}>
                 {degerler.map(([v, l]) => (
                   <div key={l} style={{ display: 'flex', flexDirection: 'column' }}>
@@ -50,7 +55,7 @@ export default async function Image({ params }: { params: Promise<{ anahtar: str
               </div>
             </div>
           ) : (
-            <span style={{ fontSize: 56, fontWeight: 800, marginTop: 'auto' }}>Rotanı kaydet. Birlikte yol al.</span>
+            <span style={{ fontSize: 56, fontWeight: 800, marginTop: 'auto' }}>{m('slogan')}</span>
           )}
         </div>
         <div style={{ width: 520, height: 550, margin: 40, marginLeft: 0, display: 'flex', borderRadius: 32, background: colors.land, overflow: 'hidden' }}>

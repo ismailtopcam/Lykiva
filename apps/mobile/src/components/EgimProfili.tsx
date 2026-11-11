@@ -29,6 +29,7 @@ import Svg, { Circle, Line, Path } from 'react-native-svg';
 import type { LngLat } from '@/data/ornek';
 import { colors, fontFamily } from '@/theme';
 import { Txt } from './Txt';
+import { $t } from '@/i18n';
 
 export type RotaEgim = {
   profil: RouteProfile;
@@ -115,19 +116,16 @@ export function EgimProfili({
       <View style={styles.ust}>
         {secM != null && secZ != null && secG != null ? (
           <Txt variant="small" style={styles.okuma}>
-            {formatKm(secM)} km · {formatMeters(secZ)} m ·{' '}
-            <Txt variant="small" style={[styles.okuma, { color: secG > 3 ? colors.terra : secG < -3 ? colors.sea : colors.ink }]}>
+            {$t('egimProfili.km_m', { km: formatKm(secM), meters: formatMeters(secZ) })}<Txt variant="small" style={[styles.okuma, { color: secG > 3 ? colors.terra : secG < -3 ? colors.sea : colors.ink }]}>
               {secG >= 0 ? '↑' : '↓'} {formatGrade(secG)}
             </Txt>
           </Txt>
         ) : (
           <Txt variant="small">
-            En dik çıkış {formatGrade(ozet.maxClimbGrade)} · en dik iniş {formatGrade(ozet.maxDescentGrade)}
-          </Txt>
+            {$t('egimProfili.en_dik_cikis_en', { grade: formatGrade(ozet.maxClimbGrade), grade2: formatGrade(ozet.maxDescentGrade) })}</Txt>
         )}
         <Txt variant="small">
-          {formatMeters(lo0)}–{formatMeters(hi0)} m
-        </Txt>
+          {$t('egimProfili.m', { meters: formatMeters(lo0), meters2: formatMeters(hi0) })}</Txt>
       </View>
       <View
         onStartShouldSetResponder={() => true}
@@ -137,10 +135,10 @@ export function EgimProfili({
         onResponderMove={sec}
         accessible
         accessibilityRole="adjustable"
-        accessibilityLabel={`Yükseklik ve eğim profili. En dik çıkış ${formatGrade(ozet.maxClimbGrade)}, en dik iniş ${formatGrade(ozet.maxDescentGrade)}`}
+        accessibilityLabel={$t('egimProfili.yukseklik_ve_egim_profili', { grade: formatGrade(ozet.maxClimbGrade), grade2: formatGrade(ozet.maxDescentGrade) })}
         accessibilityValue={
           secM != null && secZ != null && secG != null
-            ? { text: `${formatKm(secM)} kilometre, ${formatMeters(secZ)} metre, eğim ${secG < 0 ? 'eksi ' : ''}${formatGrade(secG)}` }
+            ? { text: $t('egimProfili.kilometre_metre_egim', { km: formatKm(secM), meters: formatMeters(secZ), a: secG < 0 ? $t('egimProfili.eksi') : '', grade: formatGrade(secG) }) }
             : undefined
         }
         accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
@@ -178,12 +176,12 @@ export function TirmanisListesi({ egim, onSec }: { egim: RotaEgim; onSec: (imlec
   if (!climbs.length) return null;
   return (
     <View style={{ marginTop: 14 }}>
-      <Txt style={styles.baslik}>Tırmanışlar</Txt>
+      <Txt style={styles.baslik}>{$t('egimProfili.tirmanislar')}</Txt>
       {climbs.map((c, i) => (
         <Pressable
           key={`${c.startM}`}
           accessibilityRole="button"
-          accessibilityLabel={`${i + 1}. tırmanış: ${formatKm(c.startM)}. kilometrede başlıyor, ${formatKm(c.lengthM)} kilometre, ${formatMeters(c.gainM)} metre tırmanış, ortalama ${formatGrade(c.avgGrade)}, en dik ${formatGrade(c.maxGrade)}. Profilde göster`}
+          accessibilityLabel={$t('egimProfili.tirmanis_kilometrede_basliyor_kilometre', { a: i + 1, km: formatKm(c.startM), km2: formatKm(c.lengthM), meters: formatMeters(c.gainM), grade: formatGrade(c.avgGrade), grade2: formatGrade(c.maxGrade) })}
           onPress={() => onSec(c.startM / egim.profil.totalM)}
           style={styles.tirmanis}>
           <View style={[styles.numara, { backgroundColor: GRADE_COLORS[c.avgGrade >= 10 ? 'steep' : c.avgGrade >= 6 ? 'moderate' : 'gentle'] }]}>
@@ -191,11 +189,9 @@ export function TirmanisListesi({ egim, onSec }: { egim: RotaEgim; onSec: (imlec
           </View>
           <View style={{ flex: 1 }}>
             <Txt style={styles.tirmanisUst}>
-              {formatKm(c.lengthM)} km · ↑ {formatMeters(c.gainM)} m · ort. {formatGrade(c.avgGrade)}
-            </Txt>
+              {$t('egimProfili.km_m_ort', { km: formatKm(c.lengthM), meters: formatMeters(c.gainM), grade: formatGrade(c.avgGrade) })}</Txt>
             <Txt variant="small">
-              {formatKm(c.startM)}. km’de başlar · en dik {formatGrade(c.maxGrade)}
-            </Txt>
+              {$t('egimProfili.km_de_baslar_en', { km: formatKm(c.startM), grade: formatGrade(c.maxGrade) })}</Txt>
           </View>
         </Pressable>
       ))}

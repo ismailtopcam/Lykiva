@@ -6,9 +6,10 @@
  *   SUPABASE_URL       (varsayılan https://api.lykiva.app)
  *   SUPABASE_ANON_KEY  (lykiva-supabase servisindeki SERVICE_SUPABASEANON_KEY)
  */
-import { ACTIVITY_LABELS, formatDuration, formatKm, formatMeters, formatPace, formatSpeedKmh, type ActivityType, type HavaDurumu } from '@lykiva/shared';
+import { activityLabel, formatDuration, formatKm, formatMeters, formatPace, formatSpeedKmh, speedUnit, YEREL_AYAR, type ActivityType, type Dil, type HavaDurumu, kmUnit, mUnit } from '@lykiva/shared';
 import { cache } from 'react';
 
+import { metinler } from '@/lib/sozluk';
 import { supabaseAyari } from '@/lib/sunucu';
 
 export type PaylasilanAktivite = {
@@ -72,11 +73,11 @@ export const paylasilanAktivite = cache(async (anahtar: string): Promise<Sonuc> 
 
 const TEMPOLU: ActivityType[] = ['run', 'trail_run', 'walk', 'hike'];
 
-export const baslik = (a: Pick<PaylasilanAktivite, 'title' | 'activity'>) => a.title?.trim() || ACTIVITY_LABELS[a.activity];
+export const baslik = (a: Pick<PaylasilanAktivite, 'title' | 'activity'>, dil: Dil) => a.title?.trim() || activityLabel(a.activity, dil);
 
 /** Sunucu UTC'de çalışır; tarih Türkiye saatiyle yazılır */
-export function tarihMetni(iso: string) {
-  return new Intl.DateTimeFormat('tr-TR', {
+export function tarihMetni(iso: string, dil: Dil) {
+  return new Intl.DateTimeFormat(YEREL_AYAR[dil], {
     timeZone: 'Europe/Istanbul',
     weekday: 'long',
     day: 'numeric',
@@ -89,23 +90,24 @@ export function tarihMetni(iso: string) {
 
 export type Istatistik = { etiket: string; deger: string; birim?: string };
 
-export function istatistikler(a: PaylasilanAktivite): Istatistik[] {
+export function istatistikler(a: PaylasilanAktivite, dil: Dil): Istatistik[] {
+  const m = metinler(dil);
   const tempolu = TEMPOLU.includes(a.activity);
   const ort = a.avg_speed_mps ?? 0;
   const liste: Istatistik[] = [
-    { etiket: 'Mesafe', deger: formatKm(a.distance_m), birim: 'km' },
-    { etiket: 'Hareket süresi', deger: formatDuration(a.moving_time_s) },
-    { etiket: 'Tırmanış', deger: formatMeters(Math.round(a.elevation_gain_m ?? 0)), birim: 'm' },
-    tempolu ? { etiket: 'Tempo', deger: formatPace(ort), birim: '/km' } : { etiket: 'Ort. hız', deger: formatSpeedKmh(ort), birim: 'km/sa' },
+    { etiket: m('mesafe'), deger: formatKm(a.distance_m, dil), birim: kmUnit(dil) },
+    { etiket: m('hareket_suresi'), deger: formatDuration(a.moving_time_s) },
+    { etiket: m('tirmanis'), deger: formatMeters(Math.round(a.elevation_gain_m ?? 0), dil), birim: mUnit(dil) },
+    tempolu ? { etiket: m('tempo'), deger: formatPace(ort), birim: `/${kmUnit(dil)}` } : { etiket: m('ort_hiz'), deger: formatSpeedKmh(ort, dil), birim: speedUnit(dil) },
   ];
-  if (!tempolu && a.max_speed_mps) liste.push({ etiket: 'Maks. hız', deger: formatSpeedKmh(a.max_speed_mps), birim: 'km/sa' });
-  if (a.max_elevation_m != null) liste.push({ etiket: 'En yüksek', deger: formatMeters(Math.round(a.max_elevation_m)), birim: 'm' });
+  if (!tempolu && a.max_speed_mps) liste.push({ etiket: m('maks_hiz'), deger: formatSpeedKmh(a.max_speed_mps, dil), birim: speedUnit(dil) });
+  if (a.max_elevation_m != null) liste.push({ etiket: m('en_yuksek'), deger: formatMeters(Math.round(a.max_elevation_m), dil), birim: mUnit(dil) });
   return liste;
 }
 
 /** Paylaşım önizlemesinde (WhatsApp vb.) görünen kısa açıklama */
-export function aciklama(a: PaylasilanAktivite) {
-  return `${a.owner_name} · ${ACTIVITY_LABELS[a.activity]} · ${formatKm(a.distance_m)} km · ${formatDuration(a.moving_time_s)} · ↑ ${formatMeters(Math.round(a.elevation_gain_m ?? 0))} m`;
+export function aciklama(a: PaylasilanAktivite, dil: Dil) {
+  return `${a.owner_name} · ${activityLabel(a.activity, dil)} · ${formatKm(a.distance_m, dil)} ${kmUnit(dil)} · ${formatDuration(a.moving_time_s)} · ↑ ${formatMeters(Math.round(a.elevation_gain_m ?? 0), dil)} ${mUnit(dil)}`;
 }
 
 /* ------------------------------------------------------------------ */

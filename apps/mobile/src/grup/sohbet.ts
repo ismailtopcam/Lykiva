@@ -9,6 +9,7 @@ import { AppState } from 'react-native';
 
 import { oturumuSagla, supabase } from '@/lib/supabase';
 import { okunduIsaretle } from './gruplar';
+import { $t } from '@/i18n';
 
 export type Mesaj = {
   id: string;
@@ -62,7 +63,7 @@ export function useSohbet(grupId: string) {
         setMesajlar(liste.map((m) => ({ ...m, ad: adlar.get(m.sender_id) })));
         void okunduIsaretle(grupId).catch(() => undefined);
       } catch (e) {
-        if (acik) setHata(e instanceof Error ? e.message : 'Mesajlar yüklenemedi');
+        if (acik) setHata(e instanceof Error ? e.message : $t('grup_sohbet.mesajlar_yuklenemedi'));
       }
     })();
 
@@ -126,7 +127,7 @@ export function useSohbet(grupId: string) {
         .single();
       if (error || !data) {
         setMesajlar((l) => l?.filter((x) => x.id !== id) ?? l);
-        throw new Error(error?.message ?? 'Gönderilemedi');
+        throw new Error(error?.message ?? $t('ortak.gonderilemedi'));
       }
       const m = data as Mesaj;
       setMesajlar((l) => {

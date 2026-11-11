@@ -8,13 +8,14 @@ import { useBildirimSayisi } from '@/bildirim/bildirimler';
 import { Icon } from '@/components/Icon';
 import { Txt } from '@/components/Txt';
 import { colors, fontFamily, minTouchTarget } from '@/theme';
+import { $t } from '@/i18n';
 
 export function ZilDugmesi() {
   const n = useBildirimSayisi();
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={n ? `Bildirimler, ${n} okunmamış` : 'Bildirimler'}
+      accessibilityLabel={n ? $t('zilDugmesi.bildirimler_okunmamis', { n }) : $t('ortak.bildirimler')}
       onPress={() => router.push('/bildirimler')}
       hitSlop={4}
       style={({ pressed }) => [styles.base, pressed && { opacity: 0.6 }]}>

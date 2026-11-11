@@ -1,4 +1,4 @@
-import { ACTIVITY_LABELS, DIFFICULTY_LABELS, estimateDuration, formatKm, formatMeters, type RoutePoint } from '@lykiva/shared';
+import { ACTIVITY_LABELS, DIFFICULTY_LABELS, estimateDuration, formatKm, formatMeters, type RoutePoint, kmUnit } from '@lykiva/shared';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
@@ -17,11 +17,12 @@ import { useHesap } from '@/lib/giris';
 import { supabaseHazir } from '@/lib/supabase';
 import { SikayetBaglantisi, useSikayet } from '@/components/SikayetPenceresi';
 import { colors, fontFamily, space } from '@/theme';
+import { $t, yerel } from '@/i18n';
 
 function sureMetni(s: number) {
   const dk = Math.round(s / 60);
   const sa = Math.floor(dk / 60);
-  return sa > 0 ? `${sa} sa ${dk % 60}` : `${dk} dk`;
+  return sa > 0 ? $t('rota.sa', { sa, a: dk % 60 }) : $t('rota.dk', { dk });
 }
 
 const BOS: RoutePoint[] = [];
@@ -62,9 +63,9 @@ export default function RotaDetayScreen() {
   if (imlecYeri) isaretler.push({ id: 'imlec', coord: imlecYeri, kind: 'cursor' });
   const friends = faralyaKabak.friendsDone.map((f) => people[f]);
   const etiketler: [string, string, string][] = [
-    ...(r.difficulty ? ([[`${DIFFICULTY_LABELS[r.difficulty]}${ornek ? ' zorluk' : ''}`, colors.terraSoft, colors.terraInk]] as [string, string, string][]) : []),
+    ...(r.difficulty ? ([[`${DIFFICULTY_LABELS[r.difficulty]}${ornek ? $t('rota.zorluk') : ''}`, colors.terraSoft, colors.terraInk]] as [string, string, string][]) : []),
     [ACTIVITY_LABELS[r.activity], colors.seaSoft, colors.seaInk],
-    [r.isLoop ? 'Döngü' : 'Tek yön', colors.sand, colors.sandInk],
+    [r.isLoop ? $t('rota.dongu') : $t('rota.tek_yon'), colors.sand, colors.sandInk],
   ];
 
   return (
@@ -76,7 +77,7 @@ export default function RotaDetayScreen() {
           routeColors={egim?.renkler}
           markers={isaretler}
           padding={{ top: insets.top + 70, bottom: 30 }}
-          accessibilityLabel={`${r.name} rotasının haritası`}
+          accessibilityLabel={$t('rota.rotasinin_haritasi', { name: r.name })}
         />
         <View style={{ padding: space.lg }}>
           <View style={{ flexDirection: 'row', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
@@ -90,14 +91,14 @@ export default function RotaDetayScreen() {
             {r.name}
           </Txt>
           <Txt variant="muted" style={{ fontSize: 13, marginTop: 2 }}>
-            {ornek ? faralyaKabak.by : `${r.ownerName} · ${r.visibility === 'public' ? 'herkese açık' : r.visibility === 'followers' ? 'takipçilere açık' : 'sadece sen'}`}
+            {ornek ? faralyaKabak.by : `${r.ownerName} · ${r.visibility === 'public' ? $t('rota.herkese_acik') : r.visibility === 'followers' ? $t('rota.takipcilere_acik') : $t('rota.sadece_sen')}`}
           </Txt>
 
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 8, columnGap: 10, marginVertical: 14 }}>
-            <Stat label="Mesafe" size={18} value={`${formatKm(r.distanceM)} km`} />
-            <Stat label="Tırmanış" size={18} value={egim ? `↑ ${formatMeters(r.gainM)} m` : '–'} />
-            <Stat label="İniş" size={18} value={egim ? `↓ ${formatMeters(r.lossM)} m` : '–'} />
-            <Stat label={ornek ? 'Ortalama süre' : 'Tahmini süre'} size={18} value={ornek ? faralyaKabak.avgTime : sureMetni(estimateDuration(r.activity, r.distanceM, r.gainM))} />
+            <Stat label={$t('ortak.mesafe')} size={18} value={`${formatKm(r.distanceM)} ${kmUnit()}`} />
+            <Stat label={$t('ortak.tirmanis')} size={18} value={egim ? $t('rota.m', { meters: formatMeters(r.gainM) }) : '–'} />
+            <Stat label={$t('ortak.inis')} size={18} value={egim ? $t('rota.m_2', { meters: formatMeters(r.lossM) }) : '–'} />
+            <Stat label={ornek ? $t('rota.ortalama_sure') : $t('rota.tahmini_sure')} size={18} value={ornek ? faralyaKabak.avgTime : sureMetni(estimateDuration(r.activity, r.distanceM, r.gainM))} />
           </View>
           {egim ? (
             <>
@@ -105,7 +106,7 @@ export default function RotaDetayScreen() {
               <TirmanisListesi egim={egim} onSec={imlecSec} />
             </>
           ) : (
-            <Txt variant="small">Bu rota serbest çizildiği için rakım bilgisi yok.</Txt>
+            <Txt variant="small">{$t('rota.bu_rota_serbest_cizildigi')}</Txt>
           )}
 
           <CevrimdisiKarti rota={r} />
@@ -115,19 +116,19 @@ export default function RotaDetayScreen() {
               <AvatarStack items={friends} size={30} bg={colors.ground} />
               <Txt style={{ fontSize: 13, flex: 1 }}>
                 <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 13 }}>{friends.map((f) => f.short).join(' ve ')}</Txt>{' '}
-                <Txt style={{ color: colors.inkMuted, fontSize: 13 }}>dahil {faralyaKabak.doneBy.toLocaleString('tr-TR')} kişi bu rotayı yaptı</Txt>
+                <Txt style={{ color: colors.inkMuted, fontSize: 13 }}>{$t('rota.dahil_kisi_bu_rotayi', { string: faralyaKabak.doneBy.toLocaleString(yerel()) })}</Txt>
               </Txt>
             </View>
           ) : null}
 
           {r.notes ? (
             <>
-              <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14, marginTop: 12, marginBottom: 6 }}>{ornek ? 'Topluluk notları' : 'Notlar'}</Txt>
+              <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14, marginTop: 12, marginBottom: 6 }}>{ornek ? $t('rota.topluluk_notlari') : $t('rota.notlar')}</Txt>
               <Txt style={{ fontSize: 13, lineHeight: 20, color: '#2E3631' }}>{r.notes}</Txt>
             </>
           ) : null}
           {!ornek && supabaseHazir && r.ownerId && hesap && r.ownerId !== hesap.id ? (
-            <SikayetBaglantisi etiket="Bu rotayı şikayet et" onPress={() => sikayet.ac('route', r.id, `${r.name} · ${r.ownerName}`)} />
+            <SikayetBaglantisi etiket={$t('rota.bu_rotayi_sikayet_et')} onPress={() => sikayet.ac('route', r.id, `${r.name} · ${r.ownerName}`)} />
           ) : null}
         </View>
       </ScrollView>
@@ -137,15 +138,15 @@ export default function RotaDetayScreen() {
         right={
           ornek ? (
             <View style={{ flexDirection: 'row', gap: 8 }}>
-              <IconButton floating icon="share" label="Rotayı paylaş" onPress={() => router.push('/rota/ornek/paylas')} />
+              <IconButton floating icon="share" label={$t('rota.rotayi_paylas')} onPress={() => router.push('/rota/ornek/paylas')} />
             </View>
           ) : !ornek && supabaseHazir && hesap && r.ownerId === hesap.id ? (
-            <IconButton floating icon="more" label="Rotayı düzenle" onPress={() => router.push({ pathname: '/rota/[id]/duzenle', params: { id: r.id } })} />
+            <IconButton floating icon="more" label={$t('rota.rotayi_duzenle')} onPress={() => router.push({ pathname: '/rota/[id]/duzenle', params: { id: r.id } })} />
           ) : undefined
         }
       />
       <View style={[styles.bottom, { paddingBottom: insets.bottom + 16 }]}>
-        <Button label="Bu rotayı başlat" icon="play" onPress={() => router.push({ pathname: '/kayit', params: { rota: r.id } })} style={{ flex: 1 }} />
+        <Button label={$t('rota.bu_rotayi_baslat')} icon="play" onPress={() => router.push({ pathname: '/kayit', params: { rota: r.id } })} style={{ flex: 1 }} />
       </View>
     </View>
   );

@@ -7,6 +7,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 import { AppState, Platform } from 'react-native';
+import { $t } from '@/i18n';
 
 export const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://api.lykiva.app';
 const ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
@@ -40,8 +41,8 @@ if (Platform.OS !== 'web') {
 export async function oturumuSagla(): Promise<string> {
   const { data } = await supabase.auth.getSession();
   if (data.session) return data.session.user.id;
-  if (!supabaseHazir) throw new Error('Sunucu anahtarı girilmemiş (apps/mobile/.env)');
+  if (!supabaseHazir) throw new Error($t('lib_supabase.sunucu_anahtari_girilmemis_apps'));
   const { data: yeni, error } = await supabase.auth.signInAnonymously();
-  if (error || !yeni.user) throw error ?? new Error('Geçici hesap açılamadı');
+  if (error || !yeni.user) throw error ?? new Error($t('lib_supabase.gecici_hesap_acilamadi'));
   return yeni.user.id;
 }

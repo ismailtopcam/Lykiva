@@ -1,4 +1,4 @@
-import { ACTIVITY_LABELS } from '@lykiva/shared';
+import { ACTIVITY_LABELS, kmUnit } from '@lykiva/shared';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
@@ -21,6 +21,7 @@ import { aktivitedenRota } from '@/data/rota';
 import { basHarfler, grupRengi } from '@/grup/gruplar';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space } from '@/theme';
+import { $t } from '@/i18n';
 
 export default function AktiviteOzetiScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -34,7 +35,7 @@ export default function AktiviteOzetiScreen() {
     return (
       <View style={[styles.root, styles.center]}>
         <FloatingHeader />
-        {yukleniyor ? <ActivityIndicator color={colors.terra} /> : <Txt variant="muted">{hata ?? 'Aktivite bulunamadı'}</Txt>}
+        {yukleniyor ? <ActivityIndicator color={colors.terra} /> : <Txt variant="muted">{hata ?? $t('aktivite.aktivite_bulunamadi')}</Txt>}
       </View>
     );
   }
@@ -43,12 +44,12 @@ export default function AktiviteOzetiScreen() {
   const hasRoute = a.route.length > 1;
 
   const cells: [string, string, boolean?][] = [
-    ['Mesafe', `${a.distanceKm} km`],
-    ['Hareket', a.durationMoving],
-    ['Toplam süre', a.durationTotal],
-    ['Maks. hız', a.maxSpeed, true],
-    ['Ort. hız', a.avgSpeed],
-    ['Min. hız*', a.minSpeed],
+    [$t('ortak.mesafe'), `${a.distanceKm} ${kmUnit()}`],
+    [$t('aktivite.hareket'), a.durationMoving],
+    [$t('aktivite.toplam_sure'), a.durationTotal],
+    [$t('ortak.maks_hiz'), a.maxSpeed, true],
+    [$t('ortak.ort_hiz'), a.avgSpeed],
+    [$t('aktivite.min_hiz'), a.minSpeed],
   ];
 
   return (
@@ -67,13 +68,13 @@ export default function AktiviteOzetiScreen() {
               : []
           }
           padding={{ top: insets.top + 70, bottom: 30 }}
-          accessibilityLabel={`Rota haritası${a.stops.length ? `, ${a.stops.length} mola noktası işaretli` : ''}`}
+          accessibilityLabel={$t('aktivite.rota_haritasi', { a: a.stops.length ? $t('aktivite.mola_noktasi_isaretli', { length: a.stops.length }) : '' })}
         />
         <View style={{ padding: space.lg, paddingBottom: 0 }}>
           {!a.mine && a.ownerId && a.ownerName ? (
             <Pressable
               accessibilityRole="link"
-              accessibilityLabel={`${a.ownerName} profili`}
+              accessibilityLabel={$t('aktivite.profili', { ownerName: a.ownerName })}
               onPress={() => router.push({ pathname: '/kisi/[id]', params: { id: a.ownerId! } })}
               hitSlop={8}
               style={{ alignSelf: 'flex-start', marginBottom: 2 }}>
@@ -85,8 +86,7 @@ export default function AktiviteOzetiScreen() {
           </Txt>
           {bekliyor ? (
             <Txt variant="small" style={{ color: colors.terra, marginTop: 2 }}>
-              Telefonda bekliyor · internet gelince gönderilecek
-            </Txt>
+              {$t('aktivite.telefonda_bekliyor_internet_gelince')}</Txt>
           ) : null}
           <Txt variant="display" style={{ fontSize: 25, marginVertical: 2 }} accessibilityRole="header">
             {a.title}
@@ -106,33 +106,30 @@ export default function AktiviteOzetiScreen() {
           ))}
         </View>
         <Txt variant="small" style={{ paddingHorizontal: space.lg, marginTop: 6 }}>
-          km/sa · *Min. hız yalnızca hareket hâlindeyken ölçülür
-        </Txt>
+          {$t('aktivite.km_sa_min_hiz')}</Txt>
 
         {a.hasElevation === false ? (
           <Txt variant="small" style={{ paddingHorizontal: space.lg, marginTop: space.md }}>
-            Bu kayıtta cihaz rakım bilgisi vermedi; yükseklik profili yok.
-          </Txt>
+            {$t('aktivite.bu_kayitta_cihaz_rakim')}</Txt>
         ) : (
         <View style={{ paddingHorizontal: space.lg, marginTop: space.md }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
-            <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14 }}>Yükseklik</Txt>
+            <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14 }}>{$t('aktivite.yukseklik')}</Txt>
             <Txt variant="small">
-              ↑ {a.climbM} m · ↓ {a.descentM} m · en yüksek {a.maxElevationM} m
-            </Txt>
+              {$t('aktivite.m_m_en_yuksek', { climbM: a.climbM, descentM: a.descentM, maxElevationM: a.maxElevationM })}</Txt>
           </View>
           <ElevationProfile
             values={a.elevation}
             width={width - space.lg * 2}
             markers={a.stops.map((s) => ({ at: s.at, n: s.n }))}
-            label={`Yükseklik profili, en yüksek nokta ${a.maxElevationM} metre`}
+            label={$t('aktivite.yukseklik_profili_en_yuksek', { maxElevationM: a.maxElevationM })}
           />
         </View>
         )}
 
         <Pressable accessibilityRole="link" onPress={() => router.push({ pathname: '/aktivite/[id]/uc-boyut', params: { id: a.id } })} style={styles.link3d}>
           <Icon name="mountain" color={colors.seaInk} />
-          <Txt style={{ flex: 1, fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: colors.seaInk }}>İnişli çıkışlı haritada gör (3B)</Txt>
+          <Txt style={{ flex: 1, fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: colors.seaInk }}>{$t('aktivite.inisli_cikisli_haritada_gor')}</Txt>
           <Icon name="chevron" size={18} color={colors.seaInk} strokeWidth={2} />
         </Pressable>
         {a.mine ? (
@@ -146,19 +143,19 @@ export default function AktiviteOzetiScreen() {
                 setRotaDurumu('bos');
                 router.push({ pathname: '/rota/[id]', params: { id: rid } });
               } catch (e) {
-                setRotaDurumu(e instanceof Error ? e.message : 'Kaydedilemedi');
+                setRotaDurumu(e instanceof Error ? e.message : $t('ortak.kaydedilemedi'));
               }
             }}
             style={[styles.link3d, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, marginTop: space.sm }]}>
             <Icon name="route" color={colors.terra} />
             <Txt style={{ flex: 1, fontFamily: fontFamily.bodySemiBold, fontSize: 14 }}>
-              {rotaDurumu === 'kaydediyor' ? 'Rota kaydediliyor…' : 'Bu aktiviteyi rota olarak kaydet'}
+              {rotaDurumu === 'kaydediyor' ? $t('aktivite.rota_kaydediliyor') : $t('aktivite.bu_aktiviteyi_rota_olarak')}
             </Txt>
             <Icon name="chevron" size={18} color={colors.inkMuted} strokeWidth={2} />
           </Pressable>
         ) : null}
         {!a.mine && supabaseHazir && sunucuAktivitesiMi(a.id) ? (
-          <SikayetBaglantisi etiket="Bu aktiviteyi şikayet et" onPress={() => sikayet.ac('activity', a.id, `${a.title}${a.ownerName ? ` · ${a.ownerName}` : ''}`)} />
+          <SikayetBaglantisi etiket={$t('aktivite.bu_aktiviteyi_sikayet_et')} onPress={() => sikayet.ac('activity', a.id, `${a.title}${a.ownerName ? ` · ${a.ownerName}` : ''}`)} />
         ) : null}
         {rotaDurumu !== 'bos' && rotaDurumu !== 'kaydediyor' ? (
           <Txt accessibilityRole="alert" style={{ color: colors.terra, fontSize: 13, paddingHorizontal: space.lg, marginTop: 6 }}>
@@ -170,13 +167,13 @@ export default function AktiviteOzetiScreen() {
       <FloatingHeader
         right={
           a.mine && supabaseHazir && sunucuAktivitesiMi(a.id) ? (
-            <IconButton floating icon="more" label="Aktiviteyi düzenle" onPress={() => router.push({ pathname: '/aktivite/[id]/duzenle', params: { id: a.id } })} />
+            <IconButton floating icon="more" label={$t('aktivite.aktiviteyi_duzenle')} onPress={() => router.push({ pathname: '/aktivite/[id]/duzenle', params: { id: a.id } })} />
           ) : undefined
         }
       />
       <View style={[styles.bottom, { paddingBottom: insets.bottom + 16 }]}>
-        <Button label="Hız & molalar" icon="gauge" variant="outline" href={{ pathname: '/aktivite/[id]/hiz', params: { id: a.id } }} style={{ flex: 1 }} />
-        <Button label="Paylaş" icon="share" href={{ pathname: '/aktivite/[id]/paylas', params: { id: a.id } }} style={{ flex: 1 }} />
+        <Button label={$t('aktivite.hiz_molalar')} icon="gauge" variant="outline" href={{ pathname: '/aktivite/[id]/hiz', params: { id: a.id } }} style={{ flex: 1 }} />
+        <Button label={$t('ortak.paylas')} icon="share" href={{ pathname: '/aktivite/[id]/paylas', params: { id: a.id } }} style={{ flex: 1 }} />
       </View>
       {sikayet.pencere}
     </View>
@@ -202,11 +199,11 @@ function BirlikteSatiri({ a }: { a: Activity }) {
   );
   const kisiler = taze ?? birlikteKisiler(a);
   if (!kisiler.length && !(a.mine && sunucu)) return null;
-  const metin = kisiler.length ? `${adListesi(kisiler.map((k) => (k.me ? 'sen' : k.kisa)))} ile birlikte` : 'Birlikte yaptığın kişileri ekle';
+  const metin = kisiler.length ? $t('aktivite.ile_birlikte', { adListesi: adListesi(kisiler.map((k) => (k.me ? 'sen' : k.kisa))) }) : $t('aktivite.birlikte_yaptigin_kisileri_ekle');
   return (
     <Pressable
       accessibilityRole={sunucu ? 'link' : undefined}
-      accessibilityLabel={sunucu ? `${metin}, kişileri aç` : metin}
+      accessibilityLabel={sunucu ? $t('aktivite.kisileri_ac', { metin }) : metin}
       disabled={!sunucu}
       onPress={() => router.push({ pathname: '/aktivite/[id]/birlikte', params: { id: a.id } })}
       style={styles.birlikte}>

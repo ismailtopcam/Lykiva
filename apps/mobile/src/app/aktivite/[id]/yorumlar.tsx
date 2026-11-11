@@ -27,17 +27,18 @@ import { Avatar } from '@/components/ui';
 import { basHarfler, grupRengi } from '@/grup/gruplar';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space } from '@/theme';
+import { $t } from '@/i18n';
 
 export default function YorumlarScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   if (!supabaseHazir || !sunucuAktivitesiMi(id)) {
     return (
       <View style={styles.root}>
-        <Header title="Yorumlar" />
+        <Header title={$t('aktivite_yorumlar.yorumlar')} />
         <Txt variant="muted" style={{ textAlign: 'center', padding: space.xl }}>
           {id?.startsWith('yerel-')
-            ? 'Bu kayıt henüz telefonda bekliyor. Sunucuya gönderilince yorum yazılabilir.'
-            : 'Yorumlar sunucuya bağlıyken çalışır.'}
+            ? $t('aktivite_yorumlar.bu_kayit_henuz_telefonda')
+            : $t('aktivite_yorumlar.yorumlar_sunucuya_bagliyken_calisir')}
         </Txt>
       </View>
     );
@@ -60,14 +61,14 @@ function Yorumlar({ id }: { id: string }) {
     try {
       const s = await aktiviteYorumlari(id);
       if (!s) {
-        setHata('Aktivite bulunamadı ya da görme iznin yok');
+        setHata($t('aktivite_yorumlar.aktivite_bulunamadi_ya_da'));
         return;
       }
       setHata(null);
       setSayfa(s);
       aktiviteDegisti(id, { like_count: s.like_count, comment_count: s.comment_count, liked: s.liked });
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Yorumlar yüklenemedi');
+      setHata(e instanceof Error ? e.message : $t('aktivite_yorumlar.yorumlar_yuklenemedi'));
     }
   }, [id]);
 
@@ -90,7 +91,7 @@ function Yorumlar({ id }: { id: string }) {
       aktiviteDegisti(id, { comment_count: (sayfa?.comment_count ?? 0) + 1 });
       setTimeout(() => liste.current?.scrollToEnd({ animated: true }), 50);
     } catch (e) {
-      setGonderHatasi(e instanceof Error ? e.message : 'Gönderilemedi');
+      setGonderHatasi(e instanceof Error ? e.message : $t('ortak.gonderilemedi'));
     } finally {
       setGonderiliyor(false);
     }
@@ -113,10 +114,10 @@ function Yorumlar({ id }: { id: string }) {
   function secenekler(y: Yorum) {
     if (!sayfa) return;
     const silebilir = y.mine || sayfa.i_own_activity;
-    Alert.alert(y.mine ? 'Yorumun' : `${y.display_name} yorumu`, undefined, [
-      ...(!y.mine ? [{ text: 'Şikayet et', onPress: () => sikayet.ac('comment', y.id, `${y.display_name}: ${y.body.slice(0, 80)}`) }] : []),
+    Alert.alert(y.mine ? $t('aktivite_yorumlar.yorumun') : $t('aktivite_yorumlar.yorumu', { display_name: y.display_name }), undefined, [
+      ...(!y.mine ? [{ text: $t('ortak.sikayet_et'), onPress: () => sikayet.ac('comment', y.id, `${y.display_name}: ${y.body.slice(0, 80)}`) }] : []),
       ...(!silebilir ? [] : [{
-        text: 'Sil',
+        text: $t('ortak.sil'),
         style: 'destructive' as const,
         onPress: () =>
           void yorumSil(y.id)
@@ -125,9 +126,9 @@ function Yorumlar({ id }: { id: string }) {
               setSayfa((s) => (s ? { ...s, comments: s.comments.filter((c) => c.id !== y.id), comment_count: Math.max(0, s.comment_count - 1) } : s));
               aktiviteDegisti(id, { comment_count: Math.max(0, sayfa.comment_count - 1) });
             })
-            .catch((e: unknown) => Alert.alert('Silinemedi', e instanceof Error ? e.message : String(e))),
+            .catch((e: unknown) => Alert.alert($t('ortak.silinemedi'), e instanceof Error ? e.message : String(e))),
       }]),
-      { text: 'Vazgeç', style: 'cancel' as const },
+      { text: $t('ortak.vazgec'), style: 'cancel' as const },
     ]);
   }
 
@@ -135,20 +136,20 @@ function Yorumlar({ id }: { id: string }) {
 
   return (
     <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Header title="Yorumlar" />
+      <Header title={$t('aktivite_yorumlar.yorumlar')} />
 
       {sayfa ? (
         <View style={styles.ozet}>
           <Pressable
             accessibilityRole="button"
             accessibilityState={{ selected: sayfa.liked }}
-            accessibilityLabel={`${sayfa.liked ? 'Beğeniyi geri al' : 'Beğen'}, ${sayfa.like_count} beğeni`}
+            accessibilityLabel={$t('aktivite_yorumlar.begeni', { a: sayfa.liked ? $t('ortak.begeniyi_geri_al') : $t('ortak.begen'), like_count: sayfa.like_count })}
             onPress={() => void begeniDegistir()}
             style={styles.begen}>
             <Icon name="heart" size={20} color={sayfa.liked ? colors.terra : colors.ink} />
-            <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: sayfa.liked ? colors.terra : colors.ink }}>{sayfa.like_count} beğeni</Txt>
+            <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: sayfa.liked ? colors.terra : colors.ink }}>{$t('aktivite_yorumlar.begeni_2', { like_count: sayfa.like_count })}</Txt>
           </Pressable>
-          <Txt variant="small">{sayfa.comment_count} yorum</Txt>
+          <Txt variant="small">{$t('aktivite_yorumlar.yorum_2', { comment_count: sayfa.comment_count })}</Txt>
         </View>
       ) : null}
 
@@ -172,8 +173,7 @@ function Yorumlar({ id }: { id: string }) {
             </Txt>
           ) : sayfa ? (
             <Txt variant="muted" style={{ textAlign: 'center', marginTop: space.lg }}>
-              Henüz yorum yok. İlk yorumu sen yaz.
-            </Txt>
+              {$t('aktivite_yorumlar.henuz_yorum_yok_ilk')}</Txt>
           ) : (
             <ActivityIndicator color={colors.terra} style={{ marginTop: space.lg }} />
           )
@@ -181,19 +181,19 @@ function Yorumlar({ id }: { id: string }) {
         renderItem={({ item: y }) => (
           <Pressable
             onLongPress={() => secenekler(y)}
-            accessibilityLabel={`${y.mine ? 'Sen' : y.display_name}, ${akisZamani(y.created_at)}: ${y.body}`}
-            accessibilityHint={y.mine || sayfa?.i_own_activity ? 'Silmek için basılı tut' : 'Şikayet etmek için basılı tut'}
+            accessibilityLabel={`${y.mine ? $t('ortak.sen') : y.display_name}, ${akisZamani(y.created_at)}: ${y.body}`}
+            accessibilityHint={y.mine || sayfa?.i_own_activity ? $t('aktivite_yorumlar.silmek_icin_basili_tut') : $t('aktivite_yorumlar.sikayet_etmek_icin_basili')}
             style={styles.yorum}>
             <Pressable
               accessibilityRole="link"
-              accessibilityLabel={`${y.display_name} profili`}
+              accessibilityLabel={$t('aktivite_yorumlar.profili', { display_name: y.display_name })}
               onPress={() => (y.mine ? router.navigate('/profil') : router.push({ pathname: '/kisi/[id]', params: { id: y.user_id } }))}
               hitSlop={4}>
               <Avatar initials={basHarfler(y.display_name)} tone={grupRengi(y.user_id)} size={34} />
             </Pressable>
             <View style={{ flex: 1, minWidth: 0 }}>
               <Txt style={{ fontSize: 13 }} numberOfLines={1}>
-                <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 13 }}>{y.mine ? 'Sen' : y.display_name}</Txt>
+                <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 13 }}>{y.mine ? $t('ortak.sen') : y.display_name}</Txt>
                 <Txt variant="small"> · {akisZamani(y.created_at)}</Txt>
               </Txt>
               <Txt style={styles.metin}>{y.body}</Txt>
@@ -212,9 +212,9 @@ function Yorumlar({ id }: { id: string }) {
         <TextInput
           value={taslak}
           onChangeText={setTaslak}
-          placeholder="Yorum yaz…"
+          placeholder={$t('aktivite_yorumlar.yorum_yaz')}
           placeholderTextColor={colors.inkMuted}
-          accessibilityLabel="Yorum"
+          accessibilityLabel={$t('aktivite_yorumlar.yorum')}
           maxLength={YORUM_SINIRI}
           multiline
           editable={!!sayfa}
@@ -222,7 +222,7 @@ function Yorumlar({ id }: { id: string }) {
         />
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Gönder"
+          accessibilityLabel={$t('aktivite_yorumlar.gonder')}
           accessibilityState={{ disabled: !taslak.trim() || gonderiliyor, busy: gonderiliyor }}
           onPress={() => void yolla()}
           disabled={!taslak.trim() || gonderiliyor}

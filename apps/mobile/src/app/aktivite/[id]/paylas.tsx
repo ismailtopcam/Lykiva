@@ -15,32 +15,33 @@ import { baglantiAc, baglantiAdresi, baglantiDurumu, baglantiKapat, baglantiPayl
 import { dosyaAdi, gpxPaylas } from '@/lib/gpx';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space } from '@/theme';
+import { $t } from '@/i18n';
 
-const statDefs: [KartIstatistigi, string][] = [
-  ['mesafe', 'Mesafe'],
-  ['sure', 'Süre'],
-  ['tirmanis', 'Tırmanış'],
-  ['maks', 'Maks. hız'],
-  ['ort', 'Ort. hız'],
-  ['mola', 'Molalar'],
-  ['hava', 'Hava'],
-  ['kisiler', 'Birlikte yaptıklarım'],
+const statDefs = (): [KartIstatistigi, string][] => [
+  ['mesafe', $t('ortak.mesafe')],
+  ['sure', $t('ortak.sure')],
+  ['tirmanis', $t('ortak.tirmanis')],
+  ['maks', $t('ortak.maks_hiz')],
+  ['ort', $t('ortak.ort_hiz')],
+  ['mola', $t('aktivite_paylas.molalar')],
+  ['hava', $t('ortak.hava')],
+  ['kisiler', $t('aktivite_paylas.birlikte_yaptiklarim')],
 ];
 
-const GORUNURLUK: { id: NonNullable<Activity['visibility']>; label: string }[] = [
-  { id: 'private', label: 'Sadece ben' },
-  { id: 'followers', label: 'Takipçiler' },
-  { id: 'groups', label: 'Gruplarım' },
-  { id: 'public', label: 'Herkese açık' },
+const GORUNURLUK = (): { id: NonNullable<Activity['visibility']>; label: string }[] => [
+  { id: 'private', label: $t('ortak.sadece_ben') },
+  { id: 'followers', label: $t('ortak.takipciler') },
+  { id: 'groups', label: $t('ortak.gruplarim') },
+  { id: 'public', label: $t('ortak.herkese_acik') },
 ];
 
 type Hedef = { id: 'hikaye' | 'kart' | 'akis' | 'baglanti' | 'gpx'; label: string; icon: IconName; bg: string; fg: string };
 
-const targets: Hedef[] = [
-  { id: 'hikaye', label: 'Hikâye', icon: 'image', bg: colors.ink, fg: colors.ground },
-  { id: 'kart', label: 'Kart görseli', icon: 'share', bg: colors.sea, fg: '#FFFFFF' },
-  { id: 'akis', label: 'Lykiva akışı', icon: 'home', bg: colors.terra, fg: '#FFFFFF' },
-  { id: 'baglanti', label: 'Bağlantı', icon: 'link', bg: colors.sand, fg: colors.ink },
+const targets = (): Hedef[] => [
+  { id: 'hikaye', label: $t('aktivite_paylas.hikaye'), icon: 'image', bg: colors.ink, fg: colors.ground },
+  { id: 'kart', label: $t('aktivite_paylas.kart_gorseli'), icon: 'share', bg: colors.sea, fg: '#FFFFFF' },
+  { id: 'akis', label: $t('aktivite_paylas.lykiva_akisi'), icon: 'home', bg: colors.terra, fg: '#FFFFFF' },
+  { id: 'baglanti', label: $t('aktivite_paylas.baglanti'), icon: 'link', bg: colors.sand, fg: colors.ink },
   { id: 'gpx', label: 'GPX', icon: 'download', bg: colors.sand, fg: colors.ink },
 ];
 
@@ -74,7 +75,7 @@ export default function PaylasimStudyosuScreen() {
   if (!a) {
     return (
       <View style={styles.root}>
-        <Header title="Paylaş" center />
+        <Header title={$t('ortak.paylas')} center />
         <View style={{ padding: space.lg, alignItems: 'center' }}>{hata ? <Txt variant="muted">{hata}</Txt> : <ActivityIndicator color={colors.terra} />}</View>
       </View>
     );
@@ -100,20 +101,20 @@ export default function PaylasimStudyosuScreen() {
     setMesgul(h.id);
     try {
       if (h.id === 'hikaye' || h.id === 'kart') {
-        if (Platform.OS === 'web') throw new Error('Görsel paylaşımı telefonda çalışır');
-        if (!(await Sharing.isAvailableAsync())) throw new Error('Bu cihazda paylaşım menüsü yok');
+        if (Platform.OS === 'web') throw new Error($t('aktivite_paylas.gorsel_paylasimi_telefonda_calisir'));
+        if (!(await Sharing.isAvailableAsync())) throw new Error($t('aktivite_paylas.bu_cihazda_paylasim_menusu'));
         const uri = await gorselUret(h.id);
-        await Sharing.shareAsync(uri, { mimeType: 'image/png', UTI: 'public.png', dialogTitle: 'Kartı paylaş' });
+        await Sharing.shareAsync(uri, { mimeType: 'image/png', UTI: 'public.png', dialogTitle: $t('aktivite_paylas.karti_paylas') });
       } else if (h.id === 'gpx') {
         await gpxPaylas(a!.title, a!.type, await aktiviteNoktalari(a!.id));
       } else if (h.id === 'akis') {
-        if (!sunucuda) throw new Error(a!.id.startsWith('yerel-') ? 'Kayıt henüz sunucuya gitmedi; internet gelince akışta paylaşabilirsin' : 'Yalnızca kendi aktiviteni akışta paylaşabilirsin');
+        if (!sunucuda) throw new Error(a!.id.startsWith('yerel-') ? $t('aktivite_paylas.kayit_henuz_sunucuya_gitmedi_2') : $t('aktivite_paylas.yalnizca_kendi_aktiviteni_akista'));
         const v = gorunurluk === 'private' ? 'followers' : gorunurluk;
         await aktiviteAyarla(a!.id, { visibility: v, hide_endpoints: hide });
         setGorunurluk(v);
-        setMesaj(v === 'public' ? 'Akışta herkese açık paylaşıldı' : 'Takipçilerinin akışında paylaşıldı');
+        setMesaj(v === 'public' ? $t('aktivite_paylas.akista_herkese_acik_paylasildi') : $t('aktivite_paylas.takipcilerinin_akisinda_paylasildi'));
       } else if (h.id === 'baglanti') {
-        if (!sunucuda) throw new Error(a!.id.startsWith('yerel-') ? 'Kayıt henüz sunucuya gitmedi; internet gelince bağlantı açabilirsin' : 'Yalnızca kendi aktivitenin bağlantısını paylaşabilirsin');
+        if (!sunucuda) throw new Error(a!.id.startsWith('yerel-') ? $t('aktivite_paylas.kayit_henuz_sunucuya_gitmedi') : $t('aktivite_paylas.yalnizca_kendi_aktivitenin_baglantisini'));
         const anahtar = baglanti ?? (await baglantiAc(a!.id));
         setBaglanti(anahtar);
         const adres = baglantiAdresi(anahtar);
@@ -121,7 +122,7 @@ export default function PaylasimStudyosuScreen() {
         else await baglantiPaylas(a!.title, adres);
       }
     } catch (e) {
-      setMesaj(e instanceof Error ? e.message : 'Paylaşılamadı');
+      setMesaj(e instanceof Error ? e.message : $t('aktivite_paylas.paylasilamadi'));
     } finally {
       setMesgul(null);
     }
@@ -132,9 +133,9 @@ export default function PaylasimStudyosuScreen() {
     if (!sunucuda) return;
     try {
       await aktiviteAyarla(a!.id, { visibility: v });
-      setMesaj(v === 'private' ? 'Artık yalnızca sen görüyorsun' : v === 'public' ? 'Herkese açık' : v === 'groups' ? 'Gruplarındaki kişiler görebilir' : 'Takipçilerin görebilir');
+      setMesaj(v === 'private' ? $t('aktivite_paylas.artik_yalnizca_sen_goruyorsun') : v === 'public' ? $t('ortak.herkese_acik') : v === 'groups' ? $t('aktivite_paylas.gruplarindaki_kisiler_gorebilir') : $t('aktivite_paylas.takipcilerin_gorebilir'));
     } catch (e) {
-      setMesaj(e instanceof Error ? e.message : 'Kaydedilemedi');
+      setMesaj(e instanceof Error ? e.message : $t('ortak.kaydedilemedi'));
     }
   }
 
@@ -143,14 +144,14 @@ export default function PaylasimStudyosuScreen() {
     try {
       if (v) {
         setBaglanti(await baglantiAc(a!.id));
-        setMesaj('Bağlantı açıldı; "Bağlantı" ile paylaşabilirsin');
+        setMesaj($t('aktivite_paylas.baglanti_acildi_baglanti_ile'));
       } else {
         await baglantiKapat(a!.id);
         setBaglanti(null);
-        setMesaj('Bağlantı kapatıldı; eski bağlantı artık açılmaz');
+        setMesaj($t('aktivite_paylas.baglanti_kapatildi_eski_baglanti'));
       }
     } catch (e) {
-      setMesaj(e instanceof Error ? e.message : 'Kaydedilemedi');
+      setMesaj(e instanceof Error ? e.message : $t('ortak.kaydedilemedi'));
     }
   }
 
@@ -168,11 +169,11 @@ export default function PaylasimStudyosuScreen() {
       </View>
       <View style={styles.on}>
         <Header
-          title="Paylaş"
+          title={$t('ortak.paylas')}
           center
           right={
             <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={8} style={{ paddingHorizontal: 8, height: 44, justifyContent: 'center' }}>
-              <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 15, color: colors.terra }}>Bitti</Txt>
+              <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 15, color: colors.terra }}>{$t('aktivite_paylas.bitti')}</Txt>
             </Pressable>
           }
         />
@@ -184,16 +185,16 @@ export default function PaylasimStudyosuScreen() {
           </View>
 
           <View style={{ paddingHorizontal: space.lg }}>
-            <Label>Şablon</Label>
+            <Label>{$t('aktivite_paylas.sablon')}</Label>
             <View accessibilityRole="radiogroup" style={styles.row}>
-              {KART_SABLONLARI.map((l, i) => (
+              {KART_SABLONLARI().map((l, i) => (
                 <Chip key={l.name} label={l.name} role="radio" selected={i === look} onPress={() => setLook(i)} />
               ))}
             </View>
 
-            <Label>Kartta göster</Label>
+            <Label>{$t('aktivite_paylas.kartta_goster')}</Label>
             <View style={[styles.row, { flexWrap: 'wrap' }]}>
-              {statDefs
+              {statDefs()
                 .filter(([k]) => (k !== 'kisiler' || a.with.length > 0) && (k !== 'hava' || !!a.hava))
                 .map(([k, label]) => (
                   <Chip key={k} label={label} role="checkbox" tone="sea" icon={on[k] ? undefined : 'plus'} selected={!!on[k]} onPress={() => setOn({ ...on, [k]: !on[k] })} />
@@ -201,25 +202,25 @@ export default function PaylasimStudyosuScreen() {
             </View>
 
             <View style={{ borderTopWidth: 1, borderTopColor: colors.lineStrong, marginTop: 4 }}>
-              <ToggleRow title="Başlangıç ve bitişi gizle" subtitle="Evinin konumu haritada görünmez" value={hide} onChange={gizlemeSec} />
+              <ToggleRow title={$t('aktivite_paylas.baslangic_ve_bitisi_gizle')} subtitle={$t('aktivite_paylas.evinin_konumu_haritada_gorunmez')} value={hide} onChange={gizlemeSec} />
             </View>
 
             {sunucuda ? (
               <>
-                <Label>Lykiva’da kimler görsün</Label>
+                <Label>{$t('aktivite_paylas.lykiva_da_kimler_gorsun')}</Label>
                 <View accessibilityRole="radiogroup" style={[styles.row, { flexWrap: 'wrap' }]}>
-                  {GORUNURLUK.map((g) => (
+                  {GORUNURLUK().map((g) => (
                     <Chip key={g.id} label={g.label} role="radio" tone="sea" selected={g.id === gorunurluk} onPress={() => gorunurlukSec(g.id)} />
                   ))}
                 </View>
                 {baglanti !== undefined ? (
                   <View style={{ borderTopWidth: 1, borderTopColor: colors.lineStrong }}>
                     <ToggleRow
-                      title="Bağlantıyla paylaşım"
+                      title={$t('aktivite_paylas.baglantiyla_paylasim')}
                       subtitle={
                         baglanti
-                          ? 'Açık: bağlantısı olan herkes giriş yapmadan web’de görür (yukarıdaki ayardan bağımsız)'
-                          : 'Kapalı: açarsan web’de görülebilen bir bağlantı oluşur'
+                          ? $t('aktivite_paylas.acik_baglantisi_olan_herkes')
+                          : $t('aktivite_paylas.kapali_acarsan_web_de')
                       }
                       value={!!baglanti}
                       onChange={baglantiSec}
@@ -239,13 +240,13 @@ export default function PaylasimStudyosuScreen() {
             </Txt>
           ) : null}
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            {targets.map((t) => {
+            {targets().map((t) => {
               const pasif = (t.id === 'akis' || t.id === 'baglanti') && !sunucuda;
               return (
                 <Pressable
                   key={t.id}
                   accessibilityRole="button"
-                  accessibilityLabel={`${t.label} ile paylaş`}
+                  accessibilityLabel={$t('aktivite_paylas.ile_paylas', { label: t.label })}
                   accessibilityState={{ disabled: pasif, busy: mesgul === t.id }}
                   disabled={!!mesgul}
                   onPress={() => hedefSec(t)}
@@ -261,8 +262,7 @@ export default function PaylasimStudyosuScreen() {
             })}
           </View>
           <Txt variant="small" style={{ textAlign: 'center', marginTop: 8 }}>
-            Hikâye (9:16) ve kart görseli telefonun paylaşım menüsünü açar: Instagram, WhatsApp, X, Telegram…
-          </Txt>
+            {$t('aktivite_paylas.hikaye_9_16_ve')}</Txt>
         </View>
       </View>
     </View>
