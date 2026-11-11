@@ -16,8 +16,8 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 - **Play dahili test yayında** (sürüm 2, 0.1.0). Tester listesi "Gösterge test". Katılma bağlantısı aşağıda (Bekleyen elle yapılacaklar 6).
   Senin anlık hız ve rota eğimi işlerin bu sürümde **yok**; bir sonraki Android derlemesine girecek.
-- **iOS TestFlight'a çıkıyor:** App Store Connect'te "Lykiva" açıldı (Apple kimliği `6833386986`), ilk iOS derlemesi
-  güncel main'den (senin işlerin dahil) alındı.
+- **iOS TestFlight'a gönderildi:** App Store Connect'te "Lykiva" (Apple kimliği `6833386986`), sürüm 0.1.0 (3), güncel
+  main'den (senin işlerin dahil). iPhone'da denemek için seni App Store Connect'e ekleyeceğiz (Apple ID e-postanı İsmail'e ilet).
 - **Google ile giriş açık.** Sunucuda `google=true`; uygulama kodu değişmedi, Play'deki sürümde de çalışır.
   Apple ile giriş sunucuda zaten açıktı; TestFlight sürümünde denenecek.
 - **Kod değişiklikleri** (`apps/mobile`):
@@ -108,8 +108,10 @@ Kurulum dosyaları hazır: `altyapi/` (BRouter 1.7.10 + Photon 1.3.0, Coolify Do
 App Store Connect'te **Lykiva** (Apple kimliği `6833386986`, SKU `lykiva`, Türkçe). Bundle ID `app.lykiva.mobile` kayıtlı;
 Push Notifications ve Sign in with Apple yetkileri **elle** açıldı (EAS'ın otomatik eşitlemesi Apple API hatası verdi:
 `TIBURON_APP_CONSENT`; iOS derlerken `EXPO_NO_CAPABILITY_SYNC=1` kullan). Dağıtım sertifikası ve push anahtarı
-Gösterge ile ortak (aynı Apple ekibi). İlk derleme: buildNumber 3.
-Kalan: TestFlight'a gönderim, testerlar, Apple girişi denemesi.
+Gösterge ile ortak (aynı Apple ekibi).
+**TestFlight'a gönderildi** (11 Kas 2026): 0.1.0 (3). Gönderim anahtarı EAS'ta ("[Expo] EAS Submit", Gösterge ile ortak);
+sonraki gönderimler: `npx eas-cli@latest submit -p ios --latest`. EAS TestFlight'ta "Team (Expo)" iç test grubunu açtı.
+Kalan: testerlar (Gökhan ekipte değil: App Store Connect > Users and Access'ten davet ya da dış test), Apple / Google girişi denemesi.
 
 ### [ ] Android push bildirimi (FCM)
 Android'de bildirim **çalışmıyor**: `google-services.json` ve EAS'ta FCM V1 anahtarı yok; bildirim açılınca
