@@ -11,8 +11,6 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | Kim | İş | Dal |
 | --- | --- | --- |
 | İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |
-| Gökhan | Anlık hız: durunca hemen sıfırlanma, daha az gecikme, zayıf sinyalde "—" | `anlik-hiz` |
-
 ## Bekleyen elle yapılacaklar
 
 Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil.
