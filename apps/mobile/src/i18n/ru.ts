@@ -742,6 +742,8 @@ export const ru: Sozluk = {
     kaydetmek_icin_henuz_yeterli: 'Пока недостаточно GPS-точек для сохранения.',
   },
   kayit_kaydedici: {
+    kilit_kanal: 'Текущая запись',
+    kilit_kaydediyor: 'Идёт запись',
     devam: 'Продолжить',
     simdi_degil: 'Не сейчас',
     lykiva_kaydediyor: 'Lykiva ведёт запись',

@@ -743,6 +743,8 @@ export const tr = {
     kaydetmek_icin_henuz_yeterli: 'Kaydetmek için henüz yeterli GPS noktası yok.',
   },
   kayit_kaydedici: {
+    kilit_kanal: 'Süren kayıt',
+    kilit_kaydediyor: 'Kaydediyor',
     devam: 'Devam',
     simdi_degil: 'Şimdi değil',
     lykiva_kaydediyor: 'Lykiva kaydediyor',

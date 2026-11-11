@@ -742,6 +742,8 @@ export const de: Sozluk = {
     kaydetmek_icin_henuz_yeterli: 'Noch nicht genug GPS-Punkte zum Speichern.',
   },
   kayit_kaydedici: {
+    kilit_kanal: 'Laufende Aufzeichnung',
+    kilit_kaydediyor: 'Aufzeichnung läuft',
     devam: 'Weiter',
     simdi_degil: 'Nicht jetzt',
     lykiva_kaydediyor: 'Lykiva zeichnet auf',
