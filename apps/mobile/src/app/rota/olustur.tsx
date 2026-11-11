@@ -8,12 +8,14 @@ import {
   formatMeters,
   routeStats,
   type ActivityType,
+  type RoutePoint,
 } from '@lykiva/shared';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Keyboard, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Keyboard, Pressable, ScrollView, StyleSheet, TextInput, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { EgimProfili, imlecKonumu, useRotaEgim } from '@/components/EgimProfili';
 import { FloatingHeader } from '@/components/Header';
 import { Icon } from '@/components/Icon';
 import { IconButton } from '@/components/IconButton';
@@ -42,6 +44,7 @@ function sureMetni(s: number) {
 
 export default function RotaOlusturScreen() {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const kayit = useKayit();
   const [mod, setMod] = useState<CizimModu>('patika');
   const [activity, setActivity] = useState<ActivityType>('hike');
@@ -56,6 +59,10 @@ export default function RotaOlusturScreen() {
   const [sonuclar, setSonuclar] = useState<YerSonucu[]>([]);
   const [odak, setOdak] = useState<{ c: LngLat; z: number } | null>(null);
   const ilkOdak = useRef(false);
+  // Profilde seçilen nokta; rota değişince geçersiz olsun diye hangi rotaya ait olduğu da tutulur
+  const [secim, setSecim] = useState<{ points: RoutePoint[]; v: number } | null>(null);
+  // Alttaki panelin yüksekliği: çizim modları onun üstünde, harita kamerası ona göre
+  const [panelH, setPanelH] = useState(400);
 
   // Başlangıçta haritayı bulunduğun yere getir
   useEffect(() => konumOnizlemeBaslat(), []);
@@ -111,6 +118,9 @@ export default function RotaOlusturScreen() {
   const zorluk = stats ? estimateDifficulty(activity, stats.distanceM, stats.gainM) : null;
   const rakimVar = points.some((p) => p.alt != null);
   const cizgi: LngLat[] = points.map((p) => [p.lng, p.lat]);
+  const egim = useRotaEgim(points);
+  const imlec = secim && secim.points === points ? secim.v : null;
+  const imlecYeri = imlecKonumu(points, egim, imlec);
 
   const markers: MapMarker[] = duraklar.map((c, i) => ({
     id: `d${i}`,
@@ -118,6 +128,7 @@ export default function RotaOlusturScreen() {
     kind: i === 0 ? 'start' : i === duraklar.length - 1 && duraklar.length > 1 ? 'end' : 'stop',
     text: i > 0 && i < duraklar.length - 1 ? String(i) : undefined,
   }));
+  if (imlecYeri) markers.push({ id: 'imlec', coord: imlecYeri, kind: 'cursor' });
 
   const zemin = yeterli ? sonuc?.surface : null;
   const zeminler = zemin
@@ -160,11 +171,12 @@ export default function RotaOlusturScreen() {
       <TopoMap
         style={StyleSheet.absoluteFill}
         route={cizgi.length > 1 ? cizgi : undefined}
+        routeColors={egim?.renkler}
         markers={markers}
         follow={odak?.c ?? null}
         followZoom={odak?.z}
         onPress={(c) => setDuraklar((d) => [...d, c])}
-        padding={{ top: 120, bottom: 440 }}
+        padding={{ top: 120, bottom: panelH + 40 }}
         accessibilityLabel={`Rota çizim haritası: ${duraklar.length} nokta`}
       />
       <FloatingHeader
@@ -202,7 +214,7 @@ export default function RotaOlusturScreen() {
         </View>
       ) : null}
 
-      <View style={[styles.modes, { bottom: 412 + insets.bottom }]} accessibilityRole="radiogroup">
+      <View style={[styles.modes, { bottom: panelH + 12 }]} accessibilityRole="radiogroup">
         {CIZIM_MODLARI.map((m) => (
           <View key={m.id} style={styles.modeWrap}>
             <Chip label={m.label} role="radio" selected={m.id === mod} onPress={() => setMod(m.id)} />
@@ -210,7 +222,7 @@ export default function RotaOlusturScreen() {
         ))}
       </View>
 
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
+      <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]} onLayout={(e) => setPanelH(Math.round(e.nativeEvent.layout.height))}>
         <View style={styles.grip} />
         {!gercekHarita ? (
           <Txt variant="small" style={styles.note}>
@@ -230,11 +242,22 @@ export default function RotaOlusturScreen() {
           ))}
         </ScrollView>
 
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
-          <Stat label="Mesafe" value={stats ? `${formatKm(stats.distanceM)} km` : '–'} />
-          <Stat label="Tırmanış" value={stats && rakimVar ? `↑ ${formatMeters(stats.gainM)} m` : '–'} />
-          <Stat label="Tahmini süre" value={stats ? sureMetni(estimateDuration(activity, stats.distanceM, rakimVar ? stats.gainM : 0)) : '–'} />
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 8, columnGap: 10, marginBottom: 12 }}>
+          <Stat label="Mesafe" size={18} value={stats ? `${formatKm(stats.distanceM)} km` : '–'} />
+          <Stat label="Tırmanış" size={18} value={stats && rakimVar ? `↑ ${formatMeters(stats.gainM)} m` : '–'} />
+          <Stat label="İniş" size={18} value={stats && rakimVar ? `↓ ${formatMeters(stats.lossM)} m` : '–'} />
+          <Stat label="Tahmini süre" size={18} value={stats ? sureMetni(estimateDuration(activity, stats.distanceM, rakimVar ? stats.gainM : 0)) : '–'} />
         </View>
+
+        {egim ? (
+          <View style={{ marginBottom: 12 }}>
+            <EgimProfili egim={egim} width={width - space.lg * 2} height={64} imlec={imlec} onImlec={(v) => setSecim(v == null ? null : { points, v })} />
+          </View>
+        ) : stats && mod === 'serbest' ? (
+          <Txt variant="small" style={{ marginBottom: 12 }}>
+            Serbest çizimde yükseklik ve eğim yok; “Patikaya yapış” ya da “Yola yapış” seç.
+          </Txt>
+        ) : null}
 
         {zeminler.length ? (
           <>

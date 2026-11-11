@@ -18,7 +18,8 @@ import { FallbackMap } from './FallbackMap';
 export type MapMarker = {
   id: string;
   coord: LngLat;
-  kind: 'start' | 'end' | 'stop' | 'me' | 'friend' | 'meeting';
+  /** cursor: yükseklik profilinde seçilen nokta */
+  kind: 'start' | 'end' | 'stop' | 'me' | 'friend' | 'meeting' | 'cursor';
   label?: string;
   /** stop için numara, friend için baş harfler */
   text?: string;
@@ -30,6 +31,11 @@ export type TopoMapProps = {
   route?: LngLat[];
   /** 0..1 — canlı takipte tamamlanan kısım (geri kalanı kesikli) */
   progress?: number;
+  /**
+   * Rotanın parçalarını ayrı renklerle çizmek için (ör. eğime göre): route dizisindeki nokta aralığı
+   * [from, to] (ikisi dahil) ve rengi. progress ile birlikte kullanılmaz. Yalnızca gerçek haritada.
+   */
+  routeColors?: { from: number; to: number; color: string }[];
   markers?: MapMarker[];
   dark?: boolean;
   interactive?: boolean;
@@ -75,6 +81,19 @@ function NativeMap(props: TopoMapProps) {
   const split = progress !== undefined ? Math.max(1, Math.round(progress * (route.length - 1))) : route.length - 1;
   const done = route.slice(0, split + 1);
   const rest = route.slice(split);
+  const renkli =
+    progress === undefined && props.routeColors?.length && route.length > 1
+      ? {
+          type: 'FeatureCollection' as const,
+          features: props.routeColors
+            .filter((r) => r.to > r.from)
+            .map((r) => ({
+              type: 'Feature' as const,
+              properties: { c: r.color },
+              geometry: { type: 'LineString' as const, coordinates: route.slice(r.from, r.to + 1) },
+            })),
+        }
+      : null;
 
   const pointFeatures = markers
     .filter((m) => m.kind !== 'friend')
@@ -117,11 +136,24 @@ function NativeMap(props: TopoMapProps) {
             layout={{ 'line-cap': 'round', 'line-join': 'round' }}
             paint={{ 'line-color': props.dark ? '#0E1512' : '#FBF8F2', 'line-width': 8 }}
           />
+          {renkli ? null : (
+            <ML.Layer
+              id="rota-tamam-cizgi"
+              type="line"
+              layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+              paint={{ 'line-color': props.dark ? '#E07A4A' : '#B04E25', 'line-width': 4.5 }}
+            />
+          )}
+        </ML.GeoJSONSource>
+      ) : null}
+
+      {renkli ? (
+        <ML.GeoJSONSource id="rota-renkli" data={renkli}>
           <ML.Layer
-            id="rota-tamam-cizgi"
+            id="rota-renkli-cizgi"
             type="line"
             layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-            paint={{ 'line-color': props.dark ? '#E07A4A' : '#B04E25', 'line-width': 4.5 }}
+            paint={{ 'line-color': ['get', 'c'], 'line-width': 4.5 }}
           />
         </ML.GeoJSONSource>
       ) : null}
@@ -143,11 +175,13 @@ function NativeMap(props: TopoMapProps) {
             id="isaret-daire"
             type="circle"
             paint={{
-              'circle-radius': ['match', ['get', 'kind'], 'stop', 10, 'me', 9, 7],
+              'circle-radius': ['match', ['get', 'kind'], 'stop', 10, 'me', 9, 'cursor', 8, 7],
               'circle-color': [
                 'match',
                 ['get', 'kind'],
                 'start',
+                '#FBF8F2',
+                'cursor',
                 '#FBF8F2',
                 'meeting',
                 '#0B6A6A',
@@ -155,8 +189,8 @@ function NativeMap(props: TopoMapProps) {
                 props.dark ? '#E07A4A' : '#0B6A6A',
                 '#16201B',
               ],
-              'circle-stroke-color': ['match', ['get', 'kind'], 'start', '#0B6A6A', '#FBF8F2'],
-              'circle-stroke-width': ['match', ['get', 'kind'], 'start', 3, 2.5],
+              'circle-stroke-color': ['match', ['get', 'kind'], 'start', '#0B6A6A', 'cursor', '#16201B', '#FBF8F2'],
+              'circle-stroke-width': ['match', ['get', 'kind'], 'start', 3, 'cursor', 3.5, 2.5],
             }}
           />
           <ML.Layer
