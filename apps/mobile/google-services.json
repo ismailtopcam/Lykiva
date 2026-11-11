@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "331909798090",
+    "project_id": "lykiva",
+    "storage_bucket": "lykiva.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:331909798090:android:3f79d8ace614e18dc63c33",
+        "android_client_info": {
+          "package_name": "app.lykiva.mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "331909798090-j4hnme8ekap35asjihsk6fhi04hi35gk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBdmzR4yK2AlzByvFTyAASxmes1Zgk8XVM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "331909798090-j4hnme8ekap35asjihsk6fhi04hi35gk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
