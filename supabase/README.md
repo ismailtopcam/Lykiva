@@ -134,9 +134,9 @@ yalnızca kod içerir; web'de yayımlanır, Supabase Auth (GoTrue) onları adres
 Şablon değişirse web yeniden yayımlanınca geçerli olur (GoTrue şablonu önbelleğe alır; hemen görmek için auth servisini
 yeniden başlat).
 
-### Coolify > lykiva-supabase > Environment Variables
+### Coolify > lykiva-supabase > Environment Variables — 11 Kasım 2026 itibarıyla dolduruldu
 
-Şablondaki hazır değişkenler (adları farklıysa compose'daki `supabase-auth` bölümüne bak):
+Şablondaki hazır değişkenler:
 
 ```
 ENABLE_EMAIL_SIGNUP=true
@@ -154,19 +154,27 @@ Zoho AB veri merkezinde olduğu için sunucu `smtp.zoho.eu`. Gönderen adres (`S
 aynı olmalı, yoksa Zoho postayı reddeder. Hesapta iki adımlı doğrulama açıksa Zoho > Security > App Passwords'ten
 uygulama şifresi alınır. 465 çalışmazsa `SMTP_PORT=587`.
 
-### Compose'a eklenecek satırlar (`supabase-auth` > environment)
+### Şablon, konu ve kod süresi — 11 Kasım 2026 itibarıyla yapıldı
 
-```yaml
-      - 'GOTRUE_MAILER_OTP_EXP=3600'
-      - 'GOTRUE_MAILER_OTP_LENGTH=6'
-      - 'GOTRUE_MAILER_SUBJECTS_CONFIRMATION=Lykiva doğrulama kodun'
-      - 'GOTRUE_MAILER_SUBJECTS_EMAIL_CHANGE=Lykiva doğrulama kodun'
-      - 'GOTRUE_MAILER_SUBJECTS_RECOVERY=Lykiva şifre sıfırlama kodun'
-      - 'GOTRUE_MAILER_TEMPLATES_CONFIRMATION=https://lykiva.app/eposta/dogrulama.html'
-      - 'GOTRUE_MAILER_TEMPLATES_EMAIL_CHANGE=https://lykiva.app/eposta/eposta-degisim.html'
-      - 'GOTRUE_MAILER_TEMPLATES_RECOVERY=https://lykiva.app/eposta/sifre.html'
+Coolify'ın Supabase şablonunda `MAILER_TEMPLATES_*` ve `MAILER_SUBJECTS_*` değişkenleri zaten compose'a bağlı;
+Environment Variables'ta dolduruldu:
+
+```
+MAILER_TEMPLATES_CONFIRMATION=https://lykiva.app/eposta/dogrulama.html
+MAILER_TEMPLATES_EMAIL_CHANGE=https://lykiva.app/eposta/eposta-degisim.html
+MAILER_TEMPLATES_RECOVERY=https://lykiva.app/eposta/sifre.html
+MAILER_SUBJECTS_CONFIRMATION=Lykiva doğrulama kodun
+MAILER_SUBJECTS_EMAIL_CHANGE=Lykiva doğrulama kodun
+MAILER_SUBJECTS_RECOVERY=Lykiva şifre sıfırlama kodun
 ```
 
-Şablonlarda "Kod 1 saat geçerli" yazıyor; `GOTRUE_MAILER_OTP_EXP=3600` bununla eşleşir. Uzunluğu değiştirirsen
-uygulama 6–10 haneyi kabul eder. Kaydedip servisi yeniden başlat; ardından `node scripts/sunucu-kontrol.mjs` ve
-uygulamadan bir hesap açıp kodun geldiğini dene (spam klasörüne de bak).
+Kod süresi ve uzunluğu için `supabase-auth` compose'una iki satır eklendi (Coolify API ile):
+
+```yaml
+      - 'GOTRUE_MAILER_OTP_EXP=${MAILER_OTP_EXP:-3600}'
+      - 'GOTRUE_MAILER_OTP_LENGTH=${MAILER_OTP_LENGTH:-6}'
+```
+
+Şablonlarda "Kod 1 saat geçerli" yazıyor; 3600 sn bununla eşleşir. Uzunluk değişirse uygulama 6–10 haneyi kabul eder.
+Değişiklikten sonra servisi yeniden başlat; ardından `node scripts/sunucu-kontrol.mjs` ve uygulamadan bir hesap açıp
+kodun geldiğini dene (spam klasörüne de bak).

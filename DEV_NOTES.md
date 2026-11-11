@@ -52,13 +52,11 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
 7. **Coolify API anahtarı:** sohbette paylaşılan anahtarı Coolify > Keys & Tokens'tan sil, gerekirse yenisini oluştur.
 8. **TestFlight:** derleme işlenince App Store Connect > Lykiva > TestFlight'ta testerları ekle (iç test: ekip üyeleri;
    dış test: e-posta ile, ilk sürümde Apple'ın kısa beta incelemesi gerekir). iPhone'da Apple ile ve Google ile girişi dene.
-9. **E-posta (SMTP + şablonlar)** — `supabase/README.md` > E-posta:
-   - Zoho'da `noreply@lykiva.app` açıldı; sohbette paylaşılan şifresini **değiştir**, uygulama şifresi (App Passwords) al.
-   - Coolify > lykiva-supabase > Environment Variables: `SMTP_HOST=smtp.zoho.eu`, `SMTP_PORT=465`, `SMTP_USER` ve
-     `SMTP_ADMIN_EMAIL` = `noreply@lykiva.app`, `SMTP_PASS` (uygulama şifresi), `SMTP_SENDER_NAME=Lykiva`.
-   - Compose'a `GOTRUE_MAILER_TEMPLATES_*`, `GOTRUE_MAILER_SUBJECTS_*`, `GOTRUE_MAILER_OTP_EXP=3600` satırlarını ekle
-     (bu PR merge edilip web yayımlandıktan sonra; şablonlar `https://lykiva.app/eposta/...` adresinden okunur).
-   - Servisi yeniden başlat, uygulamadan hesap aç, kodun geldiğini ve spam'e düşmediğini kontrol et.
+9. **E-posta:** SMTP, şablon ve konu değişkenleri Coolify'da dolu, servis yeniden başlatıldı (11 Kas 2026).
+   - Sohbette paylaşılan iki Zoho şifresi var: ilkini (hesap şifresi) değiştir. Uygulama şifresini yenilersen Coolify >
+     lykiva-supabase > `SMTP_PASS`'ı da güncelle ve servisi yeniden başlat.
+   - Sohbette paylaşılan Coolify API anahtarlarını (bu da dahil) Coolify > Keys & Tokens'tan sil.
+   - Yeni derlemede uygulamadan hesap aç: kod geliyor mu, spam'e düşüyor mu? SMTP buradan doğrulanamıyor.
 
 ## Yapılacaklar
 
@@ -115,7 +113,7 @@ Kurulum dosyaları hazır: `altyapi/` (BRouter 1.7.10 + Photon 1.3.0, Coolify Do
 Kod hazır (`apps/mobile/src/lib/epostaGiris.ts`, `src/components/EpostaGiris.tsx`): giriş, kayıt, şifremi unuttum;
 doğrulama ve sıfırlama e-postadaki kodla. Geçici hesaptan kayıtta e-posta o hesaba eklenir; var olan hesaba girişte
 kayıtlar `hesabi_devral` ile taşınır. Şablonlar `apps/web/public/eposta/` (web Docker imajına `public/` eklendi).
-Kalan: SMTP ve şablon ayarı (Bekleyen elle yapılacaklar 9), telefonda uçtan uca deneme: yeni hesap, geçici hesaptan
+Sunucu ayarı yapıldı (SMTP Zoho, şablonlar `lykiva.app/eposta/`, kod 1 saat). Kalan: ilk gerçek postanın geldiğini görmek, telefonda uçtan uca deneme: yeni hesap, geçici hesaptan
 kayıt (kayıtlar duruyor mu), var olan hesaba giriş (kayıtlar taşınıyor mu), şifre sıfırlama, doğrulanmamış hesaba giriş.
 Sonra: Ayarlar'da şifre değiştirme, web'de kullanıcı girişi (gerekirse).
 
