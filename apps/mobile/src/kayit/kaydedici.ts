@@ -13,7 +13,7 @@ import { randomUUID } from 'expo-crypto';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 import { useSyncExternalStore } from 'react';
-import { Platform } from 'react-native';
+import { Alert, Platform } from 'react-native';
 
 import { simdikiHava } from '@/lib/hava';
 
@@ -208,11 +208,42 @@ async function onPlanIzle() {
   );
 }
 
+// Google Play kuralı: arka plan konum izni istenmeden önce uygulama içinde açık bir bilgilendirme
+// gösterilmeli ve kullanıcı bunu kendisi onaylamalı. Aynı oturumda reddedilirse bir daha sorulmaz.
+let arkaPlanBilgisiReddedildi = false;
+
+function arkaPlanBilgisiOnayi(): Promise<boolean> {
+  return new Promise((resolve) => {
+    Alert.alert(
+      'Ekran kapalıyken de kaydet',
+      'Lykiva, kayıt sürerken uygulama kapalıyken ya da kullanılmıyorken de rotanı, hızını ve mesafeni kaydetmek için konum verilerini toplar. Konum yalnızca sen kayıt başlattığında, kayıt bitene kadar kullanılır.\n\nSonraki ekranda konum iznini “Her zaman izin ver” olarak seçebilirsin.',
+      [
+        { text: 'Şimdi değil', style: 'cancel', onPress: () => resolve(false) },
+        { text: 'Devam', onPress: () => resolve(true) },
+      ],
+      { cancelable: true, onDismiss: () => resolve(false) },
+    );
+  });
+}
+
+async function arkaPlanIzniIste(): Promise<boolean> {
+  const mevcut = await Location.getBackgroundPermissionsAsync().catch(() => null);
+  if (mevcut?.granted) return true;
+  if (Platform.OS === 'android') {
+    if (arkaPlanBilgisiReddedildi || mevcut?.canAskAgain === false) return false;
+    if (!(await arkaPlanBilgisiOnayi())) {
+      arkaPlanBilgisiReddedildi = true;
+      return false;
+    }
+  }
+  const bg = await Location.requestBackgroundPermissionsAsync().catch(() => null);
+  return !!bg?.granted;
+}
+
 async function izlemeyiBaslat(): Promise<boolean> {
   let arkaPlan = false;
   if (Platform.OS !== 'web' && (await TaskManager.isAvailableAsync())) {
-    const bg = await Location.requestBackgroundPermissionsAsync().catch(() => null);
-    if (bg?.granted) {
+    if (await arkaPlanIzniIste()) {
       if (!(await Location.hasStartedLocationUpdatesAsync(KONUM_GOREVI).catch(() => false))) {
         await Location.startLocationUpdatesAsync(KONUM_GOREVI, IZLEME);
       }
