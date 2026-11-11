@@ -11,7 +11,6 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | Kim | İş | Dal |
 | --- | --- | --- |
 | İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |
-| Gökhan | Kişisel rekorlar (32. aşama): `rekor.ts`, `app/rekorlar.tsx`, profil ve aktivite sayfası | `kisisel-rekorlar` |
 
 ## Gökhan için: 11 Kasım 2026'da değişenler (İsmail)
 
