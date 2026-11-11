@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { CevrimdisiKarti } from '@/components/CevrimdisiKarti';
 import { EgimProfili, imlecKonumu, TirmanisListesi, useRotaEgim } from '@/components/EgimProfili';
 import { FloatingHeader } from '@/components/Header';
 import { IconButton } from '@/components/IconButton';
@@ -106,6 +107,8 @@ export default function RotaDetayScreen() {
           ) : (
             <Txt variant="small">Bu rota serbest çizildiği için rakım bilgisi yok.</Txt>
           )}
+
+          <CevrimdisiKarti rota={r} />
 
           {ornek ? (
             <View style={styles.done}>
