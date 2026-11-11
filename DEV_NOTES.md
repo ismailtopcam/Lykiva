@@ -24,9 +24,10 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
    `npx eas-cli@latest build --profile development --platform all` → telefonlara kur → `npm run mobile`. Adımlar README'de.
 4. **Yedek:** S3 uyumlu kova aç, `/etc/lykiva-yedek.env` doldur, `yedekle.sh` ve `geri-yukle-dene.sh` çalıştır.
 5. **Kendi rota / yer arama sunucuları:** `altyapi/README.md` adımlarıyla Coolify'da kur, `.env` adreslerini değiştir.
-6. **Play dahili test:** Play Console > Lykiva > Test edin ve yayınlayın > Dahili test: tester listesi (Gmail adresleri),
-   EAS'taki production AAB'yi indirip ilk sürüm olarak yükle, yayınla, katılma bağlantısını testerlara gönder.
-   İlk yükleme elle yapılır; sonrakiler için `eas submit` (Google Cloud hizmet hesabı JSON anahtarı) kurulabilir.
+6. **Play dahili test:** katılma bağlantısını "Gösterge test" listesindekilere gönder:
+   https://play.google.com/apps/internaltest/4701532399950766309 — telefonda denenmemiş özellikleri (aşağıda) dene.
+   Sonraki sürümler: `npx eas-cli@latest build -p android --profile production` → AAB'yi Dahili test > Yeni sürüm'e yükle
+   (ya da Google Cloud hizmet hesabı JSON anahtarıyla `eas submit` kur).
 7. **Coolify API anahtarı:** sohbette paylaşılan anahtarı Coolify > Keys & Tokens'tan sil, gerekirse yenisini oluştur.
 8. **Google ve Apple girişi** (en son): Google Cloud OAuth istemcisi, Apple Sign in with Apple, Coolify'da `supabase-auth` ortam değişkenleri.
 
@@ -49,7 +50,8 @@ Play Console'da **Lykiva** oluşturuldu (kişisel geliştirici hesabı, paket `a
 Kaydedilenler: gizlilik politikası URL'si, uygulama erişimi (giriş zorunlu değil: "Şimdilik geç" ile geçici hesap),
 reklam yok. EAS ortam değişkenleri (production / preview / development) girildi; imzalama anahtarını EAS tutuyor
 (Play App Signing). Mağaza metinleri ve beyan taslakları: `apps/mobile/MAGAZA.md`.
-Kalan: dahili test sürümü ve testerlar (bkz. Bekleyen elle yapılacaklar).
+**Dahili test yayında** (11 Kas 2026): sürüm 2 (0.1.0), hedef SDK 36, tester listesi "Gösterge test" (3 kişi).
+Kalan: testerların kurup denemesi; sonra kapalı teste geçiş (bkz. Mağazaya çıkmadan önce).
 
 ### [ ] Mağazaya çıkmadan önce
 - Yasal metinleri (`/gizlilik`, `/kosullar`, `/hesap-silme`) gözden geçir; taslaktır, hukuki görüş değildir.
