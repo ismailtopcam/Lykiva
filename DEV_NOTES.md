@@ -12,6 +12,28 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | --- | --- | --- |
 | İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |
 
+## Gökhan için: 11 Kasım 2026'da değişenler (İsmail)
+
+- **Play dahili test yayında** (sürüm 2, 0.1.0). Tester listesi "Gösterge test". Katılma bağlantısı aşağıda (Bekleyen elle yapılacaklar 6).
+  Senin anlık hız ve rota eğimi işlerin bu sürümde **yok**; bir sonraki Android derlemesine girecek.
+- **iOS TestFlight'a çıkıyor:** App Store Connect'te "Lykiva" açıldı (Apple kimliği `6833386986`), ilk iOS derlemesi
+  güncel main'den (senin işlerin dahil) alındı.
+- **Google ile giriş açık.** Sunucuda `google=true`; uygulama kodu değişmedi, Play'deki sürümde de çalışır.
+  Apple ile giriş sunucuda zaten açıktı; TestFlight sürümünde denenecek.
+- **Kod değişiklikleri** (`apps/mobile`):
+  - `src/kayit/kaydedici.ts`: Android'de arka plan konum izni istenmeden önce bilgilendirme penceresi (Google Play kuralı;
+    "Şimdi değil" denirse o oturumda bir daha sorulmaz, kayıt ön planda sürer).
+  - `app.json`: `android.blockedPermissions` (RECORD_AUDIO, SYSTEM_ALERT_WINDOW), `ios.config.usesNonExemptEncryption: false`.
+  - `eas.json`: `submit.production.ios` (App Store Connect uygulama kimliği ve Team ID).
+  - `MAGAZA.md`: mağaza metinleri ve Play Console beyan taslakları (markete çıkarken kullanılacak).
+- **EAS ortam değişkenleri** (production / preview / development): `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
+  Mağaza derlemeleri bunları kullanır; yerel geliştirmede `apps/mobile/.env` geçerli.
+- **Mağaza derlemesi almak istersen:** Android `npx eas-cli@latest build -p android --profile production` (imza EAS'ta, soru sormaz).
+  iOS derlemesi ve TestFlight gönderimi şimdilik İsmail'in bilgisayarından (App Store Connect API anahtarı orada); yeni
+  derleme gerekirse haber ver.
+- **Android'de push bildirimi henüz yok** (FCM kurulmadı; aşağıda "Android push bildirimi").
+- Gizli anahtarlar (Google istemci sırrı, Apple API anahtarı, Coolify anahtarı) repoda yok ve olmayacak.
+
 ## Bekleyen elle yapılacaklar
 
 Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil.
@@ -28,7 +50,8 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
    Sonraki sürümler: `npx eas-cli@latest build -p android --profile production` → AAB'yi Dahili test > Yeni sürüm'e yükle
    (ya da Google Cloud hizmet hesabı JSON anahtarıyla `eas submit` kur).
 7. **Coolify API anahtarı:** sohbette paylaşılan anahtarı Coolify > Keys & Tokens'tan sil, gerekirse yenisini oluştur.
-8. **Google ve Apple girişi** (en son): Google Cloud OAuth istemcisi, Apple Sign in with Apple, Coolify'da `supabase-auth` ortam değişkenleri.
+8. **TestFlight:** derleme işlenince App Store Connect > Lykiva > TestFlight'ta testerları ekle (iç test: ekip üyeleri;
+   dış test: e-posta ile, ilk sürümde Apple'ın kısa beta incelemesi gerekir). iPhone'da Apple ile ve Google ile girişi dene.
 
 ## Yapılacaklar
 
@@ -42,7 +65,7 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
 - Kullanıcı engelleme (`postgres` rolü `auth.users`'a yazabiliyor mu?)
 - Geçersiz push jetonu temizliği (gerçek Expo yanıtıyla)
 - Uygulama içinden hesap silme
-- Telefon bildirimleri (Apple push anahtarı derleme sırasında oluşturulacak)
+- Telefon bildirimleri (iOS: push anahtarı atandı, TestFlight'ta denenecek; Android: FCM kurulmadı, aşağıya bkz.)
 - Rota eğimi: haritada renkli çizgi (MapLibre veri güdümlü renk), profilde parmakla gezinince haritadaki imleç,
   dar ekranda dört istatistiğin sığması, rota detayında tırmanış listesi.
 - Anlık hız: bir bisiklet hız göstergesiyle yan yana sür; kırmızı ışıkta ~3 sn'de 0'a düşüyor mu, ağaç altında "—" çıkıyor mu?
@@ -73,8 +96,26 @@ Kurulum dosyaları hazır: `altyapi/` (BRouter 1.7.10 + Photon 1.3.0, Coolify Do
 `.env` adresleri değiştirilince [x] olacak. O zamana kadar herkese açık brouter.de ve photon.komoot.io kullanılıyor
 (adil kullanım sınırlı; gerçek kullanıcılar gelmeden önce yapılmalı).
 
-### [ ] Giriş: Google ve Apple — sunucu ve konsol ayarı
-Kod hazır (4. aşama), `20261109000000_giris.sql` sunucuda uygulandı. Kalanlar `supabase/README.md` > Giriş bölümünde.
+### [~] Giriş: Google ve Apple
+- **Google açık** (11 Kas 2026): Google Cloud projesi `lykiva` (Gösterge'den ayrı), OAuth onay ekranı "In production"
+  (yalnızca e-posta / profil; logo yok, marka doğrulaması gerekmedi), Web istemcisi "Lykiva sunucu (Supabase)",
+  yönlendirme `https://api.lykiva.app/auth/v1/callback`. Coolify > lykiva-supabase: `GOOGLE_CLIENT_ID`, `GOOGLE_SECRET`,
+  `ENABLE_GOOGLE_SIGNIN=true`. Kontrol: `/auth/v1/settings` → `google: true`.
+- **Apple:** sunucuda açık; App ID'de Sign in with Apple yetkisi açıldı. Kalan: TestFlight sürümünde iPhone'da denemek.
+- Telefonda henüz uçtan uca denenmedi (Google ve Apple).
+
+### [~] iOS — TestFlight
+App Store Connect'te **Lykiva** (Apple kimliği `6833386986`, SKU `lykiva`, Türkçe). Bundle ID `app.lykiva.mobile` kayıtlı;
+Push Notifications ve Sign in with Apple yetkileri **elle** açıldı (EAS'ın otomatik eşitlemesi Apple API hatası verdi:
+`TIBURON_APP_CONSENT`; iOS derlerken `EXPO_NO_CAPABILITY_SYNC=1` kullan). Dağıtım sertifikası ve push anahtarı
+Gösterge ile ortak (aynı Apple ekibi). İlk derleme: buildNumber 3.
+Kalan: TestFlight'a gönderim, testerlar, Apple girişi denemesi.
+
+### [ ] Android push bildirimi (FCM)
+Android'de bildirim **çalışmıyor**: `google-services.json` ve EAS'ta FCM V1 anahtarı yok; bildirim açılınca
+`getExpoPushTokenAsync` hata verir (`src/lib/push.ts`). Yapılacak: `lykiva` Google Cloud projesine Firebase ekle,
+`app.lykiva.mobile` Android uygulaması → `google-services.json` (`app.json` > `android.googleServicesFile`), FCM V1 hizmet
+hesabı anahtarını `eas credentials` ile EAS'a yükle, yeni Android derlemesi.
 
 ### [ ] Küçük eksikler
 - Web profil sayfası (`/u/<kullanıcı>`) profil fotoğrafını göstermiyor, baş harfler görünüyor.
@@ -145,4 +186,9 @@ Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde
   lykiva-web uuid `pjrlciwlsjvr6fpl3lovbaoy`, lykiva-supabase uuid `nqyujqqkkjyba4flthzcf9uf`.
 - **Paket adı / bundle ID: `app.lykiva.mobile`** (Android ve iOS) — Play'e ilk AAB yüklenince kalıcı.
 - **Mağaza imzası:** Android yükleme anahtarı EAS'ta (Expo sunucusu), uygulama imzası Play App Signing'de.
+  iOS dağıtım sertifikası ve push anahtarı EAS'ta, Gösterge ile ortak (Apple Team ID `CK7TA62JQQ`, bireysel hesap).
+- **Google girişi ayrı Google Cloud projesinde** (`lykiva`): giriş ekranında "Gösterge" adı görünmesin diye.
+- **App Store Connect API anahtarı** "EAS Lykiva (yerel)" (Key ID `28M4P34RVL`, Admin): dosyası yalnızca İsmail'in
+  bilgisayarında (kullanıcı klasörü > `.lykiva`), repoda değil. iOS derleme / gönderimde `EXPO_ASC_API_KEY_PATH`,
+  `EXPO_ASC_KEY_ID`, `EXPO_ASC_ISSUER_ID`, `EXPO_APPLE_TEAM_ID` ortam değişkenleriyle kullanılır.
 - **Commit ve PR'larda** yalnızca yazarın adı; yapay zekâ / araç imzası eklenmez (`CLAUDE.md`).

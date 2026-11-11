@@ -108,7 +108,7 @@ Geçici (anonim) giriş açık (`ENABLE_ANONYMOUS_USERS=true`). Uygulama Google 
 
 - Hesap bağlama ve Apple girişi **açık**; Apple için gizli anahtar gerekmez (yerel giriş yalnızca bundle id'ye bakar).
 - `ADDITIONAL_REDIRECT_URLS` zaten `lykiva://**` içeriyor (`lykiva://giris-donus` kapsanıyor).
-- **Google kapalı.** Açmak için Coolify > lykiva-supabase > Environment Variables'ta `GOOGLE_CLIENT_ID`, `GOOGLE_SECRET` doldurulur, `ENABLE_GOOGLE_SIGNIN=true` yapılır ve servis yeniden başlatılır.
+- **Google açık** (11 Kasım 2026): Coolify > lykiva-supabase > Environment Variables'ta `GOOGLE_CLIENT_ID`, `GOOGLE_SECRET` dolu, `ENABLE_GOOGLE_SIGNIN=true`. İstemci Google Cloud projesi `lykiva`'da ("Lykiva sunucu (Supabase)"); sırrı değiştirirsen servisi yeniden başlat.
 - Bundle id değişirse `APPLE_CLIENT_ID` değişkeni güncellenmeli.
 
 - Google Cloud Console: OAuth istemcisi türü **Web application**, yetkili yönlendirme adresi
