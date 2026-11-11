@@ -8,7 +8,7 @@
  * - Duraklatma yeni bir "parça" başlatır; parçalar arası yol mesafeye eklenmez.
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { acceptPoint, prepareRoute, trackOnRoute, type ActivityType, type HavaDurumu, type PreparedRoute, type RouteProgress, type RoutePoint, type TrackPoint } from '@lykiva/shared';
+import { acceptPoint, LOCATION_DISTANCE_INTERVAL_M, prepareRoute, trackOnRoute, type ActivityType, type HavaDurumu, type PreparedRoute, type RouteProgress, type RoutePoint, type TrackPoint } from '@lykiva/shared';
 import { randomUUID } from 'expo-crypto';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
@@ -188,7 +188,7 @@ if (Platform.OS !== 'web') {
 const IZLEME: Location.LocationTaskOptions = {
   accuracy: Location.Accuracy.BestForNavigation,
   timeInterval: 1000,
-  distanceInterval: 3,
+  distanceInterval: LOCATION_DISTANCE_INTERVAL_M,
   activityType: Location.ActivityType.Fitness,
   pausesUpdatesAutomatically: false,
   showsBackgroundLocationIndicator: true,
@@ -203,7 +203,7 @@ const IZLEME: Location.LocationTaskOptions = {
 async function onPlanIzle() {
   onPlanAboneligi?.remove();
   onPlanAboneligi = await Location.watchPositionAsync(
-    { accuracy: Location.Accuracy.BestForNavigation, timeInterval: 1000, distanceInterval: 3 },
+    { accuracy: Location.Accuracy.BestForNavigation, timeInterval: 1000, distanceInterval: LOCATION_DISTANCE_INTERVAL_M },
     (l) => noktalarEkle([l]),
   );
 }

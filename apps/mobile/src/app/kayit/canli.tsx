@@ -26,7 +26,7 @@ export default function CanliTakipScreen() {
   if (kayit.durum === 'bos') return <Redirect href="/kayit" />;
   if (kayit.durum === 'duraklatildi') return <Redirect href="/kayit/duraklatildi" />;
 
-  const hiz = formatSpeedKmh(anlikHiz);
+  const hiz = anlikHiz == null ? '—' : formatSpeedKmh(anlikHiz);
   const zayif = gpsDogruluk == null || gpsDogruluk > 30;
 
   async function onDuraklat() {
@@ -104,7 +104,7 @@ export default function CanliTakipScreen() {
           <Txt variant="label" color={n.textMuted}>
             Anlık hız
           </Txt>
-          <Txt style={[styles.hero, rb && { fontSize: 60, lineHeight: 66 }]} accessibilityLabel={`Anlık hız ${hiz} kilometre/saat`}>
+          <Txt style={[styles.hero, rb && { fontSize: 60, lineHeight: 66 }]} accessibilityLabel={anlikHiz == null ? 'Anlık hız bilinmiyor, GPS sinyali bekleniyor' : `Anlık hız ${hiz} kilometre/saat`}>
             {hiz}
             <Txt style={styles.heroUnit}> km/sa</Txt>
           </Txt>
