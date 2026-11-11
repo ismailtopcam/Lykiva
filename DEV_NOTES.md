@@ -17,7 +17,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 - **Play dahili test yayında** (sürüm 2, 0.1.0). Tester listesi "Gösterge test". Katılma bağlantısı aşağıda (Bekleyen elle yapılacaklar 6).
   Güncel sürüm 3: senin anlık hız ve rota eğimi işlerin, Google girişi ve Android push dahil.
 - **iOS TestFlight'a gönderildi:** App Store Connect'te "Lykiva" (Apple kimliği `6833386986`), sürüm 0.1.0 (3), güncel
-  main'den (senin işlerin dahil). iPhone'da denemek için seni App Store Connect'e ekleyeceğiz (Apple ID e-postanı İsmail'e ilet).
+  main'den (senin işlerin dahil). Sen Android'de deneyeceksin: Gmail adresini İsmail'e ilet, dahili test listesine eklensin.
 - **Google ile giriş açık.** Sunucuda `google=true`; uygulama kodu değişmedi, Play'deki sürümde de çalışır.
   Apple ile giriş sunucuda zaten açıktı; TestFlight sürümünde denenecek.
 - **Kod değişiklikleri** (`apps/mobile`):
@@ -111,7 +111,7 @@ Push Notifications ve Sign in with Apple yetkileri **elle** açıldı (EAS'ın o
 Gösterge ile ortak (aynı Apple ekibi).
 **TestFlight'a gönderildi** (11 Kas 2026): 0.1.0 (3). Gönderim anahtarı EAS'ta ("[Expo] EAS Submit", Gösterge ile ortak);
 sonraki gönderimler: `npx eas-cli@latest submit -p ios --latest`. EAS TestFlight'ta "Team (Expo)" iç test grubunu açtı.
-Kalan: testerlar (Gökhan ekipte değil: App Store Connect > Users and Access'ten davet ya da dış test), Apple / Google girişi denemesi.
+Kalan: iPhone'da deneme (iOS testi İsmail'de; Gökhan'ın iPhone'u yok), Apple / Google girişi denemesi.
 
 ### [~] Android push bildirimi (FCM)
 Kuruldu (11 Kas 2026): Firebase, `lykiva` Google Cloud projesine eklendi (Analytics kapalı); Android uygulaması
