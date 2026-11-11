@@ -97,7 +97,7 @@ export default function ProfilScreen() {
   function profiliPaylas() {
     if (!profil) return;
     if (hesap?.gecici) {
-      Alert.alert('Önce giriş yap', 'Geçici hesabın web profili yok. Google ya da Apple ile giriş yapınca profilini paylaşabilirsin.');
+      Alert.alert('Önce giriş yap', 'Geçici hesabın web profili yok. Giriş yapınca ya da hesap açınca profilini paylaşabilirsin.');
       return;
     }
     void baglantiPaylas(`${profil.displayName} Lykiva'da`, profilAdresi(profil.username));
@@ -146,7 +146,7 @@ export default function ProfilScreen() {
             <Txt variant="small" style={{ marginTop: 2, marginBottom: space.md }}>
               Kayıtların şimdilik yalnızca bu telefona bağlı. Giriş yaparsan hesabında saklanır, telefon değişse de kaybolmaz.
             </Txt>
-            <Button label="Google ya da Apple ile giriş yap" href="/giris" />
+            <Button label="Giriş yap ya da hesap aç" href="/giris" />
           </Card>
         ) : null}
 

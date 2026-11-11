@@ -25,6 +25,8 @@ ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0
 RUN addgroup -S lykiva && adduser -S lykiva -G lykiva
 COPY --from=build --chown=lykiva:lykiva /repo/apps/web/.next/standalone ./
 COPY --from=build --chown=lykiva:lykiva /repo/apps/web/.next/static ./apps/web/.next/static
+# Sabit dosyalar (ör. Supabase'in okuduğu e-posta şablonları: /eposta/*.html)
+COPY --from=build --chown=lykiva:lykiva /repo/apps/web/public ./apps/web/public
 USER lykiva
 EXPOSE 3000
 CMD ["node", "apps/web/server.js"]

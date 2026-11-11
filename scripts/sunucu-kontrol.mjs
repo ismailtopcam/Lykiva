@@ -5,7 +5,7 @@
  *   node scripts/sunucu-kontrol.mjs
  *
  * apps/mobile/.env içindeki EXPO_PUBLIC_SUPABASE_URL ve EXPO_PUBLIC_SUPABASE_ANON_KEY ile:
- *  1. Giriş ayarları: geçici hesap, Google, Apple açık mı
+ *  1. Giriş ayarları: geçici hesap, Google, Apple, e-posta açık mı
  *  2. Migration'lar: her aşamanın bir fonksiyonu sunucuda var mı
  *     (fonksiyonlar anonim rol için kapalı olduğundan "izin yok" = var, "bulunamadı" = yok)
  *  3. Realtime: canlı sohbet servisine bağlanılabiliyor mu
@@ -53,7 +53,10 @@ try {
   (ext.anonymous_users ? iyi : kotu)('Geçici (anonim) hesap ' + (ext.anonymous_users ? 'açık' : 'kapalı — ENABLE_ANONYMOUS_USERS=true olmalı'));
   (ext.google ? iyi : kotu)('Google girişi ' + (ext.google ? 'açık' : 'kapalı — supabase/README.md > Giriş'));
   (ext.apple ? iyi : kotu)('Apple girişi ' + (ext.apple ? 'açık' : 'kapalı — supabase/README.md > Giriş'));
-  (ext.email ? iyi : kotu)('E-postayla giriş ' + (ext.email ? 'açık (yönetim paneli girişi)' : 'kapalı — yönetim paneline girilemez (ENABLE_EMAIL_SIGNUP=true olmalı)'));
+  (ext.email ? iyi : kotu)('E-postayla giriş ' + (ext.email ? 'açık (uygulama ve yönetim paneli)' : 'kapalı — ENABLE_EMAIL_SIGNUP=true olmalı'));
+  (s.disable_signup ? kotu : iyi)('Yeni hesap açma ' + (s.disable_signup ? 'kapalı — DISABLE_SIGNUP=false olmalı' : 'açık'));
+  (s.mailer_autoconfirm ? kotu : iyi)('E-posta doğrulama ' + (s.mailer_autoconfirm ? 'kapalı (ENABLE_EMAIL_AUTOCONFIRM=true) — doğrulamasız hesap açılıyor' : 'zorunlu'));
+  bilgi('SMTP ve e-posta şablonları bu uçtan görünmüyor; uygulamadan hesap açıp kodun geldiğini dene (supabase/README.md > E-posta).');
   bilgi('Hesap bağlama (manual linking) bu uçtan görünmüyor; Google/Apple ile ilk girişte anlaşılır.');
 } catch (e) {
   kotu(`Giriş ayarları okunamadı (${e.message})`);

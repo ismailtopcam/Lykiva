@@ -84,13 +84,17 @@ node scripts/sunucu-kontrol.mjs
 
 ## Giriş
 
-Geçici (anonim) giriş açık (`ENABLE_ANONYMOUS_USERS=true`). Uygulama Google ve Apple girişini kullanır:
+Geçici (anonim) giriş açık (`ENABLE_ANONYMOUS_USERS=true`). Uygulama Google, Apple ve e-posta + şifre girişini kullanır:
 
 - **Apple** (yalnızca iOS): telefonun kendi penceresi, kimlik jetonu `signInWithIdToken` / `linkIdentity` ile verilir.
   Apple tarafında gizli anahtar (secret) gerekmez; sadece bundle id.
 - **Google**: Supabase'in `/auth/v1/authorize` sayfası uygulama içi tarayıcıda açılır, dönüş `lykiva://giris-donus`.
 - Geçici hesaptaysa yeni hesap açılmaz, kimlik bu hesaba bağlanır (manual linking açık olmalı).
   Kimlik başka bir hesaptaysa asıl hesaba girilir ve `hesabi_devral` ile kayıtlar taşınır.
+- **E-posta + şifre** (`apps/mobile/src/lib/epostaGiris.ts`): doğrulama ve şifre sıfırlama **e-postadaki kodla**
+  (bağlantı yok; kullanıcı kodu uygulamaya yazar). Geçici hesaptan kayıt olunursa e-posta o hesaba eklenir
+  (`updateUser({ email })` → `email_change` kodu → şifre konur); var olan hesaba giriş / şifre sıfırlamada kayıtlar
+  `hesabi_devral` ile taşınır. Ayar ve şablonlar: aşağıda **E-posta**.
 
 ### Sunucu ayarı (Coolify > lykiva-supabase) — 9 Kasım 2026 itibarıyla yapıldı
 
@@ -115,3 +119,54 @@ Geçici (anonim) giriş açık (`ENABLE_ANONYMOUS_USERS=true`). Uygulama Google 
   `https://api.lykiva.app/auth/v1/callback`.
 - Apple Developer: `app.lykiva.mobile` App ID'sinde **Sign in with Apple** açık olmalı (ücretli hesapla Xcode'un otomatik imzalaması bunu kendisi açar).
   Bundle id değişirse `GOTRUE_EXTERNAL_APPLE_CLIENT_ID` da değişmeli.
+
+## E-posta (SMTP ve şablonlar)
+
+Doğrulama ve şifre sıfırlama postaları Zoho Mail'den `noreply@lykiva.app` adresiyle gider. Şablonlar Türkçe ve
+yalnızca kod içerir; web'de yayımlanır, Supabase Auth (GoTrue) onları adresinden okur:
+
+| Posta | Dosya | Adres |
+| --- | --- | --- |
+| Kayıt doğrulama | `apps/web/public/eposta/dogrulama.html` | `https://lykiva.app/eposta/dogrulama.html` |
+| Hesaba e-posta ekleme (geçici hesaptan kayıt) | `apps/web/public/eposta/eposta-degisim.html` | `https://lykiva.app/eposta/eposta-degisim.html` |
+| Şifre sıfırlama | `apps/web/public/eposta/sifre.html` | `https://lykiva.app/eposta/sifre.html` |
+
+Şablon değişirse web yeniden yayımlanınca geçerli olur (GoTrue şablonu önbelleğe alır; hemen görmek için auth servisini
+yeniden başlat).
+
+### Coolify > lykiva-supabase > Environment Variables
+
+Şablondaki hazır değişkenler (adları farklıysa compose'daki `supabase-auth` bölümüne bak):
+
+```
+ENABLE_EMAIL_SIGNUP=true
+ENABLE_EMAIL_AUTOCONFIRM=false
+DISABLE_SIGNUP=false
+SMTP_HOST=smtp.zoho.eu
+SMTP_PORT=465
+SMTP_USER=noreply@lykiva.app
+SMTP_PASS=<Zoho uygulama şifresi — buraya, repoya ya da sohbete yazılmaz>
+SMTP_ADMIN_EMAIL=noreply@lykiva.app
+SMTP_SENDER_NAME=Lykiva
+```
+
+Zoho AB veri merkezinde olduğu için sunucu `smtp.zoho.eu`. Gönderen adres (`SMTP_ADMIN_EMAIL`) giriş yapılan adresle
+aynı olmalı, yoksa Zoho postayı reddeder. Hesapta iki adımlı doğrulama açıksa Zoho > Security > App Passwords'ten
+uygulama şifresi alınır. 465 çalışmazsa `SMTP_PORT=587`.
+
+### Compose'a eklenecek satırlar (`supabase-auth` > environment)
+
+```yaml
+      - 'GOTRUE_MAILER_OTP_EXP=3600'
+      - 'GOTRUE_MAILER_OTP_LENGTH=6'
+      - 'GOTRUE_MAILER_SUBJECTS_CONFIRMATION=Lykiva doğrulama kodun'
+      - 'GOTRUE_MAILER_SUBJECTS_EMAIL_CHANGE=Lykiva doğrulama kodun'
+      - 'GOTRUE_MAILER_SUBJECTS_RECOVERY=Lykiva şifre sıfırlama kodun'
+      - 'GOTRUE_MAILER_TEMPLATES_CONFIRMATION=https://lykiva.app/eposta/dogrulama.html'
+      - 'GOTRUE_MAILER_TEMPLATES_EMAIL_CHANGE=https://lykiva.app/eposta/eposta-degisim.html'
+      - 'GOTRUE_MAILER_TEMPLATES_RECOVERY=https://lykiva.app/eposta/sifre.html'
+```
+
+Şablonlarda "Kod 1 saat geçerli" yazıyor; `GOTRUE_MAILER_OTP_EXP=3600` bununla eşleşir. Uzunluğu değiştirirsen
+uygulama 6–10 haneyi kabul eder. Kaydedip servisi yeniden başlat; ardından `node scripts/sunucu-kontrol.mjs` ve
+uygulamadan bir hesap açıp kodun geldiğini dene (spam klasörüne de bak).

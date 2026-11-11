@@ -14,7 +14,7 @@ import { pushAc, pushDurumu, pushKapat, type PushDurumu } from '@/lib/push';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, space } from '@/theme';
 
-const adlar: Record<Saglayici, string> = { google: 'Google', apple: 'Apple' };
+const adlar: Record<Saglayici, string> = { google: 'Google', apple: 'Apple', email: 'E-posta' };
 
 export default function AyarlarScreen() {
   const hesap = useHesap();
@@ -150,7 +150,7 @@ export default function AyarlarScreen() {
         {!supabaseHazir ? (
           <Txt variant="muted">Sunucu anahtarı girilmemiş; uygulama örnek verilerle çalışıyor.</Txt>
         ) : hesap?.gecici || !hesap ? (
-          <ListRow icon="user" iconTone="terra" caption="Kayıtların kaybolmasın" title="Google ya da Apple ile giriş yap" href="/giris" />
+          <ListRow icon="user" iconTone="terra" caption="Kayıtların kaybolmasın" title="Giriş yap ya da hesap aç" href="/giris" />
         ) : (
           <Button variant="outline" label={cikiliyor ? 'Çıkış yapılıyor…' : 'Çıkış yap'} onPress={() => void cik()} disabled={cikiliyor} />
         )}

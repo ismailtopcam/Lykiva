@@ -1,0 +1,44 @@
+<!doctype html>
+<!-- Lykiva e-posta şablonu (şifre sıfırlama). Supabase Auth (GoTrue) bu dosyayı GOTRUE_MAILER_TEMPLATES_RECOVERY adresinden okur.
+     Değişkenler: {{ .Token }} (kod), {{ .Email }}. Ayrıntı: supabase/README.md > E-posta. -->
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Şifreni sıfırla</title>
+</head>
+<body style="margin:0;padding:0;background:#F2EDE3;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F2EDE3;">
+  <tr>
+    <td align="center" style="padding:32px 16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:480px;background:#FBF8F2;border:1px solid #E3DACB;border-radius:16px;">
+        <tr>
+          <td style="padding:28px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+            <div style="font-size:22px;font-weight:800;color:#B04E25;letter-spacing:-0.3px;">Lykiva</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 28px 0 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#16201B;">
+            <h1 style="margin:0 0 12px 0;font-size:20px;line-height:26px;font-weight:700;">Şifreni sıfırla</h1>
+            <p style="margin:0 0 20px 0;font-size:15px;line-height:22px;color:#4F5751;">Lykiva şifreni sıfırlamak için aşağıdaki kodu uygulamaya yaz, ardından yeni şifreni belirle.</p>
+          </td>
+        </tr>
+        <tr>
+          <td align="center" style="padding:0 28px;">
+            <div style="display:inline-block;padding:14px 24px;background:#F2EDE3;border:1px solid #E3DACB;border-radius:12px;font-family:'SFMono-Regular',Menlo,Consolas,monospace;font-size:30px;font-weight:700;letter-spacing:8px;color:#16201B;">{{ .Token }}</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 28px 28px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+            <p style="margin:0 0 12px 0;font-size:14px;line-height:20px;color:#4F5751;">Kod 1 saat geçerli. Kimseyle paylaşma; Lykiva ekibi bu kodu senden asla istemez.</p>
+            <p style="margin:0;font-size:13px;line-height:19px;color:#4F5751;">Şifre sıfırlamayı sen istemediysen bu e-postayı yok sayabilirsin; şifren değişmez.</p>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:16px 0 0 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;line-height:18px;color:#4F5751;">Lykiva · <a href="https://lykiva.app" style="color:#0B4F4F;">lykiva.app</a><br>Bu e-posta otomatik gönderildi; yanıtlama.</p>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
