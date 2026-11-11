@@ -10,7 +10,9 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
-| İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |## Gökhan için: 11 Kasım 2026'da değişenler (İsmail)
+| İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |
+
+## Gökhan için: 11 Kasım 2026'da değişenler (İsmail)
 
 - **Play dahili test yayında** (sürüm 2, 0.1.0). Tester listesi "Gösterge test". Katılma bağlantısı aşağıda (Bekleyen elle yapılacaklar 6).
   Güncel sürüm 3: senin anlık hız ve rota eğimi işlerin, Google girişi ve Android push dahil.
@@ -79,6 +81,9 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   İndirme boyutu makul mü (stil, yazı tipi dosyaları da iner)? User-Agent başlığı OpenFreeMap isteklerinde görünüyor mu?
 - Dil: telefonu İngilizce / Almanca / Rusça yap ya da Ayarlar > Dil'den seç; bütün ekranlar değişiyor mu, metinler taşıyor mu
   (Almanca uzun)? Tarihler ("Samstag, 7. November"), sayılar (27.4 / 27,4) doğru mu? Telefon bildirimi seçilen dilde geliyor mu?
+- Kişisel rekorlar: Profil > Kişisel rekorlar açılıyor mu, değerler aktivite sayfalarıyla tutuyor mu, tür süzgeci çalışıyor mu?
+  Yeni bir kayıtta rekor kırınca aktivite sayfasında rozet çıkıyor mu (o türde en az 2 aktivite gerekir)? Almanca / Rusça uzun
+  rekor adları kartlara sığıyor mu?
 
 ### [~] Google Play — dahili test
 Play Console'da **Lykiva** oluşturuldu (kişisel geliştirici hesabı, paket `app.lykiva.mobile`, Türkçe, ücretsiz).
@@ -161,7 +166,10 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
 - [ ] Bluetooth sensörler: nabız, tekerlek hızı / kadans, güç (D). Bisiklette anlık hızın en doğru kaynağı.
 
 **Motivasyon**
-- [ ] Haftalık / aylık / yıllık özet ve kişisel rekorlar (en uzun, en çok tırmanış, en hızlı …).
+- [~] Haftalık / aylık / yıllık özet ve kişisel rekorlar. Yapıldı (32. aşama): rekorlar ekranı (en uzun mesafe, en uzun süre,
+  en yüksek hız, en çok tırmanış; türe göre), bu yılın / tüm zamanların toplamı, aktivite sayfasında "Kişisel rekor" rozeti.
+  Kalan: aylık özet ve geçen yılla karşılaştırma; en hızlı 5 / 10 km / 21 km (iz içinde en iyi bölüm, koşu için); kayıt bitince
+  "yeni rekor" bildirimi; rekorları başkasının profilinde gösterme (şu an yalnızca kendi rekorların).
 - [ ] Hedefler, meydan okumalar, rozetler.
 - [ ] Segmentler ve liderlik tablosu (büyük iş, sonraya).
 
@@ -203,6 +211,14 @@ Tırmanış bölümü: en az 20 m kazanç, 200 m uzunluk, ort. %3; tepeden 10 m 
 Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde; web paylaşım sayfasında da.
 
 ## Kararlar
+
+- **Kişisel rekorlar telefonda hesaplanır** (`packages/shared/src/rekor.ts`): sunucudan kendi aktivitelerinin yalnızca özet
+  sütunları çekilir (iz yok, 1.000'erlik sayfalar), telefonda bekleyenler de katılır; yeni tablo / fonksiyon / migration yok.
+  Eşitlikte eski aktivite rekoru tutar. O türde tek aktivite varsa rozet çıkmaz (ilk kayıt her şeyde rekor olurdu).
+  En yüksek hızda türe göre üst sınır var (bisiklet 120, dağ bisikleti 100, koşu / patika koşusu 40, yürüyüş / doğa yürüyüşü
+  25 km/sa): üstü GPS sıçraması ya da araçta unutulan kayıt sayılır, rekora girmez (aktivitenin kendi sayfasında görünür).
+  Mesafe ve süre için böyle bir süzgeç yok; araçta unutulan bir kayıt mesafe rekoru olabilir (ileride: aktiviteyi
+  "rekorlara katma" seçeneği). Kullanıcı ve aktivite sayısı çok artarsa sunucu tarafında özet görünüme taşınabilir.
 
 - **Dil desteği: kendi küçük çeviri katmanımız** (i18next yok). Mobil: `apps/mobile/src/i18n/` — `tr.ts` kaynak sözlük,
   `en.ts` / `de.ts` / `ru.ts` aynı anahtarlarla (eksik ya da fazla anahtar TypeScript hatası verir); metin `$t('alan.anahtar', { ad })`
