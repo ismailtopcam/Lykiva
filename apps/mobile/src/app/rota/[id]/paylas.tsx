@@ -9,6 +9,7 @@ import { Txt } from '@/components/Txt';
 import { Avatar, Button, Card, Label, ListRow, ToggleRow } from '@/components/ui';
 import { faralyaKabak, groups, people } from '@/data/ornek';
 import { colors, fontFamily, space } from '@/theme';
+import { $t } from '@/i18n';
 
 export default function RotaPaylasScreen() {
   const insets = useSafeAreaInsets();
@@ -19,17 +20,17 @@ export default function RotaPaylasScreen() {
 
   return (
     <View style={styles.root}>
-      <Header title="Rotayı paylaş" />
+      <Header title={$t('rota_paylas.rotayi_paylas')} />
       <ScrollView contentContainerStyle={{ padding: space.lg, paddingTop: 4, paddingBottom: insets.bottom + 100 }}>
         <Card style={styles.route}>
           <RouteThumb route={faralyaKabak.route} size={56} />
           <View>
-            <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }}>Faralya – Kabak – Alınca</Txt>
-            <Txt variant="small">18,6 km · ↑ 540 m · Doğa yürüyüşü</Txt>
+            <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }}>{$t('rota_paylas.faralya_kabak_alinca')}</Txt>
+            <Txt variant="small">{$t('rota_paylas.m_18_6_km_540')}</Txt>
           </View>
         </Card>
 
-        <Label>Gruplar ve topluluklar</Label>
+        <Label>{$t('rota_paylas.gruplar_ve_topluluklar')}</Label>
         <Card style={{ marginBottom: 14 }}>
           {groups.map((g, i) => {
             const on = !!sel[g.id];
@@ -53,7 +54,7 @@ export default function RotaPaylasScreen() {
           })}
         </Card>
 
-        <Label>Kişiler</Label>
+        <Label>{$t('rota_paylas.kisiler')}</Label>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
           {persons.map((id) => {
             const p = people[id];
@@ -61,24 +62,24 @@ export default function RotaPaylasScreen() {
               <View key={id} style={styles.person}>
                 <Avatar initials={p.initials} tone="sand" size={28} />
                 <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: colors.seaInk }}>{p.short}</Txt>
-                <Pressable accessibilityRole="button" accessibilityLabel={`${p.short} kişisini kaldır`} onPress={() => setPersons(persons.filter((x) => x !== id))} style={styles.remove}>
+                <Pressable accessibilityRole="button" accessibilityLabel={$t('rota_paylas.kisisini_kaldir', { short: p.short })} onPress={() => setPersons(persons.filter((x) => x !== id))} style={styles.remove}>
                   <Icon name="close" size={14} color={colors.seaInk} strokeWidth={2.2} />
                 </Pressable>
               </View>
             );
           })}
           <Pressable accessibilityRole="button" style={styles.addPerson}>
-            <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 13 }}>+ Kişi ekle</Txt>
+            <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 13 }}>{$t('rota_paylas.kisi_ekle')}</Txt>
           </Pressable>
         </View>
 
         <View style={{ borderTopWidth: 1, borderTopColor: colors.lineStrong }}>
-          <ToggleRow title="Düzenlemeye izin ver" subtitle="Paylaştıkların rotayı değiştirebilir" value={edit} onChange={setEdit} />
+          <ToggleRow title={$t('rota_paylas.duzenlemeye_izin_ver')} subtitle={$t('rota_paylas.paylastiklarin_rotayi_degistirebilir')} value={edit} onChange={setEdit} />
         </View>
-        <ListRow icon="calendar" iconTone="terra" caption="Tarih belirle, katılımcı topla" title="Bu rotayla etkinlik oluştur" href="/etkinlik/olustur" />
+        <ListRow icon="calendar" iconTone="terra" caption={$t('rota_paylas.tarih_belirle_katilimci_topla')} title={$t('rota_paylas.bu_rotayla_etkinlik_olustur')} href="/etkinlik/olustur" />
       </ScrollView>
       <View style={[styles.bottom, { paddingBottom: insets.bottom + 16 }]}>
-        <Button label={`${count} yere gönder`} icon="send" href="/grup/ornek/sohbet" />
+        <Button label={$t('rota_paylas.yere_gonder', { count })} icon="send" href="/grup/ornek/sohbet" />
       </View>
     </View>
   );

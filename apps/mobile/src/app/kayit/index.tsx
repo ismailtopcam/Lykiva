@@ -16,6 +16,7 @@ import type { PaylasimGrubu } from '@/kayit/canliPaylasim';
 import { supabaseHazir } from '@/lib/supabase';
 import { baslat, IzinHatasi, konumOnizlemeBaslat, useKayit } from '@/kayit/kaydedici';
 import { colors, fontFamily, radius, space } from '@/theme';
+import { $t } from '@/i18n';
 
 const icons: Record<ActivityType, IconName> = {
   bike: 'bike',
@@ -28,10 +29,10 @@ const icons: Record<ActivityType, IconName> = {
 
 /** GPS doğruluğuna göre durum etiketi */
 function gpsEtiketi(acc: number | null | undefined): { text: string; color: string } {
-  if (acc == null) return { text: 'GPS aranıyor…', color: colors.inkMuted };
-  if (acc <= 15) return { text: `GPS hazır · ±${Math.round(acc)} m`, color: colors.sea };
-  if (acc <= 30) return { text: `GPS zayıf · ±${Math.round(acc)} m`, color: '#B7862B' };
-  return { text: 'GPS çok zayıf', color: colors.terra };
+  if (acc == null) return { text: $t('kayit.gps_araniyor'), color: colors.inkMuted };
+  if (acc <= 15) return { text: $t('kayit.gps_hazir_m', { round: Math.round(acc) }), color: colors.sea };
+  if (acc <= 30) return { text: $t('kayit.gps_zayif_m', { round: Math.round(acc) }), color: '#B7862B' };
+  return { text: $t('kayit.gps_cok_zayif'), color: colors.terra };
 }
 
 export default function KayitBaslatScreen() {
@@ -89,7 +90,7 @@ export default function KayitBaslatScreen() {
       router.replace('/kayit/canli');
     } catch (e) {
       setIzinHatasi(e instanceof IzinHatasi);
-      setHata(e instanceof Error ? e.message : 'Kayıt başlatılamadı');
+      setHata(e instanceof Error ? e.message : $t('kayit.kayit_baslatilamadi'));
     } finally {
       setBasliyor(false);
     }
@@ -103,10 +104,10 @@ export default function KayitBaslatScreen() {
         markers={ben ? [{ id: 'me', coord: ben, kind: 'me' }] : []}
         follow={rota ? null : ben}
         padding={{ top: 110, bottom: 420 }}
-        accessibilityLabel="Bulunduğun konumun haritası"
+        accessibilityLabel={$t('kayit.bulundugun_konumun_haritasi')}
       />
       <FloatingHeader
-        left={<IconButton floating icon="close" label="Kapat" onPress={() => router.back()} />}
+        left={<IconButton floating icon="close" label={$t('ortak.kapat')} onPress={() => router.back()} />}
         middle={
           <View style={styles.gps} accessibilityLiveRegion="polite">
             <View style={[styles.gpsDot, { backgroundColor: gps.color }]} />
@@ -117,8 +118,7 @@ export default function KayitBaslatScreen() {
 
       <View style={[styles.sheet, { paddingBottom: insets.bottom + 20 }]}>
         <Txt variant="heading" accessibilityRole="header" style={{ marginBottom: 12 }}>
-          Ne yapıyorsun?
-        </Txt>
+          {$t('kayit.ne_yapiyorsun')}</Txt>
         <View accessibilityRole="radiogroup" style={styles.grid}>
           {ACTIVITY_TYPES.map((t) => {
             const on = t === type;
@@ -139,17 +139,17 @@ export default function KayitBaslatScreen() {
         <Pressable accessibilityRole="button" accessibilityState={{ expanded: secimAcik }} onPress={secimiAc} style={styles.rotaRow}>
           <Icon name="route" color={colors.terra} />
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Txt variant="small">Rota</Txt>
+            <Txt variant="small">{$t('kayit.rota')}</Txt>
             <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }} numberOfLines={1}>
-              {rota ? `${rota.name} · ${formatKm(rota.distanceM)} km` : 'Rotasız kaydet'}
+              {rota ? $t('kayit.km', { name: rota.name, km: formatKm(rota.distanceM) }) : $t('kayit.rotasiz_kaydet')}
             </Txt>
           </View>
-          <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: colors.seaInk }}>{secimAcik ? 'Kapat' : 'Değiştir'}</Txt>
+          <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: colors.seaInk }}>{secimAcik ? $t('ortak.kapat') : $t('kayit.degistir')}</Txt>
         </Pressable>
         {secimAcik ? (
           <ScrollView style={{ maxHeight: 180 }} contentContainerStyle={{ gap: 4 }}>
             <Pressable accessibilityRole="radio" accessibilityState={{ checked: !rota }} onPress={() => { setRota(null); setSecimAcik(false); }} style={styles.secenek}>
-              <Txt style={{ fontFamily: rota ? fontFamily.body : fontFamily.bodyBold, fontSize: 14 }}>Rotasız kaydet</Txt>
+              <Txt style={{ fontFamily: rota ? fontFamily.body : fontFamily.bodyBold, fontSize: 14 }}>{$t('kayit.rotasiz_kaydet')}</Txt>
             </Pressable>
             {(rotaListesi ?? []).map((r) => (
               <Pressable
@@ -163,11 +163,10 @@ export default function KayitBaslatScreen() {
                 }}
                 style={styles.secenek}>
                 <Txt style={{ fontFamily: rota?.id === r.id ? fontFamily.bodyBold : fontFamily.body, fontSize: 14 }} numberOfLines={1}>
-                  {r.name} · {formatKm(r.distanceM)} km
-                </Txt>
+                  {$t('kayit.km_2', { name: r.name, km: formatKm(r.distanceM) })}</Txt>
               </Pressable>
             ))}
-            {rotaListesi && rotaListesi.length === 0 ? <Txt variant="small">Henüz rotan yok. Profil &gt; Rotalarım’dan çizebilirsin.</Txt> : null}
+            {rotaListesi && rotaListesi.length === 0 ? <Txt variant="small">{$t('kayit.henuz_rotan_yok_profil')}</Txt> : null}
           </ScrollView>
         ) : null}
 
@@ -184,17 +183,17 @@ export default function KayitBaslatScreen() {
               style={styles.rotaRow}>
               <Icon name="users" color={paylasim ? colors.sea : colors.inkMuted} />
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Txt variant="small">Canlı konum</Txt>
+                <Txt variant="small">{$t('kayit.canli_konum')}</Txt>
                 <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }} numberOfLines={1}>
-                  {paylasim ? `${paylasim.ad} grubuyla paylaşılacak` : 'Paylaşılmıyor'}
+                  {paylasim ? $t('kayit.grubuyla_paylasilacak', { ad: paylasim.ad }) : $t('kayit.paylasilmiyor')}
                 </Txt>
               </View>
-              <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: colors.seaInk }}>{paylasimAcik ? 'Kapat' : 'Değiştir'}</Txt>
+              <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: colors.seaInk }}>{paylasimAcik ? $t('ortak.kapat') : $t('kayit.degistir')}</Txt>
             </Pressable>
             {paylasimAcik ? (
               <ScrollView style={{ maxHeight: 180 }} contentContainerStyle={{ gap: 4 }}>
                 <Pressable accessibilityRole="radio" accessibilityState={{ checked: !paylasim }} onPress={() => { setPaylasim(null); setPaylasimAcik(false); }} style={styles.secenek}>
-                  <Txt style={{ fontFamily: paylasim ? fontFamily.body : fontFamily.bodyBold, fontSize: 14 }}>Paylaşma</Txt>
+                  <Txt style={{ fontFamily: paylasim ? fontFamily.body : fontFamily.bodyBold, fontSize: 14 }}>{$t('kayit.paylasma')}</Txt>
                 </Pressable>
                 {(gruplar ?? []).map((g) => (
                   <Pressable
@@ -207,31 +206,30 @@ export default function KayitBaslatScreen() {
                     }}
                     style={styles.secenek}>
                     <Txt style={{ fontFamily: paylasim?.id === g.id ? fontFamily.bodyBold : fontFamily.body, fontSize: 14 }} numberOfLines={1}>
-                      {g.name} · {g.member_count} üye
-                    </Txt>
+                      {$t('kayit.uye', { name: g.name, member_count: g.member_count })}</Txt>
                   </Pressable>
                 ))}
-                {gruplar && gruplar.length === 0 ? <Txt variant="small">Konum paylaşmak için önce bir gruba katıl.</Txt> : null}
-                <Txt variant="small">Yalnızca seçtiğin grubun üyeleri, kayıt sürerken son konumunu görür. Kayıt bitince paylaşım kapanır.</Txt>
+                {gruplar && gruplar.length === 0 ? <Txt variant="small">{$t('kayit.konum_paylasmak_icin_once')}</Txt> : null}
+                <Txt variant="small">{$t('kayit.yalnizca_sectigin_grubun_uyeleri')}</Txt>
               </ScrollView>
             ) : null}
           </>
         ) : null}
 
-        <Txt variant="small">Ekran kapalıyken de kaydetmesi için konum iznini “Her zaman” olarak ver.</Txt>
+        <Txt variant="small">{$t('kayit.ekran_kapaliyken_de_kaydetmesi')}</Txt>
 
         {hata ? (
           <View style={styles.error} accessibilityRole="alert">
             <Txt style={{ color: colors.terra, fontFamily: fontFamily.bodySemiBold, fontSize: 13 }}>{hata}</Txt>
             {izinHatasi ? (
               <Pressable accessibilityRole="link" onPress={() => Linking.openSettings()}>
-                <Txt style={{ color: colors.seaInk, fontFamily: fontFamily.bodyBold, fontSize: 13, marginTop: 4 }}>Ayarları aç</Txt>
+                <Txt style={{ color: colors.seaInk, fontFamily: fontFamily.bodyBold, fontSize: 13, marginTop: 4 }}>{$t('kayit.ayarlari_ac')}</Txt>
               </Pressable>
             ) : null}
           </View>
         ) : null}
 
-        <Button label={basliyor ? 'Başlatılıyor…' : 'Başlat'} icon="play" big onPress={onBaslat} disabled={basliyor} style={{ marginTop: space.md }} />
+        <Button label={basliyor ? $t('kayit.baslatiliyor') : $t('kayit.baslat')} icon="play" big onPress={onBaslat} disabled={basliyor} style={{ marginTop: space.md }} />
       </View>
     </View>
   );

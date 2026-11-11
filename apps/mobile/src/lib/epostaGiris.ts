@@ -15,6 +15,7 @@ import type { AuthError } from '@supabase/supabase-js';
 
 import { devirKoduAl, devral, type GirisSonucu, profiliTamamla } from '@/lib/giris';
 import { supabase } from '@/lib/supabase';
+import { $t } from '@/i18n';
 
 export const SIFRE_EN_AZ = 8;
 
@@ -29,14 +30,14 @@ export type KodTuru = 'kayit' | 'ekle' | 'sifre';
 /** Bu e-postayla zaten bir hesap var: kullanıcı giriş yapmalı */
 export class EpostaKayitli extends Error {
   constructor() {
-    super('Bu e-postayla açılmış bir hesap var.');
+    super($t('lib_epostaGiris.bu_e_postayla_acilmis'));
   }
 }
 
 /** Hesap var ama e-posta doğrulanmamış: yeni kod gönderildi */
 export class EpostaDogrulanmadi extends Error {
   constructor() {
-    super('E-posta doğrulanmamış.');
+    super($t('lib_epostaGiris.e_posta_dogrulanmamis'));
   }
 }
 
@@ -200,30 +201,30 @@ export async function sifreyiYenile(eposta: string, kod: string, yeniSifre: stri
 /* ------------------------------------------------------------------ */
 
 export function epostaHataMetni(e: unknown): string {
-  if (e instanceof EpostaKayitli) return 'Bu e-postayla açılmış bir hesap var. Giriş yap ya da şifreni sıfırla.';
+  if (e instanceof EpostaKayitli) return $t('lib_epostaGiris.bu_e_postayla_acilmis_2');
   const kod = (e as { code?: string } | null)?.code;
   const m = e instanceof Error ? e.message : String(e);
   switch (kod) {
     case 'invalid_credentials':
-      return 'E-posta ya da şifre yanlış.';
+      return $t('lib_epostaGiris.e_posta_ya_da');
     case 'otp_expired':
-      return 'Kod yanlış ya da süresi dolmuş. Yeni kod isteyebilirsin.';
+      return $t('lib_epostaGiris.kod_yanlis_ya_da');
     case 'over_email_send_rate_limit':
     case 'over_request_rate_limit':
-      return 'Çok sık denendi. Birkaç dakika bekleyip tekrar dene.';
+      return $t('lib_epostaGiris.cok_sik_denendi_birkac');
     case 'weak_password':
-      return `Şifre çok zayıf. En az ${SIFRE_EN_AZ} karakter, harf ve rakam kullan.`;
+      return $t('lib_epostaGiris.sifre_cok_zayif_en', { sIFRE_EN_AZ: SIFRE_EN_AZ });
     case 'email_address_invalid':
-      return 'Bu e-posta adresi geçersiz görünüyor.';
+      return $t('lib_epostaGiris.bu_e_posta_adresi');
     case 'signup_disabled':
-      return 'Yeni hesap açma şu an kapalı.';
+      return $t('lib_epostaGiris.yeni_hesap_acma_su');
     case 'email_provider_disabled':
-      return 'E-postayla giriş sunucuda kapalı.';
+      return $t('lib_epostaGiris.e_postayla_giris_sunucuda');
     case 'user_banned':
-      return 'Bu hesap kullanıma kapatılmış.';
+      return $t('lib_epostaGiris.bu_hesap_kullanima_kapatilmis');
   }
-  if (/network|fetch|internet/i.test(m)) return 'İnternet bağlantısı yok gibi görünüyor. Bağlanınca tekrar dene.';
-  if (/error sending|sending .*email|smtp/i.test(m)) return 'E-posta gönderilemedi. Biraz sonra tekrar dene.';
-  if (/token has expired|invalid.*(otp|token)/i.test(m)) return 'Kod yanlış ya da süresi dolmuş. Yeni kod isteyebilirsin.';
-  return `Olmadı: ${m}`;
+  if (/network|fetch|internet/i.test(m)) return $t('lib_epostaGiris.internet_baglantisi_yok_gibi');
+  if (/error sending|sending .*email|smtp/i.test(m)) return $t('lib_epostaGiris.e_posta_gonderilemedi_biraz');
+  if (/token has expired|invalid.*(otp|token)/i.test(m)) return $t('lib_epostaGiris.kod_yanlis_ya_da');
+  return $t('lib_epostaGiris.olmadi', { m });
 }

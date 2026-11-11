@@ -9,6 +9,7 @@ import { cevrimdisiSil, kayitliRota, kayitliRotalar, kayitliRotayiTazele } from 
 import type { Zemin } from '@/lib/yonlendirme';
 import { oturumuSagla, supabase, supabaseHazir } from '@/lib/supabase';
 import { faralyaKabak, faralyaKabakRoute } from './ornek';
+import { $t } from '@/i18n';
 
 export type Rota = {
   id: string;
@@ -93,7 +94,7 @@ export async function rotaGetir(id: string): Promise<Rota> {
   try {
     const { data, error } = await supabase.from('rota_ozetleri').select('*').eq('id', id).maybeSingle();
     if (error) throw error;
-    if (!data) throw new Error('Rota bulunamadı ya da görme iznin yok');
+    if (!data) throw new Error($t('data_rota.rota_bulunamadi_ya_da'));
     const r = cevir(data as Satir);
     void kayitliRotayiTazele(r);
     return r;
@@ -132,7 +133,7 @@ export type RotaPaketi = {
 };
 
 export async function rotaKaydet(p: RotaPaketi): Promise<string> {
-  if (!supabaseHazir) throw new Error('Sunucu anahtarı girilmemiş (apps/mobile/.env)');
+  if (!supabaseHazir) throw new Error($t('data_rota.sunucu_anahtari_girilmemis_apps'));
   await oturumuSagla();
   const s = routeStats(p.points);
   const { data, error } = await supabase.rpc('kaydet_rota', {
@@ -177,7 +178,7 @@ export function rotaDegisikliginiDinle(f: (id: string, d: Partial<RotaAyari> | n
 /** Sahibi için: ad, not ve görünürlük */
 export async function rotaGuncelle(id: string, ayar: RotaAyari) {
   const yeni = { name: ayar.name.trim().slice(0, 80), notes: ayar.notes?.trim() || null, visibility: ayar.visibility };
-  if (yeni.name.length < 1) throw new Error('Rotaya bir ad ver.');
+  if (yeni.name.length < 1) throw new Error($t('data_rota.rotaya_bir_ad_ver'));
   const { error } = await supabase.from('routes').update(yeni).eq('id', id);
   if (error) throw new Error(error.message);
   rotaDegisti(id, yeni);
@@ -187,7 +188,7 @@ export async function rotaGuncelle(id: string, ayar: RotaAyari) {
 export async function rotaSil(id: string) {
   const { error, count } = await supabase.from('routes').delete({ count: 'exact' }).eq('id', id);
   if (error) throw new Error(error.message);
-  if (!count) throw new Error('Rota silinemedi');
+  if (!count) throw new Error($t('data_rota.rota_silinemedi'));
   void cevrimdisiSil(id).catch(() => undefined);
   rotaDegisti(id, null);
 }
@@ -206,7 +207,7 @@ export function useRota(id: string | undefined) {
     let iptal = false;
     rotaGetir(id)
       .then((r) => !iptal && setDurum({ r, hata: null, id }))
-      .catch((e) => !iptal && setDurum({ r: null, hata: e instanceof Error ? e.message : 'Yüklenemedi', id }));
+      .catch((e) => !iptal && setDurum({ r: null, hata: e instanceof Error ? e.message : $t('ortak.yuklenemedi'), id }));
     return () => {
       iptal = true;
     };

@@ -1,4 +1,4 @@
-import { ACTIVITY_LABELS, formatKm, havaOzeti, ruzgarMetni, type HavaDurumu } from '@lykiva/shared';
+import { ACTIVITY_LABELS, formatKm, havaOzeti, ruzgarMetni, type HavaDurumu, kmUnit } from '@lykiva/shared';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useEffect, useCallback, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
@@ -28,6 +28,7 @@ import {
 } from '@/etkinlik/etkinlikler';
 import { basHarfler, grupRengi } from '@/grup/gruplar';
 import { colors, fontFamily, space } from '@/theme';
+import { $t } from '@/i18n';
 
 const uuidMi = (id: string | undefined) => !!id && /^[0-9a-f-]{36}$/i.test(id);
 
@@ -51,10 +52,10 @@ function Bilgi({ icon, title, sub, onPress, right }: { icon: IconName; title: st
   );
 }
 
-const SECENEKLER: { durum: Exclude<Katilim, 'waitlist'>; ad: string }[] = [
-  { durum: 'going', ad: 'Katılıyorum' },
-  { durum: 'maybe', ad: 'Belki' },
-  { durum: 'declined', ad: 'Gelemem' },
+const SECENEKLER = (): { durum: Exclude<Katilim, 'waitlist'>; ad: string }[] => [
+  { durum: 'going', ad: $t('etkinlik.katiliyorum') },
+  { durum: 'maybe', ad: $t('etkinlik.belki') },
+  { durum: 'declined', ad: $t('etkinlik.gelemem') },
 ];
 
 function GercekEtkinlik({ id }: { id: string }) {
@@ -85,7 +86,7 @@ function GercekEtkinlik({ id }: { id: string }) {
       setHata(null);
       setE(await etkinlikDetayi(id));
     } catch (err) {
-      setHata(err instanceof Error ? err.message : 'Etkinlik yüklenemedi');
+      setHata(err instanceof Error ? err.message : $t('etkinlik.etkinlik_yuklenemedi'));
       setE((x) => (x === undefined ? null : x));
     }
   }, [id]);
@@ -100,7 +101,7 @@ function GercekEtkinlik({ id }: { id: string }) {
     return (
       <View style={[styles.root, { alignItems: 'center', justifyContent: 'center', padding: space.lg }]}>
         <FloatingHeader />
-        {e === undefined ? <ActivityIndicator color={colors.terra} /> : <Txt variant="muted">{hata ?? 'Etkinlik bulunamadı, iptal edilmiş ya da görme iznin yok.'}</Txt>}
+        {e === undefined ? <ActivityIndicator color={colors.terra} /> : <Txt variant="muted">{hata ?? $t('etkinlik.etkinlik_bulunamadi_iptal_edilmis')}</Txt>}
       </View>
     );
   }
@@ -122,34 +123,34 @@ function GercekEtkinlik({ id }: { id: string }) {
     setMesaj(null);
     try {
       const sonuc = await katilimBildir(ev.id, durum);
-      if (sonuc === 'waitlist') setMesaj('Kontenjan dolu: bekleme listesine alındın. Yer açılınca otomatik katılımcı olursun.');
+      if (sonuc === 'waitlist') setMesaj($t('etkinlik.kontenjan_dolu_bekleme_listesine'));
       await yukle();
     } catch (err) {
-      setMesaj(err instanceof Error ? err.message : 'Kaydedilemedi');
+      setMesaj(err instanceof Error ? err.message : $t('ortak.kaydedilemedi'));
     } finally {
       setMesgul(false);
     }
   }
 
   function iptal() {
-    Alert.alert('Etkinlik iptal edilsin mi?', ev.group_id ? 'Etkinlik silinir; grubun sohbetine iptal notu düşer.' : 'Etkinlik ve katılım bilgileri silinir.', [
-      { text: 'Vazgeç', style: 'cancel' },
+    Alert.alert($t('etkinlik.etkinlik_iptal_edilsin_mi'), ev.group_id ? $t('etkinlik.etkinlik_silinir_grubun_sohbetine') : $t('etkinlik.etkinlik_ve_katilim_bilgileri'), [
+      { text: $t('ortak.vazgec'), style: 'cancel' },
       {
-        text: 'İptal et',
+        text: $t('etkinlik.iptal_et'),
         style: 'destructive',
         onPress: async () => {
           try {
             await etkinlikSil(ev.id);
             router.back();
           } catch (err) {
-            Alert.alert('İptal edilemedi', err instanceof Error ? err.message : String(err));
+            Alert.alert($t('etkinlik.iptal_edilemedi'), err instanceof Error ? err.message : String(err));
           }
         },
       },
     ]);
   }
 
-  const ozellikler = [ev.route ? `${formatKm(ev.route.distance_m)} km` : null, ev.route?.elevation_gain_m != null ? `↑ ${Math.round(ev.route.elevation_gain_m)} m` : null, ev.difficulty ? `${ZORLUK_ADI[ev.difficulty]} seviye` : null]
+  const ozellikler = [ev.route ? `${formatKm(ev.route.distance_m)} ${kmUnit()}` : null, ev.route?.elevation_gain_m != null ? $t('etkinlik.m', { round: Math.round(ev.route.elevation_gain_m) }) : null, ev.difficulty ? $t('etkinlik.seviye', { zORLUK_ADI: ZORLUK_ADI()[ev.difficulty] }) : null]
     .filter(Boolean)
     .join(' · ');
 
@@ -162,32 +163,32 @@ function GercekEtkinlik({ id }: { id: string }) {
             route={rotaYolu}
             markers={isaretler}
             padding={{ top: insets.top + 70, bottom: 24 }}
-            accessibilityLabel={`Etkinlik haritası${ev.route ? ': rota' : ''}${bulusma ? ' ve buluşma noktası' : ''}`}
+            accessibilityLabel={$t('etkinlik.etkinlik_haritasi', { a: ev.route ? $t('etkinlik.rota') : '', a2: bulusma ? $t('etkinlik.ve_bulusma_noktasi') : '' })}
           />
         ) : (
           <View style={{ height: insets.top + 64, backgroundColor: colors.land }} />
         )}
         <View style={{ padding: space.lg }}>
           <Txt variant="label" color={colors.sea}>
-            {[ev.group_name, ACTIVITY_LABELS[ev.activity], ev.visibility === 'public' ? 'Herkese açık' : 'Grup etkinliği'].filter(Boolean).join(' · ')}
+            {[ev.group_name, ACTIVITY_LABELS[ev.activity], ev.visibility === 'public' ? $t('ortak.herkese_acik') : $t('etkinlik.grup_etkinligi')].filter(Boolean).join(' · ')}
           </Txt>
           <Txt variant="display" style={{ marginTop: 4, marginBottom: 12 }} accessibilityRole="header">
             {ev.title}
           </Txt>
           <View style={{ gap: 10, marginBottom: 14 }}>
-            <Bilgi icon="calendar" title={uzunTarih(ev.starts_at)} sub={bitti ? 'Etkinlik sona erdi' : `${ev.creator_name} düzenliyor`} />
-            {ev.meeting_point_name || bulusma ? <Bilgi icon="pin" title={ev.meeting_point_name ?? 'Haritada işaretli nokta'} sub="Buluşma noktası" /> : null}
-            {hava && !bitti ? <Bilgi icon="weather" title={`${havaOzeti(hava)} · ${ruzgarMetni(hava)}`} sub="Hava tahmini (MET Norway)" /> : null}
+            <Bilgi icon="calendar" title={uzunTarih(ev.starts_at)} sub={bitti ? $t('etkinlik.etkinlik_sona_erdi') : $t('etkinlik.duzenliyor', { creator_name: ev.creator_name })} />
+            {ev.meeting_point_name || bulusma ? <Bilgi icon="pin" title={ev.meeting_point_name ?? $t('etkinlik.haritada_isaretli_nokta')} sub={$t('etkinlik.bulusma_noktasi')} /> : null}
+            {hava && !bitti ? <Bilgi icon="weather" title={`${havaOzeti(hava)} · ${ruzgarMetni(hava)}`} sub={$t('etkinlik.hava_tahmini_met_norway')} /> : null}
             {ev.route ? (
               <Bilgi
                 icon="route"
                 title={ozellikler || ev.route.name}
-                sub={`${ev.route.name}${ev.route.is_loop ? ', döngü' : ''}`}
+                sub={`${ev.route.name}${ev.route.is_loop ? $t('etkinlik.dongu') : ''}`}
                 onPress={() => router.push({ pathname: '/rota/[id]', params: { id: ev.route!.id } })}
                 right={<Icon name="chevron" size={18} color={colors.inkMuted} strokeWidth={2} />}
               />
             ) : ev.difficulty ? (
-              <Bilgi icon="mountain" title={`${ZORLUK_ADI[ev.difficulty]} seviye`} />
+              <Bilgi icon="mountain" title={$t('etkinlik.seviye', { zORLUK_ADI: ZORLUK_ADI()[ev.difficulty] })} />
             ) : null}
           </View>
           {ev.description ? <Txt style={{ fontSize: 14, lineHeight: 21, marginBottom: 14 }}>{ev.description}</Txt> : null}
@@ -199,13 +200,11 @@ function GercekEtkinlik({ id }: { id: string }) {
                 {ev.capacity ? ` / ${ev.capacity}` : ''}
               </Txt>{' '}
               <Txt style={{ color: colors.inkMuted, fontSize: 14 }}>
-                katılıyor{ev.maybe_count ? ` · ${ev.maybe_count} belki` : ''}
-                {ev.waitlist_count ? ` · ${ev.waitlist_count} bekleme listesinde` : ''}
-              </Txt>
+                {$t('etkinlik.katiliyor', { a: ev.maybe_count ? $t('etkinlik.belki_2', { maybe_count: ev.maybe_count }) : '', a2: ev.waitlist_count ? $t('etkinlik.bekleme_listesinde', { waitlist_count: ev.waitlist_count }) : '' })}</Txt>
             </Txt>
             {ev.group_id && ev.is_member ? (
               <Pressable accessibilityRole="link" onPress={() => router.push({ pathname: '/grup/[id]/sohbet', params: { id: ev.group_id! } })} hitSlop={8}>
-                <Txt style={{ fontSize: 13, fontFamily: fontFamily.bodySemiBold, color: colors.terra }}>Sohbete git</Txt>
+                <Txt style={{ fontSize: 13, fontFamily: fontFamily.bodySemiBold, color: colors.terra }}>{$t('etkinlik.sohbete_git')}</Txt>
               </Pressable>
             ) : null}
           </View>
@@ -215,23 +214,23 @@ function GercekEtkinlik({ id }: { id: string }) {
                 <Avatar initials={basHarfler(a.display_name)} tone={grupRengi(a.user_id)} size={32} />
                 <Txt style={{ flex: 1, fontSize: 14 }} numberOfLines={1}>
                   {a.display_name}
-                  {a.user_id === ev.created_by ? ' · düzenleyen' : ''}
+                  {a.user_id === ev.created_by ? $t('etkinlik.duzenleyen') : ''}
                 </Txt>
-                {a.status !== 'going' ? <Txt variant="small">{KATILIM_ADI[a.status]}</Txt> : null}
+                {a.status !== 'going' ? <Txt variant="small">{KATILIM_ADI()[a.status]}</Txt> : null}
               </View>
             ))}
           </View>
 
           {ev.can_manage && !bitti ? (
             <Pressable accessibilityRole="button" onPress={iptal} style={{ marginTop: space.xl, alignSelf: 'center', padding: 8 }}>
-              <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: colors.terraInk }}>Etkinliği iptal et</Txt>
+              <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: colors.terraInk }}>{$t('etkinlik.etkinligi_iptal_et')}</Txt>
             </Pressable>
           ) : null}
-          {!ev.can_manage ? <SikayetBaglantisi etiket="Bu etkinliği şikayet et" onPress={() => sikayet.ac('event', ev.id, `${ev.title} · ${ev.creator_name}`)} /> : null}
+          {!ev.can_manage ? <SikayetBaglantisi etiket={$t('etkinlik.bu_etkinligi_sikayet_et')} onPress={() => sikayet.ac('event', ev.id, `${ev.title} · ${ev.creator_name}`)} /> : null}
         </View>
       </ScrollView>
 
-      <FloatingHeader right={<IconButton floating icon="share" label="Etkinliği paylaş" onPress={() => void Share.share({ message: paylasimMetni(ev) }).catch(() => undefined)} />} />
+      <FloatingHeader right={<IconButton floating icon="share" label={$t('etkinlik.etkinligi_paylas')} onPress={() => void Share.share({ message: paylasimMetni(ev) }).catch(() => undefined)} />} />
 
       <View style={[styles.bottom, { paddingBottom: insets.bottom + 16 }]}>
         {mesaj ? (
@@ -241,17 +240,15 @@ function GercekEtkinlik({ id }: { id: string }) {
         ) : null}
         {bitti ? (
           <Txt variant="muted" style={{ textAlign: 'center', paddingVertical: 14 }}>
-            Etkinlik sona erdi.
-          </Txt>
+            {$t('etkinlik.etkinlik_sona_erdi_2')}</Txt>
         ) : !katilabilir ? (
           <Txt variant="muted" style={{ textAlign: 'center', paddingVertical: 14 }}>
-            Bu etkinliğe yalnızca grup üyeleri katılabilir.
-          </Txt>
+            {$t('etkinlik.bu_etkinlige_yalnizca_grup')}</Txt>
         ) : (
           <View accessibilityRole="radiogroup" style={{ flexDirection: 'row', gap: 8 }}>
-            {SECENEKLER.map((s) => {
+            {SECENEKLER().map((s) => {
               const on = ev.my_status === s.durum || (s.durum === 'going' && ev.my_status === 'waitlist');
-              const etiket = s.durum === 'going' && ev.my_status === 'waitlist' ? 'Bekleme listesi' : s.durum === 'going' && !on && ev.capacity != null && ev.going_count >= ev.capacity ? 'Listeye gir' : s.ad;
+              const etiket = s.durum === 'going' && ev.my_status === 'waitlist' ? $t('etkinlik.bekleme_listesi') : s.durum === 'going' && !on && ev.capacity != null && ev.going_count >= ev.capacity ? $t('etkinlik.listeye_gir') : s.ad;
               return (
                 <Pressable
                   key={s.durum}

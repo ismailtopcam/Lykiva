@@ -19,6 +19,7 @@ import { Platform } from 'react-native';
 
 import { pushKapat } from '@/lib/push';
 import { supabase, supabaseHazir } from '@/lib/supabase';
+import { $t } from '@/i18n';
 
 /** Tarayıcıdan dönüş adresi. Supabase'de izinli yönlendirmeler listesinde olmalı. */
 export const GIRIS_DONUS = 'lykiva://giris-donus';
@@ -42,7 +43,7 @@ export type GirisSonucu = {
 /** Kullanıcı pencereyi kapattı; hata gösterilmez */
 export class GirisIptal extends Error {
   constructor() {
-    super('Giriş iptal edildi');
+    super($t('lib_giris.giris_iptal_edildi'));
   }
 }
 
@@ -129,7 +130,7 @@ export async function appleIleGiris(): Promise<GirisSonucu> {
     if ((e as { code?: string }).code === 'ERR_REQUEST_CANCELED') throw new GirisIptal();
     throw e;
   }
-  if (!kimlik.identityToken) throw new Error('Apple kimlik bilgisi gelmedi');
+  if (!kimlik.identityToken) throw new Error($t('lib_giris.apple_kimlik_bilgisi_gelmedi'));
 
   // Apple adı yalnızca ilk girişte verir, jetonun içinde de yoktur
   const ad = [kimlik.fullName?.givenName, kimlik.fullName?.familyName].filter(Boolean).join(' ') || null;
@@ -191,7 +192,7 @@ async function tarayicidaGiris(tur: 'bagla' | 'gir'): Promise<'tamam' | 'baskaHe
       ? await supabase.auth.linkIdentity({ provider: 'google', options: secenekler })
       : await supabase.auth.signInWithOAuth({ provider: 'google', options: secenekler });
   if (error) throw error;
-  if (!data.url) throw new Error('Giriş adresi alınamadı');
+  if (!data.url) throw new Error($t('lib_giris.giris_adresi_alinamadi'));
 
   const sonuc = await WebBrowser.openAuthSessionAsync(data.url, GIRIS_DONUS);
   if (sonuc.type !== 'success') throw new GirisIptal();
@@ -200,8 +201,8 @@ async function tarayicidaGiris(tur: 'bagla' | 'gir'): Promise<'tamam' | 'baskaHe
   if (p.error_code === 'identity_already_exists' || /already linked/i.test(p.error_description ?? '')) {
     if (tur === 'bagla') return 'baskaHesapta';
   }
-  if (p.error || p.error_code) throw new Error(p.error_description || p.error || 'Google girişi tamamlanamadı');
-  if (!p.code) throw new Error('Google girişi tamamlanamadı (kod gelmedi)');
+  if (p.error || p.error_code) throw new Error(p.error_description || p.error || $t('lib_giris.google_girisi_tamamlanamadi'));
+  if (!p.code) throw new Error($t('lib_giris.google_girisi_tamamlanamadi_kod'));
 
   const { error: degisimHatasi } = await supabase.auth.exchangeCodeForSession(p.code);
   if (degisimHatasi) throw degisimHatasi;
@@ -240,7 +241,7 @@ export function baskaHesaptaMi(e: AuthError): boolean {
 
 export async function devirKoduAl(): Promise<string> {
   const { data, error } = await supabase.rpc('devir_kodu_al');
-  if (error || typeof data !== 'string') throw error ?? new Error('Devir kodu alınamadı');
+  if (error || typeof data !== 'string') throw error ?? new Error($t('lib_giris.devir_kodu_alinamadi'));
   return data;
 }
 

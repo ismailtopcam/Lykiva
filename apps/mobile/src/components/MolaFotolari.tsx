@@ -7,6 +7,7 @@ import { IconButton } from '@/components/IconButton';
 import { Txt } from '@/components/Txt';
 import { fotoSec, MOLA_FOTO_SINIRI, molaFotoAdresleri, molaFotografiEkle, molaFotografiSil, type Kaynak } from '@/lib/foto';
 import { colors, fontFamily, radius } from '@/theme';
+import { $t } from '@/i18n';
 
 /**
  * Bir molanın fotoğrafları. Fotoğraflar gizli kovada; aktiviteyi görebilen herkes görür (bir saatlik imzalı adres),
@@ -39,32 +40,32 @@ export function MolaFotolari({ aktiviteId, molaId, ilk, sahibi, molaAdi }: { akt
       setYukleniyor(true);
       setYollar(await molaFotografiEkle(aktiviteId, molaId, yollar, uri));
     } catch (e) {
-      Alert.alert('Fotoğraf eklenemedi', e instanceof Error ? e.message : 'Bir sorun oldu');
+      Alert.alert($t('molaFotolari.fotograf_eklenemedi'), e instanceof Error ? e.message : $t('molaFotolari.bir_sorun_oldu'));
     } finally {
       setYukleniyor(false);
     }
   }
 
   function ekleMenusu() {
-    Alert.alert(`${molaAdi} için fotoğraf`, undefined, [
-      { text: 'Galeriden seç', onPress: () => void ekle('galeri') },
-      { text: 'Fotoğraf çek', onPress: () => void ekle('kamera') },
-      { text: 'Vazgeç', style: 'cancel' as const },
+    Alert.alert($t('molaFotolari.icin_fotograf', { molaAdi }), undefined, [
+      { text: $t('molaFotolari.galeriden_sec'), onPress: () => void ekle('galeri') },
+      { text: $t('molaFotolari.fotograf_cek'), onPress: () => void ekle('kamera') },
+      { text: $t('ortak.vazgec'), style: 'cancel' as const },
     ]);
   }
 
   function silmeyiSor(yol: string) {
-    Alert.alert('Fotoğraf silinsin mi?', 'Bu fotoğraf moladan kaldırılır ve silinir.', [
-      { text: 'Vazgeç', style: 'cancel' },
+    Alert.alert($t('molaFotolari.fotograf_silinsin_mi'), $t('molaFotolari.bu_fotograf_moladan_kaldirilir'), [
+      { text: $t('ortak.vazgec'), style: 'cancel' },
       {
-        text: 'Sil',
+        text: $t('ortak.sil'),
         style: 'destructive' as const,
         onPress: async () => {
           try {
             setYollar(await molaFotografiSil(molaId, yollar, yol));
             setBuyuk(null);
           } catch (e) {
-            Alert.alert('Silinemedi', e instanceof Error ? e.message : 'Bir sorun oldu');
+            Alert.alert($t('ortak.silinemedi'), e instanceof Error ? e.message : $t('molaFotolari.bir_sorun_oldu'));
           }
         },
       },
@@ -79,7 +80,7 @@ export function MolaFotolari({ aktiviteId, molaId, ilk, sahibi, molaAdi }: { akt
         <Pressable
           key={y}
           accessibilityRole="imagebutton"
-          accessibilityLabel={`${molaAdi}, fotoğraf ${i + 1}. Büyütmek için dokun${sahibi ? ', silmek için basılı tut' : ''}`}
+          accessibilityLabel={$t('molaFotolari.fotograf_buyutmek_icin_dokun', { molaAdi, a: i + 1, a2: sahibi ? $t('molaFotolari.silmek_icin_basili_tut') : '' })}
           onPress={() => setBuyuk(y)}
           onLongPress={sahibi ? () => silmeyiSor(y) : undefined}
           style={styles.kucuk}>
@@ -87,7 +88,7 @@ export function MolaFotolari({ aktiviteId, molaId, ilk, sahibi, molaAdi }: { akt
         </Pressable>
       ))}
       {sahibi && yollar.length < MOLA_FOTO_SINIRI ? (
-        <Pressable accessibilityRole="button" accessibilityLabel={`${molaAdi} için fotoğraf ekle`} onPress={ekleMenusu} disabled={yukleniyor} style={[styles.kucuk, styles.ekle]}>
+        <Pressable accessibilityRole="button" accessibilityLabel={$t('molaFotolari.icin_fotograf_ekle', { molaAdi })} onPress={ekleMenusu} disabled={yukleniyor} style={[styles.kucuk, styles.ekle]}>
           {yukleniyor ? <ActivityIndicator color={colors.terra} /> : <Icon name="camera" size={18} color={colors.terra} />}
         </Pressable>
       ) : null}
@@ -95,15 +96,15 @@ export function MolaFotolari({ aktiviteId, molaId, ilk, sahibi, molaAdi }: { akt
       <Modal visible={!!buyuk} transparent animationType="fade" onRequestClose={() => setBuyuk(null)}>
         <View style={styles.perde}>
           {buyuk && adresler[buyuk] ? (
-            <Image source={{ uri: adresler[buyuk] }} style={{ width, height: height * 0.75 }} resizeMode="contain" accessibilityLabel={`${molaAdi} fotoğrafı`} />
+            <Image source={{ uri: adresler[buyuk] }} style={{ width, height: height * 0.75 }} resizeMode="contain" accessibilityLabel={$t('molaFotolari.fotografi', { molaAdi })} />
           ) : (
             <ActivityIndicator color="#fff" />
           )}
           <View style={[styles.ust, { top: insets.top + 8 }]}>
-            <IconButton icon="close" label="Kapat" color="#fff" onPress={() => setBuyuk(null)} />
+            <IconButton icon="close" label={$t('ortak.kapat')} color="#fff" onPress={() => setBuyuk(null)} />
             {sahibi && buyuk ? (
               <Pressable accessibilityRole="button" onPress={() => silmeyiSor(buyuk)} hitSlop={10} style={styles.sil}>
-                <Txt style={{ color: '#fff', fontFamily: fontFamily.bodySemiBold }}>Sil</Txt>
+                <Txt style={{ color: '#fff', fontFamily: fontFamily.bodySemiBold }}>{$t('molaFotolari.sil')}</Txt>
               </Pressable>
             ) : null}
           </View>

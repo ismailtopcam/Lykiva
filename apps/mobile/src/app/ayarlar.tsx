@@ -6,7 +6,7 @@ import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Header } from '@/components/Header';
 import { Txt } from '@/components/Txt';
-import { Button, Card, Label, ListRow, ToggleRow } from '@/components/ui';
+import { Button, Card, Chip, Label, ListRow, ToggleRow } from '@/components/ui';
 import { kuyruguGonder, yerelKayitlariTemizle } from '@/kayit/kuyruk';
 import { WEB_URL } from '@/lib/baglanti';
 import { cevrimdisiDestekleniyor, useIndirilenRotalar } from '@/lib/cevrimdisi';
@@ -15,8 +15,9 @@ import { hesabiSil } from '@/lib/hesap';
 import { pushAc, pushDurumu, pushKapat, type PushDurumu } from '@/lib/push';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, space } from '@/theme';
+import { $t, cihazDili, DIL_ADLARI, DILLER, dilSecimi, dilSecimiYap, type Dil } from '@/i18n';
 
-const adlar: Record<Saglayici, string> = { google: 'Google', apple: 'Apple', email: 'E-posta' };
+const adlar = (): Record<Saglayici, string> => ({ google: 'Google', apple: 'Apple', email: $t('ayarlar.e_posta') });
 
 export default function AyarlarScreen() {
   const hesap = useHesap();
@@ -24,6 +25,13 @@ export default function AyarlarScreen() {
   const [siliniyor, setSiliniyor] = useState(false);
   const [push, setPush] = useState<PushDurumu | null>(null);
   const indirilenler = useIndirilenRotalar();
+
+  // Dil değişince bütün ekranlar yeniden kurulur (kök düzen); kullanıcı Ayarlar'a geri getirilir
+  async function dilDegistir(d: Dil | null) {
+    if (d === dilSecimi()) return;
+    await dilSecimiYap(d);
+    setTimeout(() => router.push('/ayarlar'), 50);
+  }
 
   useFocusEffect(
     useCallback(() => {
@@ -45,20 +53,20 @@ export default function AyarlarScreen() {
         setPush('kapali');
       }
     } catch (e) {
-      Alert.alert('Yapılamadı', e instanceof Error ? e.message : String(e));
+      Alert.alert($t('ayarlar.yapilamadi'), e instanceof Error ? e.message : String(e));
     }
   }
 
   const pushAlt =
     push === 'acik'
-      ? 'Yorum, takip, etkinlik ve grup bildirimleri bu telefona gelir'
+      ? $t('ayarlar.yorum_takip_etkinlik_ve')
       : push === 'reddedildi'
-        ? 'İzin verilmemiş. Telefonun Ayarlar > Lykiva > Bildirimler bölümünden açabilirsin'
+        ? $t('ayarlar.izin_verilmemis_telefonun_ayarlar')
         : push === 'proje-yok'
-          ? 'Bu derlemede kapalı (EAS proje kimliği eklenmemiş)'
+          ? $t('ayarlar.bu_derlemede_kapali_eas')
           : push === 'desteklenmiyor'
-            ? 'Bu cihazda kullanılamıyor'
-            : 'Uygulama kapalıyken de bildirim al';
+            ? $t('ayarlar.bu_cihazda_kullanilamiyor')
+            : $t('ayarlar.uygulama_kapaliyken_de_bildirim');
 
   async function cik() {
     setCikiliyor(true);
@@ -67,12 +75,12 @@ export default function AyarlarScreen() {
       const kalan = await kuyruguGonder().catch(() => -1);
       if (kalan !== 0) {
         Alert.alert(
-          'Gönderilmemiş kayıt var',
-          'Bu telefonda henüz sunucuya gitmemiş kayıtların var. İnternete bağlanıp tekrar dene; şimdi çıkarsan bu kayıtlar silinir.',
+          $t('ayarlar.gonderilmemis_kayit_var'),
+          $t('ayarlar.bu_telefonda_henuz_sunucuya'),
           [
-            { text: 'Vazgeç', style: 'cancel' },
+            { text: $t('ortak.vazgec'), style: 'cancel' },
             {
-              text: 'Sil ve çık',
+              text: $t('ayarlar.sil_ve_cik'),
               style: 'destructive',
               onPress: () => void cikisVeYonlendir(),
             },
@@ -97,11 +105,11 @@ export default function AyarlarScreen() {
   function silmeyiSor() {
     const gecici = !!hesap?.gecici;
     Alert.alert(
-      'Hesabın kalıcı olarak silinsin mi?',
-      `${gecici ? 'Bu telefondaki geçici hesabın' : 'Hesabın'} ve ona bağlı her şey silinir: aktiviteler, rotalar, fotoğraflar, yorumlar, beğeniler, takipler, mesajlar ve bildirimler. Kurduğun gruplar en kıdemli yöneticiye ya da üyeye devredilir, oluşturduğun etkinlikler silinir. Bu işlem geri alınamaz.`,
+      $t('ayarlar.hesabin_kalici_olarak_silinsin'),
+      $t('ayarlar.ve_ona_bagli_her', { a: gecici ? $t('ayarlar.bu_telefondaki_gecici_hesabin') : $t('ayarlar.hesabin') }),
       [
-        { text: 'Vazgeç', style: 'cancel' },
-        { text: 'Kalıcı olarak sil', style: 'destructive' as const, onPress: () => void sil() },
+        { text: $t('ortak.vazgec'), style: 'cancel' },
+        { text: $t('ayarlar.kalici_olarak_sil'), style: 'destructive' as const, onPress: () => void sil() },
       ],
     );
   }
@@ -112,9 +120,9 @@ export default function AyarlarScreen() {
       await hesabiSil();
       if (router.canDismiss()) router.dismissAll();
       router.replace('/giris');
-      Alert.alert('Hesabın silindi', 'Hesabın ve verilerin silindi.');
+      Alert.alert($t('ayarlar.hesabin_silindi'), $t('ayarlar.hesabin_ve_verilerin_silindi'));
     } catch (e) {
-      Alert.alert('Hesap silinemedi', e instanceof Error ? e.message : String(e));
+      Alert.alert($t('ayarlar.hesap_silinemedi'), e instanceof Error ? e.message : String(e));
     } finally {
       setSiliniyor(false);
     }
@@ -124,43 +132,58 @@ export default function AyarlarScreen() {
     hesap === undefined
       ? '…'
       : !hesap
-        ? 'Oturum yok'
+        ? $t('ayarlar.oturum_yok')
         : hesap.gecici
-          ? 'Geçici hesap (bu telefonda)'
-          : `${hesap.saglayicilar.map((s) => adlar[s]).join(' + ')} ile giriş yapıldı`;
+          ? $t('ayarlar.gecici_hesap_bu_telefonda')
+          : $t('ayarlar.ile_giris_yapildi', { map: hesap.saglayicilar.map((s) => adlar()[s]).join(' + ') });
 
   return (
     <View style={styles.root}>
-      <Header title="Ayarlar" />
+      <Header title={$t('ayarlar.ayarlar')} />
       <ScrollView contentContainerStyle={{ padding: space.lg, gap: space.lg }}>
         <View>
-          <Label>Hesap</Label>
+          <Label>{$t('ayarlar.hesap')}</Label>
           <Card style={{ padding: space.lg, gap: 4 }}>
             <Txt style={{ fontSize: 15 }}>{hesapMetni}</Txt>
             {hesap?.eposta ? <Txt variant="small">{hesap.eposta}</Txt> : null}
           </Card>
         </View>
 
+        <View>
+          <Label>{$t('ayarlar.dil_baslik')}</Label>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }} accessibilityRole="radiogroup">
+            <Chip
+              label={$t('ayarlar.telefonun_dili', { dil: DIL_ADLARI[cihazDili()] })}
+              role="radio"
+              selected={dilSecimi() == null}
+              onPress={() => void dilDegistir(null)}
+            />
+            {DILLER.map((d) => (
+              <Chip key={d} label={DIL_ADLARI[d]} role="radio" selected={dilSecimi() === d} onPress={() => void dilDegistir(d)} />
+            ))}
+          </View>
+        </View>
+
         {push && push !== 'desteklenmiyor' ? (
           <View>
-            <Label>Bildirimler</Label>
+            <Label>{$t('ayarlar.bildirimler')}</Label>
             <Card style={{ paddingHorizontal: space.lg }}>
-              <ToggleRow title="Telefona bildirim" subtitle={pushAlt} value={push === 'acik'} onChange={(v) => void pushDegistir(v)} />
+              <ToggleRow title={$t('ayarlar.telefona_bildirim')} subtitle={pushAlt} value={push === 'acik'} onChange={(v) => void pushDegistir(v)} />
             </Card>
           </View>
         ) : null}
 
         {!supabaseHazir ? (
-          <Txt variant="muted">Sunucu anahtarı girilmemiş; uygulama örnek verilerle çalışıyor.</Txt>
+          <Txt variant="muted">{$t('ayarlar.sunucu_anahtari_girilmemis_uygulama')}</Txt>
         ) : hesap?.gecici || !hesap ? (
-          <ListRow icon="user" iconTone="terra" caption="Kayıtların kaybolmasın" title="Giriş yap ya da hesap aç" href="/giris" />
+          <ListRow icon="user" iconTone="terra" caption={$t('ayarlar.kayitlarin_kaybolmasin')} title={$t('ayarlar.giris_yap_ya_da')} href="/giris" />
         ) : (
-          <Button variant="outline" label={cikiliyor ? 'Çıkış yapılıyor…' : 'Çıkış yap'} onPress={() => void cik()} disabled={cikiliyor} />
+          <Button variant="outline" label={cikiliyor ? $t('ayarlar.cikis_yapiliyor') : $t('ayarlar.cikis_yap')} onPress={() => void cik()} disabled={cikiliyor} />
         )}
 
         {cevrimdisiDestekleniyor ? (
           <View>
-            <Label>Çevrimdışı haritalar</Label>
+            <Label>{$t('ayarlar.cevrimdisi_haritalar')}</Label>
             <Card style={{ paddingHorizontal: space.lg }}>
               {indirilenler.length ? (
                 indirilenler.map((k) => (
@@ -175,32 +198,30 @@ export default function AyarlarScreen() {
                 ))
               ) : (
                 <Txt variant="small" style={{ paddingVertical: space.lg }}>
-                  Henüz indirilen rota yok. Bir rotanın sayfasından “Haritayı indir”e bas; çekmeyen yerde de harita ve rota açılır.
-                </Txt>
+                  {$t('ayarlar.henuz_indirilen_rota_yok')}</Txt>
               )}
             </Card>
             {indirilenler.length ? (
               <Txt variant="small" style={{ marginTop: 6 }}>
-                Toplam {formatBytes(indirilenler.reduce((t, k) => t + k.bayt, 0))}. Silmek için rotanın sayfasını aç.
-              </Txt>
+                {$t('ayarlar.toplam_silmek_icin_rotanin', { bytes: formatBytes(indirilenler.reduce((t, k) => t + k.bayt, 0)) })}</Txt>
             ) : null}
           </View>
         ) : null}
 
         <View>
-          <Label>Hakkında</Label>
+          <Label>{$t('ayarlar.hakkinda')}</Label>
           <Card style={{ paddingHorizontal: space.lg }}>
-            <ListRow icon="shield" iconTone="sea" title="Gizlilik politikası" onPress={() => void WebBrowser.openBrowserAsync(`${WEB_URL}/gizlilik`)} />
-            <ListRow icon="lock" iconTone="sea" title="Kullanım koşulları" onPress={() => void WebBrowser.openBrowserAsync(`${WEB_URL}/kosullar`)} />
+            <ListRow icon="shield" iconTone="sea" title={$t('ayarlar.gizlilik_politikasi')} onPress={() => void WebBrowser.openBrowserAsync(`${WEB_URL}/gizlilik`)} />
+            <ListRow icon="lock" iconTone="sea" title={$t('ayarlar.kullanim_kosullari')} onPress={() => void WebBrowser.openBrowserAsync(`${WEB_URL}/kosullar`)} />
           </Card>
         </View>
 
         {supabaseHazir && hesap ? (
           <View>
-            <Label>Hesabı sil</Label>
+            <Label>{$t('ayarlar.hesabi_sil')}</Label>
             <Card style={{ padding: space.lg, gap: space.md }}>
-              <Txt variant="small">Hesabını ve ona bağlı tüm verileri kalıcı olarak siler. Geri alınamaz.</Txt>
-              <Button variant="outline" label={siliniyor ? 'Siliniyor…' : 'Hesabımı sil'} onPress={silmeyiSor} disabled={siliniyor || cikiliyor} />
+              <Txt variant="small">{$t('ayarlar.hesabini_ve_ona_bagli')}</Txt>
+              <Button variant="outline" label={siliniyor ? $t('ortak.siliniyor') : $t('ayarlar.hesabimi_sil')} onPress={silmeyiSor} disabled={siliniyor || cikiliyor} />
             </Card>
           </View>
         ) : null}

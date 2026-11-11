@@ -15,6 +15,7 @@ import { grupEtkinlikleri, kisaTarih, tarihRozeti, type EtkinlikOzeti } from '@/
 import { basHarfler, grupDetayi, grupRengi, grupRotalari, onizleme, uyeSayisi, type GrupDetayi, type GrupRotasi } from '@/grup/gruplar';
 import { useSohbet, type Mesaj } from '@/grup/sohbet';
 import { colors, fontFamily, space } from '@/theme';
+import { $t, yerel } from '@/i18n';
 
 const uuidMi = (id: string | undefined) => !!id && /^[0-9a-f-]{36}$/i.test(id);
 
@@ -28,11 +29,11 @@ const gunAdi = (iso: string) => {
   const bugun = new Date();
   const g = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
   const fark = Math.round((g(bugun) - g(d)) / 86_400_000);
-  if (fark === 0) return 'Bugün';
-  if (fark === 1) return 'Dün';
-  return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: d.getFullYear() === bugun.getFullYear() ? undefined : 'numeric' });
+  if (fark === 0) return $t('grup_sohbet.bugun');
+  if (fark === 1) return $t('grup_sohbet.dun');
+  return d.toLocaleDateString(yerel(), { day: 'numeric', month: 'long', year: d.getFullYear() === bugun.getFullYear() ? undefined : 'numeric' });
 };
-const saat = (iso: string) => new Date(iso).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+const saat = (iso: string) => new Date(iso).toLocaleTimeString(yerel(), { hour: '2-digit', minute: '2-digit' });
 
 function GercekSohbet({ id }: { id: string }) {
   const insets = useSafeAreaInsets();
@@ -93,7 +94,7 @@ function GercekSohbet({ id }: { id: string }) {
       await gonder(t);
     } catch (e) {
       setTaslak(t);
-      setGonderHatasi(e instanceof Error ? e.message : 'Gönderilemedi');
+      setGonderHatasi(e instanceof Error ? e.message : $t('ortak.gonderilemedi'));
     }
   }
 
@@ -101,43 +102,42 @@ function GercekSohbet({ id }: { id: string }) {
     const yonetici = grup?.my_role === 'owner' || grup?.my_role === 'admin';
     if (m.bekliyor) return;
     const benim = m.sender_id === ben;
-    Alert.alert('Mesaj', undefined, [
-      ...(!benim ? [{ text: 'Şikayet et', onPress: () => sikayet.ac('message', m.id, `${m.ad ?? 'Üye'}: ${(m.body ?? '').slice(0, 80)}`) }] : []),
+    Alert.alert($t('grup_sohbet.mesaj'), undefined, [
+      ...(!benim ? [{ text: $t('ortak.sikayet_et'), onPress: () => sikayet.ac('message', m.id, `${m.ad ?? $t('grup_sohbet.uye')}: ${(m.body ?? '').slice(0, 80)}`) }] : []),
       ...(benim || yonetici
-        ? [{ text: 'Sil', style: 'destructive' as const, onPress: () => void sil(m.id).catch((e: unknown) => Alert.alert('Silinemedi', e instanceof Error ? e.message : String(e))) }]
+        ? [{ text: $t('ortak.sil'), style: 'destructive' as const, onPress: () => void sil(m.id).catch((e: unknown) => Alert.alert($t('ortak.silinemedi'), e instanceof Error ? e.message : String(e))) }]
         : []),
-      { text: 'Vazgeç', style: 'cancel' },
+      { text: $t('ortak.vazgec'), style: 'cancel' },
     ]);
   }
 
   return (
     <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={[styles.header, { paddingTop: insets.top + 4 }]}>
-        <IconButton icon="back" label="Geri" onPress={() => router.back()} />
+        <IconButton icon="back" label={$t('ortak.geri')} onPress={() => router.back()} />
         <Pressable accessibilityRole="link" onPress={() => router.push({ pathname: '/grup/[id]', params: { id } })} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Avatar initials={basHarfler(grup?.name ?? '…')} tone={grupRengi(id)} square />
           <View style={{ flex: 1 }}>
             <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 16 }} numberOfLines={1}>
-              {grup?.name ?? 'Sohbet'}
+              {grup?.name ?? $t('grup_sohbet.sohbet')}
             </Txt>
             {grup ? <Txt variant="small">{uyeSayisi(grup.member_count)}</Txt> : null}
           </View>
         </Pressable>
-        <IconButton icon="pin" label="Canlı haritayı aç" onPress={() => router.push({ pathname: '/canli-harita', params: { grup: id } })} />
+        <IconButton icon="pin" label={$t('grup_sohbet.canli_haritayi_ac')} onPress={() => router.push({ pathname: '/canli-harita', params: { grup: id } })} />
       </View>
 
       <ScrollView ref={kaydirma} contentContainerStyle={{ padding: 12, gap: 6 }}>
         {dahaVar ? (
           <Pressable accessibilityRole="button" onPress={() => void eskileriYukle()} style={{ alignSelf: 'center', padding: 8 }}>
-            <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: colors.seaInk }}>Daha eski mesajlar</Txt>
+            <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: colors.seaInk }}>{$t('grup_sohbet.daha_eski_mesajlar')}</Txt>
           </Pressable>
         ) : null}
         {mesajlar === null && !hata ? <ActivityIndicator color={colors.terra} style={{ marginTop: space.lg }} /> : null}
         {hata ? <Txt style={{ color: colors.terraInk, textAlign: 'center' }}>{hata}</Txt> : null}
         {mesajlar && mesajlar.length === 0 ? (
           <Txt variant="muted" style={{ textAlign: 'center', marginTop: space.lg }}>
-            Henüz mesaj yok. İlk mesajı sen yaz.
-          </Txt>
+            {$t('grup_sohbet.henuz_mesaj_yok_ilk')}</Txt>
         ) : null}
         {mesajlar?.map((m, i) => {
           const onceki = mesajlar[i - 1];
@@ -155,7 +155,7 @@ function GercekSohbet({ id }: { id: string }) {
               ) : null}
               <Pressable
                 onLongPress={() => mesajSecenekleri(m)}
-                accessibilityLabel={`${benim ? 'Sen' : (m.ad ?? 'Üye')}, ${saat(m.created_at)}: ${m.attachment_type === 'route' ? 'rota paylaştı. ' : m.attachment_type === 'event' ? `etkinlik oluşturdu: ${etkinlik?.title ?? ''}. ` : ''}${m.body ?? ''}`}
+                accessibilityLabel={`${benim ? $t('ortak.sen') : (m.ad ?? $t('grup_sohbet.uye'))}, ${saat(m.created_at)}: ${m.attachment_type === 'route' ? $t('grup_sohbet.rota_paylasti') : m.attachment_type === 'event' ? $t('grup_sohbet.etkinlik_olusturdu', { a: etkinlik?.title ?? '' }) : ''}${m.body ?? ''}`}
                 style={[styles.satir, benim && { justifyContent: 'flex-end' }]}>
                 {!benim ? (
                   <View style={{ width: 28 }}>{adGoster ? <Avatar initials={basHarfler(m.ad ?? '?')} tone={grupRengi(m.sender_id)} size={28} /> : null}</View>
@@ -163,7 +163,7 @@ function GercekSohbet({ id }: { id: string }) {
                 <View style={{ maxWidth: 270 }}>
                   {adGoster ? (
                     <Txt variant="small" style={{ marginLeft: 4, marginBottom: 3 }}>
-                      {m.ad ?? 'Üye'}
+                      {m.ad ?? $t('grup_sohbet.uye')}
                     </Txt>
                   ) : null}
                   {m.attachment_type === 'event' ? (
@@ -173,14 +173,13 @@ function GercekSohbet({ id }: { id: string }) {
                       style={[styles.balonGelen, { width: 250, flexDirection: 'row', gap: 10, alignItems: 'center' }, benim && { borderColor: colors.terra }]}>
                       {etkinlik ? <DateBadge month={tarihRozeti(etkinlik.starts_at).ay} day={tarihRozeti(etkinlik.starts_at).gun} /> : <Icon name="calendar" color={colors.terra} />}
                       <View style={{ flex: 1, minWidth: 0 }}>
-                        <Txt variant="small">Etkinlik</Txt>
+                        <Txt variant="small">{$t('grup_sohbet.etkinlik')}</Txt>
                         <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14 }} numberOfLines={2}>
-                          {etkinlik?.title ?? 'Etkinlik'}
+                          {etkinlik?.title ?? $t('grup_sohbet.etkinlik')}
                         </Txt>
                         {etkinlik ? (
                           <Txt variant="small">
-                            {kisaTarih(etkinlik.starts_at)} · {etkinlik.going_count} kişi
-                          </Txt>
+                            {$t('grup_sohbet.kisi', { kisaTarih: kisaTarih(etkinlik.starts_at), going_count: etkinlik.going_count })}</Txt>
                         ) : null}
                       </View>
                     </Pressable>
@@ -198,12 +197,11 @@ function GercekSohbet({ id }: { id: string }) {
                         <Icon name="route" size={18} color={benim ? '#FFFFFF' : colors.seaInk} />
                         <View style={{ flex: 1 }}>
                           <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14, color: benim ? '#FFFFFF' : colors.ink }} numberOfLines={1}>
-                            {rota?.name ?? 'Rota'}
+                            {rota?.name ?? $t('grup_sohbet.rota')}
                           </Txt>
                           {rota ? (
                             <Txt style={{ fontSize: 12, color: benim ? '#F6E3D9' : colors.inkMuted }}>
-                              {formatKm(rota.distance_m)} km{rota.elevation_gain_m != null ? ` · ↑ ${Math.round(rota.elevation_gain_m)} m` : ''}
-                            </Txt>
+                              {$t('grup_sohbet.km', { km: formatKm(rota.distance_m), a: rota.elevation_gain_m != null ? $t('grup_sohbet.m', { round: Math.round(rota.elevation_gain_m) }) : '' })}</Txt>
                           ) : null}
                         </View>
                       </View>
@@ -214,7 +212,7 @@ function GercekSohbet({ id }: { id: string }) {
                       <Txt style={[styles.metin, benim && { color: '#FFFFFF' }]}>{m.body}</Txt>
                     </View>
                   )}
-                  <Txt style={[styles.saat, benim && { textAlign: 'right' }]}>{m.bekliyor ? 'gönderiliyor…' : saat(m.created_at)}</Txt>
+                  <Txt style={[styles.saat, benim && { textAlign: 'right' }]}>{m.bekliyor ? $t('grup_sohbet.gonderiliyor') : saat(m.created_at)}</Txt>
                 </View>
               </Pressable>
             </View>
@@ -228,19 +226,19 @@ function GercekSohbet({ id }: { id: string }) {
         </Txt>
       ) : null}
       <View style={[styles.composer, { paddingBottom: insets.bottom + 10 }]}>
-        <IconButton icon="route" label="Rota paylaş" onPress={() => router.push({ pathname: '/grup/[id]/rota-paylas', params: { id } })} style={{ backgroundColor: colors.ground }} />
+        <IconButton icon="route" label={$t('grup_sohbet.rota_paylas')} onPress={() => router.push({ pathname: '/grup/[id]/rota-paylas', params: { id } })} style={{ backgroundColor: colors.ground }} />
         <TextInput
           value={taslak}
           onChangeText={setTaslak}
           onSubmitEditing={() => void yolla()}
-          placeholder="Mesaj yaz…"
+          placeholder={$t('grup_sohbet.mesaj_yaz')}
           placeholderTextColor={colors.inkMuted}
-          accessibilityLabel="Mesaj"
+          accessibilityLabel={$t('grup_sohbet.mesaj')}
           returnKeyType="send"
           maxLength={4000}
           style={styles.input}
         />
-        <Pressable accessibilityRole="button" accessibilityLabel="Gönder" onPress={() => void yolla()} disabled={!taslak.trim()} style={[styles.send, !taslak.trim() && { opacity: 0.5 }]}>
+        <Pressable accessibilityRole="button" accessibilityLabel={$t('grup_sohbet.gonder')} onPress={() => void yolla()} disabled={!taslak.trim()} style={[styles.send, !taslak.trim() && { opacity: 0.5 }]}>
           <Icon name="send" size={20} color="#FFFFFF" />
         </Pressable>
       </View>

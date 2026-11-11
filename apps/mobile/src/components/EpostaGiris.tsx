@@ -25,6 +25,7 @@ import {
 } from '@/lib/epostaGiris';
 import type { GirisSonucu } from '@/lib/giris';
 import { colors, fontFamily, radius, space } from '@/theme';
+import { $t } from '@/i18n';
 
 type Gorunum = 'giris' | 'kayit' | 'unuttum' | 'kod';
 
@@ -89,7 +90,7 @@ export function EpostaGiris({ onBitti, onVazgec }: { onBitti: (sonuc: GirisSonuc
 
   function epostaDenetle(): boolean {
     if (!epostaGecerli(eposta)) {
-      setHata('Geçerli bir e-posta adresi yaz.');
+      setHata($t('epostaGiris.gecerli_bir_e_posta'));
       return false;
     }
     return true;
@@ -97,7 +98,7 @@ export function EpostaGiris({ onBitti, onVazgec }: { onBitti: (sonuc: GirisSonuc
 
   function sifreDenetle(): boolean {
     if (sifre.length < SIFRE_EN_AZ) {
-      setHata(`Şifre en az ${SIFRE_EN_AZ} karakter olmalı.`);
+      setHata($t('epostaGiris.sifre_en_az_karakter', { sIFRE_EN_AZ: SIFRE_EN_AZ }));
       return false;
     }
     return true;
@@ -106,7 +107,7 @@ export function EpostaGiris({ onBitti, onVazgec }: { onBitti: (sonuc: GirisSonuc
   function girisYap() {
     if (!epostaDenetle()) return;
     if (!sifre) {
-      setHata('Şifreni yaz.');
+      setHata($t('epostaGiris.sifreni_yaz'));
       return;
     }
     void calistir(async () => {
@@ -114,7 +115,7 @@ export function EpostaGiris({ onBitti, onVazgec }: { onBitti: (sonuc: GirisSonuc
         onBitti(await epostaIleGiris(adres, sifre));
       } catch (e) {
         if (e instanceof EpostaDogrulanmadi) {
-          kodaGec('kayit', `E-postan henüz doğrulanmamış. ${adres} adresine yeni bir kod gönderdik.`);
+          kodaGec('kayit', $t('epostaGiris.e_postan_henuz_dogrulanmamis', { adres }));
           return;
         }
         throw e;
@@ -131,7 +132,7 @@ export function EpostaGiris({ onBitti, onVazgec }: { onBitti: (sonuc: GirisSonuc
           onBitti({ tasinan: 0 });
           return;
         }
-        kodaGec(tur, `${adres} adresine bir doğrulama kodu gönderdik. Gelmediyse istenmeyen (spam) klasörüne bak.`);
+        kodaGec(tur, $t('epostaGiris.adresine_bir_dogrulama_kodu', { adres }));
       } catch (e) {
         if (e instanceof EpostaKayitli) {
           gec('giris');
@@ -147,14 +148,14 @@ export function EpostaGiris({ onBitti, onVazgec }: { onBitti: (sonuc: GirisSonuc
     if (!epostaDenetle()) return;
     void calistir(async () => {
       await sifreSifirlamaKoduGonder(adres);
-      kodaGec('sifre', `Bu e-postayla bir hesap varsa ${adres} adresine şifre sıfırlama kodu gönderdik.`);
+      kodaGec('sifre', $t('epostaGiris.bu_e_postayla_bir', { adres }));
     });
   }
 
   function koduOnayla() {
     const temiz = kodSadelestir(kod);
     if (temiz.length < 6) {
-      setHata('E-postadaki kodu yaz.');
+      setHata($t('epostaGiris.e_postadaki_kodu_yaz'));
       return;
     }
     if (kodTuru === 'sifre' && !sifreDenetle()) return;
@@ -172,11 +173,11 @@ export function EpostaGiris({ onBitti, onVazgec }: { onBitti: (sonuc: GirisSonuc
     void calistir(async () => {
       await koduTekrarGonder(adres, kodTuru);
       setBekleme(TEKRAR_BEKLEME);
-      setBilgi(`Yeni kod ${adres} adresine gönderildi.`);
+      setBilgi($t('epostaGiris.yeni_kod_adresine_gonderildi', { adres }));
     });
   }
 
-  const baslik = { giris: 'E-postayla giriş', kayit: 'Hesap aç', unuttum: 'Şifreni sıfırla', kod: 'Kodu gir' }[gorunum];
+  const baslik = { giris: $t('epostaGiris.e_postayla_giris'), kayit: $t('epostaGiris.hesap_ac'), unuttum: $t('epostaGiris.sifreni_sifirla'), kod: 'Kodu gir' }[gorunum];
 
   return (
     <View style={{ gap: space.md }}>
@@ -195,7 +196,7 @@ export function EpostaGiris({ onBitti, onVazgec }: { onBitti: (sonuc: GirisSonuc
               disabled={bekliyor}
               style={[styles.sekme, gorunum === g && styles.sekmeSecili]}>
               <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: gorunum === g ? colors.ink : colors.inkMuted }}>
-                {g === 'giris' ? 'Giriş yap' : 'Hesap aç'}
+                {g === 'giris' ? $t('epostaGiris.giris_yap') : $t('epostaGiris.hesap_ac')}
               </Txt>
             </Pressable>
           ))}
@@ -215,11 +216,11 @@ export function EpostaGiris({ onBitti, onVazgec }: { onBitti: (sonuc: GirisSonuc
 
       {gorunum !== 'kod' ? (
         <View>
-          <Label>E-posta</Label>
+          <Label>{$t('epostaGiris.e_posta')}</Label>
           <TextInput
             value={eposta}
             onChangeText={setEposta}
-            placeholder="ornek@eposta.com"
+            placeholder={$t('epostaGiris.ornek_eposta_com')}
             placeholderTextColor={colors.inkMuted}
             autoCapitalize="none"
             autoCorrect={false}
@@ -228,7 +229,7 @@ export function EpostaGiris({ onBitti, onVazgec }: { onBitti: (sonuc: GirisSonuc
             textContentType="emailAddress"
             returnKeyType={gorunum === 'unuttum' ? 'send' : 'next'}
             onSubmitEditing={() => (gorunum === 'unuttum' ? sifirlamaKoduIste() : sifreKutusu.current?.focus())}
-            accessibilityLabel="E-posta"
+            accessibilityLabel={$t('epostaGiris.e_posta')}
             editable={!bekliyor}
             style={styles.input}
           />
@@ -237,16 +238,16 @@ export function EpostaGiris({ onBitti, onVazgec }: { onBitti: (sonuc: GirisSonuc
 
       {gorunum === 'kayit' ? (
         <View>
-          <Label>Adın (isteğe bağlı)</Label>
+          <Label>{$t('epostaGiris.adin_istege_bagli')}</Label>
           <TextInput
             value={ad}
             onChangeText={setAd}
-            placeholder="ör. Ayşe Yılmaz"
+            placeholder={$t('epostaGiris.or_ayse_yilmaz')}
             placeholderTextColor={colors.inkMuted}
             autoComplete="name"
             textContentType="name"
             maxLength={40}
-            accessibilityLabel="Adın"
+            accessibilityLabel={$t('epostaGiris.adin')}
             editable={!bekliyor}
             style={styles.input}
           />
@@ -255,7 +256,7 @@ export function EpostaGiris({ onBitti, onVazgec }: { onBitti: (sonuc: GirisSonuc
 
       {gorunum === 'kod' ? (
         <View>
-          <Label>Doğrulama kodu</Label>
+          <Label>{$t('epostaGiris.dogrulama_kodu')}</Label>
           <TextInput
             value={kod}
             onChangeText={(t) => setKod(kodSadelestir(t))}
@@ -265,7 +266,7 @@ export function EpostaGiris({ onBitti, onVazgec }: { onBitti: (sonuc: GirisSonuc
             autoComplete="one-time-code"
             textContentType="oneTimeCode"
             maxLength={10}
-            accessibilityLabel="Doğrulama kodu"
+            accessibilityLabel={$t('epostaGiris.dogrulama_kodu')}
             editable={!bekliyor}
             style={[styles.input, styles.kod]}
           />
@@ -274,13 +275,13 @@ export function EpostaGiris({ onBitti, onVazgec }: { onBitti: (sonuc: GirisSonuc
 
       {gorunum === 'giris' || gorunum === 'kayit' || (gorunum === 'kod' && kodTuru === 'sifre') ? (
         <View>
-          <Label>{gorunum === 'kod' ? 'Yeni şifre' : 'Şifre'}</Label>
+          <Label>{gorunum === 'kod' ? $t('epostaGiris.yeni_sifre') : $t('epostaGiris.sifre')}</Label>
           <View style={styles.sifreKutu}>
             <TextInput
               ref={sifreKutusu}
               value={sifre}
               onChangeText={setSifre}
-              placeholder={gorunum === 'giris' ? '' : `En az ${SIFRE_EN_AZ} karakter`}
+              placeholder={gorunum === 'giris' ? '' : $t('epostaGiris.en_az_karakter', { sIFRE_EN_AZ: SIFRE_EN_AZ })}
               placeholderTextColor={colors.inkMuted}
               secureTextEntry={!sifreGorunsun}
               autoCapitalize="none"
@@ -289,31 +290,31 @@ export function EpostaGiris({ onBitti, onVazgec }: { onBitti: (sonuc: GirisSonuc
               textContentType={gorunum === 'giris' ? 'password' : 'newPassword'}
               returnKeyType="go"
               onSubmitEditing={() => (gorunum === 'giris' ? girisYap() : gorunum === 'kayit' ? kayitOl() : koduOnayla())}
-              accessibilityLabel={gorunum === 'kod' ? 'Yeni şifre' : 'Şifre'}
+              accessibilityLabel={gorunum === 'kod' ? $t('epostaGiris.yeni_sifre') : $t('epostaGiris.sifre')}
               editable={!bekliyor}
               style={[styles.input, { flex: 1, borderWidth: 0, backgroundColor: 'transparent' }]}
             />
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={sifreGorunsun ? 'Şifreyi gizle' : 'Şifreyi göster'}
+              accessibilityLabel={sifreGorunsun ? $t('epostaGiris.sifreyi_gizle') : $t('epostaGiris.sifreyi_goster')}
               onPress={() => setSifreGorunsun((g) => !g)}
               hitSlop={8}
               style={styles.goster}>
-              <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: colors.inkMuted }}>{sifreGorunsun ? 'Gizle' : 'Göster'}</Txt>
+              <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: colors.inkMuted }}>{sifreGorunsun ? $t('epostaGiris.gizle') : $t('epostaGiris.goster')}</Txt>
             </Pressable>
           </View>
         </View>
       ) : null}
 
       {gorunum === 'giris' ? (
-        <Button label={bekliyor ? 'Giriş yapılıyor…' : 'Giriş yap'} onPress={girisYap} disabled={bekliyor} style={{ borderRadius: radius.lg }} />
+        <Button label={bekliyor ? $t('epostaGiris.giris_yapiliyor') : $t('epostaGiris.giris_yap')} onPress={girisYap} disabled={bekliyor} style={{ borderRadius: radius.lg }} />
       ) : gorunum === 'kayit' ? (
-        <Button label={bekliyor ? 'Kod gönderiliyor…' : 'Hesap aç'} onPress={kayitOl} disabled={bekliyor} style={{ borderRadius: radius.lg }} />
+        <Button label={bekliyor ? $t('epostaGiris.kod_gonderiliyor') : $t('epostaGiris.hesap_ac')} onPress={kayitOl} disabled={bekliyor} style={{ borderRadius: radius.lg }} />
       ) : gorunum === 'unuttum' ? (
-        <Button label={bekliyor ? 'Gönderiliyor…' : 'Sıfırlama kodu gönder'} onPress={sifirlamaKoduIste} disabled={bekliyor} style={{ borderRadius: radius.lg }} />
+        <Button label={bekliyor ? $t('epostaGiris.gonderiliyor') : $t('epostaGiris.sifirlama_kodu_gonder')} onPress={sifirlamaKoduIste} disabled={bekliyor} style={{ borderRadius: radius.lg }} />
       ) : (
         <Button
-          label={bekliyor ? 'Doğrulanıyor…' : kodTuru === 'sifre' ? 'Şifreyi değiştir ve gir' : 'Doğrula'}
+          label={bekliyor ? $t('epostaGiris.dogrulaniyor') : kodTuru === 'sifre' ? $t('epostaGiris.sifreyi_degistir_ve_gir') : $t('epostaGiris.dogrula')}
           onPress={koduOnayla}
           disabled={bekliyor}
           style={{ borderRadius: radius.lg }}
@@ -321,12 +322,12 @@ export function EpostaGiris({ onBitti, onVazgec }: { onBitti: (sonuc: GirisSonuc
       )}
 
       <View style={styles.baglantilar}>
-        {gorunum === 'giris' ? <Baglanti metin="Şifremi unuttum" onPress={() => gec('unuttum')} disabled={bekliyor} /> : null}
+        {gorunum === 'giris' ? <Baglanti metin={$t('epostaGiris.sifremi_unuttum')} onPress={() => gec('unuttum')} disabled={bekliyor} /> : null}
         {gorunum === 'kod' ? (
-          <Baglanti metin={bekleme > 0 ? `Kodu tekrar gönder (${bekleme})` : 'Kodu tekrar gönder'} onPress={tekrarGonder} disabled={bekliyor || bekleme > 0} />
+          <Baglanti metin={bekleme > 0 ? $t('epostaGiris.kodu_tekrar_gonder_2', { bekleme }) : $t('epostaGiris.kodu_tekrar_gonder')} onPress={tekrarGonder} disabled={bekliyor || bekleme > 0} />
         ) : null}
         <Baglanti
-          metin={gorunum === 'giris' || gorunum === 'kayit' ? 'Diğer giriş yolları' : 'Geri'}
+          metin={gorunum === 'giris' || gorunum === 'kayit' ? $t('epostaGiris.diger_giris_yollari') : $t('ortak.geri')}
           onPress={() => (gorunum === 'kod' ? gec(oncekiGorunum) : gorunum === 'unuttum' ? gec('giris') : onVazgec())}
           disabled={bekliyor}
         />

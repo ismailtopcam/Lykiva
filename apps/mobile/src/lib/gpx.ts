@@ -6,6 +6,7 @@ import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 
 import type { GpxNoktasi } from '@/data/aktivite';
+import { $t } from '@/i18n';
 
 const TUR: Record<ActivityType, string> = { bike: 'cycling', mtb: 'mountain_biking', run: 'running', walk: 'walking', hike: 'hiking', trail_run: 'trail_running' };
 
@@ -42,10 +43,10 @@ export function dosyaAdi(s: string) {
 }
 
 export async function gpxPaylas(baslik: string, tur: ActivityType, noktalar: GpxNoktasi[]) {
-  if (noktalar.length < 2) throw new Error('Bu aktivitenin GPS noktaları yok (yalnızca sahibi dışa aktarabilir)');
+  if (noktalar.length < 2) throw new Error($t('lib_gpx.bu_aktivitenin_gps_noktalari'));
   const f = new File(Paths.cache, `${dosyaAdi(baslik)}.gpx`);
   if (f.exists) f.delete();
   f.create();
   f.write(gpxOlustur(baslik, tur, noktalar));
-  await Sharing.shareAsync(f.uri, { mimeType: 'application/gpx+xml', UTI: 'com.topografix.gpx', dialogTitle: 'GPX dosyasını paylaş' });
+  await Sharing.shareAsync(f.uri, { mimeType: 'application/gpx+xml', UTI: 'com.topografix.gpx', dialogTitle: $t('lib_gpx.gpx_dosyasini_paylas') });
 }

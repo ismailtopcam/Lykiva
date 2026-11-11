@@ -3,6 +3,7 @@
  * rota için tahmini süre ve zorluk. Saf fonksiyonlar; testleri route.test.ts içinde.
  */
 import type { ActivityType } from './activity';
+import { aktifDil, dileGoreTablo, type Dil } from './dil';
 import { elevationGainLoss, haversine } from './track';
 
 export type RoutePoint = { lat: number; lng: number; alt?: number | null };
@@ -142,7 +143,19 @@ export function estimateDuration(activity: ActivityType, distanceM: number, gain
 
 export type Difficulty = 'easy' | 'moderate' | 'hard';
 
-export const DIFFICULTY_LABELS: Record<Difficulty, string> = { easy: 'Kolay', moderate: 'Orta', hard: 'Zor' };
+const DIFFICULTY_SOZLUK: Record<Dil, Record<Difficulty, string>> = {
+  tr: { easy: 'Kolay', moderate: 'Orta', hard: 'Zor' },
+  en: { easy: 'Easy', moderate: 'Moderate', hard: 'Hard' },
+  de: { easy: 'Leicht', moderate: 'Mittel', hard: 'Schwer' },
+  ru: { easy: 'Лёгкий', moderate: 'Средний', hard: 'Сложный' },
+};
+
+/** Telefonda o anki dilde; web sunucusunda difficultyLabel(d, dil) kullan */
+export const DIFFICULTY_LABELS: Record<Difficulty, string> = dileGoreTablo(DIFFICULTY_SOZLUK);
+
+export function difficultyLabel(d: Difficulty, dil: Dil = aktifDil()): string {
+  return DIFFICULTY_SOZLUK[dil][d] ?? DIFFICULTY_SOZLUK.tr[d];
+}
 
 /** Kaba zorluk: mesafe ve tırmanışı aktivite türüne göre ölçekler */
 export function estimateDifficulty(activity: ActivityType, distanceM: number, gainM: number): Difficulty {

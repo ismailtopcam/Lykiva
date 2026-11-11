@@ -11,12 +11,13 @@ import { Txt } from '@/components/Txt';
 import { Avatar } from '@/components/ui';
 import { basHarfler, grupRengi } from '@/grup/gruplar';
 import { colors, fontFamily, space } from '@/theme';
+import { $t } from '@/i18n';
 
 export function altBilgi(k: KisiOzeti) {
   const parcalar = [`@${k.username}`];
   if (k.city) parcalar.push(k.city);
   if (k.follows_me) parcalar.push('seni takip ediyor');
-  else if (k.common_groups) parcalar.push(k.common_groups === 1 ? 'ortak grubunuz var' : `${k.common_groups} ortak grup`);
+  else if (k.common_groups) parcalar.push(k.common_groups === 1 ? $t('kisiSatiri.ortak_grubunuz_var') : $t('kisiSatiri.ortak_grup', { common_groups: k.common_groups }));
   return parcalar.join(' · ');
 }
 
@@ -56,7 +57,7 @@ export function TakipDugmesi({
     }
   }
 
-  const etiket = durum ? 'Takip ediliyor' : geriTakip ? 'Sen de takip et' : 'Takip et';
+  const etiket = durum ? $t('kisiSatiri.takip_ediliyor') : geriTakip ? $t('kisiSatiri.sen_de_takip_et') : $t('kisiSatiri.takip_et');
   return (
     <Pressable
       accessibilityRole="button"
@@ -78,7 +79,7 @@ export function KisiSatiri({ k, onDegisti }: { k: KisiOzeti; onDegisti?: (takipt
     <View style={styles.row}>
       <Pressable
         accessibilityRole="link"
-        accessibilityLabel={`${k.display_name} profili`}
+        accessibilityLabel={$t('kisiSatiri.profili', { display_name: k.display_name })}
         onPress={() => router.push({ pathname: '/kisi/[id]', params: { id: k.id } })}
         style={styles.kisi}>
         <Avatar initials={basHarfler(k.display_name)} tone={grupRengi(k.id)} size={44} uri={k.avatar_url} />

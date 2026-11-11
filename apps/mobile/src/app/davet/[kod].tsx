@@ -8,18 +8,19 @@ import { Button } from '@/components/ui';
 import { davetleKatil } from '@/grup/gruplar';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, space } from '@/theme';
+import { $t } from '@/i18n';
 
 /** Davet bağlantısı: lykiva://davet/KOD → gruba katıl ve grup sayfasını aç */
 export default function DavetScreen() {
   const { kod } = useLocalSearchParams<{ kod: string }>();
-  const [hata, setHata] = useState<string | null>(supabaseHazir ? null : 'Sunucu anahtarı girilmemiş.');
+  const [hata, setHata] = useState<string | null>(supabaseHazir ? null : $t('davet.sunucu_anahtari_girilmemis'));
 
   useEffect(() => {
     if (!kod || !supabaseHazir) return;
     let acik = true;
     davetleKatil(kod)
       .then((id) => acik && router.replace({ pathname: '/grup/[id]', params: { id } }))
-      .catch((e: unknown) => acik && setHata(e instanceof Error ? e.message : 'Katılınamadı'));
+      .catch((e: unknown) => acik && setHata(e instanceof Error ? e.message : $t('davet.katilinamadi')));
     return () => {
       acik = false;
     };
@@ -27,19 +28,19 @@ export default function DavetScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.ground }}>
-      <Header title="Grup daveti" backIcon="close" />
+      <Header title={$t('davet.grup_daveti')} backIcon="close" />
       <View style={{ padding: space.lg, gap: space.md, alignItems: 'center' }}>
         {hata ? (
           <>
             <Txt variant="muted" style={{ textAlign: 'center' }}>
               {hata}
             </Txt>
-            <Button label="Gruplara git" href="/gruplar" variant="outline" />
+            <Button label={$t('davet.gruplara_git')} href="/gruplar" variant="outline" />
           </>
         ) : (
           <>
             <ActivityIndicator color={colors.terra} />
-            <Txt variant="muted">Gruba katılıyorsun…</Txt>
+            <Txt variant="muted">{$t('davet.gruba_katiliyorsun')}</Txt>
           </>
         )}
       </View>

@@ -1,4 +1,4 @@
-import { formatDuration, formatKm, formatSpeedKmh } from '@lykiva/shared';
+import { formatDuration, formatKm, formatSpeedKmh, kmUnit } from '@lykiva/shared';
 import { Redirect, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
@@ -11,6 +11,7 @@ import { Button, Stat } from '@/components/ui';
 import { bitir, devamEt, iptalEt } from '@/kayit/kaydedici';
 import { rotaBilgisi, useCanliVeri } from '@/kayit/istatistik';
 import { colors, fontFamily } from '@/theme';
+import { $t } from '@/i18n';
 
 const n = colors.night;
 
@@ -48,9 +49,9 @@ export default function DuraklatildiScreen() {
       void sil();
       return;
     }
-    Alert.alert('Kayıt silinsin mi?', 'Bu kayıt kaydedilmeden silinecek. Geri alınamaz.', [
-      { text: 'Vazgeç', style: 'cancel' },
-      { text: 'Sil', style: 'destructive', onPress: () => void sil() },
+    Alert.alert($t('kayit_duraklatildi.kayit_silinsin_mi'), $t('kayit_duraklatildi.bu_kayit_kaydedilmeden_silinecek'), [
+      { text: $t('ortak.vazgec'), style: 'cancel' },
+      { text: $t('ortak.sil'), style: 'destructive', onPress: () => void sil() },
     ]);
   }
 
@@ -60,31 +61,30 @@ export default function DuraklatildiScreen() {
       <View style={{ alignItems: 'center' }}>
         <View style={styles.badge}>
           <Icon name="pause" size={14} color={n.paused} strokeWidth={3} />
-          <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 13, color: n.paused }}>Duraklatıldı</Txt>
+          <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 13, color: n.paused }}>{$t('kayit_duraklatildi.duraklatildi')}</Txt>
         </View>
-        <Txt style={styles.time} accessibilityLabel={`Süre ${formatDuration(aktifS)}`}>
+        <Txt style={styles.time} accessibilityLabel={$t('kayit_duraklatildi.sure', { duration: formatDuration(aktifS) })}>
           {formatDuration(aktifS)}
         </Txt>
         <Txt style={{ fontSize: 14, color: n.textMuted, fontFamily: fontFamily.body }}>
-          Mola süresi <Txt style={{ color: n.paused, fontFamily: fontFamily.bodyBold }}>{formatDuration(molaS)}</Txt>
+          {$t('kayit_duraklatildi.mola_suresi')}<Txt style={{ color: n.paused, fontFamily: fontFamily.bodyBold }}>{formatDuration(molaS)}</Txt>
         </Txt>
       </View>
 
       <View style={styles.stats}>
-        <Stat label="Yapılan" value={`${formatKm(stats.distanceM)} km`} color={n.text} muted={n.textMuted} />
-        {rb ? <Stat label="Kalan" value={`${formatKm(rb.kalanM)} km`} color={n.text} muted={n.textMuted} /> : null}
-        <Stat label="Ort. hız" value={formatSpeedKmh(stats.avgMovingSpeed)} color={n.text} muted={n.textMuted} />
-        {rb ? null : <Stat label="Maks. hız" value={formatSpeedKmh(stats.maxSpeed)} color={n.text} muted={n.textMuted} />}
+        <Stat label={$t('kayit_duraklatildi.yapilan')} value={`${formatKm(stats.distanceM)} ${kmUnit()}`} color={n.text} muted={n.textMuted} />
+        {rb ? <Stat label={$t('kayit_duraklatildi.kalan')} value={`${formatKm(rb.kalanM)} ${kmUnit()}`} color={n.text} muted={n.textMuted} /> : null}
+        <Stat label={$t('ortak.ort_hiz')} value={formatSpeedKmh(stats.avgMovingSpeed)} color={n.text} muted={n.textMuted} />
+        {rb ? null : <Stat label={$t('ortak.maks_hiz')} value={formatSpeedKmh(stats.maxSpeed)} color={n.text} muted={n.textMuted} />}
       </View>
 
       <Txt variant="small" color={n.textMuted} style={{ textAlign: 'center' }}>
-        Bu mola, kaydın “Hız & molalar” sayfasında yeriyle birlikte görünecek. Duraklatmadan verdiğin 1 dakikadan uzun molalar da otomatik bulunur.
-      </Txt>
+        {$t('kayit_duraklatildi.bu_mola_kaydin_hiz')}</Txt>
 
       <View style={{ marginTop: 'auto', gap: 10 }}>
-        <Button label="Devam et" icon="play" variant="night" big onPress={onDevam} disabled={kaydediyor} />
+        <Button label={$t('kayit_duraklatildi.devam_et')} icon="play" variant="night" big onPress={onDevam} disabled={kaydediyor} />
         <Button
-          label={kaydediyor ? 'Kaydediliyor…' : 'Bitir ve kaydet'}
+          label={kaydediyor ? $t('ortak.kaydediliyor') : $t('kayit_duraklatildi.bitir_ve_kaydet')}
           icon="stop"
           variant="nightOutline"
           onPress={onBitir}
@@ -92,10 +92,9 @@ export default function DuraklatildiScreen() {
         />
         {yetersiz ? (
           <Txt variant="small" color={n.textMuted} style={{ textAlign: 'center' }}>
-            Kaydetmek için henüz yeterli GPS noktası yok.
-          </Txt>
+            {$t('kayit_duraklatildi.kaydetmek_icin_henuz_yeterli')}</Txt>
         ) : null}
-        <Button label="Kaydı sil" variant="nightOutline" onPress={onSil} disabled={kaydediyor} style={{ borderColor: 'transparent' }} />
+        <Button label={$t('kayit_duraklatildi.kaydi_sil')} variant="nightOutline" onPress={onSil} disabled={kaydediyor} style={{ borderColor: 'transparent' }} />
       </View>
     </View>
   );

@@ -12,6 +12,7 @@ import type { LngLat } from '@/data/ornek';
 import { rotalarim, type Rota } from '@/data/rota';
 import { rotayiGrubaPaylas } from '@/grup/gruplar';
 import { colors, fontFamily, radius, space } from '@/theme';
+import { $t } from '@/i18n';
 
 /** Kendi rotalarından birini gruba paylaş: grubun Rotalar sekmesine ve sohbete düşer */
 export default function GrubaRotaPaylasScreen() {
@@ -27,7 +28,7 @@ export default function GrubaRotaPaylasScreen() {
     rotalarim()
       .then(setListe)
       .catch((e: unknown) => {
-        setHata(e instanceof Error ? e.message : 'Rotalar yüklenemedi');
+        setHata(e instanceof Error ? e.message : $t('grup_rota_paylas.rotalar_yuklenemedi'));
         setListe([]);
       });
   }, []);
@@ -40,7 +41,7 @@ export default function GrubaRotaPaylasScreen() {
       await rotayiGrubaPaylas(secili, id, notu);
       router.replace({ pathname: '/grup/[id]/sohbet', params: { id } });
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Paylaşılamadı');
+      setHata(e instanceof Error ? e.message : $t('grup_rota_paylas.paylasilamadi'));
     } finally {
       setGonderiyor(false);
     }
@@ -48,13 +49,13 @@ export default function GrubaRotaPaylasScreen() {
 
   return (
     <View style={styles.root}>
-      <Header title="Gruba rota paylaş" backIcon="close" />
+      <Header title={$t('grup_rota_paylas.gruba_rota_paylas')} backIcon="close" />
       <ScrollView contentContainerStyle={{ padding: space.lg, gap: space.sm, paddingBottom: insets.bottom + 140 }}>
         {liste === null ? <ActivityIndicator color={colors.terra} /> : null}
         {liste && liste.length === 0 ? (
           <View style={{ gap: space.md }}>
-            <Txt variant="muted">Paylaşabileceğin bir rotan yok. Önce bir rota çiz ya da bir aktiviteni rota olarak kaydet.</Txt>
-            <Button label="Rota çiz" icon="route" variant="outline" href="/rota/olustur" />
+            <Txt variant="muted">{$t('grup_rota_paylas.paylasabilecegin_bir_rotan_yok')}</Txt>
+            <Button label={$t('grup_rota_paylas.rota_ciz')} icon="route" variant="outline" href="/rota/olustur" />
           </View>
         ) : null}
         {liste?.map((r) => {
@@ -73,8 +74,7 @@ export default function GrubaRotaPaylasScreen() {
                   {r.name}
                 </Txt>
                 <Txt variant="small">
-                  {formatKm(r.distanceM)} km · ↑ {Math.round(r.gainM)} m · {ACTIVITY_LABELS[r.activity]}
-                </Txt>
+                  {$t('grup_rota_paylas.km_m', { km: formatKm(r.distanceM), round: Math.round(r.gainM), a: ACTIVITY_LABELS[r.activity] })}</Txt>
               </View>
             </Pressable>
           );
@@ -85,17 +85,16 @@ export default function GrubaRotaPaylasScreen() {
         <TextInput
           value={notu}
           onChangeText={setNotu}
-          placeholder="Not ekle (isteğe bağlı)"
+          placeholder={$t('grup_rota_paylas.not_ekle_istege_bagli')}
           placeholderTextColor={colors.inkMuted}
           maxLength={500}
-          accessibilityLabel="Paylaşım notu"
+          accessibilityLabel={$t('grup_rota_paylas.paylasim_notu')}
           style={styles.input}
         />
         {hata ? <Txt style={{ color: colors.terraInk, marginBottom: 6 }}>{hata}</Txt> : null}
-        <Button label={gonderiyor ? 'Paylaşılıyor…' : 'Gruba paylaş'} icon="send" onPress={() => void paylas()} disabled={!secili || gonderiyor} />
+        <Button label={gonderiyor ? $t('grup_rota_paylas.paylasiliyor') : $t('grup_rota_paylas.gruba_paylas')} icon="send" onPress={() => void paylas()} disabled={!secili || gonderiyor} />
         <Txt variant="small" style={{ marginTop: 6, textAlign: 'center' }}>
-          Rota gizli olsa bile grup üyeleri görebilir; başkaları göremez.
-        </Txt>
+          {$t('grup_rota_paylas.rota_gizli_olsa_bile')}</Txt>
       </View>
     </View>
   );

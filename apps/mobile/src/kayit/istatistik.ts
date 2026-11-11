@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import type { LngLat } from '@/data/ornek';
 import { aktifSure, useKayit, type Kayit } from './kaydedici';
+import { $t, yerel } from '@/i18n';
 
 /** Saniyede bir yeniden çizim için */
 export function useSaat(aralikMs = 1000) {
@@ -78,7 +79,7 @@ export function rotaBilgisi(v: CanliVeri): RotaBilgisi | null {
     kesir: ilerleme?.fraction ?? 0,
     kalanM: kalan,
     varisS,
-    varisSaati: varisS != null ? new Date(simdi + varisS * 1000).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : null,
+    varisSaati: varisS != null ? new Date(simdi + varisS * 1000).toLocaleTimeString(yerel(), { hour: '2-digit', minute: '2-digit' }) : null,
     sapmaM: ilerleme?.offRouteM ?? 0,
   };
 }
@@ -87,8 +88,8 @@ export function rotaBilgisi(v: CanliVeri): RotaBilgisi | null {
 export function kisaSure(s: number | null): { value: string; unit?: string } {
   if (s == null) return { value: '–' };
   const dk = Math.round(s / 60);
-  if (dk < 60) return { value: String(dk), unit: 'dk' };
-  return { value: `${Math.floor(dk / 60)}:${String(dk % 60).padStart(2, '0')}`, unit: 'sa' };
+  if (dk < 60) return { value: String(dk), unit: $t('ortak.birim_dk') };
+  return { value: `${Math.floor(dk / 60)}:${String(dk % 60).padStart(2, '0')}`, unit: $t('ortak.birim_sa') };
 }
 
 function rotaUzunlugu(pts: RoutePoint[]) {

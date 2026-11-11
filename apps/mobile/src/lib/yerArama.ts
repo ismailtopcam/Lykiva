@@ -3,26 +3,27 @@
  * Adres EXPO_PUBLIC_PHOTON_URL ile değiştirilebilir.
  */
 import type { LngLat } from '@/data/ornek';
+import { $t } from '@/i18n';
 
 const PHOTON = process.env.EXPO_PUBLIC_PHOTON_URL || 'https://photon.komoot.io/api/';
 
 export type YerSonucu = { id: string; ad: string; ayrinti: string; coord: LngLat };
 
-const TUR: Record<string, string> = {
-  peak: 'Zirve',
-  village: 'Köy',
-  town: 'Kasaba',
-  city: 'Şehir',
-  hamlet: 'Mahalle',
-  beach: 'Plaj',
-  bay: 'Koy',
-  camp_site: 'Kamp alanı',
-  spring: 'Kaynak',
-  viewpoint: 'Seyir noktası',
-  waterfall: 'Şelale',
-  path: 'Patika',
-  track: 'Toprak yol',
-};
+const TUR = (): Record<string, string> => ({
+  peak: $t('lib_yerArama.zirve'),
+  village: $t('lib_yerArama.koy'),
+  town: $t('lib_yerArama.kasaba'),
+  city: $t('ortak.sehir'),
+  hamlet: $t('lib_yerArama.mahalle'),
+  beach: $t('lib_yerArama.plaj'),
+  bay: $t('lib_yerArama.koy_2'),
+  camp_site: $t('lib_yerArama.kamp_alani'),
+  spring: $t('lib_yerArama.kaynak'),
+  viewpoint: $t('lib_yerArama.seyir_noktasi'),
+  waterfall: $t('lib_yerArama.selale'),
+  path: $t('lib_yerArama.patika'),
+  track: $t('lib_yerArama.toprak_yol'),
+});
 
 export async function yerAra(q: string, yakin?: LngLat | null, signal?: AbortSignal): Promise<YerSonucu[]> {
   const metin = q.trim();
@@ -33,7 +34,7 @@ export async function yerAra(q: string, yakin?: LngLat | null, signal?: AbortSig
   const j = await res.json();
   return (j.features ?? []).map((f: { properties: Record<string, string>; geometry: { coordinates: number[] } }, i: number) => {
     const p = f.properties;
-    const ayrinti = [TUR[p.osm_value] ?? null, p.district ?? p.county ?? p.city, p.state].filter(Boolean).join(' · ');
+    const ayrinti = [TUR()[p.osm_value] ?? null, p.district ?? p.county ?? p.city, p.state].filter(Boolean).join(' · ');
     return { id: `${p.osm_id ?? i}-${i}`, ad: p.name ?? p.street ?? metin, ayrinti, coord: [f.geometry.coordinates[0], f.geometry.coordinates[1]] as LngLat };
   });
 }

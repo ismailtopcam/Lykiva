@@ -7,6 +7,7 @@ import * as Location from 'expo-location';
 
 import type { LngLat } from '@/data/ornek';
 import { oturumuSagla, supabase } from '@/lib/supabase';
+import { $t, yerel } from '@/i18n';
 
 export type AkisFiltresi = 'takip' | 'gruplar' | 'yakin';
 
@@ -205,7 +206,7 @@ export async function kisininAktiviteleri(id: string): Promise<KisiAktivitesi[]>
       title: o.title ?? ACTIVITY_LABELS[o.activity as ActivityType],
       activity: o.activity,
       started_at: o.started_at,
-      stats: `${formatKm(o.distance_m)} km · ${formatDuration(o.moving_time_s)} · ${Math.round(o.elevation_gain_m ?? 0)} m`,
+      stats: $t('akis_akis.km_m', { km: formatKm(o.distance_m), duration: formatDuration(o.moving_time_s), round: Math.round(o.elevation_gain_m ?? 0) }),
       route: coords.filter((_, i) => i % 5 === 0).map((c) => [c[0], c[1]] as LngLat),
     };
   });
@@ -229,18 +230,16 @@ export function kartIstatistikleri(o: AkisOgesi) {
   };
 }
 
-const AYLAR = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
-
 /** "Bugün 08:12", "Dün 18:40", "7 Kas 08:12", geçen yıldansa "7 Kas 2025" */
 export function akisZamani(iso: string, simdi = new Date()) {
   const d = new Date(iso);
-  const saat = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  const saat = d.toLocaleTimeString(yerel(), { hour: '2-digit', minute: '2-digit' });
   const gun = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
   const fark = Math.round((gun(simdi) - gun(d)) / 86_400_000);
-  if (fark === 0) return `Bugün ${saat}`;
-  if (fark === 1) return `Dün ${saat}`;
-  if (d.getFullYear() !== simdi.getFullYear()) return `${d.getDate()} ${AYLAR[d.getMonth()]} ${d.getFullYear()}`;
-  return `${d.getDate()} ${AYLAR[d.getMonth()]} ${saat}`;
+  if (fark === 0) return $t('akis_akis.bugun', { saat });
+  if (fark === 1) return $t('akis_akis.dun', { saat });
+  if (d.getFullYear() !== simdi.getFullYear()) return d.toLocaleDateString(yerel(), { day: 'numeric', month: 'short', year: 'numeric' });
+  return `${d.toLocaleDateString(yerel(), { day: 'numeric', month: 'short' })} ${saat}`;
 }
 
 /** Aktivite türüne göre simge */

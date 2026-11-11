@@ -25,16 +25,17 @@ import { Button, Card, Chip } from '@/components/ui';
 import type { LngLat } from '@/data/ornek';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space } from '@/theme';
+import { $t } from '@/i18n';
 
 /** Sunucu anahtarı yoksa tasarım örneği, varsa gerçek akış */
 export default function AkisScreen() {
   return supabaseHazir ? <GercekAkis /> : <OrnekAkis />;
 }
 
-const FILTRELER: { k: AkisFiltresi; ad: string }[] = [
-  { k: 'takip', ad: 'Takip ettiklerim' },
-  { k: 'gruplar', ad: 'Gruplarım' },
-  { k: 'yakin', ad: 'Yakınımda' },
+const FILTRELER = (): { k: AkisFiltresi; ad: string }[] => [
+  { k: 'takip', ad: $t('anasayfa.takip_ettiklerim') },
+  { k: 'gruplar', ad: $t('ortak.gruplarim') },
+  { k: 'yakin', ad: $t('anasayfa.yakinimda') },
 ];
 
 /** Sekmeye dönünce bu süreden eskiyse ilk sayfa sessizce yenilenir */
@@ -81,7 +82,7 @@ function GercekAkis() {
       if (f === 'takip' && l.every((o) => o.mine)) setOneriler(await kisiAra().catch(() => []));
     } catch (e) {
       if (no !== istekNo.current) return;
-      setHata(e instanceof Error ? e.message : 'Akış yüklenemedi');
+      setHata(e instanceof Error ? e.message : $t('anasayfa.akis_yuklenemedi'));
       setListe((x) => x ?? []);
     }
   }, []);
@@ -155,8 +156,8 @@ function GercekAkis() {
       <View style={styles.header}>
         <Logo />
         <View style={{ flexDirection: 'row' }}>
-          <IconButton icon="search" label="Kişi ara" onPress={() => router.push('/kisiler')} />
-          <IconButton icon="chat" label="Grup sohbetleri" onPress={() => router.push('/gruplar')} />
+          <IconButton icon="search" label={$t('ortak.kisi_ara')} onPress={() => router.push('/kisiler')} />
+          <IconButton icon="chat" label={$t('anasayfa.grup_sohbetleri')} onPress={() => router.push('/gruplar')} />
           <ZilDugmesi />
         </View>
       </View>
@@ -174,7 +175,7 @@ function GercekAkis() {
         ListHeaderComponent={
           <>
             <View accessibilityRole="tablist" style={styles.filters}>
-              {FILTRELER.map((f) => (
+              {FILTRELER().map((f) => (
                 <Chip key={f.k} label={f.ad} role="tab" selected={f.k === filtre} onPress={() => filtreSec(f.k)} />
               ))}
             </View>
@@ -199,15 +200,13 @@ function GercekAkis() {
 function Oneriler({ kisiler, onTakip }: { kisiler: KisiOzeti[]; onTakip: () => void }) {
   return (
     <Card style={styles.oneri}>
-      <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 16 }}>Kimleri takip etmek istersin?</Txt>
+      <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 16 }}>{$t('anasayfa.kimleri_takip_etmek_istersin')}</Txt>
       <Txt variant="small" style={{ marginTop: 2, marginBottom: space.sm }}>
-        Takip ettiklerinin aktiviteleri burada görünür.
-        {kisiler.length ? ' Seni takip edenler ve grup arkadaşların:' : ''}
-      </Txt>
+        {$t('anasayfa.takip_ettiklerinin_aktiviteleri_burada', { a: kisiler.length ? $t('anasayfa.seni_takip_edenler_ve') : '' })}</Txt>
       {kisiler.slice(0, 5).map((k) => (
         <KisiSatiri key={k.id} k={k} onDegisti={(t) => t && onTakip()} />
       ))}
-      <Button label="Kişi ara" icon="search" variant="outline" href="/kisiler" style={{ marginTop: space.sm }} />
+      <Button label={$t('ortak.kisi_ara')} icon="search" variant="outline" href="/kisiler" style={{ marginTop: space.sm }} />
     </Card>
   );
 }
@@ -216,10 +215,10 @@ function BosAkis({ filtre, konumYok, onTekrar }: { filtre: AkisFiltresi; konumYo
   if (filtre === 'takip') return null; // Öneriler kartı gösteriliyor
   const [metin, dugme] =
     filtre === 'gruplar'
-      ? ['Grup arkadaşlarının paylaştığı aktiviteler burada görünür. Henüz bir şey yok.', <Button key="g" label="Gruplara git" variant="outline" href="/gruplar" />]
+      ? [$t('anasayfa.grup_arkadaslarinin_paylastigi_aktivitel'), <Button key="g" label={$t('anasayfa.gruplara_git')} variant="outline" href="/gruplar" />]
       : konumYok
-        ? ['Yakınındaki aktiviteleri görmek için konum izni gerekli.', <Button key="k" label="Tekrar dene" variant="outline" onPress={onTekrar} />]
-        : ['25 km içinde herkese açık paylaşılmış bir aktivite yok.', null];
+        ? [$t('anasayfa.yakinindaki_aktiviteleri_gormek_icin'), <Button key="k" label={$t('anasayfa.tekrar_dene')} variant="outline" onPress={onTekrar} />]
+        : [$t('anasayfa.m_25_km_icinde_herkese'), null];
   return (
     <View style={styles.bos}>
       <Txt variant="muted" style={{ textAlign: 'center', marginBottom: space.md }}>

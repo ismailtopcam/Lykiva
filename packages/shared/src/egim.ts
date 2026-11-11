@@ -10,6 +10,8 @@
  *
  * Saf fonksiyonlar; testleri egim.test.ts.
  */
+import { aktifDil, dileGoreTablo, type Dil } from './dil';
+import { formatDecimal } from './format';
 import type { RoutePoint } from './route';
 import { colors } from './tokens';
 import { haversine } from './track';
@@ -22,13 +24,15 @@ export type GradeClass = 'down' | 'flat' | 'gentle' | 'moderate' | 'steep';
 
 export const GRADE_CLASSES: GradeClass[] = ['down', 'flat', 'gentle', 'moderate', 'steep'];
 
-export const GRADE_LABELS: Record<GradeClass, string> = {
-  down: 'İniş',
-  flat: 'Düz',
-  gentle: '%3–6',
-  moderate: '%6–10',
-  steep: '%10+',
+const GRADE_SOZLUK: Record<Dil, Record<GradeClass, string>> = {
+  tr: { down: 'İniş', flat: 'Düz', gentle: '%3–6', moderate: '%6–10', steep: '%10+' },
+  en: { down: 'Downhill', flat: 'Flat', gentle: '3–6%', moderate: '6–10%', steep: '10%+' },
+  de: { down: 'Bergab', flat: 'Flach', gentle: '3–6 %', moderate: '6–10 %', steep: '10 %+' },
+  ru: { down: 'Спуск', flat: 'Ровно', gentle: '3–6 %', moderate: '6–10 %', steep: '10 %+' },
 };
+
+/** Telefonda o anki dilde */
+export const GRADE_LABELS: Record<GradeClass, string> = dileGoreTablo(GRADE_SOZLUK);
 
 /** Açık zeminde (harita, sayfa) ayırt edilebilir renkler */
 export const GRADE_COLORS: Record<GradeClass, string> = {
@@ -217,6 +221,8 @@ export function gradeSummary(p: RouteProfile, stepM = 20, windowM = GRADE_WINDOW
 }
 
 /** "%7,5" — eğimi bir ondalıkla, Türkçe */
-export function formatGrade(gradePct: number): string {
-  return `%${String(Math.round(Math.abs(gradePct) * 10) / 10).replace('.', ',')}`;
+export function formatGrade(gradePct: number, dil: Dil = aktifDil()): string {
+  const v = Math.round(Math.abs(gradePct) * 10) / 10;
+  const s = formatDecimal(v, Number.isInteger(v) ? 0 : 1, dil);
+  return dil === 'tr' ? `%${s}` : dil === 'en' ? `${s}%` : `${s} %`;
 }

@@ -7,8 +7,9 @@ import { StyleSheet, View } from 'react-native';
 import { Txt } from '@/components/Txt';
 import type { LngLat } from '@/data/ornek';
 import { colors, fontFamily, space } from '@/theme';
+import { $t } from '@/i18n';
 
-export function HavaKarti({ hava, iz, baslik = 'Hava' }: { hava: HavaDurumu; iz?: LngLat[]; baslik?: string }) {
+export function HavaKarti({ hava, iz, baslik = $t('ortak.hava') }: { hava: HavaDurumu; iz?: LngLat[]; baslik?: string }) {
   const satirlar = havaAyrintilari(
     hava,
     iz?.map(([lng, lat]) => ({ lat, lng })),
@@ -28,7 +29,7 @@ export function HavaKarti({ hava, iz, baslik = 'Hava' }: { hava: HavaDurumu; iz?
           </View>
         ))}
       </View>
-      <Txt style={styles.kaynak}>Kaynak: MET Norway</Txt>
+      <Txt style={styles.kaynak}>{$t('havaKarti.kaynak_met_norway')}</Txt>
     </View>
   );
 }

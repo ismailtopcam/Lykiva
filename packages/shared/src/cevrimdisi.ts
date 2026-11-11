@@ -10,6 +10,8 @@
  *
  * Saf fonksiyonlar; testleri cevrimdisi.test.ts.
  */
+import { aktifDil, type Dil } from './dil';
+import { formatDecimal } from './format';
 import { haversine } from './track';
 
 /** [batı, güney, doğu, kuzey] */
@@ -128,7 +130,7 @@ export function offlinePlan(points: { lat: number; lng: number }[], bufferM = OF
 }
 
 /** 4_200_000 → "4,2 MB", 820_000 → "820 KB" */
-export function formatBytes(bytes: number): string {
-  if (bytes >= 1e6) return `${String(Math.round(bytes / 1e5) / 10).replace('.', ',')} MB`;
-  return `${Math.max(1, Math.round(bytes / 1000))} KB`;
+export function formatBytes(bytes: number, dil: Dil = aktifDil()): string {
+  if (bytes >= 1e6) return `${formatDecimal(Math.round(bytes / 1e5) / 10, 1, dil)} MB`;
+  return `${formatDecimal(Math.max(1, Math.round(bytes / 1000)), 0, dil)} KB`;
 }

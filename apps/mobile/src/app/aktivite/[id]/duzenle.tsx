@@ -10,6 +10,7 @@ import { Txt } from '@/components/Txt';
 import { Button, Label } from '@/components/ui';
 import { aktiviteSil, aktiviteYenidenAdlandir, useAktivite } from '@/data/aktivite';
 import { colors, fontFamily, radius, space } from '@/theme';
+import { $t } from '@/i18n';
 
 /** Sahibi için: aktiviteyi yeniden adlandır ya da sil. Görünürlük "Paylaş" ekranında. */
 export default function AktiviteDuzenleScreen() {
@@ -23,7 +24,7 @@ export default function AktiviteDuzenleScreen() {
   if (!a) {
     return (
       <View style={[styles.root, { alignItems: 'center' }]}>
-        <Header title="Aktiviteyi düzenle" backIcon="close" center />
+        <Header title={$t('aktivite_duzenle.aktiviteyi_duzenle')} backIcon="close" center />
         <ActivityIndicator color={colors.terra} style={{ marginTop: space.xl }} />
       </View>
     );
@@ -38,17 +39,17 @@ export default function AktiviteDuzenleScreen() {
       await aktiviteYenidenAdlandir(a!.id, deger);
       router.back();
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Kaydedilemedi');
+      setHata(e instanceof Error ? e.message : $t('ortak.kaydedilemedi'));
     } finally {
       setIsliyor(null);
     }
   }
 
   function silmeyiSor() {
-    Alert.alert('Aktivite silinsin mi?', `"${a!.title}" kalıcı olarak silinir. Molaları, beğenileri, yorumları ve paylaşım bağlantısı da gider; geri alınamaz.`, [
-      { text: 'Vazgeç', style: 'cancel' },
+    Alert.alert($t('aktivite_duzenle.aktivite_silinsin_mi'), $t('aktivite_duzenle.kalici_olarak_silinir_molalari', { title: a!.title }), [
+      { text: $t('ortak.vazgec'), style: 'cancel' },
       {
-        text: 'Sil',
+        text: $t('ortak.sil'),
         style: 'destructive' as const,
         onPress: async () => {
           setHata(null);
@@ -57,7 +58,7 @@ export default function AktiviteDuzenleScreen() {
             await aktiviteSil(a!.id);
             router.dismissAll();
           } catch (e) {
-            setHata(e instanceof Error ? e.message : 'Silinemedi');
+            setHata(e instanceof Error ? e.message : $t('ortak.silinemedi'));
             setIsliyor(null);
           }
         },
@@ -67,25 +68,23 @@ export default function AktiviteDuzenleScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Header title="Aktiviteyi düzenle" backIcon="close" center />
+      <Header title={$t('aktivite_duzenle.aktiviteyi_duzenle')} backIcon="close" center />
       <ScrollView contentContainerStyle={{ padding: space.lg, paddingTop: 4, gap: 18, paddingBottom: insets.bottom + 110 }} keyboardShouldPersistTaps="handled">
         {!duzenlenebilir ? (
-          <Txt variant="muted">Yalnızca sunucuya gönderilmiş kendi aktiviteni düzenleyebilirsin.</Txt>
+          <Txt variant="muted">{$t('aktivite_duzenle.yalnizca_sunucuya_gonderilmis_kendi')}</Txt>
         ) : (
           <>
             <View>
-              <Label>Başlık</Label>
-              <TextInput value={deger} onChangeText={setBaslik} placeholder="ör. Kaş sahil turu" placeholderTextColor={colors.inkMuted} maxLength={80} accessibilityLabel="Aktivitenin başlığı" style={styles.input} />
+              <Label>{$t('aktivite_duzenle.baslik')}</Label>
+              <TextInput value={deger} onChangeText={setBaslik} placeholder={$t('aktivite_duzenle.or_kas_sahil_turu')} placeholderTextColor={colors.inkMuted} maxLength={80} accessibilityLabel={$t('aktivite_duzenle.aktivitenin_basligi')} style={styles.input} />
               <Txt variant="small" style={{ marginTop: 4 }}>
-                Kimlerin görebileceğini aktivitenin Paylaş ekranından değiştirebilirsin.
-              </Txt>
+                {$t('aktivite_duzenle.kimlerin_gorebilecegini_aktivitenin_payl')}</Txt>
             </View>
             <View style={styles.tehlike}>
-              <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }}>Aktiviteyi sil</Txt>
+              <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }}>{$t('aktivite_duzenle.aktiviteyi_sil')}</Txt>
               <Txt variant="small" style={{ marginTop: 2, marginBottom: space.md }}>
-                Kayıt, molalar, beğeniler ve yorumlar kalıcı olarak silinir. Bu aktiviteden kaydettiğin rota silinmez.
-              </Txt>
-              <Button label={isliyor === 'sil' ? 'Siliniyor…' : 'Aktiviteyi sil'} variant="outline" onPress={silmeyiSor} disabled={!!isliyor} />
+                {$t('aktivite_duzenle.kayit_molalar_begeniler_ve')}</Txt>
+              <Button label={isliyor === 'sil' ? $t('ortak.siliniyor') : $t('aktivite_duzenle.aktiviteyi_sil')} variant="outline" onPress={silmeyiSor} disabled={!!isliyor} />
             </View>
           </>
         )}
@@ -98,7 +97,7 @@ export default function AktiviteDuzenleScreen() {
       </ScrollView>
       {duzenlenebilir ? (
         <View style={[styles.bottom, { paddingBottom: insets.bottom + 16 }]}>
-          <Button label={isliyor === 'kaydet' ? 'Kaydediliyor…' : 'Kaydet'} onPress={() => void kaydet()} disabled={!!isliyor || baslik === null} />
+          <Button label={isliyor === 'kaydet' ? $t('ortak.kaydediliyor') : $t('ortak.kaydet')} onPress={() => void kaydet()} disabled={!!isliyor || baslik === null} />
         </View>
       ) : null}
     </KeyboardAvoidingView>

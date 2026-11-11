@@ -1,4 +1,4 @@
-import { ACTIVITY_LABELS, formatDuration, formatKm, formatMeters, formatSpeedKmh , OFF_ROUTE_M } from '@lykiva/shared';
+import { ACTIVITY_LABELS, formatDuration, formatKm, formatMeters, formatSpeedKmh, OFF_ROUTE_M, kmUnit, mUnit } from '@lykiva/shared';
 import { Redirect, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
@@ -13,6 +13,7 @@ import { Stat } from '@/components/ui';
 import { duraklat } from '@/kayit/kaydedici';
 import { kisaSure, rotaBilgisi, useCanliVeri } from '@/kayit/istatistik';
 import { colors, fontFamily, space } from '@/theme';
+import { $t } from '@/i18n';
 
 const n = colors.night;
 
@@ -50,24 +51,24 @@ export default function CanliTakipScreen() {
         ]}
         follow={takip ? ben : null}
         padding={{ top: 110, bottom: 40 }}
-        accessibilityLabel={rb ? `Canlı rota haritası: ${rb.ad}, tamamlanan ve kalan kısım` : 'Canlı kayıt haritası: şimdiye kadar gidilen yol'}
+        accessibilityLabel={rb ? $t('kayit_canli.canli_rota_haritasi_tamamlanan', { ad: rb.ad }) : $t('kayit_canli.canli_kayit_haritasi_simdiye')}
       />
       <FloatingHeader
         left={
           <View style={styles.pill}>
             <View style={[styles.dot, { backgroundColor: n.recording }]} />
-            <Txt style={styles.pillText}>Kayıtta · {ACTIVITY_LABELS[kayit.activity]}</Txt>
+            <Txt style={styles.pillText}>{$t('kayit_canli.kayitta', { a: ACTIVITY_LABELS[kayit.activity] })}</Txt>
           </View>
         }
         right={
           <Pressable
             accessibilityRole="switch"
             accessibilityState={{ checked: takip }}
-            accessibilityLabel="Haritada beni takip et"
+            accessibilityLabel={$t('kayit_canli.haritada_beni_takip_et')}
             onPress={() => setTakip((t) => !t)}
             style={styles.pill}>
             <Icon name="pin" size={16} color={takip ? n.accent : n.text} />
-            <Txt style={styles.pillText}>{takip ? 'Takipte' : 'Serbest'}</Txt>
+            <Txt style={styles.pillText}>{takip ? $t('kayit_canli.takipte') : $t('kayit_canli.serbest')}</Txt>
           </Pressable>
         }
       />
@@ -75,44 +76,42 @@ export default function CanliTakipScreen() {
       <View style={[styles.panel, { paddingBottom: insets.bottom + 24 }]}>
         {rb && rb.sapmaM > OFF_ROUTE_M ? (
           <View style={[styles.warn, { backgroundColor: '#3A1D17' }]} accessibilityRole="alert">
-            <Txt style={[styles.warnText, { color: n.accentSoft }]}>Rotadan {formatMeters(rb.sapmaM)} m uzaktasın</Txt>
+            <Txt style={[styles.warnText, { color: n.accentSoft }]}>{$t('kayit_canli.rotadan_m_uzaktasin', { meters: formatMeters(rb.sapmaM) })}</Txt>
           </View>
         ) : !kayit.arkaPlan ? (
           <View style={styles.warn} accessibilityRole="alert">
-            <Txt style={styles.warnText}>Arka plan konum izni yok: uygulama açık ve ekran açıkken kaydediyor.</Txt>
+            <Txt style={styles.warnText}>{$t('kayit_canli.arka_plan_konum_izni')}</Txt>
           </View>
         ) : zayif ? (
           <View style={styles.warn} accessibilityLiveRegion="polite">
-            <Txt style={styles.warnText}>GPS sinyali zayıf — açık gökyüzü gören bir yerde düzelir.</Txt>
+            <Txt style={styles.warnText}>{$t('kayit_canli.gps_sinyali_zayif_acik')}</Txt>
           </View>
         ) : null}
         {kayit.paylasim ? (
           <Pressable
             accessibilityRole="link"
-            accessibilityLabel={`Konumun ${kayit.paylasim.ad} grubuyla canlı paylaşılıyor. Grup haritasını aç`}
+            accessibilityLabel={$t('kayit_canli.konumun_grubuyla_canli_paylasiliyor', { ad: kayit.paylasim.ad })}
             onPress={() => router.push({ pathname: '/canli-harita', params: { grup: kayit.paylasim!.id } })}
             style={styles.paylasim}>
             <View style={[styles.dot, { backgroundColor: n.sea }]} />
             <Txt style={[styles.pillText, { flex: 1 }]} numberOfLines={1}>
-              Canlı paylaşılıyor · {kayit.paylasim.ad}
-            </Txt>
-            <Txt style={[styles.pillText, { color: n.sea }]}>Harita</Txt>
+              {$t('kayit_canli.canli_paylasiliyor', { ad: kayit.paylasim.ad })}</Txt>
+            <Txt style={[styles.pillText, { color: n.sea }]}>{$t('kayit_canli.harita')}</Txt>
           </Pressable>
         ) : null}
 
         <View style={{ alignItems: 'center' }}>
           <Txt variant="label" color={n.textMuted}>
-            Anlık hız
-          </Txt>
-          <Txt style={[styles.hero, rb && { fontSize: 60, lineHeight: 66 }]} accessibilityLabel={anlikHiz == null ? 'Anlık hız bilinmiyor, GPS sinyali bekleniyor' : `Anlık hız ${hiz} kilometre/saat`}>
+            {$t('kayit_canli.anlik_hiz')}</Txt>
+          <Txt style={[styles.hero, rb && { fontSize: 60, lineHeight: 66 }]} accessibilityLabel={anlikHiz == null ? $t('kayit_canli.anlik_hiz_bilinmiyor_gps') : $t('kayit_canli.anlik_hiz_kilometre_saat', { hiz })}>
             {hiz}
-            <Txt style={styles.heroUnit}> km/sa</Txt>
+            <Txt style={styles.heroUnit}> {$t('kayit_canli.km_sa')}</Txt>
           </Txt>
         </View>
 
         {rb ? (
           <View style={{ marginTop: 12 }}>
-            <View style={styles.track} accessibilityLabel={`Rotanın yüzde ${Math.round(rb.kesir * 100)}'i tamamlandı`}>
+            <View style={styles.track} accessibilityLabel={$t('kayit_canli.rotanin_yuzde_i_tamamlandi', { round: Math.round(rb.kesir * 100) })}>
               <View style={[styles.fill, { width: `${Math.min(100, rb.kesir * 100)}%` }]} />
             </View>
             <View style={styles.trackLabels}>
@@ -128,33 +127,33 @@ export default function CanliTakipScreen() {
 
         {rb ? (
           <View style={styles.grid}>
-            <View style={styles.cell}><Stat label="Yapılan" value={formatKm(stats.distanceM)} unit="km" size={28} color={n.text} muted={n.textMuted} /></View>
-            <View style={styles.cell}><Stat label="Kalan" value={formatKm(rb.kalanM)} unit="km" size={28} color={n.text} muted={n.textMuted} /></View>
-            <View style={styles.cell}><Stat label="Varışa" value={kisaSure(rb.varisS).value} unit={kisaSure(rb.varisS).unit} size={28} color={n.accentSoft} muted={n.textMuted} /></View>
-            <View style={styles.cell}><Stat label="Süre" value={formatDuration(aktifS)} size={28} color={n.text} muted={n.textMuted} /></View>
-            <View style={styles.cell}><Stat label="Ort. hız" value={formatSpeedKmh(stats.avgMovingSpeed)} size={28} color={n.text} muted={n.textMuted} /></View>
-            <View style={styles.cell}><Stat label="Tırmanış" value={formatMeters(stats.gainM)} unit="m" size={28} color={n.text} muted={n.textMuted} /></View>
+            <View style={styles.cell}><Stat label={$t('kayit_canli.yapilan')} value={formatKm(stats.distanceM)} unit={kmUnit()} size={28} color={n.text} muted={n.textMuted} /></View>
+            <View style={styles.cell}><Stat label={$t('kayit_canli.kalan')} value={formatKm(rb.kalanM)} unit={kmUnit()} size={28} color={n.text} muted={n.textMuted} /></View>
+            <View style={styles.cell}><Stat label={$t('kayit_canli.varisa')} value={kisaSure(rb.varisS).value} unit={kisaSure(rb.varisS).unit} size={28} color={n.accentSoft} muted={n.textMuted} /></View>
+            <View style={styles.cell}><Stat label={$t('ortak.sure')} value={formatDuration(aktifS)} size={28} color={n.text} muted={n.textMuted} /></View>
+            <View style={styles.cell}><Stat label={$t('ortak.ort_hiz')} value={formatSpeedKmh(stats.avgMovingSpeed)} size={28} color={n.text} muted={n.textMuted} /></View>
+            <View style={styles.cell}><Stat label={$t('ortak.tirmanis')} value={formatMeters(stats.gainM)} unit={mUnit()} size={28} color={n.text} muted={n.textMuted} /></View>
           </View>
         ) : (
         <View style={styles.grid}>
-          <View style={styles.cell}><Stat label="Yapılan" value={formatKm(stats.distanceM)} unit="km" size={28} color={n.text} muted={n.textMuted} /></View>
-          <View style={styles.cell}><Stat label="Süre" value={formatDuration(aktifS)} size={28} color={n.accentSoft} muted={n.textMuted} /></View>
-          <View style={styles.cell}><Stat label="Ort. hız" value={formatSpeedKmh(stats.avgMovingSpeed)} size={28} color={n.text} muted={n.textMuted} /></View>
-          <View style={styles.cell}><Stat label="Maks. hız" value={formatSpeedKmh(stats.maxSpeed)} size={28} color={n.text} muted={n.textMuted} /></View>
-          <View style={styles.cell}><Stat label="Tırmanış" value={formatMeters(stats.gainM)} unit="m" size={28} color={n.text} muted={n.textMuted} /></View>
+          <View style={styles.cell}><Stat label={$t('kayit_canli.yapilan')} value={formatKm(stats.distanceM)} unit={kmUnit()} size={28} color={n.text} muted={n.textMuted} /></View>
+          <View style={styles.cell}><Stat label={$t('ortak.sure')} value={formatDuration(aktifS)} size={28} color={n.accentSoft} muted={n.textMuted} /></View>
+          <View style={styles.cell}><Stat label={$t('ortak.ort_hiz')} value={formatSpeedKmh(stats.avgMovingSpeed)} size={28} color={n.text} muted={n.textMuted} /></View>
+          <View style={styles.cell}><Stat label={$t('ortak.maks_hiz')} value={formatSpeedKmh(stats.maxSpeed)} size={28} color={n.text} muted={n.textMuted} /></View>
+          <View style={styles.cell}><Stat label={$t('ortak.tirmanis')} value={formatMeters(stats.gainM)} unit={mUnit()} size={28} color={n.text} muted={n.textMuted} /></View>
           <View style={styles.cell}>
-            <Stat label="Rakım" value={kayit.sonKonum?.alt != null ? formatMeters(kayit.sonKonum.alt) : '–'} unit="m" size={28} color={n.text} muted={n.textMuted} />
+            <Stat label={$t('kayit_canli.rakim')} value={kayit.sonKonum?.alt != null ? formatMeters(kayit.sonKonum.alt) : '–'} unit={mUnit()} size={28} color={n.text} muted={n.textMuted} />
           </View>
         </View>
         )}
         <Txt variant="small" color={n.textMuted} style={{ marginTop: 10 }}>
           {rb
-            ? `Varış süresi şu ana kadarki ortalama hızına göre${rb.varisSaati ? ` · Tahmini varış ${rb.varisSaati}` : ''}`
-            : 'Süre duraklatmaları içermez · ortalama yalnızca hareket hâlindeyken hesaplanır'}
+            ? $t('kayit_canli.varis_suresi_su_ana', { a: rb.varisSaati ? $t('kayit_canli.tahmini_varis', { varisSaati: rb.varisSaati }) : '' })
+            : $t('kayit_canli.sure_duraklatmalari_icermez_ortalama')}
         </Txt>
 
         <View style={styles.controls}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Duraklat" onPress={onDuraklat} style={styles.pause}>
+          <Pressable accessibilityRole="button" accessibilityLabel={$t('kayit_canli.duraklat')} onPress={onDuraklat} style={styles.pause}>
             <Icon name="pause" size={34} color={n.ground} strokeWidth={3.2} />
           </Pressable>
         </View>

@@ -20,6 +20,7 @@ import { simdikiHava } from '@/lib/hava';
 import { hemenYayinla, konumYayinla, paylasimiBitir, type PaylasimGrubu } from './canliPaylasim';
 import { kuyrugaEkle, kuyruguGonder, sunucuIdsi } from './kuyruk';
 import { paketOlustur } from './paket';
+import { $t } from '@/i18n';
 
 export const KONUM_GOREVI = 'lykiva-konum-kaydi';
 const DEPO = 'lykiva.kayit.aktif.v1';
@@ -185,7 +186,7 @@ if (Platform.OS !== 'web') {
   });
 }
 
-const IZLEME: Location.LocationTaskOptions = {
+const IZLEME = (): Location.LocationTaskOptions => ({
   accuracy: Location.Accuracy.BestForNavigation,
   timeInterval: 1000,
   distanceInterval: LOCATION_DISTANCE_INTERVAL_M,
@@ -193,12 +194,12 @@ const IZLEME: Location.LocationTaskOptions = {
   pausesUpdatesAutomatically: false,
   showsBackgroundLocationIndicator: true,
   foregroundService: {
-    notificationTitle: 'Lykiva kaydediyor',
-    notificationBody: 'Rotan, hızın ve molaların kaydediliyor.',
+    notificationTitle: $t('kayit_kaydedici.lykiva_kaydediyor'),
+    notificationBody: $t('kayit_kaydedici.rotan_hizin_ve_molalarin'),
     notificationColor: '#B04E25',
     killServiceOnDestroy: false,
   },
-};
+});
 
 async function onPlanIzle() {
   onPlanAboneligi?.remove();
@@ -215,11 +216,11 @@ let arkaPlanBilgisiReddedildi = false;
 function arkaPlanBilgisiOnayi(): Promise<boolean> {
   return new Promise((resolve) => {
     Alert.alert(
-      'Ekran kapalıyken de kaydet',
-      'Lykiva, kayıt sürerken uygulama kapalıyken ya da kullanılmıyorken de rotanı, hızını ve mesafeni kaydetmek için konum verilerini toplar. Konum yalnızca sen kayıt başlattığında, kayıt bitene kadar kullanılır.\n\nSonraki ekranda konum iznini “Her zaman izin ver” olarak seçebilirsin.',
+      $t('kayit_kaydedici.ekran_kapaliyken_de_kaydet'),
+      $t('kayit_kaydedici.lykiva_kayit_surerken_uygulama'),
       [
-        { text: 'Şimdi değil', style: 'cancel', onPress: () => resolve(false) },
-        { text: 'Devam', onPress: () => resolve(true) },
+        { text: $t('kayit_kaydedici.simdi_degil'), style: 'cancel', onPress: () => resolve(false) },
+        { text: $t('kayit_kaydedici.devam'), onPress: () => resolve(true) },
       ],
       { cancelable: true, onDismiss: () => resolve(false) },
     );
@@ -245,7 +246,7 @@ async function izlemeyiBaslat(): Promise<boolean> {
   if (Platform.OS !== 'web' && (await TaskManager.isAvailableAsync())) {
     if (await arkaPlanIzniIste()) {
       if (!(await Location.hasStartedLocationUpdatesAsync(KONUM_GOREVI).catch(() => false))) {
-        await Location.startLocationUpdatesAsync(KONUM_GOREVI, IZLEME);
+        await Location.startLocationUpdatesAsync(KONUM_GOREVI, IZLEME());
       }
       arkaPlan = true;
     }
@@ -266,7 +267,7 @@ export class IzinHatasi extends Error {}
 
 export async function baslat(activity: ActivityType, rota: KayitRotasi | null = null, paylasim: PaylasimGrubu | null = null) {
   const fg = await Location.requestForegroundPermissionsAsync();
-  if (!fg.granted) throw new IzinHatasi('Konum izni verilmedi. Ayarlar > Lykiva > Konum bölümünden açabilirsin.');
+  if (!fg.granted) throw new IzinHatasi($t('kayit_kaydedici.konum_izni_verilmedi_ayarlar'));
   degistir({
     ...BOS,
     durum: 'kayitta',

@@ -7,6 +7,7 @@ import { IconButton } from '@/components/IconButton';
 import { Txt } from '@/components/Txt';
 import type { IconName } from '@/components/Icon';
 import { colors, space } from '@/theme';
+import { $t } from '@/i18n';
 
 /** Düz başlık çubuğu: geri + başlık + sağ öğe */
 export function Header({
@@ -26,7 +27,7 @@ export function Header({
   const fg = dark ? colors.night.text : colors.ink;
   return (
     <View style={[styles.bar, { paddingTop: insets.top + 4 }]}>
-      <IconButton icon={backIcon} label={backIcon === 'close' ? 'Kapat' : 'Geri'} color={fg} onPress={() => router.back()} />
+      <IconButton icon={backIcon} label={backIcon === 'close' ? $t('ortak.kapat') : $t('ortak.geri')} color={fg} onPress={() => router.back()} />
       <View style={{ flex: 1, alignItems: center ? 'center' : 'flex-start' }}>
         {title ? (
           <Txt variant="heading" color={fg} accessibilityRole="header" numberOfLines={1}>
@@ -52,7 +53,7 @@ export function FloatingHeader({
   const insets = useSafeAreaInsets();
   return (
     <View pointerEvents="box-none" style={[styles.floating, { top: insets.top + 6 }]}>
-      {left ?? <IconButton floating icon="back" label="Geri" onPress={() => router.back()} />}
+      {left ?? <IconButton floating icon="back" label={$t('ortak.geri')} onPress={() => router.back()} />}
       <View pointerEvents="box-none" style={{ flex: 1, alignItems: 'center' }}>
         {middle}
       </View>

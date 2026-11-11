@@ -1,56 +1,59 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Suspense } from 'react';
 
 import { Logo } from '@/components/Logo';
+import { istekDili, OG_YEREL } from '@/lib/dil';
+import { metinler, type Metin } from '@/lib/sozluk';
 import styles from './page.module.css';
 
-const features = [
-  {
-    title: 'Her anı kaydet',
-    body: 'Anlık hız, yapılan ve kalan mesafe, ortalama hızına göre varış süresi. Molaların, en yüksek ve en düşük hızın, inişli çıkışlı haritada rotanın tamamı.',
-    tone: 'terra',
-  },
-  {
-    title: 'Rotanı çiz, paylaş',
-    body: 'Patikaya ya da yola yapışan rota çizimi, zemin ve tırmanış bilgisi. Rotanı istediğin gruplarla ve kişilerle paylaş, birlikte düzenleyin.',
-    tone: 'sea',
-  },
-  {
-    title: 'Birlikte yol al',
-    body: 'Gruplar ve topluluklar kur, mesajlaş, etkinlik düzenle. Yoldaki arkadaşlarını canlı haritada takip et.',
-    tone: 'ink',
-  },
-  {
-    title: 'Paylaşmaya değer',
-    body: 'Aktiviteni ve birlikte yaptığın kişileri hazır kart şablonlarıyla hikâyende, sohbetlerinde ve akışta paylaş. Evinin konumu gizli kalır.',
-    tone: 'sand',
-  },
-] as const;
+const features = (m: Metin) =>
+  [
+    { title: m('ozellik1_baslik'), body: m('ozellik1'), tone: 'terra' },
+    { title: m('ozellik2_baslik'), body: m('ozellik2'), tone: 'sea' },
+    { title: m('ozellik3_baslik'), body: m('ozellik3'), tone: 'ink' },
+    { title: m('ozellik4_baslik'), body: m('ozellik4'), tone: 'sand' },
+  ] as const;
 
-export default function Home() {
+export async function generateMetadata({ searchParams }: PageProps<'/'>): Promise<Metadata> {
+  const dil = await istekDili(searchParams);
+  const m = metinler(dil);
+  return { title: { absolute: m('site_baslik') }, description: m('site_aciklama'), openGraph: { locale: OG_YEREL[dil] } };
+}
+
+export default function Home({ searchParams }: PageProps<'/'>) {
+  // Dil isteğe göre (Accept-Language / ?dil=) seçildiği için içerik istekte çizilir
   return (
-    <div className={styles.page}>
+    <Suspense fallback={null}>
+      <Ana searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function Ana({ searchParams }: { searchParams: PageProps<'/'>['searchParams'] }) {
+  const dil = await istekDili(searchParams);
+  const m = metinler(dil);
+  return (
+    <div className={styles.page} lang={dil}>
       <header className={styles.nav}>
-        <Link href="/" aria-label="Lykiva ana sayfa" className={styles.brand}>
+        <Link href="/" aria-label={m('ana_sayfa')} className={styles.brand}>
           <Logo />
         </Link>
-        <nav aria-label="Sayfa içi" className={styles.navLinks}>
-          <a href="#ozellikler">Özellikler</a>
+        <nav aria-label={m('sayfa_ici')} className={styles.navLinks}>
+          <a href="#ozellikler">{m('ozellikler')}</a>
         </nav>
       </header>
 
       <main>
         <section className={styles.hero}>
           <div className={styles.heroText}>
-            <p className={styles.eyebrow}>Bisiklet · Koşu · Yürüyüş · Doğa sporları</p>
-            <h1 className={styles.title}>Rotanı kaydet. Birlikte yol al.</h1>
-            <p className={styles.lead}>
-              Aktivitelerini takip et, rotalarını paylaş, gruplarınla etkinlik düzenle. Likya&apos;nın patikalarından
-              ilham alan, topluluğu merkeze koyan bir uygulama.
-            </p>
+            <p className={styles.eyebrow}>{m('turler')}</p>
+            <h1 className={styles.title}>{m('slogan')}</h1>
+            <p className={styles.lead}>{m('giris_metni')}</p>
             <div className={styles.ctaRow}>
-              <span className={styles.ctaSoon}>Yakında App Store ve Google Play&apos;de</span>
+              <span className={styles.ctaSoon}>{m('yakinda')}</span>
               <a className={styles.ctaGhost} href="#ozellikler">
-                Neler yapabilirsin?
+                {m('neler_yapabilirsin')}
               </a>
             </div>
           </div>
@@ -73,21 +76,21 @@ export default function Home() {
             </svg>
             <div className={styles.liveCard}>
               <span className={styles.liveDot} />
-              <span className={styles.liveLabel}>Anlık hız</span>
+              <span className={styles.liveLabel}>{m('anlik_hiz')}</span>
               <span className={styles.liveValue}>
-                24,6 <small>km/sa</small>
+                {m('canli_ornek_hiz')} <small>{m('hiz_birimi')}</small>
               </span>
-              <span className={styles.liveMeta}>Kalan 16,2 km · varışa 58 dk</span>
+              <span className={styles.liveMeta}>{m('canli_ornek')}</span>
             </div>
           </div>
         </section>
 
         <section id="ozellikler" className={styles.features} aria-labelledby="ozellikler-baslik">
           <h2 id="ozellikler-baslik" className={styles.sectionTitle}>
-            Takipten fazlası
+            {m('takipten_fazlasi')}
           </h2>
           <div className={styles.grid}>
-            {features.map((f) => (
+            {features(m).map((f) => (
               <article key={f.title} className={`${styles.card} ${styles[f.tone]}`}>
                 <h3>{f.title}</h3>
                 <p>{f.body}</p>
@@ -99,10 +102,10 @@ export default function Home() {
 
       <footer className={styles.footer}>
         <Logo size={22} />
-        <nav aria-label="Yasal" className={styles.footerLinks}>
-          <Link href="/gizlilik">Gizlilik</Link>
-          <Link href="/kosullar">Koşullar</Link>
-          <Link href="/hesap-silme">Hesap silme</Link>
+        <nav aria-label={m('yasal')} className={styles.footerLinks}>
+          <Link href="/gizlilik">{m('gizlilik')}</Link>
+          <Link href="/kosullar">{m('kosullar')}</Link>
+          <Link href="/hesap-silme">{m('hesap_silme')}</Link>
         </nav>
         <span>© 2026 Lykiva</span>
       </footer>

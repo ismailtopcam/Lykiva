@@ -1,3 +1,4 @@
+import { kmUnit, mUnit } from '@lykiva/shared';
 /**
  * Keşfet: herkese açık rotalar ve yaklaşan etkinlikler (supabase/migrations/20261110050000_kesfet.sql),
  * topluluklar (kesfet_gruplar) ve kişiler (kisi_ara).
@@ -8,6 +9,7 @@ import * as Location from 'expo-location';
 import type { LngLat } from '@/data/ornek';
 import type { EtkinlikOzeti } from '@/etkinlik/etkinlikler';
 import { oturumuSagla, supabase } from '@/lib/supabase';
+import { yerel } from '@/i18n';
 
 export type KesfetRotasi = {
   id: string;
@@ -50,7 +52,7 @@ export async function izinliKonum(): Promise<LngLat | null> {
 /** "350 m", "4,2 km", "120 km" */
 export function uzaklikMetni(m: number | null) {
   if (m == null) return null;
-  if (m < 1000) return `${Math.max(50, Math.round(m / 50) * 50)} m`;
-  if (m < 10_000) return `${(m / 1000).toLocaleString('tr-TR', { maximumFractionDigits: 1 })} km`;
-  return `${Math.round(m / 1000)} km`;
+  if (m < 1000) return `${Math.max(50, Math.round(m / 50) * 50)} ${mUnit()}`;
+  if (m < 10_000) return `${(m / 1000).toLocaleString(yerel(), { maximumFractionDigits: 1 })} ${kmUnit()}`;
+  return `${Math.round(m / 1000)} ${kmUnit()}`;
 }

@@ -10,8 +10,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
-| İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |
-## Gökhan için: 11 Kasım 2026'da değişenler (İsmail)
+| İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |## Gökhan için: 11 Kasım 2026'da değişenler (İsmail)
 
 - **Play dahili test yayında** (sürüm 2, 0.1.0). Tester listesi "Gösterge test". Katılma bağlantısı aşağıda (Bekleyen elle yapılacaklar 6).
   Güncel sürüm 3: senin anlık hız ve rota eğimi işlerin, Google girişi ve Android push dahil.
@@ -56,6 +55,8 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
      lykiva-supabase > `SMTP_PASS`'ı da güncelle ve servisi yeniden başlat.
    - Sohbette paylaşılan Coolify API anahtarlarını (bu da dahil) Coolify > Keys & Tokens'tan sil.
    - SMTP çalışıyor: deneme şifre sıfırlama postası Gmail'e geldi (11 Kas 2026). Kalan: yeni derlemede uygulamadan dene.
+10. **Dil desteği migration'ı:** Coolify > Servers > uygulama > Terminal'de `uygula.sh` ile `20261112000000_dil.sql`'i uygula
+    (profiles.dil, dil_ayarla, bildirim metni alıcının dilinde). Uygulanmazsa uygulama yine çalışır, bildirimler Türkçe gider.
 
 ## Yapılacaklar
 
@@ -76,6 +77,8 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   Android'de cihaz hız veremediğinde `coords.speed` boş yerine 0 geliyorsa hareket ederken 0 görünür — kontrol et.
 - Çevrimdışı harita: bir rotayı indir, uçak moduna al; rota sayfası, harita ve "Bu rotayı başlat" açılıyor mu?
   İndirme boyutu makul mü (stil, yazı tipi dosyaları da iner)? User-Agent başlığı OpenFreeMap isteklerinde görünüyor mu?
+- Dil: telefonu İngilizce / Almanca / Rusça yap ya da Ayarlar > Dil'den seç; bütün ekranlar değişiyor mu, metinler taşıyor mu
+  (Almanca uzun)? Tarihler ("Samstag, 7. November"), sayılar (27.4 / 27,4) doğru mu? Telefon bildirimi seçilen dilde geliyor mu?
 
 ### [~] Google Play — dahili test
 Play Console'da **Lykiva** oluşturuldu (kişisel geliştirici hesabı, paket `app.lykiva.mobile`, Türkçe, ücretsiz).
@@ -169,9 +172,21 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
 
 **Platform**
 - [ ] Kayıtta kilit ekranında hız / mesafe / süre: iOS Live Activity, Android kalıcı bildirimde değerler (D).
-- [ ] İngilizce arayüz (Likya Yolu'ndaki yabancı yürüyüşçüler).
+- [~] Çok dilli arayüz: İngilizce, Almanca ve Rusça yapıldı (31. aşama); Arapça + sağdan sola düzen sıradaki PR.
 - [ ] Saat uygulaması (Apple Watch / Wear OS) — büyük iş, sonraya.
 - [ ] Karar: ücretli üyelik olacak mı, hangi özellikler (rakiplerde çevrimdışı harita ve yönlendirme ücretli katmanda).
+
+### [~] Dil desteği (31. aşama)
+Yapıldı: uygulamanın bütün ekranları, telefon bildirimleri ve web (karşılama, paylaşım, web profili, önizleme görseli)
+Türkçe, İngilizce, Almanca ve Rusça. Rusçada birimler Kiril (км, м, км/ч) ve üç biçimli çoğul
+("1 комментарий|2 комментария|5 комментариев"). Kalan:
+- [ ] Arapça + sağdan sola (RTL) düzen — ayrı PR; `expo-localization` (supportsRTL) yeni yerel ayar → yeni derleme gerekir.
+  Sunucu tarafı hazır: `profiles.dil` 'ar'yi kabul ediyor, metni gelene kadar bildirim İngilizce.
+- [ ] Çevirileri ana dili İngilizce / Almanca / Rusça olan biri okusun (mağaza öncesi).
+- [ ] Sunucudan dönen hata mesajları (SQL'de ~115 `raise exception`) Türkçe; uygulama bunları olduğu gibi gösteriyor.
+  Kalıcı çözüm: hata kodları + uygulamada çeviri.
+- [ ] E-posta şablonları (`apps/web/public/eposta/`) ve yasal sayfalar yalnızca Türkçe; yönetim paneli Türkçe kalacak.
+- [ ] Örnek veriler (`data/ornek.ts`, `components/Ornek*`; sunucu anahtarı yokken görünür) Türkçe bırakıldı.
 
 ### [x] Rota eğimi (28. aşama, `packages/shared/src/egim.ts`)
 Eğim her zaman 100 m'lik pencereyle ölçülür (DEM gürültülü; komşu iki nokta yanıltır). Sınıflar: iniş (≤ -%3), düz, %3–6, %6–10, %10+.
@@ -188,6 +203,15 @@ Tırmanış bölümü: en az 20 m kazanç, 200 m uzunluk, ort. %3; tepeden 10 m 
 Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde; web paylaşım sayfasında da.
 
 ## Kararlar
+
+- **Dil desteği: kendi küçük çeviri katmanımız** (i18next yok). Mobil: `apps/mobile/src/i18n/` — `tr.ts` kaynak sözlük,
+  `en.ts` / `de.ts` / `ru.ts` aynı anahtarlarla (eksik ya da fazla anahtar TypeScript hatası verir); metin `$t('alan.anahtar', { ad })`
+  ile okunur (`t` değil `$t`: kodda yerel `t` değişkenleri çok). Çoğul: `"{n} person|{n} people"`, Rusçada üç biçim. Telefonun dili `Intl` ile
+  okunur (yeni yerel modül yok), Ayarlar'da elle seçilir; dil değişince kök düzen yeniden kurulur, bu yüzden metinler modül
+  düzeyinde değil kullanıldıkları anda okunmalı (etiket dizileri fonksiyon). Ortak etiketler ve sayı / tarih biçimi
+  `packages/shared/src/dil.ts`; web dili her çağrıda açıkça verir (`apps/web/src/lib/dil.ts`, `sozluk.ts`: Accept-Language,
+  `?dil=en`, başlık yoksa Türkçe). Şikayet nedeni ekranda kullanıcının dilinde, yönetime Türkçesi gider.
+  **Yeni metin eklerken:** `tr.ts`'e anahtar ekle, `en.ts`, `de.ts` ve `ru.ts`'e çevirisini yaz (TypeScript eksikleri gösterir).
 
 - **Çevrimdışı harita: OpenFreeMap + MapLibre çevrimdışı paketleri.** OpenFreeMap (openfreemap.org/tos) uygulama içi
   çevrimdışı indirmeye izin veriyor: bir indirme en fazla 3.000 kare ya da 50 MB, en fazla 4 paralel istek, uygulamayı

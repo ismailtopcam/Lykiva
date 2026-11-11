@@ -11,11 +11,12 @@ import { Txt } from '@/components/Txt';
 import { Button } from '@/components/ui';
 import { appleIleGiris, appleKullanilabilir, GirisIptal, girisiAtla, googleIleGiris, type GirisSonucu } from '@/lib/giris';
 import { colors, fontFamily, radius, space } from '@/theme';
+import { $t } from '@/i18n';
 
-const maddeler: [IconName, string][] = [
-  ['shield', 'Kayıtların hesabında saklanır; telefon değişse de kaybolmaz.'],
-  ['users', 'Arkadaşlarını takip et, gruplarla birlikte çık.'],
-  ['lock', 'Rotanın başı ve sonu (ev, iş) varsayılan olarak gizli.'],
+const maddeler = (): [IconName, string][] => [
+  ['shield', $t('giris.kayitlarin_hesabinda_saklanir_telefon')],
+  ['users', $t('giris.arkadaslarini_takip_et_gruplarla')],
+  ['lock', $t('giris.rotanin_basi_ve_sonu')],
 ];
 
 /**
@@ -39,7 +40,7 @@ export default function GirisScreen() {
 
   function tamam(sonuc: GirisSonucu) {
     if (sonuc.tasinan > 0) {
-      Alert.alert('Hesabına giriş yapıldı', `Bu telefondaki ${sonuc.tasinan} kayıt hesabına taşındı.`);
+      Alert.alert($t('giris.hesabina_giris_yapildi'), $t('giris.bu_telefondaki_kayit_hesabina', { tasinan: sonuc.tasinan }));
     }
     bitti();
   }
@@ -85,10 +86,9 @@ export default function GirisScreen() {
 
       <View style={styles.orta}>
         <Txt variant="display" accessibilityRole="header" style={{ fontSize: 34, lineHeight: 40 }}>
-          Patikada, yolda,{'\n'}dağda — hep yanında.
-        </Txt>
+          {$t('giris.patikada_yolda_dagda_hep')}</Txt>
         <View style={{ gap: space.md, marginTop: space.xl }}>
-          {maddeler.map(([ikon, metin]) => (
+          {maddeler().map(([ikon, metin]) => (
             <View key={metin} style={styles.madde}>
               <View style={styles.maddeIkon}>
                 <Icon name={ikon} size={18} color={colors.seaInk} />
@@ -121,7 +121,7 @@ export default function GirisScreen() {
 
         <Button
           variant="outline"
-          label={bekleyen === 'google' ? 'Google açılıyor…' : 'Google ile devam et'}
+          label={bekleyen === 'google' ? $t('giris.google_aciliyor') : $t('giris.google_ile_devam_et')}
           onPress={() => void giris('google')}
           disabled={!!bekleyen}
           style={{ borderRadius: radius.lg }}
@@ -129,7 +129,7 @@ export default function GirisScreen() {
 
         <Button
           variant="outline"
-          label="E-postayla devam et"
+          label={$t('giris.e_postayla_devam_et')}
           onPress={() => {
             setHata(null);
             setEposta(true);
@@ -139,11 +139,10 @@ export default function GirisScreen() {
         />
 
         <Pressable accessibilityRole="button" onPress={() => void atla()} disabled={!!bekleyen} hitSlop={8} style={styles.atla}>
-          <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: colors.inkMuted }}>Şimdilik geç</Txt>
+          <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: colors.inkMuted }}>{$t('giris.simdilik_gec')}</Txt>
         </Pressable>
         <Txt variant="small" style={{ textAlign: 'center' }}>
-          Giriş yapmadan da kayıt alabilirsin; kayıtlar bu telefondaki geçici hesapta durur.
-        </Txt>
+          {$t('giris.giris_yapmadan_da_kayit')}</Txt>
       </View>
     </SafeAreaView>
   );
@@ -151,10 +150,10 @@ export default function GirisScreen() {
 
 function hataMetni(e: unknown): string {
   const m = e instanceof Error ? e.message : String(e);
-  if (/network|fetch|internet/i.test(m)) return 'İnternet bağlantısı yok gibi görünüyor. Bağlanınca tekrar dene.';
-  if (/provider is not enabled|Unsupported provider|provider_disabled/i.test(m)) return 'Bu giriş yöntemi sunucuda henüz açılmadı.';
-  if (/manual linking/i.test(m)) return 'Hesap bağlama sunucuda kapalı (yönetici ayarı gerekli).';
-  return `Giriş yapılamadı: ${m}`;
+  if (/network|fetch|internet/i.test(m)) return $t('giris.internet_baglantisi_yok_gibi');
+  if (/provider is not enabled|Unsupported provider|provider_disabled/i.test(m)) return $t('giris.bu_giris_yontemi_sunucuda');
+  if (/manual linking/i.test(m)) return $t('giris.hesap_baglama_sunucuda_kapali');
+  return $t('giris.giris_yapilamadi', { m });
 }
 
 const styles = StyleSheet.create({

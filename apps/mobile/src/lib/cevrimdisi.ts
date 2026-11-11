@@ -15,6 +15,7 @@ import { useEffect, useState } from 'react';
 
 import { gercekHarita, MAP_STYLE_URL } from '@/components/map/TopoMap';
 import type { Rota } from '@/data/rota';
+import { $t } from '@/i18n';
 
 type ML = typeof import('@maplibre/maplibre-react-native');
 // Yerel modül yalnızca gerçek haritada yüklenir
@@ -141,12 +142,12 @@ export function rotaPlani(rota: Rota): OfflinePlan {
  * Hata ya da iptalde o ana kadar inen paketler silinir.
  */
 export async function rotayiIndir(rota: Rota): Promise<void> {
-  if (!gercekHarita) throw new Error('Çevrimdışı harita için uygulamanın telefon derlemesi gerekir.');
+  if (!gercekHarita) throw new Error($t('lib_cevrimdisi.cevrimdisi_harita_icin_uygulamanin'));
   if (rota.id in inenler) return;
   await yukle();
   const plan = rotaPlani(rota);
-  if (!plan.boxes.length) throw new Error('Rotada nokta yok.');
-  if (!plan.fits) throw new Error('Rota çevrimdışı indirme için çok uzun; daha kısa parçalara bölüp kaydet.');
+  if (!plan.boxes.length) throw new Error($t('lib_cevrimdisi.rotada_nokta_yok'));
+  if (!plan.fits) throw new Error($t('lib_cevrimdisi.rota_cevrimdisi_indirme_icin'));
   haritaIstekleriniAyarla();
 
   const { OfflineManager } = ml();
@@ -176,7 +177,7 @@ export async function rotayiIndir(rota: Rota): Promise<void> {
           if (bitti) return;
           bitti = true;
           if (paketId) OfflineManager.removeListener(paketId);
-          if (hata || !v) reject(hata ?? new Error('Harita indirilemedi'));
+          if (hata || !v) reject(hata ?? new Error($t('lib_cevrimdisi.harita_indirilemedi')));
           else resolve(v);
         };
         OfflineManager.createPack(
@@ -197,12 +198,12 @@ export async function rotayiIndir(rota: Rota): Promise<void> {
               bitir(new Iptal());
             } else if (kareBayt + s.completedTileSize > OFFLINE_MAX_TILE_BYTES) {
               void pack.pause().catch(() => undefined);
-              bitir(new Error('İndirme 50 MB sınırını aşıyor; rotayı daha kısa parçalara böl.'));
+              bitir(new Error($t('lib_cevrimdisi.indirme_50_mb_sinirini')));
             } else if (s.state === 'complete') {
               bitir(null, { id: pack.id, bayt: s.completedResourceSize, kareBayt: s.completedTileSize });
             }
           },
-          (_pack, e) => bitir(new Error(e.message || 'Harita indirilemedi')),
+          (_pack, e) => bitir(new Error(e.message || $t('lib_cevrimdisi.harita_indirilemedi'))),
         )
           .then(async (pack) => {
             paketId = pack.id;
@@ -211,7 +212,7 @@ export async function rotayiIndir(rota: Rota): Promise<void> {
             const s = await pack.status().catch(() => null);
             if (s?.state === 'complete') bitir(null, { id: pack.id, bayt: s.completedResourceSize, kareBayt: s.completedTileSize });
           })
-          .catch((e: unknown) => bitir(e instanceof Error ? e : new Error('Harita indirilemedi')));
+          .catch((e: unknown) => bitir(e instanceof Error ? e : new Error($t('lib_cevrimdisi.harita_indirilemedi'))));
       });
       bayt += sonuc.bayt;
       kareBayt += sonuc.kareBayt;
@@ -224,7 +225,7 @@ export async function rotayiIndir(rota: Rota): Promise<void> {
   } catch (e) {
     await paketleriSil(paketler);
     delete inenler[rota.id];
-    if (!(e instanceof Iptal)) hatalar[rota.id] = e instanceof Error ? e.message : 'Harita indirilemedi';
+    if (!(e instanceof Iptal)) hatalar[rota.id] = e instanceof Error ? e.message : $t('lib_cevrimdisi.harita_indirilemedi');
     haberVer();
     if (!(e instanceof Iptal)) throw e;
   } finally {

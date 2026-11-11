@@ -41,6 +41,7 @@ import {
 } from '@/grup/gruplar';
 import { useHesap } from '@/lib/giris';
 import { colors, fontFamily, space } from '@/theme';
+import { $t } from '@/i18n';
 
 const uuidMi = (id: string | undefined) => !!id && /^[0-9a-f-]{36}$/i.test(id);
 
@@ -88,7 +89,7 @@ function GercekGrup({ id }: { id: string }) {
       setEtkinlikler(e);
       setYuklenme(Date.now());
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Grup yüklenemedi');
+      setHata(e instanceof Error ? e.message : $t('grup.grup_yuklenemedi'));
       setG((x) => (x === undefined ? null : x));
     }
   }, [id]);
@@ -103,7 +104,7 @@ function GercekGrup({ id }: { id: string }) {
     return (
       <View style={[styles.root, { alignItems: 'center', justifyContent: 'center', padding: space.lg }]}>
         <FloatingHeader />
-        {g === undefined ? <ActivityIndicator color={colors.terra} /> : <Txt variant="muted">{hata ?? 'Grup bulunamadı ya da özel bir grup.'}</Txt>}
+        {g === undefined ? <ActivityIndicator color={colors.terra} /> : <Txt variant="muted">{hata ?? $t('grup.grup_bulunamadi_ya_da')}</Txt>}
       </View>
     );
   }
@@ -119,7 +120,7 @@ function GercekGrup({ id }: { id: string }) {
       await f();
       await yukle();
     } catch (e) {
-      Alert.alert('Yapılamadı', e instanceof Error ? e.message : String(e));
+      Alert.alert($t('grup.yapilamadi'), e instanceof Error ? e.message : String(e));
     } finally {
       setMesgul(false);
     }
@@ -134,29 +135,29 @@ function GercekGrup({ id }: { id: string }) {
     const secenekler: { text: string; style?: 'destructive' | 'cancel'; onPress?: () => void }[] = [];
     if (yonetici)
       secenekler.push({
-        text: 'Davet kodunu yenile',
+        text: $t('grup.davet_kodunu_yenile'),
         onPress: () =>
           void islem(async () => {
             const k = await davetKoduYenile(grup.id);
-            Alert.alert('Yeni davet kodu', `${k}\nEski kod artık çalışmaz.`);
+            Alert.alert($t('grup.yeni_davet_kodu'), $t('grup.eski_kod_artik_calismaz', { k }));
           }),
       });
-    if (!sahip) secenekler.push({ text: 'Şikayet et', onPress: () => sikayet.ac('group', grup.id, grup.name) });
+    if (!sahip) secenekler.push({ text: $t('ortak.sikayet_et'), onPress: () => sikayet.ac('group', grup.id, grup.name) });
     if (uye) secenekler.push({
-      text: 'Gruptan ayrıl',
+      text: $t('grup.gruptan_ayril'),
       style: 'destructive',
       onPress: () =>
         Alert.alert(
-          'Gruptan ayrılınsın mı?',
+          $t('grup.gruptan_ayrilinsin_mi'),
           sahip
             ? grup.member_count > 1
-              ? 'Grup sahibisin; sahiplik bir yöneticiye, yoksa en eski üyeye geçer.'
-              : 'Gruptaki son kişisin; ayrılırsan grup ve mesajları silinir.'
-            : 'Tekrar katılmak için davet ya da onay gerekebilir.',
+              ? $t('grup.grup_sahibisin_sahiplik_bir')
+              : $t('grup.gruptaki_son_kisisin_ayrilirsan')
+            : $t('grup.tekrar_katilmak_icin_davet'),
           [
-            { text: 'Vazgeç', style: 'cancel' },
+            { text: $t('ortak.vazgec'), style: 'cancel' },
             {
-              text: 'Ayrıl',
+              text: $t('grup.ayril'),
               style: 'destructive',
               onPress: () =>
                 void islem(async () => {
@@ -167,7 +168,7 @@ function GercekGrup({ id }: { id: string }) {
           ],
         ),
     });
-    secenekler.push({ text: 'Vazgeç', style: 'cancel' });
+    secenekler.push({ text: $t('ortak.vazgec'), style: 'cancel' });
     Alert.alert(grup.name, undefined, secenekler);
   }
 
@@ -177,31 +178,31 @@ function GercekGrup({ id }: { id: string }) {
     if (sahip) {
       secenekler.push(
         u.role === 'admin'
-          ? { text: 'Yöneticilikten al', onPress: () => void islem(() => uyeRoluDegistir(grup.id, u.user_id, false)) }
-          : { text: 'Yönetici yap', onPress: () => void islem(() => uyeRoluDegistir(grup.id, u.user_id, true)) },
+          ? { text: $t('grup.yoneticilikten_al'), onPress: () => void islem(() => uyeRoluDegistir(grup.id, u.user_id, false)) }
+          : { text: $t('grup.yonetici_yap'), onPress: () => void islem(() => uyeRoluDegistir(grup.id, u.user_id, true)) },
       );
     }
     if (sahip || u.role === 'member') {
-      secenekler.push({ text: 'Gruptan çıkar', style: 'destructive', onPress: () => void islem(() => uyeCikar(grup.id, u.user_id)) });
+      secenekler.push({ text: $t('grup.gruptan_cikar'), style: 'destructive', onPress: () => void islem(() => uyeCikar(grup.id, u.user_id)) });
     }
-    secenekler.push({ text: 'Vazgeç', style: 'cancel' });
-    Alert.alert(u.display_name, ROL_ADI[u.role], secenekler);
+    secenekler.push({ text: $t('ortak.vazgec'), style: 'cancel' });
+    Alert.alert(u.display_name, ROL_ADI()[u.role], secenekler);
   }
 
   const kisayollar: { label: string; icon: IconName; onPress: () => void; dark?: boolean }[] = uye
     ? [
-        { label: 'Sohbet', icon: 'chat', dark: true, onPress: () => router.push({ pathname: '/grup/[id]/sohbet', params: { id: grup.id } }) },
-        { label: canliSayisi ? `Canlı (${canliSayisi})` : 'Canlı harita', icon: 'pin', onPress: () => router.push({ pathname: '/canli-harita', params: { grup: grup.id } }) },
-        { label: 'Etkinlik', icon: 'calendar', onPress: () => router.push({ pathname: '/etkinlik/olustur', params: { grup: grup.id } }) },
-        { label: 'Rota paylaş', icon: 'route', onPress: () => router.push({ pathname: '/grup/[id]/rota-paylas', params: { id: grup.id } }) },
-        ...(yonetici ? [{ label: 'Davet et', icon: 'share' as IconName, onPress: () => void davetEt() }] : []),
+        { label: $t('grup.sohbet'), icon: 'chat', dark: true, onPress: () => router.push({ pathname: '/grup/[id]/sohbet', params: { id: grup.id } }) },
+        { label: canliSayisi ? $t('grup.canli', { canliSayisi }) : $t('grup.canli_harita'), icon: 'pin', onPress: () => router.push({ pathname: '/canli-harita', params: { grup: grup.id } }) },
+        { label: $t('grup.etkinlik'), icon: 'calendar', onPress: () => router.push({ pathname: '/etkinlik/olustur', params: { grup: grup.id } }) },
+        { label: $t('grup.rota_paylas'), icon: 'route', onPress: () => router.push({ pathname: '/grup/[id]/rota-paylas', params: { id: grup.id } }) },
+        ...(yonetici ? [{ label: $t('grup.davet_et'), icon: 'share' as IconName, onPress: () => void davetEt() }] : []),
       ]
     : [];
 
   const sekmeler: { id: Sekme; ad: string }[] = [
-    ...(uye ? [{ id: 'etkinlikler' as Sekme, ad: 'Etkinlikler' }, { id: 'rotalar' as Sekme, ad: 'Rotalar' }] : []),
-    { id: 'uyeler', ad: `Üyeler (${grup.member_count})` },
-    ...(yonetici && grup.pending_count > 0 ? [{ id: 'istekler' as Sekme, ad: `İstekler (${grup.pending_count})` }] : []),
+    ...(uye ? [{ id: 'etkinlikler' as Sekme, ad: $t('grup.etkinlikler') }, { id: 'rotalar' as Sekme, ad: $t('grup.rotalar') }] : []),
+    { id: 'uyeler', ad: $t('grup.uyeler', { member_count: grup.member_count }) },
+    ...(yonetici && grup.pending_count > 0 ? [{ id: 'istekler' as Sekme, ad: $t('grup.istekler', { pending_count: grup.pending_count }) }] : []),
   ];
   const aktifSekme = sekmeler.some((s) => s.id === sekme) ? sekme : sekmeler[0].id;
 
@@ -209,8 +210,8 @@ function GercekGrup({ id }: { id: string }) {
     <ScrollView style={styles.root} contentContainerStyle={{ paddingBottom: insets.bottom + 40 }}>
       <View style={[styles.hero, { paddingTop: insets.top + 6 }]}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: -8 }}>
-          <IconButton icon="back" label="Geri" color="#FFFFFF" onPress={() => router.back()} />
-          <IconButton icon="more" label="Grup seçenekleri" color="#FFFFFF" onPress={ayarlar} />
+          <IconButton icon="back" label={$t('ortak.geri')} color="#FFFFFF" onPress={() => router.back()} />
+          <IconButton icon="more" label={$t('grup.grup_secenekleri')} color="#FFFFFF" onPress={ayarlar} />
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 6 }}>
           <Avatar initials={basHarfler(grup.name)} tone={grupRengi(grup.id)} size={52} square />
@@ -224,8 +225,8 @@ function GercekGrup({ id }: { id: string }) {
           </View>
         </View>
         <Txt style={{ fontSize: 13, color: '#E2F0EE', marginTop: 4 }}>
-          {uyeSayisi(grup.member_count)} · {grup.is_private ? 'Özel grup' : grup.requires_approval ? 'Açık · onaylı katılım' : 'Açık topluluk'}
-          {grup.my_role ? ` · ${ROL_ADI[grup.my_role]}` : ''}
+          {uyeSayisi(grup.member_count)} · {grup.is_private ? $t('grup.ozel_grup') : grup.requires_approval ? $t('grup.acik_onayli_katilim') : $t('grup.acik_topluluk')}
+          {grup.my_role ? ` · ${ROL_ADI()[grup.my_role]}` : ''}
         </Txt>
         {grup.description ? <Txt style={{ fontSize: 14, lineHeight: 20, color: '#FFFFFF', marginTop: 10 }}>{grup.description}</Txt> : null}
       </View>
@@ -233,13 +234,13 @@ function GercekGrup({ id }: { id: string }) {
       {!uye ? (
         <View style={{ padding: space.lg, gap: space.sm }}>
           <Button
-            label={mesgul ? '…' : grup.requested ? 'İsteği geri al' : grup.requires_approval ? 'Katılma isteği gönder' : 'Topluluğa katıl'}
+            label={mesgul ? '…' : grup.requested ? $t('grup.istegi_geri_al') : grup.requires_approval ? $t('grup.katilma_istegi_gonder') : $t('grup.topluluga_katil')}
             icon={grup.requested ? 'close' : 'users'}
             variant={grup.requested ? 'outline' : 'primary'}
             disabled={mesgul}
             onPress={() => void islem(() => (grup.requested ? istegiGeriAl(grup.id) : grubaKatil(grup.id)))}
           />
-          {grup.requested ? <Txt variant="small">İsteğin yöneticilere iletildi; onaylanınca grubun sohbetini ve rotalarını görürsün.</Txt> : null}
+          {grup.requested ? <Txt variant="small">{$t('grup.istegin_yoneticilere_iletildi_onaylaninc')}</Txt> : null}
         </View>
       ) : (
         <View style={styles.shortcuts}>
@@ -253,8 +254,8 @@ function GercekGrup({ id }: { id: string }) {
       )}
 
       {yonetici && grup.invite_code ? (
-        <Pressable accessibilityRole="button" accessibilityLabel={`Davet kodu ${grup.invite_code.split('').join(' ')}. Paylaş`} onPress={() => void davetEt()} style={styles.kod}>
-          <Txt variant="small">Davet kodu</Txt>
+        <Pressable accessibilityRole="button" accessibilityLabel={$t('grup.davet_kodu_paylas', { split: grup.invite_code.split('').join(' ') })} onPress={() => void davetEt()} style={styles.kod}>
+          <Txt variant="small">{$t('grup.davet_kodu')}</Txt>
           <Txt style={{ fontFamily: fontFamily.displayHeavy, fontSize: 20, letterSpacing: 3 }}>{grup.invite_code}</Txt>
         </Pressable>
       ) : null}
@@ -270,7 +271,7 @@ function GercekGrup({ id }: { id: string }) {
       <View style={{ padding: space.lg, gap: 10 }}>
         {aktifSekme === 'etkinlikler' ? (
           etkinlikler.length === 0 ? (
-            <Txt variant="muted">Planlanmış etkinlik yok. “Etkinlik” ile bir buluşma ayarla.</Txt>
+            <Txt variant="muted">{$t('grup.planlanmis_etkinlik_yok_etkinlik')}</Txt>
           ) : (
             etkinlikler.map((e) => {
               const r = tarihRozeti(e.starts_at);
@@ -283,13 +284,11 @@ function GercekGrup({ id }: { id: string }) {
                       {e.title}
                     </Txt>
                     <Txt variant="small">
-                      {kisaTarih(e.starts_at)} · {e.going_count}
-                      {e.capacity ? `/${e.capacity}` : ''} kişi
-                    </Txt>
+                      {$t('grup.kisi', { kisaTarih: kisaTarih(e.starts_at), going_count: e.going_count, a: e.capacity ? `/${e.capacity}` : '' })}</Txt>
                   </View>
                   {e.my_status === 'going' ? (
                     <View style={[styles.rol, { backgroundColor: colors.terraSoft }]}>
-                      <Txt style={{ fontSize: 11, fontFamily: fontFamily.bodyBold, color: colors.terraInk }}>Gidiyorsun</Txt>
+                      <Txt style={{ fontSize: 11, fontFamily: fontFamily.bodyBold, color: colors.terraInk }}>{$t('grup.gidiyorsun')}</Txt>
                     </View>
                   ) : null}
                 </Pressable>
@@ -298,7 +297,7 @@ function GercekGrup({ id }: { id: string }) {
           )
         ) : aktifSekme === 'rotalar' ? (
           rotalar.length === 0 ? (
-            <Txt variant="muted">Gruba henüz rota paylaşılmadı. Kendi rotalarından birini “Rota paylaş” ile ekleyebilirsin.</Txt>
+            <Txt variant="muted">{$t('grup.gruba_henuz_rota_paylasilmadi')}</Txt>
           ) : (
             rotalar.map((r) => (
               <Pressable key={r.id} accessibilityRole="link" onPress={() => router.push({ pathname: '/rota/[id]', params: { id: r.id } })} style={styles.card}>
@@ -308,8 +307,7 @@ function GercekGrup({ id }: { id: string }) {
                     {r.name}
                   </Txt>
                   <Txt variant="small">
-                    {formatKm(r.distance_m)} km{r.elevation_gain_m != null ? ` · ↑ ${Math.round(r.elevation_gain_m)} m` : ''}
-                  </Txt>
+                    {$t('grup.km', { km: formatKm(r.distance_m), a: r.elevation_gain_m != null ? $t('grup.m', { round: Math.round(r.elevation_gain_m) }) : '' })}</Txt>
                   <Txt variant="small">
                     {r.owner_name} · {kisaZaman(r.shared_at)}
                   </Txt>
@@ -329,13 +327,13 @@ function GercekGrup({ id }: { id: string }) {
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }} numberOfLines={1}>
                   {u.display_name}
-                  {u.user_id === hesap?.id ? ' (sen)' : ''}
+                  {u.user_id === hesap?.id ? $t('grup.sen') : ''}
                 </Txt>
                 <Txt variant="small">@{u.username}</Txt>
               </View>
               {u.role !== 'member' ? (
                 <View style={[styles.rol, u.role === 'owner' && { backgroundColor: colors.terraSoft }]}>
-                  <Txt style={{ fontSize: 11, fontFamily: fontFamily.bodyBold, color: u.role === 'owner' ? colors.terraInk : colors.seaInk }}>{ROL_ADI[u.role]}</Txt>
+                  <Txt style={{ fontSize: 11, fontFamily: fontFamily.bodyBold, color: u.role === 'owner' ? colors.terraInk : colors.seaInk }}>{ROL_ADI()[u.role]}</Txt>
                 </View>
               ) : null}
             </Pressable>
@@ -352,9 +350,9 @@ function GercekGrup({ id }: { id: string }) {
                   @{r.username} · {kisaZaman(r.created_at)}
                 </Txt>
               </View>
-              <IconButton icon="close" label={`${r.display_name} isteğini reddet`} onPress={() => void islem(() => istegiYanitla(grup.id, r.user_id, false))} />
-              <Pressable accessibilityRole="button" accessibilityLabel={`${r.display_name} isteğini onayla`} disabled={mesgul} onPress={() => void islem(() => istegiYanitla(grup.id, r.user_id, true))} style={styles.onay}>
-                <Txt style={{ color: '#FFFFFF', fontFamily: fontFamily.bodyBold, fontSize: 12 }}>Onayla</Txt>
+              <IconButton icon="close" label={$t('grup.istegini_reddet', { display_name: r.display_name })} onPress={() => void islem(() => istegiYanitla(grup.id, r.user_id, false))} />
+              <Pressable accessibilityRole="button" accessibilityLabel={$t('grup.istegini_onayla', { display_name: r.display_name })} disabled={mesgul} onPress={() => void islem(() => istegiYanitla(grup.id, r.user_id, true))} style={styles.onay}>
+                <Txt style={{ color: '#FFFFFF', fontFamily: fontFamily.bodyBold, fontSize: 12 }}>{$t('grup.onayla')}</Txt>
               </Pressable>
             </View>
           ))

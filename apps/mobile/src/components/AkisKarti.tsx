@@ -1,7 +1,7 @@
 /**
  * Akıştaki tek aktivite kartı (gerçek veri). Tasarım: Akış ekranındaki gönderi kartı.
  */
-import { ACTIVITY_LABELS, havaGecerliMi, havaOzeti } from '@lykiva/shared';
+import { ACTIVITY_LABELS, havaGecerliMi, havaOzeti, kmUnit, mUnit } from '@lykiva/shared';
 import { router } from 'expo-router';
 import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -14,21 +14,22 @@ import { Txt } from '@/components/Txt';
 import { Avatar, AvatarStack, Card, Stat } from '@/components/ui';
 import { basHarfler, grupRengi } from '@/grup/gruplar';
 import { colors, fontFamily, space } from '@/theme';
+import { $t } from '@/i18n';
 
-const GORUNURLUK: Record<AkisOgesi['visibility'], string> = {
-  public: 'herkese açık',
-  followers: 'takipçilere',
-  groups: 'gruplara',
-  private: 'sadece sen',
-};
+const GORUNURLUK = (): Record<AkisOgesi['visibility'], string> => ({
+  public: $t('akisKarti.herkese_acik'),
+  followers: $t('akisKarti.takipcilere'),
+  groups: $t('akisKarti.gruplara'),
+  private: $t('akisKarti.sadece_sen'),
+});
 
 /** "Cem'le", "Cem ve 2 kişiyle"; etiketlendiysen "seninle" */
 function birlikteMetni(o: AkisOgesi) {
   const n = o.with_count ?? 0;
   if (!n || !o.with?.length) return '';
-  if (o.tagged_me) return n === 1 ? 'seninle' : `sen ve ${n - 1} kişiyle`;
+  if (o.tagged_me) return n === 1 ? 'seninle' : $t('akisKarti.sen_ve_kisiyle', { a: n - 1 });
   const ilk = o.with[0].ad.split(' ')[0];
-  return n === 1 ? `${ilk} ile` : `${ilk} ve ${n - 1} kişiyle`;
+  return n === 1 ? $t('akisKarti.ile', { ilk }) : $t('akisKarti.ve_kisiyle', { ilk, a: n - 1 });
 }
 
 type Props = {
@@ -46,18 +47,18 @@ function AkisKartiIc({ o, onBegen }: Props) {
   return (
     <Card style={styles.post}>
       <View style={styles.head}>
-        <Pressable accessibilityRole="link" accessibilityLabel={`${o.owner_name} profili`} onPress={kisiye} hitSlop={4}>
+        <Pressable accessibilityRole="link" accessibilityLabel={$t('akisKarti.profili', { owner_name: o.owner_name })} onPress={kisiye} hitSlop={4}>
           <Avatar initials={basHarfler(o.owner_name)} tone={grupRengi(o.owner_id)} uri={o.owner_avatar} />
         </Pressable>
         <Pressable accessibilityRole="link" onPress={kisiye} style={{ flex: 1, minWidth: 0 }}>
           <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14 }} numberOfLines={1}>
-            {o.mine ? 'Sen' : o.owner_name}
+            {o.mine ? $t('ortak.sen') : o.owner_name}
             {birlikteMetni(o) ? <Txt style={{ color: colors.inkMuted }}> · {birlikteMetni(o)}</Txt> : null}
           </Txt>
           <Txt variant="small" numberOfLines={1}>
             {akisZamani(o.started_at)}
             {havaGecerliMi(o.weather) ? ` · ${havaOzeti(o.weather)}` : ''}
-            {o.mine ? ` · ${GORUNURLUK[o.visibility]}` : ''}
+            {o.mine ? ` · ${GORUNURLUK()[o.visibility]}` : ''}
           </Txt>
         </Pressable>
         <View style={styles.typeBadge}>
@@ -66,13 +67,13 @@ function AkisKartiIc({ o, onBegen }: Props) {
         </View>
       </View>
 
-      <Pressable accessibilityRole="link" accessibilityLabel={`${ad}, ${s.km} kilometre`} onPress={aktiviteye}>
+      <Pressable accessibilityRole="link" accessibilityLabel={$t('akisKarti.kilometre', { ad, km: s.km })} onPress={aktiviteye}>
         <Txt style={styles.title}>{ad}</Txt>
         <View style={styles.statRow}>
-          <Stat label="Mesafe" value={s.km} unit="km" size={18} />
-          <Stat label="Tırmanış" value={s.tirmanis} unit="m" size={18} />
-          <Stat label="Süre" value={s.sure} size={18} />
-          <Stat label="Ort. hız" value={s.hiz} unit="km/sa" size={18} />
+          <Stat label={$t('ortak.mesafe')} value={s.km} unit={kmUnit()} size={18} />
+          <Stat label={$t('ortak.tirmanis')} value={s.tirmanis} unit={mUnit()} size={18} />
+          <Stat label={$t('ortak.sure')} value={s.sure} size={18} />
+          <Stat label={$t('ortak.ort_hiz')} value={s.hiz} unit={$t('akisKarti.km_sa')} size={18} />
         </View>
         {iz.length > 1 ? (
           <TopoMap
@@ -84,7 +85,7 @@ function AkisKartiIc({ o, onBegen }: Props) {
             ]}
             padding={{ top: 24, bottom: 24 }}
             style={{ height: 176 }}
-            accessibilityLabel={`${ad} rotasının haritası`}
+            accessibilityLabel={$t('akisKarti.rotasinin_haritasi', { ad })}
           />
         ) : null}
       </Pressable>
@@ -92,7 +93,7 @@ function AkisKartiIc({ o, onBegen }: Props) {
       {o.with?.length || o.stop_count ? (
         <View style={styles.meta}>
           {o.with?.length ? <AvatarStack items={o.with.map((k) => ({ initials: basHarfler(k.ad), tone: grupRengi(k.id) }))} size={26} /> : null}
-          <Txt variant="small">{[o.with?.length ? 'Birlikte yaptılar' : null, o.stop_count ? `${o.stop_count} mola` : null].filter(Boolean).join(' · ')}</Txt>
+          <Txt variant="small">{[o.with?.length ? $t('akisKarti.birlikte_yaptilar') : null, o.stop_count ? $t('akisKarti.mola', { stop_count: o.stop_count }) : null].filter(Boolean).join(' · ')}</Txt>
         </View>
       ) : null}
 
@@ -100,7 +101,7 @@ function AkisKartiIc({ o, onBegen }: Props) {
         <Pressable
           accessibilityRole="button"
           accessibilityState={{ selected: o.liked }}
-          accessibilityLabel={`${o.liked ? 'Beğeniyi geri al' : 'Beğen'}, ${o.like_count} beğeni`}
+          accessibilityLabel={$t('akisKarti.begeni', { a: o.liked ? $t('ortak.begeniyi_geri_al') : $t('ortak.begen'), like_count: o.like_count })}
           onPress={() => onBegen(o)}
           style={styles.action}>
           <Icon name="heart" size={21} color={o.liked ? colors.terra : colors.ink} />
@@ -108,7 +109,7 @@ function AkisKartiIc({ o, onBegen }: Props) {
         </Pressable>
         <Pressable
           accessibilityRole="link"
-          accessibilityLabel={`${o.comment_count} yorum`}
+          accessibilityLabel={$t('akisKarti.yorum', { comment_count: o.comment_count })}
           onPress={() => router.push({ pathname: '/aktivite/[id]/yorumlar', params: { id: o.id } })}
           style={styles.action}>
           <Icon name="chat" size={21} />
@@ -116,7 +117,7 @@ function AkisKartiIc({ o, onBegen }: Props) {
         </Pressable>
         <View style={{ flex: 1 }} />
         {o.mine ? (
-          <IconButton icon="share" label="Paylaş" onPress={() => router.push({ pathname: '/aktivite/[id]/paylas', params: { id: o.id } })} />
+          <IconButton icon="share" label={$t('ortak.paylas')} onPress={() => router.push({ pathname: '/aktivite/[id]/paylas', params: { id: o.id } })} />
         ) : null}
       </View>
     </Card>

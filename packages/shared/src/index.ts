@@ -7,3 +7,4 @@ export * from './ucBoyut';
 export * from './hava';
 export * from './egim';
 export * from './cevrimdisi';
+export * from './dil';

@@ -8,6 +8,7 @@ import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 
 import { oturumuSagla, supabase } from '@/lib/supabase';
+import { $t } from '@/i18n';
 
 export type Kaynak = 'galeri' | 'kamera';
 
@@ -20,7 +21,7 @@ function uuid() {
 /** Galeriden ya da kameradan bir fotoğraf; vazgeçilirse null. İzin verilmezse hata. */
 export async function fotoSec(kaynak: Kaynak, kare = false): Promise<string | null> {
   const izin = kaynak === 'kamera' ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (!izin.granted) throw new Error(kaynak === 'kamera' ? 'Kamera izni verilmedi. Ayarlardan açabilirsin.' : 'Fotoğraflara erişim izni verilmedi. Ayarlardan açabilirsin.');
+  if (!izin.granted) throw new Error(kaynak === 'kamera' ? $t('lib_foto.kamera_izni_verilmedi_ayarlardan') : $t('lib_foto.fotograflara_erisim_izni_verilmedi'));
   const secenek: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 1, allowsEditing: kare, aspect: kare ? [1, 1] : undefined, exif: false };
   const s = kaynak === 'kamera' ? await ImagePicker.launchCameraAsync(secenek) : await ImagePicker.launchImageLibraryAsync(secenek);
   if (s.canceled || !s.assets?.[0]) return null;
@@ -89,7 +90,7 @@ export const MOLA_FOTO_SINIRI = 6;
 
 /** Molaya fotoğraf ekler; molanın yeni fotoğraf listesini döner */
 export async function molaFotografiEkle(aktiviteId: string, molaId: string, mevcut: string[], uri: string): Promise<string[]> {
-  if (mevcut.length >= MOLA_FOTO_SINIRI) throw new Error(`Bir molaya en fazla ${MOLA_FOTO_SINIRI} fotoğraf eklenebilir.`);
+  if (mevcut.length >= MOLA_FOTO_SINIRI) throw new Error($t('lib_foto.bir_molaya_en_fazla', { mOLA_FOTO_SINIRI: MOLA_FOTO_SINIRI }));
   const yol = await yukle('mola', aktiviteId, uri, 1600);
   const yeni = [...mevcut, yol];
   const { error } = await supabase.from('activity_stops').update({ photo_urls: yeni }).eq('id', molaId);

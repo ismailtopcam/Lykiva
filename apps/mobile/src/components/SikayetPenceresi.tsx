@@ -11,8 +11,12 @@ import { Txt } from '@/components/Txt';
 import { Chip } from '@/components/ui';
 import { sikayetEt, type SikayetTuru } from '@/lib/sikayet';
 import { colors, fontFamily, space } from '@/theme';
+import { $t } from '@/i18n';
+import { tr } from '@/i18n/tr';
 
-const NEDENLER = ['Uygunsuz içerik', 'Taciz ya da zorbalık', 'Spam ya da reklam', 'Yanlış ya da tehlikeli bilgi', 'Başkası adına hesap', 'Diğer'];
+// Neden ekranda kullanıcının dilinde görünür; yönetime (Türkçe panel) her zaman Türkçesi gider
+const NEDENLER = ['uygunsuz_icerik', 'taciz_ya_da_zorbalik', 'spam_ya_da_reklam', 'yanlis_ya_da_tehlikeli', 'baskasi_adina_hesap', 'diger'] as const;
+type Neden = (typeof NEDENLER)[number];
 
 type Hedef = { tur: SikayetTuru; id: string; ad: string };
 
@@ -26,13 +30,13 @@ export function useSikayet() {
 
 function SikayetPenceresi({ hedef, kapat }: { hedef: Hedef; kapat: () => void }) {
   const insets = useSafeAreaInsets();
-  const [neden, setNeden] = useState<string | null>(null);
+  const [neden, setNeden] = useState<Neden | null>(null);
   const [aciklama, setAciklama] = useState('');
   const [durum, setDurum] = useState<'bos' | 'gonderiyor' | 'tamam'>('bos');
   const [hata, setHata] = useState<string | null>(null);
 
-  const metin = [neden, aciklama.trim()].filter(Boolean).join(': ');
-  const gonderilebilir = !!neden && (neden !== 'Diğer' || aciklama.trim().length >= 3) && durum === 'bos';
+  const metin = [neden ? tr.sikayetPenceresi[neden] : null, aciklama.trim()].filter(Boolean).join(': ');
+  const gonderilebilir = !!neden && (neden !== 'diger' || aciklama.trim().length >= 3) && durum === 'bos';
 
   async function gonder() {
     if (!gonderilebilir) return;
@@ -42,33 +46,32 @@ function SikayetPenceresi({ hedef, kapat }: { hedef: Hedef; kapat: () => void })
       await sikayetEt(hedef.tur, hedef.id, metin.slice(0, 500));
       setDurum('tamam');
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Gönderilemedi');
+      setHata(e instanceof Error ? e.message : $t('ortak.gonderilemedi'));
       setDurum('bos');
     }
   }
 
   return (
     <Modal visible animationType="slide" transparent onRequestClose={kapat}>
-      <Pressable style={styles.perde} onPress={kapat} accessibilityLabel="Kapat" accessibilityRole="button" />
+      <Pressable style={styles.perde} onPress={kapat} accessibilityLabel={$t('ortak.kapat')} accessibilityRole="button" />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.alt}>
         <View style={[styles.kart, { paddingBottom: insets.bottom + space.lg }]} accessibilityViewIsModal>
           <View style={styles.ust}>
             <Txt variant="heading" accessibilityRole="header" style={{ flex: 1 }}>
-              {durum === 'tamam' ? 'Teşekkürler' : 'Şikayet et'}
+              {durum === 'tamam' ? $t('sikayetPenceresi.tesekkurler') : $t('ortak.sikayet_et')}
             </Txt>
-            <Pressable accessibilityRole="button" accessibilityLabel="Kapat" onPress={kapat} hitSlop={10}>
+            <Pressable accessibilityRole="button" accessibilityLabel={$t('ortak.kapat')} onPress={kapat} hitSlop={10}>
               <Icon name="close" size={22} />
             </Pressable>
           </View>
 
           {durum === 'tamam' ? (
             <>
-              <Txt style={{ marginTop: space.sm }}>Şikayetin yönetime iletildi. İnceleyip gerekirse içeriği kaldıracağız.</Txt>
+              <Txt style={{ marginTop: space.sm }}>{$t('sikayetPenceresi.sikayetin_yonetime_iletildi_inceleyip')}</Txt>
               <Txt variant="small" style={{ marginTop: space.sm }}>
-                Şikayet ettiğin kişi bunu görmez.
-              </Txt>
+                {$t('sikayetPenceresi.sikayet_ettigin_kisi_bunu')}</Txt>
               <Pressable accessibilityRole="button" onPress={kapat} style={[styles.dugme, { marginTop: space.lg }]}>
-                <Txt style={styles.dugmeYazi}>Tamam</Txt>
+                <Txt style={styles.dugmeYazi}>{$t('sikayetPenceresi.tamam')}</Txt>
               </Pressable>
             </>
           ) : (
@@ -76,18 +79,18 @@ function SikayetPenceresi({ hedef, kapat }: { hedef: Hedef; kapat: () => void })
               <Txt variant="small" numberOfLines={2}>
                 {hedef.ad}
               </Txt>
-              <Txt style={{ fontFamily: fontFamily.bodySemiBold, marginTop: space.md, marginBottom: space.sm }}>Neden?</Txt>
+              <Txt style={{ fontFamily: fontFamily.bodySemiBold, marginTop: space.md, marginBottom: space.sm }}>{$t('sikayetPenceresi.neden')}</Txt>
               <View accessibilityRole="radiogroup" style={styles.nedenler}>
                 {NEDENLER.map((n) => (
-                  <Chip key={n} label={n} role="radio" selected={neden === n} onPress={() => setNeden(n)} />
+                  <Chip key={n} label={$t(`sikayetPenceresi.${n}`)} role="radio" selected={neden === n} onPress={() => setNeden(n)} />
                 ))}
               </View>
               <TextInput
                 value={aciklama}
                 onChangeText={setAciklama}
-                placeholder={neden === 'Diğer' ? 'Kısaca anlat (gerekli)' : 'Eklemek istediğin bir şey var mı? (isteğe bağlı)'}
+                placeholder={neden === 'diger' ? $t('sikayetPenceresi.kisaca_anlat_gerekli') : $t('sikayetPenceresi.eklemek_istedigin_bir_sey')}
                 placeholderTextColor={colors.inkMuted}
-                accessibilityLabel="Açıklama"
+                accessibilityLabel={$t('ortak.aciklama')}
                 multiline
                 maxLength={400}
                 style={styles.kutu}
@@ -103,7 +106,7 @@ function SikayetPenceresi({ hedef, kapat }: { hedef: Hedef; kapat: () => void })
                 disabled={!gonderilebilir}
                 onPress={() => void gonder()}
                 style={[styles.dugme, { marginTop: space.lg }, !gonderilebilir && { opacity: 0.45 }]}>
-                {durum === 'gonderiyor' ? <ActivityIndicator color="#FFFFFF" /> : <Txt style={styles.dugmeYazi}>Gönder</Txt>}
+                {durum === 'gonderiyor' ? <ActivityIndicator color="#FFFFFF" /> : <Txt style={styles.dugmeYazi}>{$t('sikayetPenceresi.gonder')}</Txt>}
               </Pressable>
             </ScrollView>
           )}

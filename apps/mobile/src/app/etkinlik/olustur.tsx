@@ -14,6 +14,7 @@ import { etkinlikOlustur, gunKisa, saatMetni, ZORLUK_ADI, type Zorluk } from '@/
 import { gruplarim, grupRotalari, type GrupOzeti } from '@/grup/gruplar';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, radius, space } from '@/theme';
+import { $t, yerel } from '@/i18n';
 
 type RotaSecenegi = { id: string; ad: string; mesafeM: number; tirmanisM: number | null; bas: [number, number] | null; kimin: string };
 
@@ -70,7 +71,7 @@ export default function EtkinlikOlusturScreen() {
         mesafeM: r.distanceM,
         tirmanisM: r.gainM,
         bas: r.points[0] ? [r.points[0].lng, r.points[0].lat] : null,
-        kimin: 'Senin',
+        kimin: $t('etkinlik_olustur.senin'),
       }));
       for (const r of gruptaki) {
         if (liste.some((x) => x.id === r.id)) continue;
@@ -106,12 +107,12 @@ export default function EtkinlikOlusturScreen() {
     setKonumAliniyor(true);
     try {
       const izin = await Location.requestForegroundPermissionsAsync();
-      if (!izin.granted) throw new Error('Konum izni verilmedi');
+      if (!izin.granted) throw new Error($t('etkinlik_olustur.konum_izni_verilmedi'));
       const k = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       setNokta([k.coords.longitude, k.coords.latitude]);
-      if (!yerAdi.trim()) setYerAdi('Buluşma noktası');
+      if (!yerAdi.trim()) setYerAdi($t('etkinlik_olustur.bulusma_noktasi'));
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Konum alınamadı');
+      setHata(e instanceof Error ? e.message : $t('etkinlik_olustur.konum_alinamadi'));
     } finally {
       setKonumAliniyor(false);
     }
@@ -121,8 +122,8 @@ export default function EtkinlikOlusturScreen() {
 
   async function yayinla() {
     setHata(null);
-    if (ad.trim().length < 2) return setHata('Etkinliğe bir ad ver.');
-    if (zaman.getTime() < Date.now() + 5 * 60_000) return setHata('Etkinlik zamanı en az birkaç dakika sonra olmalı.');
+    if (ad.trim().length < 2) return setHata($t('etkinlik_olustur.etkinlige_bir_ad_ver'));
+    if (zaman.getTime() < Date.now() + 5 * 60_000) return setHata($t('etkinlik_olustur.etkinlik_zamani_en_az'));
     setKaydediyor(true);
     try {
       const id = await etkinlikOlustur({
@@ -141,7 +142,7 @@ export default function EtkinlikOlusturScreen() {
       });
       router.replace({ pathname: '/etkinlik/[id]', params: { id } });
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Etkinlik oluşturulamadı');
+      setHata(e instanceof Error ? e.message : $t('etkinlik_olustur.etkinlik_olusturulamadi'));
     } finally {
       setKaydediyor(false);
     }
@@ -149,15 +150,15 @@ export default function EtkinlikOlusturScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Header title="Yeni etkinlik" backIcon="close" center />
+      <Header title={$t('etkinlik_olustur.yeni_etkinlik')} backIcon="close" center />
       <ScrollView contentContainerStyle={{ padding: space.lg, paddingTop: 4, gap: 16, paddingBottom: insets.bottom + 110 }} keyboardShouldPersistTaps="handled">
         <View>
-          <Txt variant="small">Etkinlik adı</Txt>
-          <TextInput value={ad} onChangeText={setAd} placeholder="ör. Gün doğumu sürüşü" placeholderTextColor={colors.inkMuted} maxLength={80} accessibilityLabel="Etkinlik adı" style={styles.name} />
+          <Txt variant="small">{$t('etkinlik_olustur.etkinlik_adi')}</Txt>
+          <TextInput value={ad} onChangeText={setAd} placeholder={$t('etkinlik_olustur.or_gun_dogumu_surusu')} placeholderTextColor={colors.inkMuted} maxLength={80} accessibilityLabel={$t('etkinlik_olustur.etkinlik_adi')} style={styles.name} />
         </View>
 
         <View>
-          <Label>Aktivite</Label>
+          <Label>{$t('etkinlik_olustur.aktivite')}</Label>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }} accessibilityRole="radiogroup">
             {ACTIVITY_TYPES.map((t) => (
               <Chip key={t} label={ACTIVITY_LABELS[t]} role="radio" selected={t === aktivite} onPress={() => setAktivite(t)} />
@@ -166,7 +167,7 @@ export default function EtkinlikOlusturScreen() {
         </View>
 
         <View>
-          <Label>Tarih</Label>
+          <Label>{$t('etkinlik_olustur.tarih')}</Label>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }} accessibilityRole="radiogroup">
             {gunler.map((g) => {
               const on = ayniGun(g, zaman);
@@ -175,7 +176,7 @@ export default function EtkinlikOlusturScreen() {
                   key={g.toISOString()}
                   accessibilityRole="radio"
                   accessibilityState={{ checked: on }}
-                  accessibilityLabel={g.toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                  accessibilityLabel={g.toLocaleDateString(yerel(), { weekday: 'long', day: 'numeric', month: 'long' })}
                   onPress={() => gunSec(g)}
                   style={[styles.gun, on && styles.gunOn]}>
                   <Txt style={{ fontSize: 11, color: on ? colors.ground : colors.inkMuted, fontFamily: fontFamily.bodySemiBold }}>{gunKisa(g)}</Txt>
@@ -188,30 +189,30 @@ export default function EtkinlikOlusturScreen() {
 
         <View style={{ gap: 8 }}>
           <View>
-            <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14 }}>Başlangıç saati</Txt>
-            <Txt variant="small">{zaman.toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' })}</Txt>
+            <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14 }}>{$t('etkinlik_olustur.baslangic_saati')}</Txt>
+            <Txt variant="small">{zaman.toLocaleDateString(yerel(), { weekday: 'long', day: 'numeric', month: 'long' })}</Txt>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }} accessibilityRole="adjustable" accessibilityLabel="Başlangıç saati" accessibilityValue={{ text: saatMetni(zaman) }}>
-            <Pressable accessibilityRole="button" accessibilityLabel="Bir saat geri" onPress={() => saatEkle(-60)} style={styles.step}>
-              <Txt style={styles.stepTxt}>−1s</Txt>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }} accessibilityRole="adjustable" accessibilityLabel={$t('etkinlik_olustur.baslangic_saati')} accessibilityValue={{ text: saatMetni(zaman) }}>
+            <Pressable accessibilityRole="button" accessibilityLabel={$t('etkinlik_olustur.bir_saat_geri')} onPress={() => saatEkle(-60)} style={styles.step}>
+              <Txt style={styles.stepTxt}>{$t('etkinlik_olustur.m_1s')}</Txt>
             </Pressable>
-            <Pressable accessibilityRole="button" accessibilityLabel="15 dakika geri" onPress={() => saatEkle(-15)} style={styles.step}>
+            <Pressable accessibilityRole="button" accessibilityLabel={$t('etkinlik_olustur.m_15_dakika_geri')} onPress={() => saatEkle(-15)} style={styles.step}>
               <Txt style={styles.stepTxt}>−</Txt>
             </Pressable>
             <Txt numberOfLines={1} style={{ flex: 1, textAlign: 'center', fontFamily: fontFamily.display, fontSize: 28 }}>
               {saatMetni(zaman)}
             </Txt>
-            <Pressable accessibilityRole="button" accessibilityLabel="15 dakika ileri" onPress={() => saatEkle(15)} style={styles.step}>
+            <Pressable accessibilityRole="button" accessibilityLabel={$t('etkinlik_olustur.m_15_dakika_ileri')} onPress={() => saatEkle(15)} style={styles.step}>
               <Txt style={styles.stepTxt}>+</Txt>
             </Pressable>
-            <Pressable accessibilityRole="button" accessibilityLabel="Bir saat ileri" onPress={() => saatEkle(60)} style={styles.step}>
-              <Txt style={styles.stepTxt}>+1s</Txt>
+            <Pressable accessibilityRole="button" accessibilityLabel={$t('etkinlik_olustur.bir_saat_ileri')} onPress={() => saatEkle(60)} style={styles.step}>
+              <Txt style={styles.stepTxt}>{$t('etkinlik_olustur.m_1s_2')}</Txt>
             </Pressable>
           </View>
         </View>
 
         <View>
-          <Label>Kimlerle</Label>
+          <Label>{$t('etkinlik_olustur.kimlerle')}</Label>
           {gruplar === null && supabaseHazir ? <ActivityIndicator color={colors.terra} /> : null}
           <View style={{ gap: 6 }} accessibilityRole="radiogroup">
             {(gruplar ?? []).map((g) => (
@@ -220,42 +221,42 @@ export default function EtkinlikOlusturScreen() {
                 <Txt style={{ flex: 1, fontFamily: fontFamily.bodySemiBold, fontSize: 14 }} numberOfLines={1}>
                   {g.name}
                 </Txt>
-                <Txt variant="small">{g.member_count} üye</Txt>
+                <Txt variant="small">{$t('etkinlik_olustur.uye', { member_count: g.member_count })}</Txt>
               </Pressable>
             ))}
             <Pressable accessibilityRole="radio" accessibilityState={{ checked: grup === null }} onPress={() => setGrup(null)} style={[styles.secim, grup === null && styles.secimOn]}>
               <View style={[styles.radio, grup === null && styles.radioOn]} />
-              <Txt style={{ flex: 1, fontFamily: fontFamily.bodySemiBold, fontSize: 14 }}>Grupsuz, herkese açık</Txt>
-              <Txt variant="small">bağlantıyla</Txt>
+              <Txt style={{ flex: 1, fontFamily: fontFamily.bodySemiBold, fontSize: 14 }}>{$t('etkinlik_olustur.grupsuz_herkese_acik')}</Txt>
+              <Txt variant="small">{$t('etkinlik_olustur.baglantiyla')}</Txt>
             </Pressable>
           </View>
           {grup ? (
             <View style={{ flexDirection: 'row', gap: 6, marginTop: 8 }} accessibilityRole="radiogroup">
-              <Chip label="Yalnızca grup üyeleri" role="radio" tone="sea" selected={!herkeseAcik} onPress={() => setHerkeseAcik(false)} />
-              <Chip label="Herkese açık" role="radio" tone="sea" selected={herkeseAcik} onPress={() => setHerkeseAcik(true)} />
+              <Chip label={$t('etkinlik_olustur.yalnizca_grup_uyeleri')} role="radio" tone="sea" selected={!herkeseAcik} onPress={() => setHerkeseAcik(false)} />
+              <Chip label={$t('ortak.herkese_acik')} role="radio" tone="sea" selected={herkeseAcik} onPress={() => setHerkeseAcik(true)} />
             </View>
           ) : null}
         </View>
 
         <View>
-          <Label>Buluşma noktası</Label>
-          <TextInput value={yerAdi} onChangeText={setYerAdi} placeholder="ör. Kaş Cumhuriyet Meydanı" placeholderTextColor={colors.inkMuted} maxLength={120} accessibilityLabel="Buluşma noktasının adı" style={styles.input} />
+          <Label>{$t('etkinlik_olustur.bulusma_noktasi')}</Label>
+          <TextInput value={yerAdi} onChangeText={setYerAdi} placeholder={$t('etkinlik_olustur.or_kas_cumhuriyet_meydani')} placeholderTextColor={colors.inkMuted} maxLength={120} accessibilityLabel={$t('etkinlik_olustur.bulusma_noktasinin_adi')} style={styles.input} />
           <View style={{ flexDirection: 'row', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
-            <Chip label={konumAliniyor ? 'Konum alınıyor…' : 'Konumumu kullan'} icon="pin" onPress={() => void konumumuKullan()} selected={false} />
-            {seciliRota?.bas ? <Chip label="Rotanın başlangıcı" icon="route" onPress={() => setNokta(seciliRota.bas)} selected={false} /> : null}
-            {nokta ? <Chip label="Haritadaki noktayı kaldır" icon="close" onPress={() => setNokta(null)} selected={false} /> : null}
+            <Chip label={konumAliniyor ? $t('etkinlik_olustur.konum_aliniyor') : $t('etkinlik_olustur.konumumu_kullan')} icon="pin" onPress={() => void konumumuKullan()} selected={false} />
+            {seciliRota?.bas ? <Chip label={$t('etkinlik_olustur.rotanin_baslangici')} icon="route" onPress={() => setNokta(seciliRota.bas)} selected={false} /> : null}
+            {nokta ? <Chip label={$t('etkinlik_olustur.haritadaki_noktayi_kaldir')} icon="close" onPress={() => setNokta(null)} selected={false} /> : null}
           </View>
           <Txt variant="small" style={{ marginTop: 4 }}>
-            {nokta ? `Haritada işaretli: ${nokta[1].toFixed(5)}, ${nokta[0].toFixed(5)}` : 'İstersen haritada da göster: konumunu ya da rotanın başlangıcını kullan.'}
+            {nokta ? $t('etkinlik_olustur.haritada_isaretli', { a: nokta[1].toFixed(5), a2: nokta[0].toFixed(5) }) : $t('etkinlik_olustur.istersen_haritada_da_goster')}
           </Txt>
         </View>
 
         <View>
-          <Label>Rota (isteğe bağlı)</Label>
+          <Label>{$t('etkinlik_olustur.rota_istege_bagli')}</Label>
           <View style={{ gap: 6 }} accessibilityRole="radiogroup">
             <Pressable accessibilityRole="radio" accessibilityState={{ checked: rota === null }} onPress={() => setRota(null)} style={[styles.secim, rota === null && styles.secimOn]}>
               <View style={[styles.radio, rota === null && styles.radioOn]} />
-              <Txt style={{ flex: 1, fontFamily: fontFamily.bodySemiBold, fontSize: 14 }}>Rota yok</Txt>
+              <Txt style={{ flex: 1, fontFamily: fontFamily.bodySemiBold, fontSize: 14 }}>{$t('etkinlik_olustur.rota_yok')}</Txt>
             </Pressable>
             {rotalar.map((r) => (
               <Pressable key={r.id} accessibilityRole="radio" accessibilityState={{ checked: rota === r.id }} onPress={() => setRota(r.id)} style={[styles.secim, rota === r.id && styles.secimOn]}>
@@ -265,21 +266,20 @@ export default function EtkinlikOlusturScreen() {
                     {r.ad}
                   </Txt>
                   <Txt variant="small">
-                    {formatKm(r.mesafeM)} km{r.tirmanisM != null ? ` · ↑ ${Math.round(r.tirmanisM)} m` : ''} · {r.kimin}
-                  </Txt>
+                    {$t('etkinlik_olustur.km', { km: formatKm(r.mesafeM), a: r.tirmanisM != null ? $t('etkinlik_olustur.m', { round: Math.round(r.tirmanisM) }) : '', kimin: r.kimin })}</Txt>
                 </View>
               </Pressable>
             ))}
           </View>
-          {grup && seciliRota?.kimin === 'Senin' ? <Txt variant="small" style={{ marginTop: 4 }}>Rotan gizli olsa bile grup üyeleri görebilsin diye gruba paylaşılır.</Txt> : null}
+          {grup && seciliRota?.kimin === 'Senin' ? <Txt variant="small" style={{ marginTop: 4 }}>{$t('etkinlik_olustur.rotan_gizli_olsa_bile')}</Txt> : null}
         </View>
 
         <View>
-          <Label>Seviye (isteğe bağlı)</Label>
+          <Label>{$t('etkinlik_olustur.seviye_istege_bagli')}</Label>
           <View accessibilityRole="radiogroup" style={styles.seg}>
-            {(Object.keys(ZORLUK_ADI) as Zorluk[]).map((z) => (
+            {(Object.keys(ZORLUK_ADI()) as Zorluk[]).map((z) => (
               <Pressable key={z} accessibilityRole="radio" accessibilityState={{ checked: z === zorluk }} onPress={() => setZorluk(z === zorluk ? null : z)} style={[styles.segBtn, z === zorluk && { backgroundColor: colors.ink }]}>
-                <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: z === zorluk ? colors.ground : colors.ink }}>{ZORLUK_ADI[z]}</Txt>
+                <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: z === zorluk ? colors.ground : colors.ink }}>{ZORLUK_ADI()[z]}</Txt>
               </Pressable>
             ))}
           </View>
@@ -287,39 +287,39 @@ export default function EtkinlikOlusturScreen() {
 
         <View style={styles.saatSatiri}>
           <View style={{ flex: 1 }}>
-            <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14 }}>Kontenjan</Txt>
-            <Txt variant="small">{kontenjan ? 'Dolunca bekleme listesi açılır' : 'Sınırsız'}</Txt>
+            <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14 }}>{$t('etkinlik_olustur.kontenjan')}</Txt>
+            <Txt variant="small">{kontenjan ? $t('etkinlik_olustur.dolunca_bekleme_listesi_acilir') : $t('etkinlik_olustur.sinirsiz')}</Txt>
           </View>
           {kontenjan ? (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }} accessibilityRole="adjustable" accessibilityLabel="Kontenjan" accessibilityValue={{ now: kontenjan, min: 2, max: 999 }}>
-              <Pressable accessibilityRole="button" accessibilityLabel="Azalt" onPress={() => setKontenjan(kontenjan <= 2 ? null : kontenjan - 1)} style={styles.step}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }} accessibilityRole="adjustable" accessibilityLabel={$t('etkinlik_olustur.kontenjan')} accessibilityValue={{ now: kontenjan, min: 2, max: 999 }}>
+              <Pressable accessibilityRole="button" accessibilityLabel={$t('etkinlik_olustur.azalt')} onPress={() => setKontenjan(kontenjan <= 2 ? null : kontenjan - 1)} style={styles.step}>
                 <Txt style={styles.stepTxt}>−</Txt>
               </Pressable>
               <Txt style={{ width: 44, textAlign: 'center', fontFamily: fontFamily.display, fontSize: 22 }}>{kontenjan}</Txt>
-              <Pressable accessibilityRole="button" accessibilityLabel="Artır" onPress={() => setKontenjan(Math.min(999, kontenjan + 1))} style={styles.step}>
+              <Pressable accessibilityRole="button" accessibilityLabel={$t('etkinlik_olustur.artir')} onPress={() => setKontenjan(Math.min(999, kontenjan + 1))} style={styles.step}>
                 <Txt style={styles.stepTxt}>+</Txt>
               </Pressable>
             </View>
           ) : (
-            <Chip label="Sınır koy" icon="plus" onPress={() => setKontenjan(10)} selected={false} />
+            <Chip label={$t('etkinlik_olustur.sinir_koy')} icon="plus" onPress={() => setKontenjan(10)} selected={false} />
           )}
         </View>
 
         <View>
-          <Label>Açıklama (isteğe bağlı)</Label>
+          <Label>{$t('etkinlik_olustur.aciklama_istege_bagli')}</Label>
           <TextInput
             value={aciklama}
             onChangeText={setAciklama}
-            placeholder="Tempo, mola, getirilecekler…"
+            placeholder={$t('etkinlik_olustur.tempo_mola_getirilecekler')}
             placeholderTextColor={colors.inkMuted}
             maxLength={1000}
             multiline
-            accessibilityLabel="Açıklama"
+            accessibilityLabel={$t('ortak.aciklama')}
             style={[styles.input, { height: 88, paddingTop: 12, textAlignVertical: 'top' }]}
           />
         </View>
 
-        {!supabaseHazir ? <Txt variant="muted">Sunucu anahtarı girilmemiş; etkinlik oluşturulamaz.</Txt> : null}
+        {!supabaseHazir ? <Txt variant="muted">{$t('etkinlik_olustur.sunucu_anahtari_girilmemis_etkinlik')}</Txt> : null}
         {hata ? (
           <View style={styles.hata} accessibilityRole="alert">
             <Icon name="shield" size={18} color={colors.terraInk} />
@@ -328,7 +328,7 @@ export default function EtkinlikOlusturScreen() {
         ) : null}
       </ScrollView>
       <View style={[styles.bottom, { paddingBottom: insets.bottom + 16 }]}>
-        <Button label={kaydediyor ? 'Yayınlanıyor…' : 'Etkinliği yayınla'} icon="calendar" onPress={() => void yayinla()} disabled={kaydediyor || !supabaseHazir} />
+        <Button label={kaydediyor ? $t('etkinlik_olustur.yayinlaniyor') : $t('etkinlik_olustur.etkinligi_yayinla')} icon="calendar" onPress={() => void yayinla()} disabled={kaydediyor || !supabaseHazir} />
       </View>
     </KeyboardAvoidingView>
   );

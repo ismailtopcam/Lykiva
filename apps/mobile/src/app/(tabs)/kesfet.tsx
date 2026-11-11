@@ -17,6 +17,7 @@ import { basHarfler, grubaKatil, grupEtiketi, grupRengi, istegiGeriAl, kesfetGru
 import { izinliKonum, kesfetEtkinlikler, kesfetRotalar, uzaklikMetni, type KesfetEtkinligi, type KesfetRotasi } from '@/kesfet/kesfet';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space } from '@/theme';
+import { $t } from '@/i18n';
 
 /** Sunucu anahtarı yoksa tasarım örneği, varsa gerçek Keşfet */
 export default function KesfetScreen() {
@@ -24,12 +25,12 @@ export default function KesfetScreen() {
 }
 
 type Sekme = 'tumu' | 'rotalar' | 'topluluklar' | 'etkinlikler' | 'kisiler';
-const SEKMELER: { k: Sekme; ad: string }[] = [
-  { k: 'tumu', ad: 'Tümü' },
-  { k: 'rotalar', ad: 'Rotalar' },
-  { k: 'topluluklar', ad: 'Topluluklar' },
-  { k: 'etkinlikler', ad: 'Etkinlikler' },
-  { k: 'kisiler', ad: 'Kişiler' },
+const SEKMELER = (): { k: Sekme; ad: string }[] => [
+  { k: 'tumu', ad: $t('kesfet.tumu') },
+  { k: 'rotalar', ad: $t('kesfet.rotalar') },
+  { k: 'topluluklar', ad: $t('kesfet.topluluklar') },
+  { k: 'etkinlikler', ad: $t('kesfet.etkinlikler') },
+  { k: 'kisiler', ad: $t('kesfet.kisiler') },
 ];
 
 type Veri = { rotalar: KesfetRotasi[]; etkinlikler: KesfetEtkinligi[]; gruplar: KesfetGrubu[]; kisiler: KisiOzeti[] };
@@ -60,7 +61,7 @@ function GercekKesfet() {
       setVeri({ rotalar, etkinlikler, gruplar, kisiler });
     } catch (e) {
       if (no !== istekNo.current) return;
-      setHata(e instanceof Error ? e.message : 'Keşfet yüklenemedi');
+      setHata(e instanceof Error ? e.message : $t('kesfet.kesfet_yuklenemedi'));
       setVeri((x) => x ?? { rotalar: [], etkinlikler: [], gruplar: [], kisiler: [] });
     }
   }, []);
@@ -109,7 +110,7 @@ function GercekKesfet() {
       }
       await yukle(arama, konum);
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'İşlem yapılamadı');
+      setHata(e instanceof Error ? e.message : $t('kesfet.islem_yapilamadi'));
     } finally {
       setBekleyen(null);
     }
@@ -127,11 +128,10 @@ function GercekKesfet() {
         refreshControl={<RefreshControl refreshing={yenileniyor} onRefresh={() => void yenile()} tintColor={colors.terra} />}>
         <View style={styles.head}>
           <Txt variant="display" accessibilityRole="header">
-            Keşfet
-          </Txt>
+            {$t('kesfet.kesfet')}</Txt>
           <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/grup/olustur', params: { tur: 'acik' } })} style={styles.newBtn}>
             <Icon name="plus" size={16} strokeWidth={2.2} />
-            <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 13 }}>Topluluk kur</Txt>
+            <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 13 }}>{$t('kesfet.topluluk_kur')}</Txt>
           </Pressable>
         </View>
         <View style={styles.search}>
@@ -139,9 +139,9 @@ function GercekKesfet() {
           <TextInput
             value={arama}
             onChangeText={setArama}
-            placeholder="Rota, topluluk, etkinlik, kişi"
+            placeholder={$t('kesfet.rota_topluluk_etkinlik_kisi')}
             placeholderTextColor={colors.inkMuted}
-            accessibilityLabel="Keşfet'te ara"
+            accessibilityLabel={$t('kesfet.kesfet_te_ara')}
             autoCorrect={false}
             returnKeyType="search"
             style={styles.searchInput}
@@ -149,7 +149,7 @@ function GercekKesfet() {
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} accessibilityRole="tablist" contentContainerStyle={styles.tabs}>
-          {SEKMELER.map((t) => (
+          {SEKMELER().map((t) => (
             <Chip key={t.k} label={t.ad} role="tab" selected={t.k === sekme} onPress={() => setSekme(t.k)} />
           ))}
         </ScrollView>
@@ -157,7 +157,7 @@ function GercekKesfet() {
         {!konum && !konumSoruldu ? (
           <Pressable accessibilityRole="button" onPress={() => void konumIste()} style={styles.konum}>
             <Icon name="pin" size={18} color={colors.seaInk} />
-            <Txt style={{ flex: 1, fontSize: 13, color: colors.seaInk, fontFamily: fontFamily.bodySemiBold }}>Yakınındakileri önce göster</Txt>
+            <Txt style={{ flex: 1, fontSize: 13, color: colors.seaInk, fontFamily: fontFamily.bodySemiBold }}>{$t('kesfet.yakinindakileri_once_goster')}</Txt>
             <Icon name="chevron" size={16} color={colors.seaInk} strokeWidth={2} />
           </Pressable>
         ) : null}
@@ -171,9 +171,9 @@ function GercekKesfet() {
 
         {veri && goster('etkinlikler') ? (
           <Bolum
-            baslik={konum ? 'Yakınında yaklaşan etkinlikler' : 'Yaklaşan etkinlikler'}
+            baslik={konum ? $t('kesfet.yakininda_yaklasan_etkinlikler') : $t('kesfet.yaklasan_etkinlikler')}
             tumu={sekme === 'tumu' && veri.etkinlikler.length > 3 ? () => setSekme('etkinlikler') : undefined}
-            bos={veri.etkinlikler.length === 0 ? (araniyor ? 'Bu aramayla etkinlik yok.' : 'Önümüzdeki 30 günde görebileceğin etkinlik yok.') : null}>
+            bos={veri.etkinlikler.length === 0 ? (araniyor ? $t('kesfet.bu_aramayla_etkinlik_yok') : $t('kesfet.onumuzdeki_30_gunde_gorebilecegin')) : null}>
             {sekme === 'tumu' ? (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: space.lg, gap: 10 }}>
                 {veri.etkinlikler.slice(0, 8).map((e, i) => (
@@ -192,9 +192,9 @@ function GercekKesfet() {
 
         {veri && goster('rotalar') ? (
           <Bolum
-            baslik={konum ? 'Yakınındaki rotalar' : 'Yeni paylaşılan rotalar'}
+            baslik={konum ? $t('kesfet.yakinindaki_rotalar') : $t('kesfet.yeni_paylasilan_rotalar')}
             tumu={sekme === 'tumu' && veri.rotalar.length > 4 ? () => setSekme('rotalar') : undefined}
-            bos={veri.rotalar.length === 0 ? (araniyor ? 'Bu adla rota yok.' : 'Henüz herkese açık rota paylaşılmamış.') : null}>
+            bos={veri.rotalar.length === 0 ? (araniyor ? $t('kesfet.bu_adla_rota_yok') : $t('kesfet.henuz_herkese_acik_rota')) : null}>
             <View style={{ paddingHorizontal: space.lg, gap: space.sm }}>
               {veri.rotalar.slice(0, sinir(4)).map((r) => (
                 <RotaSatiri key={r.id} r={r} />
@@ -205,9 +205,9 @@ function GercekKesfet() {
 
         {veri && goster('topluluklar') ? (
           <Bolum
-            baslik={araniyor ? 'Topluluklar' : 'Katılabileceğin topluluklar'}
+            baslik={araniyor ? $t('kesfet.topluluklar') : $t('kesfet.katilabilecegin_topluluklar')}
             tumu={sekme === 'tumu' && veri.gruplar.length > 4 ? () => setSekme('topluluklar') : undefined}
-            bos={veri.gruplar.length === 0 ? (araniyor ? 'Bu adla topluluk yok.' : 'Şimdilik katılabileceğin açık topluluk yok. İlkini sen kur.') : null}>
+            bos={veri.gruplar.length === 0 ? (araniyor ? $t('kesfet.bu_adla_topluluk_yok') : $t('kesfet.simdilik_katilabilecegin_acik_topluluk')) : null}>
             <View style={{ paddingHorizontal: space.lg }}>
               {veri.gruplar.slice(0, sinir(4)).map((g) => (
                 <View key={g.id} style={styles.community}>
@@ -226,7 +226,7 @@ function GercekKesfet() {
                     </View>
                   </Pressable>
                   <Button
-                    label={g.requested ? 'İstek gönderildi' : g.requires_approval ? 'İstek gönder' : 'Katıl'}
+                    label={g.requested ? $t('kesfet.istek_gonderildi') : g.requires_approval ? $t('kesfet.istek_gonder') : $t('kesfet.katil')}
                     variant={g.requested || g.requires_approval ? 'outline' : 'primary'}
                     disabled={bekleyen === g.id}
                     onPress={() => void katil(g)}
@@ -240,9 +240,9 @@ function GercekKesfet() {
 
         {veri && (sekme === 'kisiler' || (sekme === 'tumu' && araniyor)) ? (
           <Bolum
-            baslik="Kişiler"
+            baslik={$t('kesfet.kisiler')}
             tumu={sekme === 'tumu' && veri.kisiler.length > 3 ? () => setSekme('kisiler') : undefined}
-            bos={!araniyor ? 'Kişi bulmak için adını yaz.' : veri.kisiler.length === 0 ? 'Bu adla kimse yok. Giriş yapmamış hesaplar aramada görünmez.' : null}>
+            bos={!araniyor ? $t('kesfet.kisi_bulmak_icin_adini') : veri.kisiler.length === 0 ? $t('kesfet.bu_adla_kimse_yok') : null}>
             <View style={{ paddingHorizontal: space.lg }}>
               {veri.kisiler.slice(0, sinir(3)).map((k) => (
                 <KisiSatiri key={k.id} k={k} />
@@ -252,7 +252,7 @@ function GercekKesfet() {
         ) : null}
 
         <View style={{ paddingHorizontal: space.lg, marginTop: space.lg }}>
-          <Button label="Rota oluştur" icon="route" variant="dark" href="/rota/olustur" />
+          <Button label={$t('kesfet.rota_olustur')} icon="route" variant="dark" href="/rota/olustur" />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -263,7 +263,7 @@ function Bolum({ baslik, tumu, bos, children }: { baslik: string; tumu?: () => v
   return (
     <View style={{ marginBottom: space.lg }}>
       <View style={{ paddingHorizontal: space.lg }}>
-        <SectionHeader title={baslik} action={tumu ? 'Tümü' : undefined} onAction={tumu} />
+        <SectionHeader title={baslik} action={tumu ? $t('kesfet.tumu') : undefined} onAction={tumu} />
       </View>
       {bos ? (
         <Txt variant="muted" style={{ paddingHorizontal: space.lg, paddingVertical: space.xs }}>
@@ -280,7 +280,7 @@ function EtkinlikKarti({ e, koyu, genis }: { e: KesfetEtkinligi; koyu?: boolean;
   const r = tarihRozeti(e.starts_at);
   const fg = koyu ? colors.night.text : colors.ink;
   const muted = koyu ? '#B9C2BA' : colors.inkMuted;
-  const yer = [e.meeting_point_name, uzaklikMetni(e.uzaklik_m) ? `${uzaklikMetni(e.uzaklik_m)} uzakta` : null].filter(Boolean).join(' · ');
+  const yer = [e.meeting_point_name, uzaklikMetni(e.uzaklik_m) ? $t('kesfet.uzakta_2', { uzaklikMetni: uzaklikMetni(e.uzaklik_m) }) : null].filter(Boolean).join(' · ');
   return (
     <Pressable
       accessibilityRole="link"
@@ -299,12 +299,10 @@ function EtkinlikKarti({ e, koyu, genis }: { e: KesfetEtkinligi; koyu?: boolean;
       </View>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8, marginTop: 12 }}>
         <Txt style={{ flex: 1, fontSize: 12, color: muted }} numberOfLines={1}>
-          {yer || e.group_name || 'Herkese açık'}
+          {yer || e.group_name || $t('ortak.herkese_acik')}
         </Txt>
         <Txt style={{ fontSize: 12, fontFamily: fontFamily.bodySemiBold, color: fg }}>
-          {e.going_count}
-          {e.capacity ? ` / ${e.capacity}` : ''} kişi
-        </Txt>
+          {$t('kesfet.kisi', { going_count: e.going_count, a: e.capacity ? ` / ${e.capacity}` : '' })}</Txt>
       </View>
     </Pressable>
   );
@@ -323,11 +321,10 @@ function RotaSatiri({ r }: { r: KesfetRotasi }) {
         <Txt variant="small" numberOfLines={1}>
           {ACTIVITY_LABELS[r.activity]}
           {r.difficulty ? ` · ${DIFFICULTY_LABELS[r.difficulty]}` : ''}
-          {r.is_loop ? ' · Döngü' : ''} · {r.owner_name}
+          {r.is_loop ? $t('kesfet.dongu') : ''} · {r.owner_name}
         </Txt>
         <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 13, marginTop: 4 }}>
-          {formatKm(r.distance_m)} km · ↑ {formatMeters(Math.round(r.elevation_gain_m ?? 0))} m{uzak ? ` · ${uzak} uzakta` : ''}
-        </Txt>
+          {$t('kesfet.km_m', { km: formatKm(r.distance_m), meters: formatMeters(Math.round(r.elevation_gain_m ?? 0)), a: uzak ? $t('kesfet.uzakta', { uzak }) : '' })}</Txt>
       </View>
     </Pressable>
   );

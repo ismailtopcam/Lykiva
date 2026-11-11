@@ -14,6 +14,7 @@ import { Txt } from '@/components/Txt';
 import { Avatar, Button, SectionHeader } from '@/components/ui';
 import { basHarfler, grupRengi } from '@/grup/gruplar';
 import { colors, fontFamily, space } from '@/theme';
+import { $t, yerel } from '@/i18n';
 
 export default function KisiScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -30,7 +31,7 @@ export default function KisiScreen() {
       setP(pr);
       setAktiviteler(ak);
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Yüklenemedi');
+      setHata(e instanceof Error ? e.message : $t('ortak.yuklenemedi'));
       setP((x) => x ?? null);
       setAktiviteler((x) => x ?? []);
     }
@@ -55,7 +56,7 @@ export default function KisiScreen() {
       <View style={styles.root}>
         <Header />
         <Txt variant="muted" style={{ textAlign: 'center', padding: space.xl }}>
-          {hata ?? 'Kişi bulunamadı'}
+          {hata ?? $t('kisi.kisi_bulunamadi')}
         </Txt>
       </View>
     );
@@ -75,11 +76,11 @@ export default function KisiScreen() {
               {p.display_name}
             </Txt>
             <Txt variant="muted" style={{ fontSize: 13 }}>
-              {p.temporary ? 'Geçici hesap' : altBaslik}
+              {p.temporary ? $t('kisi.gecici_hesap') : altBaslik}
             </Txt>
             <View style={{ flexDirection: 'row', gap: 16, marginTop: 8 }}>
               <Sayi n={p.activity_count} etiket="aktivite" />
-              <Sayi n={p.follower_count} etiket="takipçi" onPress={() => takipListesi('takipci')} />
+              <Sayi n={p.follower_count} etiket={$t('kisi.takipci')} onPress={() => takipListesi('takipci')} />
               <Sayi n={p.following_count} etiket="takip" onPress={() => takipListesi('takip')} />
             </View>
           </View>
@@ -89,7 +90,7 @@ export default function KisiScreen() {
 
         <View style={{ paddingHorizontal: space.lg, marginBottom: space.lg }}>
           {p.me ? (
-            <Button label="Profilim" variant="outline" onPress={() => router.navigate('/profil')} />
+            <Button label={$t('kisi.profilim')} variant="outline" onPress={() => router.navigate('/profil')} />
           ) : (
             <>
               <TakipDugmesi
@@ -105,8 +106,7 @@ export default function KisiScreen() {
               />
               {p.follows_me ? (
                 <Txt variant="small" style={{ textAlign: 'center', marginTop: 6 }}>
-                  Seni takip ediyor
-                </Txt>
+                  {$t('kisi.seni_takip_ediyor')}</Txt>
               ) : null}
             </>
           )}
@@ -114,12 +114,12 @@ export default function KisiScreen() {
 
         <View style={{ paddingHorizontal: space.md }}>
           <View style={{ paddingHorizontal: space.xs }}>
-            <SectionHeader title="Aktiviteler" />
+            <SectionHeader title={$t('kisi.aktiviteler')} />
           </View>
           {aktiviteler === null ? <ActivityIndicator color={colors.terra} style={{ marginVertical: space.lg }} /> : null}
           {aktiviteler && aktiviteler.length === 0 ? (
             <Txt variant="muted" style={{ textAlign: 'center', paddingVertical: space.lg, paddingHorizontal: space.lg }}>
-              {p.me ? 'Henüz kaydın yok.' : p.i_follow ? 'Görebileceğin bir aktivite yok.' : 'Görebileceğin bir aktivite yok. Takip edersen takipçilere açık aktiviteleri de görürsün.'}
+              {p.me ? $t('kisi.henuz_kaydin_yok') : p.i_follow ? $t('kisi.gorebilecegin_bir_aktivite_yok') : $t('kisi.gorebilecegin_bir_aktivite_yok_2')}
             </Txt>
           ) : null}
           <View style={{ gap: space.sm }}>
@@ -130,13 +130,13 @@ export default function KisiScreen() {
                   <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }} numberOfLines={1}>
                     {a.title}
                   </Txt>
-                  <Txt variant="small">{new Date(a.started_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</Txt>
+                  <Txt variant="small">{new Date(a.started_at).toLocaleDateString(yerel(), { day: 'numeric', month: 'long', year: 'numeric' })}</Txt>
                   <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 13, marginTop: 4 }}>{a.stats}</Txt>
                 </View>
               </Pressable>
             ))}
           </View>
-          {!p.me ? <SikayetBaglantisi etiket="Bu kişiyi şikayet et" onPress={() => sikayet.ac('user', p.id, `${p.display_name} · @${p.username}`)} /> : null}
+          {!p.me ? <SikayetBaglantisi etiket={$t('kisi.bu_kisiyi_sikayet_et')} onPress={() => sikayet.ac('user', p.id, `${p.display_name} · @${p.username}`)} /> : null}
         </View>
       </ScrollView>
       {sikayet.pencere}

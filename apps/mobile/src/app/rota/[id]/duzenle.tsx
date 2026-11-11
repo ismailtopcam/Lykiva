@@ -10,11 +10,12 @@ import { Button, Chip, Label } from '@/components/ui';
 import { rotaGuncelle, rotaSil, useRota, type Rota } from '@/data/rota';
 import { useHesap } from '@/lib/giris';
 import { colors, fontFamily, radius, space } from '@/theme';
+import { $t } from '@/i18n';
 
-const GORUNURLUKLER: [Rota['visibility'], string][] = [
-  ['private', 'Sadece ben'],
-  ['followers', 'Takipçilerim'],
-  ['public', 'Herkes'],
+const GORUNURLUKLER = (): [Rota['visibility'], string][] => [
+  ['private', $t('ortak.sadece_ben')],
+  ['followers', $t('rota_duzenle.takipcilerim')],
+  ['public', $t('rota_duzenle.herkes')],
 ];
 
 /** Sahibi için: rotanın adı, notları, görünürlüğü ve silme */
@@ -32,7 +33,7 @@ export default function RotaDuzenleScreen() {
   if (!r) {
     return (
       <View style={[styles.root, { alignItems: 'center' }]}>
-        <Header title="Rotayı düzenle" backIcon="close" center />
+        <Header title={$t('rota_duzenle.rotayi_duzenle')} backIcon="close" center />
         {yuklemeHatasi ? <Txt variant="muted">{yuklemeHatasi}</Txt> : <ActivityIndicator color={colors.terra} style={{ marginTop: space.xl }} />}
       </View>
     );
@@ -41,7 +42,7 @@ export default function RotaDuzenleScreen() {
   const degerAd = ad ?? r.name;
   const degerNot = not ?? r.notes ?? '';
   const degerGorunurluk = gorunurluk ?? r.visibility;
-  const secenekler = r.visibility === 'groups' ? [...GORUNURLUKLER, ['groups', 'Gruplarım'] as [Rota['visibility'], string]] : GORUNURLUKLER;
+  const secenekler = r.visibility === 'groups' ? [...GORUNURLUKLER(), ['groups', $t('ortak.gruplarim')] as [Rota['visibility'], string]] : GORUNURLUKLER();
   const degisti = ad !== null || not !== null || gorunurluk !== null;
 
   async function kaydet() {
@@ -51,17 +52,17 @@ export default function RotaDuzenleScreen() {
       await rotaGuncelle(r!.id, { name: degerAd, notes: degerNot, visibility: degerGorunurluk });
       router.back();
     } catch (e) {
-      setHata(e instanceof Error ? e.message : 'Kaydedilemedi');
+      setHata(e instanceof Error ? e.message : $t('ortak.kaydedilemedi'));
     } finally {
       setIsliyor(null);
     }
   }
 
   function silmeyiSor() {
-    Alert.alert('Rota silinsin mi?', `"${r!.name}" kalıcı olarak silinir. Gruplara paylaşımı da kalkar; bu rotayı kullanan etkinlikler rotasız kalır. Geri alınamaz.`, [
-      { text: 'Vazgeç', style: 'cancel' },
+    Alert.alert($t('rota_duzenle.rota_silinsin_mi'), $t('rota_duzenle.kalici_olarak_silinir_gruplara', { name: r!.name }), [
+      { text: $t('ortak.vazgec'), style: 'cancel' },
       {
-        text: 'Sil',
+        text: $t('ortak.sil'),
         style: 'destructive' as const,
         onPress: async () => {
           setHata(null);
@@ -70,7 +71,7 @@ export default function RotaDuzenleScreen() {
             await rotaSil(r!.id);
             router.dismissAll();
           } catch (e) {
-            setHata(e instanceof Error ? e.message : 'Silinemedi');
+            setHata(e instanceof Error ? e.message : $t('ortak.silinemedi'));
             setIsliyor(null);
           }
         },
@@ -80,18 +81,18 @@ export default function RotaDuzenleScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Header title="Rotayı düzenle" backIcon="close" center />
+      <Header title={$t('rota_duzenle.rotayi_duzenle')} backIcon="close" center />
       <ScrollView contentContainerStyle={{ padding: space.lg, paddingTop: 4, gap: 18, paddingBottom: insets.bottom + 110 }} keyboardShouldPersistTaps="handled">
         {!benim ? (
-          <Txt variant="muted">Yalnızca kendi rotanı düzenleyebilirsin.</Txt>
+          <Txt variant="muted">{$t('rota_duzenle.yalnizca_kendi_rotani_duzenleyebilirsin')}</Txt>
         ) : (
           <>
             <View>
-              <Label>Rotanın adı</Label>
-              <TextInput value={degerAd} onChangeText={setAd} placeholder="ör. Faralya – Kabak" placeholderTextColor={colors.inkMuted} maxLength={80} accessibilityLabel="Rotanın adı" style={styles.input} />
+              <Label>{$t('rota_duzenle.rotanin_adi')}</Label>
+              <TextInput value={degerAd} onChangeText={setAd} placeholder={$t('rota_duzenle.or_faralya_kabak')} placeholderTextColor={colors.inkMuted} maxLength={80} accessibilityLabel={$t('rota_duzenle.rotanin_adi')} style={styles.input} />
             </View>
             <View>
-              <Label>Kimler görebilir</Label>
+              <Label>{$t('rota_duzenle.kimler_gorebilir')}</Label>
               <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }} accessibilityRole="radiogroup">
                 {secenekler.map(([v, etiket]) => (
                   <Chip key={v} label={etiket} role="radio" selected={v === degerGorunurluk} onPress={() => setGorunurluk(v)} />
@@ -99,24 +100,23 @@ export default function RotaDuzenleScreen() {
               </View>
             </View>
             <View>
-              <Label>Notlar</Label>
+              <Label>{$t('rota_duzenle.notlar')}</Label>
               <TextInput
                 value={degerNot}
                 onChangeText={setNot}
-                placeholder="ör. Su kaynağı 4. km'de, öğleden sonra gölgesiz"
+                placeholder={$t('rota_duzenle.or_su_kaynagi_4')}
                 placeholderTextColor={colors.inkMuted}
                 maxLength={1000}
                 multiline
-                accessibilityLabel="Notlar"
+                accessibilityLabel={$t('rota_duzenle.notlar')}
                 style={[styles.input, { height: 110, paddingTop: 12, textAlignVertical: 'top' }]}
               />
             </View>
             <View style={styles.tehlike}>
-              <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }}>Rotayı sil</Txt>
+              <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }}>{$t('rota_duzenle.rotayi_sil')}</Txt>
               <Txt variant="small" style={{ marginTop: 2, marginBottom: space.md }}>
-                Rota kalıcı olarak silinir. Bu rotayla kaydettiğin aktiviteler silinmez.
-              </Txt>
-              <Button label={isliyor === 'sil' ? 'Siliniyor…' : 'Rotayı sil'} variant="outline" onPress={silmeyiSor} disabled={!!isliyor} />
+                {$t('rota_duzenle.rota_kalici_olarak_silinir')}</Txt>
+              <Button label={isliyor === 'sil' ? $t('ortak.siliniyor') : $t('rota_duzenle.rotayi_sil')} variant="outline" onPress={silmeyiSor} disabled={!!isliyor} />
             </View>
           </>
         )}
@@ -129,7 +129,7 @@ export default function RotaDuzenleScreen() {
       </ScrollView>
       {benim ? (
         <View style={[styles.bottom, { paddingBottom: insets.bottom + 16 }]}>
-          <Button label={isliyor === 'kaydet' ? 'Kaydediliyor…' : 'Kaydet'} onPress={() => void kaydet()} disabled={!!isliyor || !degisti} />
+          <Button label={isliyor === 'kaydet' ? $t('ortak.kaydediliyor') : $t('ortak.kaydet')} onPress={() => void kaydet()} disabled={!!isliyor || !degisti} />
         </View>
       ) : null}
     </KeyboardAvoidingView>
