@@ -11,6 +11,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | Kim | İş | Dal |
 | --- | --- | --- |
 | İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |
+| Gökhan | Rota eğimi: iniş, en dik eğim, renkli profil ve harita, tırmanış bölümleri | `rota-egim` |
 
 ## Bekleyen elle yapılacaklar
 
@@ -38,6 +39,8 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
 - Geçersiz push jetonu temizliği (gerçek Expo yanıtıyla)
 - Uygulama içinden hesap silme
 - Telefon bildirimleri (Apple push anahtarı derleme sırasında oluşturulacak)
+- Rota eğimi: haritada renkli çizgi (MapLibre veri güdümlü renk), profilde parmakla gezinince haritadaki imleç,
+  dar ekranda dört istatistiğin sığması, rota detayında tırmanış listesi.
 
 ### [ ] Mağazaya çıkmadan önce
 - Yasal metinleri (`/gizlilik`, `/kosullar`, `/hesap-silme`) gözden geçir; taslaktır, hukuki görüş değildir.
@@ -61,6 +64,44 @@ Kod hazır (4. aşama), `20261109000000_giris.sql` sunucuda uygulandı. Kalanlar
 - Web profil sayfası (`/u/<kullanıcı>`) profil fotoğrafını göstermiyor, baş harfler görünüyor.
 - Engellenen kullanıcının açık oturumu erişim anahtarının süresi dolana kadar (varsayılan 1 saat) çalışır.
 - Hava yalnızca kayıt başında bir kez ölçülüyor; rota detayında tahmin yok (rotanın planlanan tarihi yok).
+- Rota eğimi köprü ve tünelde yanlış olabilir: BRouter çıktısında köprü / tünel etiketi yok (Galata Köprüsü örneğinde denendi), DEM
+  köprüde vadinin tabanını, tünelde dağın üstünü verir. Kendi BRouter sunucumuzda etiketin çıktıya eklenip eklenemeyeceğine bakılmalı.
+- Serbest çizilen rotada yükseklik yok (BRouter'a sorulmuyor); ayrı bir yükseklik servisi gerekir.
+
+### [ ] Rakiplere göre eksikler (Kasım 2026 karşılaştırması)
+Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. Sıra öneri sırasıdır; (D) = yeni yerel modül, telefona yeni derleme gerekir.
+
+**Önce — doğada güvenle kullanılabilmek için**
+- [ ] Çevrimdışı harita: rotanın çevresini telefona indir (MapLibre çevrimdışı paketleri). Önce harita kaynağının
+  (OpenFreeMap / MapTiler) toplu indirmeye izin verip vermediğine bak.
+- [ ] Rotadan çıkınca titreşim + bildirim (telefon cepteyken de); sonra sesli yönlendirme (dönüş dönüş). Şu an uyarı yalnızca ekranda.
+- [ ] Aileyle canlı konum: gruba üye olmayan birine web bağlantısıyla canlı konum (AllTrails Live Share / Garmin LiveTrack gibi);
+  uzun süre hareketsiz kalınca uyarı.
+
+**Sonra — veri alışverişi**
+- [ ] GPX içe aktarma (rota ve aktivite); şu an yalnızca dışa aktarma var.
+- [ ] Apple Sağlık / Google Health Connect senkronu (D).
+- [ ] Bluetooth sensörler: nabız, tekerlek hızı / kadans, güç (D). Bisiklette anlık hızın en doğru kaynağı.
+
+**Motivasyon**
+- [ ] Haftalık / aylık / yıllık özet ve kişisel rekorlar (en uzun, en çok tırmanış, en hızlı …).
+- [ ] Hedefler, meydan okumalar, rozetler.
+- [ ] Segmentler ve liderlik tablosu (büyük iş, sonraya).
+
+**Keşif**
+- [ ] Rota üzerinde önerilen noktalar: su kaynağı, kamp yeri, manzara (fotoğraf + not; Komoot "Highlights" gibi).
+- [ ] Rota kartında fotoğraf ve gerçek "kaç kişi yaptı" (şu an yalnızca örnek veride).
+- [ ] Harita katmanı seçimi: topoğrafik, uydu, eş yükselti eğrileri.
+
+**Platform**
+- [ ] Kayıtta kilit ekranında hız / mesafe / süre: iOS Live Activity, Android kalıcı bildirimde değerler (D).
+- [ ] İngilizce arayüz (Likya Yolu'ndaki yabancı yürüyüşçüler).
+- [ ] Saat uygulaması (Apple Watch / Wear OS) — büyük iş, sonraya.
+- [ ] Karar: ücretli üyelik olacak mı, hangi özellikler (rakiplerde çevrimdışı harita ve yönlendirme ücretli katmanda).
+
+### [x] Rota eğimi (28. aşama, `packages/shared/src/egim.ts`)
+Eğim her zaman 100 m'lik pencereyle ölçülür (DEM gürültülü; komşu iki nokta yanıltır). Sınıflar: iniş (≤ -%3), düz, %3–6, %6–10, %10+.
+Tırmanış bölümü: en az 20 m kazanç, 200 m uzunluk, ort. %3; tepeden 10 m inilince biter.
 
 ### [x] Hava durumu (20. ve 26. aşama)
 Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde; web paylaşım sayfasında da.

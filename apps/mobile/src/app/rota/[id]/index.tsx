@@ -1,12 +1,13 @@
-import { ACTIVITY_LABELS, DIFFICULTY_LABELS, estimateDuration, formatKm, formatMeters } from '@lykiva/shared';
+import { ACTIVITY_LABELS, DIFFICULTY_LABELS, estimateDuration, formatKm, formatMeters, type RoutePoint } from '@lykiva/shared';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ElevationProfile } from '@/components/charts';
+import { EgimProfili, imlecKonumu, TirmanisListesi, useRotaEgim } from '@/components/EgimProfili';
 import { FloatingHeader } from '@/components/Header';
 import { IconButton } from '@/components/IconButton';
-import { TopoMap } from '@/components/map/TopoMap';
+import { TopoMap, type MapMarker } from '@/components/map/TopoMap';
 import { Txt } from '@/components/Txt';
 import { AvatarStack, Button, Stat } from '@/components/ui';
 import { faralyaKabak, people, type LngLat } from '@/data/ornek';
@@ -22,11 +23,7 @@ function sureMetni(s: number) {
   return sa > 0 ? `${sa} sa ${dk % 60}` : `${dk} dk`;
 }
 
-/** Rakımları ~60 noktaya indirger (grafik için) */
-function profil(alts: number[]): number[] {
-  if (alts.length <= 60) return alts;
-  return Array.from({ length: 60 }, (_, i) => alts[Math.round((i / 59) * (alts.length - 1))]);
-}
+const BOS: RoutePoint[] = [];
 
 export default function RotaDetayScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -35,6 +32,13 @@ export default function RotaDetayScreen() {
   const sikayet = useSikayet();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const noktalar = r?.points ?? BOS;
+  const egim = useRotaEgim(noktalar);
+  // Profilde seçilen nokta; rota değişince geçersiz olsun diye hangi rotaya ait olduğu da tutulur
+  const [secim, setSecim] = useState<{ points: RoutePoint[]; v: number } | null>(null);
+  const imlec = secim && secim.points === noktalar ? secim.v : null;
+  const imlecYeri = imlecKonumu(noktalar, egim, imlec);
+  const imlecSec = (v: number | null) => setSecim(v == null ? null : { points: noktalar, v });
 
   if (!r) {
     return (
@@ -47,7 +51,14 @@ export default function RotaDetayScreen() {
 
   const ornek = r.id === 'ornek';
   const route: LngLat[] = r.points.map((p) => [p.lng, p.lat]);
-  const alts = r.points.map((p) => p.alt).filter((a): a is number => a != null);
+  const isaretler: MapMarker[] =
+    route.length > 1
+      ? [
+          { id: 's', coord: route[0], kind: 'start' },
+          { id: 'e', coord: route[route.length - 1], kind: 'end' },
+        ]
+      : [];
+  if (imlecYeri) isaretler.push({ id: 'imlec', coord: imlecYeri, kind: 'cursor' });
   const friends = faralyaKabak.friendsDone.map((f) => people[f]);
   const etiketler: [string, string, string][] = [
     ...(r.difficulty ? ([[`${DIFFICULTY_LABELS[r.difficulty]}${ornek ? ' zorluk' : ''}`, colors.terraSoft, colors.terraInk]] as [string, string, string][]) : []),
@@ -61,14 +72,8 @@ export default function RotaDetayScreen() {
         <TopoMap
           style={{ height: 270 + insets.top }}
           route={route}
-          markers={
-            route.length > 1
-              ? [
-                  { id: 's', coord: route[0], kind: 'start' },
-                  { id: 'e', coord: route[route.length - 1], kind: 'end' },
-                ]
-              : []
-          }
+          routeColors={egim?.renkler}
+          markers={isaretler}
           padding={{ top: insets.top + 70, bottom: 30 }}
           accessibilityLabel={`${r.name} rotasının haritası`}
         />
@@ -87,13 +92,17 @@ export default function RotaDetayScreen() {
             {ornek ? faralyaKabak.by : `${r.ownerName} · ${r.visibility === 'public' ? 'herkese açık' : r.visibility === 'followers' ? 'takipçilere açık' : 'sadece sen'}`}
           </Txt>
 
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginVertical: 14 }}>
-            <Stat label="Mesafe" value={`${formatKm(r.distanceM)} km`} />
-            <Stat label="Tırmanış" value={alts.length ? `↑ ${formatMeters(r.gainM)} m` : '–'} />
-            <Stat label={ornek ? 'Ortalama süre' : 'Tahmini süre'} value={ornek ? faralyaKabak.avgTime : sureMetni(estimateDuration(r.activity, r.distanceM, r.gainM))} />
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 8, columnGap: 10, marginVertical: 14 }}>
+            <Stat label="Mesafe" size={18} value={`${formatKm(r.distanceM)} km`} />
+            <Stat label="Tırmanış" size={18} value={egim ? `↑ ${formatMeters(r.gainM)} m` : '–'} />
+            <Stat label="İniş" size={18} value={egim ? `↓ ${formatMeters(r.lossM)} m` : '–'} />
+            <Stat label={ornek ? 'Ortalama süre' : 'Tahmini süre'} size={18} value={ornek ? faralyaKabak.avgTime : sureMetni(estimateDuration(r.activity, r.distanceM, r.gainM))} />
           </View>
-          {alts.length > 1 ? (
-            <ElevationProfile values={profil(alts)} width={width - space.lg * 2} height={56} color={colors.ink} label={`Yükseklik profili, en yüksek ${formatMeters(Math.max(...alts))} metre`} />
+          {egim ? (
+            <>
+              <EgimProfili egim={egim} width={width - space.lg * 2} height={80} imlec={imlec} onImlec={imlecSec} />
+              <TirmanisListesi egim={egim} onSec={imlecSec} />
+            </>
           ) : (
             <Txt variant="small">Bu rota serbest çizildiği için rakım bilgisi yok.</Txt>
           )}

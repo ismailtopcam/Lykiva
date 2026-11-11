@@ -65,6 +65,7 @@ export function FallbackMap({ route = [], progress, markers = [], dark, padding 
                     <Circle cx={x} cy={y} r={9} fill={dark ? '#E07A4A' : '#0B6A6A'} stroke={c.casing} strokeWidth={3} />
                   </G>
                 );
+              if (m.kind === 'cursor') return <Circle key={m.id} cx={x} cy={y} r={8} fill={c.casing} stroke="#16201B" strokeWidth={3.5} />;
               if (m.kind === 'meeting') return <Circle key={m.id} cx={x} cy={y} r={9} fill="#0B6A6A" stroke={c.casing} strokeWidth={3} />;
               return (
                 <G key={m.id}>

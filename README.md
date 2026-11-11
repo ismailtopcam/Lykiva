@@ -121,7 +121,8 @@ npm run test:sql             # migration'ları bellekteki veritabanında dener (
 25. **Yönetimde yorum / mesaj kaldırma ve engelleme** — şikayet edilen yorum ve grup mesajı panelden kaldırılır; şikayet edilen kullanıcı ya da Kullanıcılar sayfasından herhangi biri engellenir (Supabase Auth girişi ve oturum yenilemeyi kapatır, açık oturum en geç 1 saatte kapanır; telefon bildirim jetonları silinir). Engel aynı sayfadan kaldırılır; yöneticiyi engellemeden önce yetkisi alınır.
 26. **Paylaşım sayfasında hava, bildirim jetonu temizliği** — web paylaşım sayfası (`/a/<anahtar>`) kayıt başındaki havayı da gösterir (sıcaklık, hissedilen, rüzgâr ve yola göre etkisi, nem, UV). Telefon bildirimleri gönderilirken Expo'nun yanıtı saklanır; uygulaması silinmiş ya da bildirimi kapatılmış telefonun jetonu ("DeviceNotRegistered") bir sonraki bildirimde kendiliğinden silinir.
 27. **Hesap silme ve yasal sayfalar** — Ayarlar > "Hesabımı sil" (App Store ve Google Play zorunluluğu): fotoğraflar depodan, hesap ve tüm verisi sunucudan silinir; kurduğu gruplar en kıdemli yöneticiye ya da üyeye devredilir. Web'de `/gizlilik`, `/kosullar`, `/hesap-silme` sayfaları (Ayarlar > Hakkında ve ana sayfanın altından bağlantılı). İletişim e-postası ve veri sorumlusu yönetim paneli > Site ayarları'ndan değişir. Metinler taslaktır; mağazaya göndermeden önce gözden geçirilmeli.
-28. Sırada: Google/Apple giriş ayarı (en son).
+28. **Rota eğimi** — rota çizerken ve rota detayında tırmanış, iniş, en dik çıkış / iniş; eğime göre renklenen yükseklik profili (iniş, düz, %3–6, %6–10, %10+) ve haritada aynı renklerle rota çizgisi; profilde parmağını gezdirince haritada o nokta, yükseklik ve eğim görünür. Rota detayında tırmanış bölümleri (uzunluk, kazanç, ortalama ve en dik eğim; dokununca profilde gösterir). Eğim 100 m'lik pencereyle ölçülür. Serbest çizimde yükseklik yok.
+29. Sırada: Google/Apple giriş ayarı (en son).
 
 ### Telefona bildirim için bir kerelik ayar
 
