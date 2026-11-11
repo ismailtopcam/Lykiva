@@ -15,7 +15,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 ## Gökhan için: 11 Kasım 2026'da değişenler (İsmail)
 
 - **Play dahili test yayında** (sürüm 2, 0.1.0). Tester listesi "Gösterge test". Katılma bağlantısı aşağıda (Bekleyen elle yapılacaklar 6).
-  Senin anlık hız ve rota eğimi işlerin bu sürümde **yok**; bir sonraki Android derlemesine girecek.
+  Güncel sürüm 3: senin anlık hız ve rota eğimi işlerin, Google girişi ve Android push dahil.
 - **iOS TestFlight'a gönderildi:** App Store Connect'te "Lykiva" (Apple kimliği `6833386986`), sürüm 0.1.0 (3), güncel
   main'den (senin işlerin dahil). iPhone'da denemek için seni App Store Connect'e ekleyeceğiz (Apple ID e-postanı İsmail'e ilet).
 - **Google ile giriş açık.** Sunucuda `google=true`; uygulama kodu değişmedi, Play'deki sürümde de çalışır.
@@ -117,7 +117,7 @@ Kalan: testerlar (Gökhan ekipte değil: App Store Connect > Users and Access'te
 Kuruldu (11 Kas 2026): Firebase, `lykiva` Google Cloud projesine eklendi (Analytics kapalı); Android uygulaması
 `app.lykiva.mobile` → `apps/mobile/google-services.json` (repoda; gizli değil), `app.json` > `android.googleServicesFile`.
 FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (production profili), yerel kopya silindi.
-Bu ayar ilk kez Android sürüm 3 derlemesine girdi. Kalan: telefonda bildirim gelip gelmediğini denemek.
+**Android sürüm 3 dahili testte yayında** (11 Kas 2026, FCM + Google girişi + anlık hız + rota eğimi). Kalan: telefonda bildirim gelip gelmediğini denemek.
 
 ### [ ] Küçük eksikler
 - Web profil sayfası (`/u/<kullanıcı>`) profil fotoğrafını göstermiyor, baş harfler görünüyor.
