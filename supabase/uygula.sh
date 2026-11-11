@@ -43,6 +43,7 @@ MIGRATIONLAR=(
   "20261110120000_hava_paylasim_push_temizligi.sql|to_regclass('public.push_istekleri') is not null"
   "20261111000000_hesap_silme_ayarlar.sql|to_regclass('public.site_ayarlari') is not null"
   "20261112000000_dil.sql|exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'dil')"
+  "20261113000000_hedefler_meydan_okumalar.sql|to_regclass('public.meydan_okumalar') is not null"
 )
 
 # Betik "curl ... | bash" ile çalışırken kendi girdisi betiğin geri kalanıdır: sorgular girdi okumamalı,

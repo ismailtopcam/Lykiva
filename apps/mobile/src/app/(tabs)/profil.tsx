@@ -4,7 +4,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { RouteThumb } from '@/components/charts';
-import { Icon } from '@/components/Icon';
+import { Icon, type IconName } from '@/components/Icon';
 import { IconButton } from '@/components/IconButton';
 import { Txt } from '@/components/Txt';
 import { Avatar, Button, Card } from '@/components/ui';
@@ -20,6 +20,14 @@ import { colors, fontFamily, space } from '@/theme';
 import { $t } from '@/i18n';
 
 const tabs = () => [$t('profil.aktiviteler'), $t('profil.rotalarim'), $t('profil.gruplar')];
+
+/** Kişisel rekorlar, hedefler, meydan okumalar, rozetler (2×2) */
+const basarilar = (): { href: '/rekorlar' | '/hedefler' | '/meydan-okuma' | '/rozetler'; ad: string; alt: string; ikon: IconName; bg: string; fg: string }[] => [
+  { href: '/rekorlar', ad: $t('rekorlar.baslik'), alt: $t('rekorlar.profil_alt'), ikon: 'trophy', bg: colors.terraSoft, fg: colors.terraInk },
+  { href: '/hedefler', ad: $t('hedefler.baslik'), alt: $t('hedefler.profil_alt'), ikon: 'target', bg: colors.seaSoft, fg: colors.seaInk },
+  { href: '/meydan-okuma', ad: $t('meydan.baslik'), alt: $t('meydan.profil_alt'), ikon: 'flag', bg: colors.sand, fg: colors.sandInk },
+  { href: '/rozetler', ad: $t('rozet.baslik'), alt: $t('rozet.profil_alt'), ikon: 'medal', bg: '#F1E1BE', fg: '#6A4A12' },
+];
 
 export default function ProfilScreen() {
   const [tab, setTab] = useState(0);
@@ -186,14 +194,24 @@ export default function ProfilScreen() {
           </View>
         </Card>
 
-        <Pressable accessibilityRole="link" onPress={() => router.push('/rekorlar')} style={({ pressed }) => [styles.rekorlar, pressed && { opacity: 0.8 }]}>
-          <Icon name="trophy" color={colors.terraInk} />
-          <View style={{ flex: 1 }}>
-            <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }}>{$t('rekorlar.baslik')}</Txt>
-            <Txt variant="small">{$t('rekorlar.profil_alt')}</Txt>
-          </View>
-          <Icon name="chevron" size={18} color={colors.inkMuted} strokeWidth={2} />
-        </Pressable>
+        <View style={styles.basarilar}>
+          {basarilar().map((b) => (
+            <Pressable
+              key={b.href}
+              accessibilityRole="link"
+              accessibilityLabel={`${b.ad}. ${b.alt}`}
+              onPress={() => router.push(b.href)}
+              style={({ pressed }) => [styles.basari, { backgroundColor: b.bg }, pressed && { opacity: 0.8 }]}>
+              <Icon name={b.ikon} color={b.fg} />
+              <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14, marginTop: 6 }} numberOfLines={1}>
+                {b.ad}
+              </Txt>
+              <Txt variant="small" numberOfLines={2}>
+                {b.alt}
+              </Txt>
+            </Pressable>
+          ))}
+        </View>
 
         <View accessibilityRole="tablist" style={styles.tabs}>
           {tabs().map((t, i) => (
@@ -287,7 +305,8 @@ const styles = StyleSheet.create({
   identity: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: space.lg, paddingBottom: 14 },
   gecici: { marginHorizontal: space.md, padding: space.lg, marginBottom: 14 },
   week: { marginHorizontal: space.md, padding: space.lg, marginBottom: 14 },
-  rekorlar: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: space.md, marginBottom: 14, padding: 14, borderRadius: 16, backgroundColor: colors.terraSoft },
+  basarilar: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginHorizontal: space.md, marginBottom: 14 },
+  basari: { flexGrow: 1, flexBasis: '45%', padding: 12, borderRadius: 16 },
   bars: { flexDirection: 'row', gap: 8, height: 76, alignItems: 'flex-end' },
   tabs: { flexDirection: 'row', marginHorizontal: space.lg, borderBottomWidth: 1, borderBottomColor: colors.lineStrong },
   tab: { flex: 1, height: 44, alignItems: 'center', justifyContent: 'center', borderBottomWidth: 2.5, borderBottomColor: 'transparent' },

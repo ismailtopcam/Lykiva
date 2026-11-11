@@ -9,3 +9,5 @@ export * from './egim';
 export * from './cevrimdisi';
 export * from './dil';
 export * from './rekor';
+export * from './hedef';
+export * from './rozet';

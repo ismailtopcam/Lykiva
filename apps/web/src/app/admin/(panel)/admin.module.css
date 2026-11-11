@@ -495,3 +495,22 @@ a.kart:hover {
   color: var(--sea-ink, var(--ink));
   font-size: 14px;
 }
+
+.formSatir {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.turler {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  font-weight: 400;
+}
+
+fieldset.ayarAlan {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}

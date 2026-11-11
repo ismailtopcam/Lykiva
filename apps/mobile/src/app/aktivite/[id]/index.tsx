@@ -17,6 +17,7 @@ import { Txt } from '@/components/Txt';
 import { AvatarStack, Button } from '@/components/ui';
 import { adListesi, birlikteKisiler, useAktivite } from '@/data/aktivite';
 import { rekorAdi, useAktiviteRekorlari } from '@/data/rekor';
+import { rozetAdi, useAktiviteRozetleri } from '@/data/rozet';
 import type { Activity, BirlikteKisi } from '@/data/ornek';
 import { aktivitedenRota } from '@/data/rota';
 import { basHarfler, grupRengi } from '@/grup/gruplar';
@@ -32,6 +33,7 @@ export default function AktiviteOzetiScreen() {
   const [rotaDurumu, setRotaDurumu] = useState<'bos' | 'kaydediyor' | string>('bos');
   const sikayet = useSikayet();
   const rekorlar = useAktiviteRekorlari(a?.id, a?.mine ? (a.ownerId ?? null) : null, !!a && (!!a.mine || a.id.startsWith('yerel-')));
+  const rozetler = useAktiviteRozetleri(a?.id, a?.mine ? (a.ownerId ?? null) : null, !!a && (!!a.mine || a.id.startsWith('yerel-')));
 
   if (!a) {
     return (
@@ -101,6 +103,16 @@ export default function AktiviteOzetiScreen() {
                 <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 13, color: colors.terraInk }}>{$t('rekorlar.kisisel_rekor')}</Txt>
                 {' · '}
                 {rekorlar.map(rekorAdi).join(' · ')}
+              </Txt>
+            </Pressable>
+          ) : null}
+          {rozetler.length ? (
+            <Pressable accessibilityRole="link" onPress={() => router.push('/rozetler')} style={styles.rozet} hitSlop={6}>
+              <Icon name="medal" size={18} color={colors.seaInk} strokeWidth={2} />
+              <Txt style={{ flex: 1, fontSize: 13, color: colors.seaInk }}>
+                <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 13, color: colors.seaInk }}>{$t('rozet.yeni_rozet', { n: rozetler.length })}</Txt>
+                {' · '}
+                {rozetler.map((r) => rozetAdi(r.tanim)).join(' · ')}
               </Txt>
             </Pressable>
           ) : null}
@@ -235,6 +247,7 @@ function BirlikteSatiri({ a }: { a: Activity }) {
 const styles = StyleSheet.create({
   birlikte: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 40, marginTop: 4 },
   rekor: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: colors.terraSoft },
+  rozet: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: colors.seaSoft },
   root: { flex: 1, backgroundColor: colors.ground },
   center: { alignItems: 'center', justifyContent: 'center', padding: space.lg },
   grid: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: space.lg, marginTop: 14, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: colors.lineStrong, backgroundColor: colors.lineStrong, gap: 1 },

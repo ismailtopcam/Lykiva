@@ -46,7 +46,13 @@ export type IconName =
   | 'undo'
   | 'image'
   | 'weather'
-  | 'more';
+  | 'more'
+  | 'target'
+  | 'flag'
+  | 'medal'
+  | 'flame'
+  | 'sunrise'
+  | 'star';
 
 type Props = { name: IconName; size?: number; color?: string; strokeWidth?: number };
 
@@ -78,6 +84,35 @@ function render(name: IconName, p: Record<string, unknown>, color: string) {
       );
     case 'plus':
       return <Path d="M12 5v14M5 12h14" {...p} />;
+    case 'target':
+      return (
+        <>
+          <Circle cx={12} cy={12} r={9} {...p} />
+          <Circle cx={12} cy={12} r={5} {...p} />
+          <Circle cx={12} cy={12} r={1.2} fill={color} />
+        </>
+      );
+    case 'flag':
+      return <Path d="M5 21V4M5 4h12l-2.5 4L17 12H5" {...p} />;
+    case 'medal':
+      return (
+        <>
+          <Path d="M8 3l2.5 6M16 3l-2.5 6" {...p} />
+          <Circle cx={12} cy={15} r={6} {...p} />
+          <Path d="M12 12.5l.9 1.8 2 .3-1.45 1.4.35 2-1.8-.95-1.8.95.35-2-1.45-1.4 2-.3z" {...p} strokeWidth={1.2} />
+        </>
+      );
+    case 'flame':
+      return <Path d="M12 21c-3.9 0-6.5-2.6-6.5-6 0-3.2 2.3-5 3.5-7.5.6 1.5 1.5 2.5 2.5 3 0-3 1.5-5.5 3-7.5.5 3 4 5.5 4 10.5 0 4.4-2.6 7.5-6.5 7.5z" {...p} />;
+    case 'sunrise':
+      return (
+        <>
+          <Path d="M7 17a5 5 0 0 1 10 0M3 17h18M5 21h14" {...p} />
+          <Path d="M12 4v4M5.6 8.6l1.8 1.8M18.4 8.6l-1.8 1.8M2.5 13.5H4.5M19.5 13.5h2" {...p} />
+        </>
+      );
+    case 'star':
+      return <Path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" {...p} />;
     case 'trophy':
       return <Path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3.3 3M17 6h3v1a3 3 0 0 1-3.3 3M12 14v4M8 20h8" {...p} />;
     case 'users':

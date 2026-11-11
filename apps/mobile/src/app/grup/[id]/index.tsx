@@ -9,9 +9,11 @@ import { FloatingHeader } from '@/components/Header';
 import { Icon, type IconName } from '@/components/Icon';
 import { IconButton } from '@/components/IconButton';
 import { OrnekGrup } from '@/components/OrnekGrup';
+import { MeydanOkumaKarti } from '@/components/MeydanOkumaKarti';
 import { useSikayet } from '@/components/SikayetPenceresi';
 import { Txt } from '@/components/Txt';
 import { Avatar, Button, DateBadge } from '@/components/ui';
+import { meydanOkumalar, type MeydanOkuma } from '@/data/meydanOkuma';
 import { grupEtkinlikleri, kisaTarih, tarihRozeti, type EtkinlikOzeti } from '@/etkinlik/etkinlikler';
 import {
   basHarfler,
@@ -50,7 +52,7 @@ export default function GrupScreen() {
   return uuidMi(id) ? <GercekGrup id={id} /> : <OrnekGrup />;
 }
 
-type Sekme = 'etkinlikler' | 'rotalar' | 'uyeler' | 'istekler';
+type Sekme = 'etkinlikler' | 'rotalar' | 'meydan' | 'uyeler' | 'istekler';
 
 function GercekGrup({ id }: { id: string }) {
   const insets = useSafeAreaInsets();
@@ -61,6 +63,7 @@ function GercekGrup({ id }: { id: string }) {
   const [rotalar, setRotalar] = useState<GrupRotasi[]>([]);
   const [istekler, setIstekler] = useState<Istek[]>([]);
   const [etkinlikler, setEtkinlikler] = useState<EtkinlikOzeti[]>([]);
+  const [meydanlar, setMeydanlar] = useState<MeydanOkuma[]>([]);
   // Geçmiş etkinlikleri soluk göstermek için yükleme anı (render sırasında saat okunmaz)
   const [yuklenme, setYuklenme] = useState(0);
   const [canliSayisi, setCanliSayisi] = useState(0);
@@ -76,17 +79,20 @@ function GercekGrup({ id }: { id: string }) {
       if (!d) return;
       const uye = !!d.my_role;
       const yonetici = d.my_role === 'owner' || d.my_role === 'admin';
-      const [u, r, i, e] = await Promise.all([
+      const [u, r, i, e, mo] = await Promise.all([
         grupUyeleri(id),
         uye ? grupRotalari(id) : Promise.resolve([]),
         yonetici ? bekleyenIstekler(id) : Promise.resolve([]),
         uye ? grupEtkinlikleri(id).catch(() => []) : Promise.resolve([]),
+        // Sunucuda migration yoksa sekme boş kalır
+        uye ? meydanOkumalar(id).catch(() => []) : Promise.resolve([]),
       ]);
       if (uye) void grupCanliSayisi(id).then(setCanliSayisi).catch(() => undefined);
       setUyeler(u);
       setRotalar(r);
       setIstekler(i);
       setEtkinlikler(e);
+      setMeydanlar(mo);
       setYuklenme(Date.now());
     } catch (e) {
       setHata(e instanceof Error ? e.message : $t('grup.grup_yuklenemedi'));
@@ -200,7 +206,7 @@ function GercekGrup({ id }: { id: string }) {
     : [];
 
   const sekmeler: { id: Sekme; ad: string }[] = [
-    ...(uye ? [{ id: 'etkinlikler' as Sekme, ad: $t('grup.etkinlikler') }, { id: 'rotalar' as Sekme, ad: $t('grup.rotalar') }] : []),
+    ...(uye ? [{ id: 'etkinlikler' as Sekme, ad: $t('grup.etkinlikler') }, { id: 'rotalar' as Sekme, ad: $t('grup.rotalar') }, { id: 'meydan' as Sekme, ad: $t('meydan.grup_sekmesi') }] : []),
     { id: 'uyeler', ad: $t('grup.uyeler', { member_count: grup.member_count }) },
     ...(yonetici && grup.pending_count > 0 ? [{ id: 'istekler' as Sekme, ad: $t('grup.istekler', { pending_count: grup.pending_count }) }] : []),
   ];
@@ -315,6 +321,18 @@ function GercekGrup({ id }: { id: string }) {
               </Pressable>
             ))
           )
+        ) : aktifSekme === 'meydan' ? (
+          <>
+            <Button label={$t('meydan.baslat_grupta')} icon="flag" variant="outline" onPress={() => router.push({ pathname: '/meydan-okuma/olustur', params: { grup: grup.id } })} />
+            {meydanlar.length === 0 ? (
+              <Txt variant="muted">{$t('meydan.grupta_yok')}</Txt>
+            ) : (
+              meydanlar
+                .slice()
+                .sort((x, y) => Date.parse(y.bitis) - Date.parse(x.bitis))
+                .map((m) => <MeydanOkumaKarti key={m.id} m={m} simdi={yuklenme} grupGoster={false} />)
+            )}
+          </>
         ) : aktifSekme === 'uyeler' ? (
           uyeler.map((u) => (
             <Pressable

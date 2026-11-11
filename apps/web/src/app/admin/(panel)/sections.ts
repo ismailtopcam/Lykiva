@@ -8,5 +8,6 @@ export const adminSections: AdminSection[] = [
   { slug: 'rotalar', href: '/admin/rotalar', label: 'Rotalar' },
   { slug: 'topluluklar', href: '/admin/topluluklar', label: 'Gruplar & topluluklar' },
   { slug: 'etkinlikler', href: '/admin/etkinlikler', label: 'Etkinlikler' },
+  { slug: 'meydan-okumalar', href: '/admin/meydan-okumalar', label: 'Meydan okumalar' },
   { slug: 'ayarlar', href: '/admin/ayarlar', label: 'Site ayarları' },
 ];

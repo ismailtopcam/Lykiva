@@ -48,7 +48,23 @@ const SAYFA = 1000;
 /** Çok uzun geçmişte telefonu yormamak için üst sınır */
 const EN_FAZLA = 10_000;
 
-export async function rekorAktiviteleri(userId: string | null): Promise<RekorAktivitesi[]> {
+/**
+ * Aynı anda birden fazla ekran / kanca isterse (aktivite sayfasında rekor + rozet) tek istek atılsın:
+ * aynı kullanıcı için 10 sn içindeki çağrılar aynı sonucu paylaşır.
+ */
+let sonIstek: { userId: string | null; zaman: number; sonuc: Promise<RekorAktivitesi[]> } | null = null;
+
+export function rekorAktiviteleri(userId: string | null): Promise<RekorAktivitesi[]> {
+  if (sonIstek && sonIstek.userId === userId && Date.now() - sonIstek.zaman < 10_000) return sonIstek.sonuc;
+  const sonuc = rekorAktiviteleriniYukle(userId);
+  sonIstek = { userId, zaman: Date.now(), sonuc };
+  sonuc.catch(() => {
+    if (sonIstek?.sonuc === sonuc) sonIstek = null;
+  });
+  return sonuc;
+}
+
+async function rekorAktiviteleriniYukle(userId: string | null): Promise<RekorAktivitesi[]> {
   const bekleyen = await kuyruktakiler().catch(() => []);
   const liste: RekorAktivitesi[] = bekleyen.map((p) => ({
     id: `yerel-${p.client_id}`,

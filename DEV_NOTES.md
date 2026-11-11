@@ -59,6 +59,9 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
    - SMTP çalışıyor: deneme şifre sıfırlama postası Gmail'e geldi (11 Kas 2026). Kalan: yeni derlemede uygulamadan dene.
 10. **Dil desteği migration'ı:** Coolify > Servers > uygulama > Terminal'de `uygula.sh` ile `20261112000000_dil.sql`'i uygula
     (profiles.dil, dil_ayarla, bildirim metni alıcının dilinde). Uygulanmazsa uygulama yine çalışır, bildirimler Türkçe gider.
+11. **Hedefler ve meydan okumalar migration'ı:** aynı yoldan (`uygula.sh`) `20261113000000_hedefler_meydan_okumalar.sql`'i uygula.
+    Uygulanmazsa hedefler / meydan okumalar ekranında "sunucu henüz güncellenmedi" yazar, rozetler yine çalışır.
+    Sonra `https://lykiva.app/admin/meydan-okumalar`'dan ilk herkese açık meydan okumayı aç (ör. "Aralık'ta 200 km").
 
 ## Yapılacaklar
 
@@ -81,6 +84,9 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   İndirme boyutu makul mü (stil, yazı tipi dosyaları da iner)? User-Agent başlığı OpenFreeMap isteklerinde görünüyor mu?
 - Dil: telefonu İngilizce / Almanca / Rusça yap ya da Ayarlar > Dil'den seç; bütün ekranlar değişiyor mu, metinler taşıyor mu
   (Almanca uzun)? Tarihler ("Samstag, 7. November"), sayılar (27.4 / 27,4) doğru mu? Telefon bildirimi seçilen dilde geliyor mu?
+- Hedefler / meydan okumalar / rozetler: Profil'deki dört kutu dar ekrana sığıyor mu (Almanca, Rusça)? Hedef koy, bir kayıt yap,
+  ilerleme değişiyor mu? Grupta meydan okuma başlat, ikinci telefondan katıl, sıralama doğru mu? Gruptan ayrılınca sıralamadan
+  çıkılıyor mu? Rozetler ekranı ve aktivite sayfasındaki "Yeni rozet" satırı.
 - Kişisel rekorlar: Profil > Kişisel rekorlar açılıyor mu, değerler aktivite sayfalarıyla tutuyor mu, tür süzgeci çalışıyor mu?
   Yeni bir kayıtta rekor kırınca aktivite sayfasında rozet çıkıyor mu (o türde en az 2 aktivite gerekir)? Almanca / Rusça uzun
   rekor adları kartlara sığıyor mu?
@@ -170,7 +176,8 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
   en yüksek hız, en çok tırmanış; türe göre), bu yılın / tüm zamanların toplamı, aktivite sayfasında "Kişisel rekor" rozeti.
   Kalan: aylık özet ve geçen yılla karşılaştırma; en hızlı 5 / 10 km / 21 km (iz içinde en iyi bölüm, koşu için); kayıt bitince
   "yeni rekor" bildirimi; rekorları başkasının profilinde gösterme (şu an yalnızca kendi rekorların).
-- [ ] Hedefler, meydan okumalar, rozetler.
+- [x] Hedefler, meydan okumalar, rozetler (33. aşama). Kalan: grup meydan okuması açılınca ve tamamlanınca bildirim;
+  rozetleri / meydan okuma sonuçlarını başkasının profilinde gösterme; meydan okumaya katılan çok artarsa sıralamayı önbelleğe alma.
 - [ ] Segmentler ve liderlik tablosu (büyük iş, sonraya).
 
 **Keşif**
@@ -211,6 +218,17 @@ Tırmanış bölümü: en az 20 m kazanç, 200 m uzunluk, ort. %3; tepeden 10 m 
 Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde; web paylaşım sayfasında da.
 
 ## Kararlar
+
+- **Hedefler ve meydan okumalar sunucuda, rozetler telefonda** (33. aşama). Hedefin ilerlemesi ve rozetler kişisel rekorlarla
+  aynı veriden telefonda hesaplanır (telefonda bekleyen kayıtlar da sayılır); hedeflerin kendisi sunucuda (`hedefler`, yalnızca
+  sahibi okur, kişi başı 12). Meydan okumanın değeri ve sıralaması sunucuda: katılımcının o tarih aralığındaki **bütün**
+  aktiviteleri sayılır (gizli olanlar ve katılmadan öncekiler dahil; Strava gibi), sıralamada yalnızca toplam görünür; uygulama
+  katılırken bunu söyler. Herkese açık meydan okumayı yalnızca yönetici, grubunkini grubun her üyesi açar (etkinlikteki gibi);
+  silme: açan, grup yöneticisi ya da site yöneticisi. Gruptan ayrılan grup meydan okumasından da çıkar (tetikleyici).
+  Rozetlerde tek aktivite rozetleri için ortalama hız sınırı var (bisiklet 60, dağ bisikleti 45, koşu 25, yürüyüş 10 km/sa);
+  üstü araçta unutulan kayıt sayılır. Toplam rozetlerinde süzgeç yok (rekorlardaki mesafe kuralıyla aynı). Rozet kimlikleri
+  kalıcı (`ROZETLER`), ileride sunucuya taşınırsa aynı kalmalı. Dönemler telefonun yerel saatine göre (hafta pazartesi başlar);
+  yönetimden açılan meydan okumanın tarihleri Türkiye saatine göre.
 
 - **Kişisel rekorlar telefonda hesaplanır** (`packages/shared/src/rekor.ts`): sunucudan kendi aktivitelerinin yalnızca özet
   sütunları çekilir (iz yok, 1.000'erlik sayfalar), telefonda bekleyenler de katılır; yeni tablo / fonksiyon / migration yok.
