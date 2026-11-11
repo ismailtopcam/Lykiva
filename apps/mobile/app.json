@@ -16,7 +16,10 @@
           "location"
         ]
       },
-      "usesAppleSignIn": true
+      "usesAppleSignIn": true,
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "app.lykiva.mobile",
