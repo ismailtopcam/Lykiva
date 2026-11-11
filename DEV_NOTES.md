@@ -11,7 +11,6 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | Kim | İş | Dal |
 | --- | --- | --- |
 | İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |
-| Gökhan | Harita türleri: standart, uydu, hibrit, kış (`apps/mobile/src/components/map`) | `harita-turleri` |
 
 ## Gökhan için: 11 Kasım 2026'da değişenler (İsmail)
 
