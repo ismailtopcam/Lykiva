@@ -1,7 +1,7 @@
 import { formatBytes } from '@lykiva/shared';
 import { router, useFocusEffect } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Header } from '@/components/Header';
@@ -13,7 +13,7 @@ import { cevrimdisiDestekleniyor, useIndirilenRotalar } from '@/lib/cevrimdisi';
 import { cikisYap, useHesap, type Saglayici } from '@/lib/giris';
 import { hesabiSil } from '@/lib/hesap';
 import { pushAc, pushDurumu, pushKapat, type PushDurumu } from '@/lib/push';
-import { supabaseHazir } from '@/lib/supabase';
+import { supabase, supabaseHazir } from '@/lib/supabase';
 import { colors, space } from '@/theme';
 import { $t, cihazDili, DIL_ADLARI, DILLER, dilSecimi, dilSecimiYap, type Dil } from '@/i18n';
 
@@ -25,6 +25,33 @@ export default function AyarlarScreen() {
   const [siliniyor, setSiliniyor] = useState(false);
   const [push, setPush] = useState<PushDurumu | null>(null);
   const indirilenler = useIndirilenRotalar();
+  const [isiHaritasinda, setIsiHaritasinda] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (!hesap?.id) return;
+    let acik = true;
+    supabase
+      .from('profiles')
+      .select('isi_haritasinda')
+      .eq('id', hesap.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (acik && typeof data?.isi_haritasinda === 'boolean') setIsiHaritasinda(data.isi_haritasinda);
+      });
+    return () => {
+      acik = false;
+    };
+  }, [hesap?.id]);
+
+  async function isiHaritasiDegistir(v: boolean) {
+    const once = isiHaritasinda;
+    setIsiHaritasinda(v);
+    const { error } = await supabase.rpc('isi_haritasi_ayarla', { katil: v });
+    if (error) {
+      setIsiHaritasinda(once);
+      Alert.alert($t('ayarlar.yapilamadi'), error.message);
+    }
+  }
 
   // Dil değişince bütün ekranlar yeniden kurulur (kök düzen); kullanıcı Ayarlar'a geri getirilir
   async function dilDegistir(d: Dil | null) {
@@ -169,6 +196,20 @@ export default function AyarlarScreen() {
             <Label>{$t('ayarlar.bildirimler')}</Label>
             <Card style={{ paddingHorizontal: space.lg }}>
               <ToggleRow title={$t('ayarlar.telefona_bildirim')} subtitle={pushAlt} value={push === 'acik'} onChange={(v) => void pushDegistir(v)} />
+            </Card>
+          </View>
+        ) : null}
+
+        {supabaseHazir && hesap && isiHaritasinda !== null ? (
+          <View>
+            <Label>{$t('ayarlar.gizlilik')}</Label>
+            <Card style={{ paddingHorizontal: space.lg }}>
+              <ToggleRow
+                title={$t('ayarlar.isi_haritalarinda_gorun')}
+                subtitle={$t('ayarlar.isi_haritalarinda_gorun_alt')}
+                value={isiHaritasinda}
+                onChange={(v) => void isiHaritasiDegistir(v)}
+              />
             </Card>
           </View>
         ) : null}
