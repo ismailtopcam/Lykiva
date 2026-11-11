@@ -57,8 +57,6 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
      lykiva-supabase > `SMTP_PASS`'ı da güncelle ve servisi yeniden başlat.
    - Sohbette paylaşılan Coolify API anahtarlarını (bu da dahil) Coolify > Keys & Tokens'tan sil.
    - SMTP çalışıyor: deneme şifre sıfırlama postası Gmail'e geldi (11 Kas 2026). Kalan: yeni derlemede uygulamadan dene.
-10. **Dil desteği migration'ı:** Coolify > Servers > uygulama > Terminal'de `uygula.sh` ile `20261112000000_dil.sql`'i uygula
-    (profiles.dil, dil_ayarla, bildirim metni alıcının dilinde). Uygulanmazsa uygulama yine çalışır, bildirimler Türkçe gider.
 
 ## Yapılacaklar
 
@@ -211,6 +209,12 @@ Tırmanış bölümü: en az 20 m kazanç, 200 m uzunluk, ort. %3; tepeden 10 m 
 Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde; web paylaşım sayfasında da.
 
 ## Kararlar
+
+- **Migration'ları Claude uygular** (11 Kasım 2026): İsmail'in bilgisayarından Tailscale üzerinden `ssh root@uygulama`
+  çalışıyor; `uygula.sh` önce durum modunda, sonra `uygula` ile çalıştırılır. Migration main'e girince uygulanır.
+  `20261112000000_dil.sql` bu yolla uygulandı; sunucuda bütün migration'lar tamam.
+  **Sunucuyla ilgili işleri İsmail yapar, Gökhan yapmaz** (migration, Coolify, sunucu ayarları). Gökhan'ın PR'ında
+  migration varsa merge sonrası İsmail uygular.
 
 - **Kişisel rekorlar telefonda hesaplanır** (`packages/shared/src/rekor.ts`): sunucudan kendi aktivitelerinin yalnızca özet
   sütunları çekilir (iz yok, 1.000'erlik sayfalar), telefonda bekleyenler de katılır; yeni tablo / fonksiyon / migration yok.

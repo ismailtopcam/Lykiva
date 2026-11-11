@@ -7,6 +7,9 @@ Güncel durum, yapılacaklar ve kimin neyle uğraştığı: **`DEV_NOTES.md`**.
 ## Ekip
 
 - **İsmail Topçam** ve **Gökhan** birlikte kodluyor.
+- **Sunucuyla ilgili işleri İsmail yapar, Gökhan yapmaz:** migration uygulama, Coolify, sunucu ayarları, ortam değişkenleri.
+  Gökhan'ın işinde migration varsa PR'ı main'e girince İsmail (Claude ile) uygular; Gökhan'ın oturumunda Claude sunucuya
+  dokunmaz, gerekeni DEV_NOTES'a "İsmail uygulayacak" diye yazar.
 - İşe başlamadan önce `main`'i çek (`git pull`) ve `DEV_NOTES.md` > "Şu an üzerinde çalışılanlar" bölümüne bak:
   başkasının üzerinde çalıştığı dosyalara / özelliğe dokunma; çakışma varsa önce sor.
 - Yeni bir işe başlarken o bölüme kendi adınla ve dal adıyla bir satır ekle; iş bitince (merge sonrası) satırı kaldır,
@@ -69,4 +72,7 @@ npm test --workspace packages/shared
 - Adresler: web `https://lykiva.app`, Supabase `https://api.lykiva.app` (DNS Cloudflare'de; `lykiva.com` → `lykiva.app`).
 - Coolify paneli ve API'si Tailscale üzerinden `http://coolify:8000` (sürüm 4.7.3). API anahtarı kullanıcıdan istenir; repoya,
   dosyaya ya da hafızaya yazılmaz. Yalnızca lykiva-web ve lykiva-supabase'e dokunulur.
-- Sunucuya buradan SSH erişimi yok: migration'ları kullanıcı Coolify > Servers > uygulama > Terminal'de `uygula.sh` ile uygular.
+- Uygulama sunucusuna İsmail'in bilgisayarından Tailscale üzerinden `ssh root@uygulama` ile anahtarla girilebiliyor
+  (11 Kasım 2026'da denendi). Migration'ları Claude bu yolla `uygula.sh` ile uygular: önce durum modu, sonra `uygula`.
+  Sunucuda yalnızca Lykiva'nın Supabase konteynerlerine dokunulur. Sunucu işleri İsmail'de (yukarıda, Ekip); SSH
+  çalışmazsa İsmail Coolify > Servers > uygulama > Terminal'de aynı komutu çalıştırır.
