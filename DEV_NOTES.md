@@ -61,6 +61,8 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
     (`uygula.sh`, durum modu sonra `uygula`). Uygulanana kadar uygulamada hedefler / meydan okumalar ekranı "sunucu henüz
     güncellenmedi" der, rozetler yine çalışır. Sonra `https://lykiva.app/admin/meydan-okumalar`'dan ilk herkese açık meydan
     okuma açılabilir (ör. "Aralık'ta 200 km"; yönetici hesabıyla, kod / sunucu işi değil).
+11. **İsmail uygulayacak — ısı haritaları migration'ı:** `20261114000000_isi_haritalari.sql` (`uygula.sh`, durum modu sonra
+    `uygula`). Uygulanana kadar uygulamada ısı haritası seçilince haritada hiçbir şey çıkmaz, Ayarlar'da "Gizlilik" görünmez.
 
 ## Yapılacaklar
 
@@ -94,6 +96,10 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   Palandöken): pistler görünüyor mu? Tür değişince rota çizgisi ve işaretler kayboluyor mu (stil yeniden yüklenirken)?
   Yalnızca geliştirme / mağaza derlemesinde; Expo Go'da düğme çıkmaz. Türetilen stiller MapLibre stil doğrulayıcısından
   hatasız geçti; telefonda görülmedi.
+- Isı haritaları (migration uygulandıktan sonra): katman düğmesi > Isı haritası > Küresel / Haftalık / Gece / Kişisel.
+  Yakınlaştırınca (8. düzey, aşağı yukarı bir il) çıkıyor mu, kaydırınca yenileniyor mu, hızlı mı? Kişisel uzaktan da
+  görünüyor mu? Yeni bir kayıttan sonra kişiselde çıkıyor mu? Ayarlar > Gizlilik > "Isı haritalarında görün" kapatılınca
+  başka hesaptan bakınca o kişinin izleri kayboluyor mu? Uydu / hibrit üstünde renkler okunuyor mu?
 
 ### [~] Google Play — dahili test
 Play Console'da **Lykiva** oluşturuldu (kişisel geliştirici hesabı, paket `app.lykiva.mobile`, Türkçe, ücretsiz).
@@ -193,6 +199,8 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
 - [~] Harita katmanı seçimi: standart, uydu, hibrit, kış yapıldı (haritadaki katman düğmesi). Kalan: topoğrafik
   (eş yükselti eğrileri, tepe gölgesi; yükselti verisi / DEM kaynağı gerekir); çevrimdışı paketler yalnızca standart
   stille iner (uydu çevrimdışında boş görünür).
+- [x] Isı haritaları: küresel, haftalık, gece, kişisel (34. aşama). Kalan: aktivite sayısı artınca hücreleri önceden
+  hesaplayan tablo (şu an her istekte izlerden hesaplanıyor); web'de ısı haritası yok; tür süzgeci (yalnızca bisiklet / koşu).
 
 **Platform**
 - [ ] Kayıtta kilit ekranında hız / mesafe / süre: iOS Live Activity, Android kalıcı bildirimde değerler (D).
@@ -228,6 +236,13 @@ Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde
 
 ## Kararlar
 
+- **Isı haritaları sunucuda, görünen alan için hesaplanır** (`isi_haritasi`): izler ekranda ~6 piksellik ızgara
+  hücrelerine toplanır, hücre değeri farklı aktivite sayısı; uygulama MapLibre ısı katmanıyla çizer. Döşeme sunucusu
+  (MVT) kurmak yerine bu seçildi: Supabase oturumu ve kuralları olduğu gibi kullanılıyor, ek servis yok. Küresel /
+  haftalık / gece yalnızca herkese açık aktivitelerden, "uçları gizle" 200 m kırpılarak, ısı haritasından çıkanlar ve
+  engellenenler hariç; 8. yakınlaştırmadan önce boş (bütün ülkeyi tek istekte toplamamak için). Gece: başlangıç ya da
+  bitişte güneş ufkun 6° altında (yaklaşık güneş konumu hesabı, `gunes_yuksekligi`). Kullanıcı artınca önceden
+  hesaplanmış hücre tablosuna (ya da kendi döşeme sunucusuna) geçilmeli.
 - **Migration'ları Claude uygular** (11 Kasım 2026): İsmail'in bilgisayarından Tailscale üzerinden `ssh root@uygulama`
   çalışıyor; `uygula.sh` önce durum modunda, sonra `uygula` ile çalıştırılır. Migration main'e girince uygulanır.
   `20261112000000_dil.sql` bu yolla uygulandı; sunucuda bütün migration'lar tamam.

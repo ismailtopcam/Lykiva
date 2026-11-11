@@ -87,6 +87,7 @@ const asamalar = [
   ['20261111000000_hesap_silme_ayarlar', 'hesabimi_sil', {}],
   ['20261112000000_dil', 'dil_ayarla', { p_dil: 'tr' }],
   ['20261113000000_hedefler_meydan_okumalar', 'meydan_okumalar_listesi', {}],
+  ['20261114000000_isi_haritalari', 'isi_haritasi', { tur: 'kisisel', bati: 0, guney: 0, dogu: 0.01, kuzey: 0.01, zoom: 14 }],
 ];
 for (const [dosya, fn, govde] of asamalar) {
   try {

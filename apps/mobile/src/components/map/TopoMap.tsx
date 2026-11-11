@@ -10,13 +10,14 @@
  * Varsayılan: OpenFreeMap Liberty (anahtarsız, OSM verisi).
  */
 import Constants, { ExecutionEnvironment } from 'expo-constants';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import type { LngLat } from '@/data/ornek';
 import { FallbackMap } from './FallbackMap';
 import { HaritaTuruDugmesi } from './HaritaTuruSecici';
 import { MAP_STYLE_URL, useHaritaStili } from './haritaTurleri';
+import { ISI_RENKLERI, useIsiTuru, useIsiVerisi, type Gorunum } from './isiHaritasi';
 
 export { MAP_STYLE_URL };
 
@@ -82,6 +83,9 @@ function NativeMap(props: TopoMapProps) {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const ML = require('@maplibre/maplibre-react-native') as typeof import('@maplibre/maplibre-react-native');
   const mapStyle = useHaritaStili();
+  const isiTuru = useIsiTuru();
+  const [gorunum, setGorunum] = useState<Gorunum | null>(null);
+  const isi = useIsiVerisi(isiTuru, gorunum);
   const { route = [], progress, markers = [], interactive = true, padding } = props;
   const pts = route.length ? route : markers.map((m) => m.coord);
   const bounds = boundsOf(pts);
@@ -123,7 +127,12 @@ function NativeMap(props: TopoMapProps) {
       doubleTapZoom={interactive}
       touchRotate={false}
       touchPitch={false}
-      onPress={props.onPress ? (e) => props.onPress?.([e.nativeEvent.lngLat[0], e.nativeEvent.lngLat[1]]) : undefined}>
+      onPress={props.onPress ? (e) => props.onPress?.([e.nativeEvent.lngLat[0], e.nativeEvent.lngLat[1]]) : undefined}
+      // Görünen alan hep izlenir: ısı haritası sonradan açılınca haritayı kımıldatmadan veri gelsin
+      onRegionDidChange={(e) => {
+        const { bounds, zoom } = e.nativeEvent;
+        setGorunum({ bounds: [bounds[0], bounds[1], bounds[2], bounds[3]], zoom });
+      }}>
       {props.follow ? (
         <ML.Camera center={props.follow} zoom={props.followZoom ?? 16} duration={800} padding={{ top: 0, right: 0, left: 0, bottom: 0, ...padding }} />
       ) : bounds ? (
@@ -133,6 +142,38 @@ function NativeMap(props: TopoMapProps) {
             padding: { top: 60, right: 40, bottom: 40, left: 40, ...padding },
           }}
         />
+      ) : null}
+
+      {isiTuru && isi ? (
+        <ML.GeoJSONSource id="isi" data={isi}>
+          <ML.Layer
+            id="isi-katmani"
+            type="heatmap"
+            paint={{
+              'heatmap-weight': ['get', 'w'],
+              'heatmap-intensity': 1.1,
+              'heatmap-radius': 9,
+              'heatmap-opacity': 0.85,
+              'heatmap-color': [
+                'interpolate',
+                ['linear'],
+                ['heatmap-density'],
+                0,
+                'rgba(0,0,0,0)',
+                0.12,
+                ISI_RENKLERI[isiTuru][0],
+                0.35,
+                ISI_RENKLERI[isiTuru][1],
+                0.6,
+                ISI_RENKLERI[isiTuru][2],
+                0.85,
+                ISI_RENKLERI[isiTuru][3],
+                1,
+                ISI_RENKLERI[isiTuru][4],
+              ],
+            }}
+          />
+        </ML.GeoJSONSource>
       ) : null}
 
       {done.length > 1 ? (

@@ -884,5 +884,56 @@ bekle('Geçici hesabın hedefi taşınır; asıl hesapta aynısı varsa asıl he
 md = (await olarak(L, `select meydan_okuma_detay($1) as j`, [mGenel])).rows[0].j;
 bekle('Meydan okuma katılımı asıl hesaba taşınır', md.katildim === true && (await db.query(`select count(*)::int as n from meydan_okuma_katilimcilari where user_id = '${N}'`)).rows[0].n === 0, md.katildim);
 
+console.log('\nIsı haritaları');
+// Erciyes civarında, öbür senaryolardan uzak: aynı hat üzerinde beş kişinin aktivitesi
+const IP = 'd1510000-0000-0000-0000-0000000000d1'; // herkese açık, gündüz, dün, uçlar açık
+const IR = 'd2510000-0000-0000-0000-0000000000d2'; // herkese açık, gece, 30 gün önce, uçlar gizli
+const IS = 'd3510000-0000-0000-0000-0000000000d3'; // gizli aktivite
+const IT = 'd4510000-0000-0000-0000-0000000000d4'; // ısı haritasından çıkmış
+const IU = 'd5510000-0000-0000-0000-0000000000d5'; // engellenmiş
+await db.exec(`
+  insert into auth.users (id, raw_user_meta_data, banned_until) values
+    ('${IP}', '{"full_name":"Pelin"}', null), ('${IR}', '{"full_name":"Rıza"}', null), ('${IS}', '{"full_name":"Selin"}', null),
+    ('${IT}', '{"full_name":"Tolga"}', null), ('${IU}', '{"full_name":"Ufuk"}', now() + interval '10 years');
+`);
+const hat = `'LINESTRING Z(35.50 38.50 1000, 35.51 38.501 1010, 35.52 38.50 1020, 35.53 38.501 1030)'`;
+const gunduz = `date_trunc('day', now()) - interval '1 day' + interval '9 hours'`; // 09:00 UTC ≈ 11:20 güneş saati
+const gece = `date_trunc('day', now()) - interval '30 days' + interval '23 hours'`; // 23:00 UTC ≈ 01:20 güneş saati
+await db.exec(`
+  insert into activities (owner_id, title, activity, started_at, ended_at, moving_time_s, elapsed_time_s, distance_m, visibility, hide_endpoints, track) values
+    ('${IP}', 'P', 'bike', ${gunduz}, ${gunduz} + interval '20 minutes', 1200, 1200, 2700, 'public', false, ${hat}::geography),
+    ('${IR}', 'R', 'run', ${gece}, ${gece} + interval '30 minutes', 1800, 1800, 2700, 'public', true, ${hat}::geography),
+    ('${IS}', 'S', 'bike', ${gunduz}, ${gunduz} + interval '20 minutes', 1200, 1200, 2700, 'private', false, ${hat}::geography),
+    ('${IT}', 'T', 'bike', ${gunduz}, ${gunduz} + interval '20 minutes', 1200, 1200, 2700, 'public', false, ${hat}::geography),
+    ('${IU}', 'U', 'bike', ${gunduz}, ${gunduz} + interval '20 minutes', 1200, 1200, 2700, 'public', false, ${hat}::geography);
+`);
+await olarak(IT, `select isi_haritasi_ayarla(false)`);
+const isi = async (u, tur, zoom = 14, kutu = [35.45, 38.45, 35.6, 38.55]) =>
+  (await olarak(u, `select isi_haritasi($1, $2, $3, $4, $5, $6) as j`, [tur, ...kutu, zoom])).rows[0].j;
+const enCok = (h) => Math.max(0, ...h.map((x) => x[2]));
+let ih = await isi(IP, 'kuresel');
+bekle('Küresel: herkese açık iki aktivite (gizli, çıkmış ve engellenmiş sayılmaz)', ih.length > 10 && enCok(ih) === 2, enCok(ih));
+ih = await isi(IP, 'haftalik');
+bekle('Haftalık: yalnızca son 7 gün', ih.length > 0 && enCok(ih) === 1, enCok(ih));
+ih = await isi(IP, 'gece');
+bekle('Gece: yalnızca güneş batıkken yapılan; uçları gizliyse baştan 200 m yok', ih.length > 0 && enCok(ih) === 1 && Math.min(...ih.map((x) => x[0])) > 35.502, Math.min(...ih.map((x) => x[0])));
+ih = await isi(IS, 'kisisel');
+bekle('Kişisel: kendi gizli aktiviten de görünür', ih.length > 0 && enCok(ih) === 1, ih.length);
+ih = await isi(IS, 'kisisel', 5, [30, 35, 40, 42]);
+bekle('Kişisel uzaktan da görünür', ih.length > 0, ih.length);
+ih = await isi(IP, 'kuresel', 7, [30, 35, 40, 42]);
+bekle('Küresel 8. yakınlaştırmadan önce boş', ih.length === 0, ih.length);
+ih = await isi(IP, 'kuresel', 14, [29.5, 36.1, 29.7, 36.3]);
+bekle('Başka bir alanda bu aktiviteler yok', !ih.some((x) => x[0] > 35), ih.length);
+m = await hataMesaji(() => isi(IP, 'herkes'));
+bekle('Bilinmeyen tür reddedilir', /Bilinmeyen/.test(m ?? ''), m);
+m = await hataMesaji(() => anonOlarak(`select isi_haritasi('kuresel', 35.45, 38.45, 35.6, 38.55, 14)`));
+bekle('Oturumsuz ısı haritası yok', !!m, m);
+await olarak(IT, `select isi_haritasi_ayarla(true)`);
+ih = await isi(IP, 'kuresel');
+bekle('Isı haritasına geri dönen sayılır', enCok(ih) === 3, enCok(ih));
+r = await db.query(`select round(gunes_yuksekligi('2026-06-21 12:00+00', 0, 23.44)::numeric) as ogle, gunes_yuksekligi('2026-06-21 00:00+00', 0, 23.44) < -6 as gece`);
+bekle('Güneş yüksekliği: dönencede yaz öğlesi ~90°, gece yarısı ufkun altında', Number(r.rows[0].ogle) >= 88 && r.rows[0].gece, r.rows[0]);
+
 console.log(hata ? `\n${hata} senaryo başarısız` : '\nTüm senaryolar geçti');
 process.exit(hata ? 1 : 0);

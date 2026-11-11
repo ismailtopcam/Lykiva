@@ -1,6 +1,7 @@
 /**
- * Harita üstündeki katman düğmesi ve harita türü seçim penceresi (standart, uydu, hibrit, kış).
- * Seçim bütün haritalara uygulanır (bkz. haritaTurleri.ts).
+ * Harita üstündeki katman düğmesi ve seçim penceresi: harita türü (standart, uydu, hibrit, kış) ve
+ * ısı haritası (küresel, haftalık, gece, kişisel). Seçimler bütün haritalara uygulanır
+ * (bkz. haritaTurleri.ts, isiHaritasi.ts).
  */
 import { useState } from 'react';
 import { Modal, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
@@ -8,9 +9,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { IconButton } from '@/components/IconButton';
 import { Txt } from '@/components/Txt';
+import { Chip } from '@/components/ui';
 import { $t } from '@/i18n';
+import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space } from '@/theme';
 import { HARITA_TURLERI, haritaTuruSec, useHaritaTuru, type HaritaTuru } from './haritaTurleri';
+import { ISI_TURLERI, isiTuruSec, useIsiTuru, type IsiTuru } from './isiHaritasi';
 
 function turAdi(t: HaritaTuru): string {
   switch (t) {
@@ -22,6 +26,32 @@ function turAdi(t: HaritaTuru): string {
       return $t('haritaTuru.hibrit');
     case 'kis':
       return $t('haritaTuru.kis');
+  }
+}
+
+function isiAdi(t: IsiTuru): string {
+  switch (t) {
+    case 'kuresel':
+      return $t('haritaTuru.isi_kuresel');
+    case 'haftalik':
+      return $t('haritaTuru.isi_haftalik');
+    case 'gece':
+      return $t('haritaTuru.isi_gece');
+    case 'kisisel':
+      return $t('haritaTuru.isi_kisisel');
+  }
+}
+
+function isiAciklamasi(t: IsiTuru): string {
+  switch (t) {
+    case 'kuresel':
+      return $t('haritaTuru.isi_kuresel_aciklama');
+    case 'haftalik':
+      return $t('haritaTuru.isi_haftalik_aciklama');
+    case 'gece':
+      return $t('haritaTuru.isi_gece_aciklama');
+    case 'kisisel':
+      return $t('haritaTuru.isi_kisisel_aciklama');
   }
 }
 
@@ -47,10 +77,15 @@ const ONIZLEME: Record<HaritaTuru, { zemin: string; leke: string; yol?: string; 
 export function HaritaTuruDugmesi({ style }: { style?: StyleProp<ViewStyle> }) {
   const [acik, setAcik] = useState(false);
   const tur = useHaritaTuru();
+  const isi = useIsiTuru();
   const insets = useSafeAreaInsets();
   return (
     <>
-      <IconButton floating icon="layers" label={$t('haritaTuru.harita_turu_secili', { tur: turAdi(tur) })} onPress={() => setAcik(true)} style={style} />
+      <IconButton floating icon="layers" label={
+          isi
+            ? $t('haritaTuru.harita_turu_secili_isi', { tur: turAdi(tur), isi: isiAdi(isi) })
+            : $t('haritaTuru.harita_turu_secili', { tur: turAdi(tur) })
+        } onPress={() => setAcik(true)} style={style} />
       <Modal visible={acik} transparent animationType="slide" onRequestClose={() => setAcik(false)}>
         <Pressable style={styles.perde} onPress={() => setAcik(false)} accessibilityRole="button" accessibilityLabel={$t('ortak.kapat')} />
         <View style={styles.alt} pointerEvents="box-none">
@@ -86,6 +121,26 @@ export function HaritaTuruDugmesi({ style }: { style?: StyleProp<ViewStyle> }) {
               })}
             </View>
             {tur === 'kis' ? <Txt variant="small" style={{ marginTop: space.md }}>{$t('haritaTuru.kis_aciklama')}</Txt> : null}
+
+            {supabaseHazir ? (
+              <>
+                <Txt accessibilityRole="header" style={styles.bolum}>
+                  {$t('haritaTuru.isi_haritasi')}
+                </Txt>
+                <View accessibilityRole="radiogroup" style={styles.cipler}>
+                  <Chip label={$t('haritaTuru.isi_kapali')} role="radio" selected={!isi} onPress={() => isiTuruSec(null)} />
+                  {ISI_TURLERI.map((t) => (
+                    <Chip key={t} label={isiAdi(t)} role="radio" selected={isi === t} onPress={() => isiTuruSec(t)} />
+                  ))}
+                </View>
+                {isi ? (
+                  <Txt variant="small" style={{ marginTop: space.sm }}>
+                    {isiAciklamasi(isi)}
+                    {isi !== 'kisisel' ? ' ' + $t('haritaTuru.isi_gizlilik') : ''}
+                  </Txt>
+                ) : null}
+              </>
+            ) : null}
           </View>
         </View>
       </Modal>
@@ -100,6 +155,8 @@ const styles = StyleSheet.create({
   ust: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginBottom: space.md },
   turler: { flexDirection: 'row', justifyContent: 'space-between', gap: space.sm },
   tur: { flex: 1, alignItems: 'center', gap: 6 },
+  bolum: { fontFamily: fontFamily.bodyBold, fontSize: 15, marginTop: space.lg, marginBottom: space.sm },
+  cipler: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   cerceve: { width: '100%', aspectRatio: 1, borderRadius: 16, padding: 3, borderWidth: 2, borderColor: 'transparent' },
   cerceveOn: { borderColor: colors.sea },
   onizleme: { flex: 1, borderRadius: 12, overflow: 'hidden' },
