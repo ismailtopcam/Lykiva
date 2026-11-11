@@ -31,7 +31,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 - **Mağaza derlemesi almak istersen:** Android `npx eas-cli@latest build -p android --profile production` (imza EAS'ta, soru sormaz).
   iOS derlemesi ve TestFlight gönderimi şimdilik İsmail'in bilgisayarından (App Store Connect API anahtarı orada); yeni
   derleme gerekirse haber ver.
-- **Android'de push bildirimi henüz yok** (FCM kurulmadı; aşağıda "Android push bildirimi").
+- **Android push kuruldu** (Firebase + FCM V1, `google-services.json` repoda); yeni Android derlemesinden itibaren çalışır.
 - Gizli anahtarlar (Google istemci sırrı, Apple API anahtarı, Coolify anahtarı) repoda yok ve olmayacak.
 
 ## Bekleyen elle yapılacaklar
@@ -65,7 +65,7 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
 - Kullanıcı engelleme (`postgres` rolü `auth.users`'a yazabiliyor mu?)
 - Geçersiz push jetonu temizliği (gerçek Expo yanıtıyla)
 - Uygulama içinden hesap silme
-- Telefon bildirimleri (iOS: push anahtarı atandı, TestFlight'ta denenecek; Android: FCM kurulmadı, aşağıya bkz.)
+- Telefon bildirimleri (iOS: push anahtarı atandı; Android: FCM sürüm 3'ten itibaren — ikisi de telefonda denenecek)
 - Rota eğimi: haritada renkli çizgi (MapLibre veri güdümlü renk), profilde parmakla gezinince haritadaki imleç,
   dar ekranda dört istatistiğin sığması, rota detayında tırmanış listesi.
 - Anlık hız: bir bisiklet hız göstergesiyle yan yana sür; kırmızı ışıkta ~3 sn'de 0'a düşüyor mu, ağaç altında "—" çıkıyor mu?
@@ -113,11 +113,11 @@ Gösterge ile ortak (aynı Apple ekibi).
 sonraki gönderimler: `npx eas-cli@latest submit -p ios --latest`. EAS TestFlight'ta "Team (Expo)" iç test grubunu açtı.
 Kalan: testerlar (Gökhan ekipte değil: App Store Connect > Users and Access'ten davet ya da dış test), Apple / Google girişi denemesi.
 
-### [ ] Android push bildirimi (FCM)
-Android'de bildirim **çalışmıyor**: `google-services.json` ve EAS'ta FCM V1 anahtarı yok; bildirim açılınca
-`getExpoPushTokenAsync` hata verir (`src/lib/push.ts`). Yapılacak: `lykiva` Google Cloud projesine Firebase ekle,
-`app.lykiva.mobile` Android uygulaması → `google-services.json` (`app.json` > `android.googleServicesFile`), FCM V1 hizmet
-hesabı anahtarını `eas credentials` ile EAS'a yükle, yeni Android derlemesi.
+### [~] Android push bildirimi (FCM)
+Kuruldu (11 Kas 2026): Firebase, `lykiva` Google Cloud projesine eklendi (Analytics kapalı); Android uygulaması
+`app.lykiva.mobile` → `apps/mobile/google-services.json` (repoda; gizli değil), `app.json` > `android.googleServicesFile`.
+FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (production profili), yerel kopya silindi.
+Bu ayar ilk kez Android sürüm 3 derlemesine girdi. Kalan: telefonda bildirim gelip gelmediğini denemek.
 
 ### [ ] Küçük eksikler
 - Web profil sayfası (`/u/<kullanıcı>`) profil fotoğrafını göstermiyor, baş harfler görünüyor.
