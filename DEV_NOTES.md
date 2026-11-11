@@ -56,7 +56,7 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
    - Sohbette paylaşılan iki Zoho şifresi var: ilkini (hesap şifresi) değiştir. Uygulama şifresini yenilersen Coolify >
      lykiva-supabase > `SMTP_PASS`'ı da güncelle ve servisi yeniden başlat.
    - Sohbette paylaşılan Coolify API anahtarlarını (bu da dahil) Coolify > Keys & Tokens'tan sil.
-   - Yeni derlemede uygulamadan hesap aç: kod geliyor mu, spam'e düşüyor mu? SMTP buradan doğrulanamıyor.
+   - SMTP çalışıyor: deneme şifre sıfırlama postası Gmail'e geldi (11 Kas 2026). Kalan: yeni derlemede uygulamadan dene.
 
 ## Yapılacaklar
 
@@ -113,7 +113,7 @@ Kurulum dosyaları hazır: `altyapi/` (BRouter 1.7.10 + Photon 1.3.0, Coolify Do
 Kod hazır (`apps/mobile/src/lib/epostaGiris.ts`, `src/components/EpostaGiris.tsx`): giriş, kayıt, şifremi unuttum;
 doğrulama ve sıfırlama e-postadaki kodla. Geçici hesaptan kayıtta e-posta o hesaba eklenir; var olan hesaba girişte
 kayıtlar `hesabi_devral` ile taşınır. Şablonlar `apps/web/public/eposta/` (web Docker imajına `public/` eklendi).
-Sunucu ayarı yapıldı (SMTP Zoho, şablonlar `lykiva.app/eposta/`, kod 1 saat). Kalan: ilk gerçek postanın geldiğini görmek, telefonda uçtan uca deneme: yeni hesap, geçici hesaptan
+Sunucu ayarı yapıldı (SMTP Zoho, şablonlar `lykiva.app/eposta/`, kod 1 saat). İlk gerçek posta (şifre sıfırlama) Gmail'e geldi. Kalan: telefonda uçtan uca deneme: yeni hesap, geçici hesaptan
 kayıt (kayıtlar duruyor mu), var olan hesaba giriş (kayıtlar taşınıyor mu), şifre sıfırlama, doğrulanmamış hesaba giriş.
 Sonra: Ayarlar'da şifre değiştirme, web'de kullanıcı girişi (gerekirse).
 
