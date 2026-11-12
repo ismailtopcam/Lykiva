@@ -111,6 +111,8 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   katman / 2D-3D / Konumum düğmeleri (haritayı elle kaydırınca takip bırakılır, Konumum yeniden takibe alır; 3D'de
   kamera 60° eğilir, binalar yükseltilir), harita kalan alanı alır ve alt panel sıkılaştırıldı. Yeni yerel modül yok,
   yeni derleme gerekmez; telefonda geliştirme derlemesiyle denenecek (3D binalar ve yazı katmanı sırası özellikle).
+  Aynı gün: kayıt sırasında Duraklat ve Bitir ayrı düğmeler (Bitir onay sorar; yeterli GPS noktası yoksa silmeyi
+  önerir). Bilgi paneli küçük (tek satır) / normal / tam ekran: tutamacı yukarı-aşağı kaydır ya da sağdaki oklara bas.
 - Fotoğraf yükleme (depolama kovaları ve kuralları `postgres` rolüyle kuruldu mu?)
 - Kullanıcı engelleme (`postgres` rolü `auth.users`'a yazabiliyor mu?)
 - Geçersiz push jetonu temizliği (gerçek Expo yanıtıyla)
