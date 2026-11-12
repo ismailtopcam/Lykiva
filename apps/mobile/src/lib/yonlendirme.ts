@@ -60,6 +60,8 @@ export async function rotaHesapla(duraklar: LngLat[], mod: CizimModu, activity: 
   const res = await fetch(url, { signal });
   if (!res.ok) {
     const t = await res.text().catch(() => '');
+    // "datafile E0_N45.rd5 not found": nokta, sunucudaki harita karolarının dışında (kendi sunucumuz yalnızca Türkiye ve çevresi)
+    if (t.includes('datafile')) throw new Error($t('lib_yonlendirme.yalnizca_turkiye'));
     throw new Error(t.includes('not mapped') || t.includes('target') ? $t('lib_yonlendirme.bu_noktalar_arasinda_yol') : $t('lib_yonlendirme.rota_hesaplanamadi'));
   }
   const j = await res.json();

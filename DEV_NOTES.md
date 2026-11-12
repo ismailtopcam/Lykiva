@@ -46,7 +46,8 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
 4. **Hetzner depolama anahtarını yenile:** gizli anahtar sohbette paylaşıldı. Hetzner Console > Security > S3 credentials'ta
    yeni çift oluştur, `/etc/lykiva-yedek.env`'de `S3_ANAHTAR` / `S3_GIZLI`'yi değiştir (Claude yapabilir: erişim anahtarını
    sohbete, gizliyi yalnızca sunucuya yaz), sonra eski iki çifti (`3W8WDQ…`, `CZE21…`) sil.
-5. **Kendi rota / yer arama sunucuları:** `altyapi/README.md` adımlarıyla Coolify'da kur, `.env` adreslerini değiştir.
+5. **Coolify API anahtarı (12 Kas 2026):** BRouter / Photon kurulumu için sohbette paylaşılan anahtarı (`4|HHdY…`)
+   Coolify > Keys & Tokens'tan sil.
 6. **Play dahili test:** katılma bağlantısını "Gösterge test" listesindekilere gönder:
    https://play.google.com/apps/internaltest/4701532399950766309 — telefonda denenmemiş özellikleri (aşağıda) dene.
    Sonraki sürümler: `npx eas-cli@latest build -p android --profile production` → AAB'yi Dahili test > Yeni sürüm'e yükle
@@ -116,7 +117,8 @@ reklam yok. EAS ortam değişkenleri (production / preview / development) girild
 **Dahili test yayında** (11 Kas 2026): sürüm 2 (0.1.0), hedef SDK 36, tester listesi "Gösterge test" (3 kişi).
 **Sürüm 4 yüklendi** (12 Kas 2026, versionCode 4, güncel main): kilit ekranı penceresi, hedefler / meydan okumalar /
 rozetler, harita türleri, ısı haritaları, dil desteği, çevrimdışı harita, kişisel rekorlar.
-Sonraki sürüme girecek: Expo SDK 58 yama güncellemeleri (15 paket, `expo doctor` uyarısı giderildi, 12 Kas 2026).
+Sonraki sürüme girecek: Expo SDK 58 yama güncellemeleri (15 paket, `expo doctor` uyarısı giderildi, 12 Kas 2026);
+kendi BRouter / Photon sunucularımız (EAS ortam değişkenleri, aşağıda).
 Kalan: testerların kurup denemesi; sonra kapalı teste geçiş (bkz. Mağazaya çıkmadan önce).
 
 ### [ ] Mağazaya çıkmadan önce
@@ -143,10 +145,23 @@ Yeni anahtarla ilk dakikalarda ara ara 403 geldi (rclone yeniden deneyip tamamla
 Sunucu paketleri güncellendi (12 Kas 2026; Ubuntu 24.04.5, Docker eklentileri, Tailscale 1.104.6, snapd), 27 konteynerin
 hepsi çalışıyor, yeniden başlatma gerekmedi. Otomatik güvenlik güncellemeleri (unattended-upgrades) açık.
 
-### [~] Kendi rota hesaplama ve yer arama sunucumuz
-Kurulum dosyaları hazır: `altyapi/` (BRouter 1.7.10 + Photon 1.3.0, Coolify Docker Compose). Coolify'da kurulup
-`.env` adresleri değiştirilince [x] olacak. O zamana kadar herkese açık brouter.de ve photon.komoot.io kullanılıyor
-(adil kullanım sınırlı; gerçek kullanıcılar gelmeden önce yapılmalı).
+### [x] Kendi rota hesaplama ve yer arama sunucumuz (12 Kas 2026)
+Coolify > Uygulamalar > production > **lykiva-altyapi** (Docker Compose, `altyapi/docker-compose.yml`, sunucu "uygulama"):
+`https://brouter.lykiva.app` (BRouter 1.7.10, Türkiye ve çevresi 8 karo) ve `https://photon.lykiva.app` (Photon 1.3.0,
+Türkiye, tr + en; 1,18 milyon kayıt, 449 MB). `PHOTON_BELLEK=3g` (ilk içe aktarma ~3 GB, 5 dk; sonra ~400 MB).
+Denendi: BRouter dört profilde brouter.de ile aynı sonuç (Kaş 3653 m); Photon Türkçe aramalarda komoot ile aynı ya da daha iyi.
+Haftalık güncelleme Coolify > Scheduled Tasks: pazartesi 05:00 BRouter segmentleri, 05:30 Photon verisi
+(`veri-guncelle.sh && kill 1` — bitince Photon yeniden başlar, ~13 sn kesinti; denendi).
+Uygulama: EAS ortam değişkenleri `EXPO_PUBLIC_BROUTER_URL` / `EXPO_PUBLIC_PHOTON_URL` (production / preview / development)
+girildi → **sürüm 5'ten itibaren** kendi sunucularımız; o zamana kadar telefonlar brouter.de / photon.komoot.io kullanır.
+- [ ] **Kapsam yalnızca Türkiye:** Photon'da yurt dışı yer yok ("Eiffel" → Bandırma'da bir kuaför), BRouter karoları
+  E25–E45 / N35–N45 dışında rota çizmez. Almanca / Rusça arayüzle yurt dışındaki kullanıcılar etkilenir. Öneri: kendi
+  sunucu hata verirse ya da sonuç boşsa uygulama herkese açık sunuculara düşsün (`lib/yonlendirme.ts`, `lib/yerArama.ts`).
+  Şimdilik yapılmadı (İsmail, 12 Kas 2026); yerine kullanıcıya uyarı: rota çizme panelinde "yalnızca Türkiye'de çalışıyor",
+  arama sonuçlarının altında "yalnızca Türkiye'deki yerler", kapsam dışında rota istenince açıklayıcı hata (dört dilde, sürüm 5).
+- [ ] **Uzun rotalar yavaş:** İstanbul–Bursa (139 km) bizde ~8 sn, brouter.de'de ~2,5 sn. `BROUTER_BELLEK` (512M)
+  artırılıp denenebilir; kısa rotalar ~0,3 sn.
+- Adresler herkese açık; tarayıcı botları istek atıyor (normal). Gerekirse ileride erişim sınırlanır.
 
 ### [~] Giriş: Google ve Apple
 - **Google açık** (11 Kas 2026): Google Cloud projesi `lykiva` (Gösterge'den ayrı), OAuth onay ekranı "In production"

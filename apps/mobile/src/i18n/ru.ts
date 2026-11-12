@@ -903,6 +903,7 @@ export const ru: Sozluk = {
     patikaya_yapis: 'По тропам',
     rota_hesaplanamadi: 'Не удалось построить маршрут',
     bu_noktalar_arasinda_yol: 'Между этими точками не найдено ни дороги, ни тропы',
+    yalnizca_turkiye: 'В этом районе маршрут построить нельзя: построение маршрутов пока работает только в Турции и рядом с ней.',
   },
   molaFotolari: {
     fotograf_cek: 'Сделать фото',
@@ -1218,6 +1219,8 @@ export const ru: Sozluk = {
     haritaya_dokunarak_rota_cizmek: 'Чтобы рисовать маршрут касанием карты, нужна версия приложения для телефона (в Expo Go и в браузере это невозможно).',
     serbest_cizimde_yukseklik_ve: 'При свободном рисовании нет высоты и уклона; выбери «По тропам» или «По дорогам».',
     dk: '{dk} мин',
+    yalnizca_turkiye: 'Построение маршрутов и поиск мест пока работают только в Турции.',
+    yalnizca_turkiyedeki_yerler: 'Пока только места в Турции',
   },
   rota_paylas: {
     rotayi_paylas: 'Поделиться маршрутом',

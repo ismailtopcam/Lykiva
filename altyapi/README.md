@@ -12,6 +12,15 @@ kendi kopyasını Coolify'da çalıştırmak için.
 İkisi de ilk açılışta verisini kendisi indirir (BRouter birkaç dakika, Photon içe aktarmayla birlikte daha uzun);
 veriler kalıcı birimlerde durur, yeniden başlatmada tekrar indirilmez.
 
+## Kurulu (12 Kas 2026)
+
+Coolify > Uygulamalar > production > **lykiva-altyapi**, sunucu "uygulama". Alan adları API ile `https://brouter.lykiva.app`
+ve `https://photon.lykiva.app` olarak verildi (Coolify portu kendisi ekledi: 17777 / 2322). Ortam: `PHOTON_BELLEK=3g`.
+Ölçülen: Photon ilk içe aktarma ~5 dk, ~3 GB bellek; çalışırken ~400 MB. BRouter ~50 MB (boşta).
+Haftalık güncelleme (Scheduled Tasks): pazartesi 05:00 `brouter` → `/brouter/segment-guncelle.sh`;
+05:30 `photon` → `/photon/veri-guncelle.sh && kill 1` (Photon'un 1 numaralı süreci Java; `kill 1` düzgün kapatır,
+`restart: unless-stopped` yeni veriyle açar, ~13 sn).
+
 ## Kurulum (Coolify)
 
 1. **DNS:** `brouter.lykiva.app` ve `photon.lykiva.app` için A kaydı → uygulama sunucusu (91.90.81.195),
