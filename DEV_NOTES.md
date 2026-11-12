@@ -28,9 +28,9 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
   - `MAGAZA.md`: mağaza metinleri ve Play Console beyan taslakları (markete çıkarken kullanılacak).
 - **EAS ortam değişkenleri** (production / preview / development): `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
   Mağaza derlemeleri bunları kullanır; yerel geliştirmede `apps/mobile/.env` geçerli.
-- **Mağaza derlemesi almak istersen:** Android `npx eas-cli@latest build -p android --profile production` (imza EAS'ta, soru sormaz).
-  iOS derlemesi ve TestFlight gönderimi şimdilik İsmail'in bilgisayarından (App Store Connect API anahtarı orada); yeni
-  derleme gerekirse haber ver.
+- **Derlemeler İsmail'de (12 Kas 2026):** EAS projesi İsmail'in hesabında kalıyor, seni eklemiyoruz. Android ve iOS derlemeleri,
+  TestFlight / Play gönderimleri İsmail'in bilgisayarından. İşin yeni derleme gerektiriyorsa (yeni yerel modül, `app.json`)
+  "Bekleyen elle yapılacaklar"a "İsmail derleme alacak" diye yaz.
 - **Android push kuruldu** (Firebase + FCM V1, `google-services.json` repoda); yeni Android derlemesinden itibaren çalışır.
 - Gizli anahtarlar (Google istemci sırrı, Apple API anahtarı, Coolify anahtarı) repoda yok ve olmayacak.
 
@@ -57,12 +57,8 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
      lykiva-supabase > `SMTP_PASS`'ı da güncelle ve servisi yeniden başlat.
    - Sohbette paylaşılan Coolify API anahtarlarını (bu da dahil) Coolify > Keys & Tokens'tan sil.
    - SMTP çalışıyor: deneme şifre sıfırlama postası Gmail'e geldi (11 Kas 2026). Kalan: yeni derlemede uygulamadan dene.
-10. **İsmail uygulayacak — hedefler ve meydan okumalar migration'ı:** `20261113000000_hedefler_meydan_okumalar.sql`
-    (`uygula.sh`, durum modu sonra `uygula`). Uygulanana kadar uygulamada hedefler / meydan okumalar ekranı "sunucu henüz
-    güncellenmedi" der, rozetler yine çalışır. Sonra `https://lykiva.app/admin/meydan-okumalar`'dan ilk herkese açık meydan
-    okuma açılabilir (ör. "Aralık'ta 200 km"; yönetici hesabıyla, kod / sunucu işi değil).
-11. **İsmail uygulayacak — ısı haritaları migration'ı:** `20261114000000_isi_haritalari.sql` (`uygula.sh`, durum modu sonra
-    `uygula`). Uygulanana kadar uygulamada ısı haritası seçilince haritada hiçbir şey çıkmaz, Ayarlar'da "Gizlilik" görünmez.
+10. **İlk herkese açık meydan okuma (isteğe bağlı):** `https://lykiva.app/admin/meydan-okumalar`'dan yönetici hesabıyla aç
+    (ör. "Aralık'ta 200 km"). Hedefler / meydan okumalar ve ısı haritaları migration'ları uygulandı (12 Kas 2026).
 
 ## Yapılacaklar
 
@@ -292,6 +288,7 @@ Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde
   uygulamada türetilir); kış = Liberty karlı renklerle + OpenSnowMap pist döşemeleri. Seçim telefonda saklanır, bütün
   haritalara uygulanır. Koşullar mağaza öncesi kontrol edilecek (bkz. Mağazaya çıkmadan önce).
 - **Derleme: EAS Build** (bulutta; Windows'tan da başlatılır). Mac'te yerel derleme de mümkün.
+  EAS projesi ve bütün derleme / gönderimler İsmail'in hesabından ve bilgisayarından (12 Kas 2026); Gökhan EAS'a eklenmez.
 - **Yönetim paneli** tam yetkili anahtar kullanmaz; her işlem yöneticinin kendi oturumuyla, yetkiyi veritabanı denetler.
 - **Yasal sayfalardaki iletişim bilgileri** panelden değişir (`site_ayarlari`); varsayılan `bilgi@lykiva.app`.
 - **Alan adları:** `lykiva.app` asıl adres (web), `api.lykiva.app` Supabase, `brouter.` / `photon.lykiva.app` kendi
