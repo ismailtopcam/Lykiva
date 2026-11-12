@@ -22,7 +22,8 @@ export type KayitPaketi = {
   min_moving_speed_mps: number;
   /** Verilmezse sunucu kişinin varsayılanını kullanır (Gizlilik kontrolleri > Aktiviteler) */
   visibility?: 'private' | 'followers' | 'public';
-  hide_endpoints: boolean;
+  /** Verilmezse sunucu kişinin varsayılanını kullanır (Gizlilik kontrolleri > Harita görünürlüğü) */
+  hide_endpoints?: boolean;
   points: TrackPoint[];
   stops: TrackStop[];
   /** Kayıt başındaki hava (sunucuda activities.weather) */
@@ -93,7 +94,6 @@ export function paketOlustur(opts: {
     avg_speed_mps: r2(s.avgMovingSpeed),
     max_speed_mps: r2(s.maxSpeed),
     min_moving_speed_mps: r2(s.minMovingSpeed),
-    hide_endpoints: true,
     points: points.map((p) => ({
       t: p.t,
       lat: Math.round(p.lat * 1e6) / 1e6,

@@ -197,7 +197,9 @@ export default function AktiviteOzetiScreen() {
         }
       />
       <View style={[styles.bottom, { paddingBottom: insets.bottom + 16 }]}>
-        <Button label={$t('aktivite.hiz_molalar')} icon="gauge" variant="outline" href={{ pathname: '/aktivite/[id]/hiz', params: { id: a.id } }} style={{ flex: 1 }} />
+        {a.hizGizli && a.stops.length === 0 ? null : (
+          <Button label={$t('aktivite.hiz_molalar')} icon="gauge" variant="outline" href={{ pathname: '/aktivite/[id]/hiz', params: { id: a.id } }} style={{ flex: 1 }} />
+        )}
         <Button label={$t('ortak.paylas')} icon="share" href={{ pathname: '/aktivite/[id]/paylas', params: { id: a.id } }} style={{ flex: 1 }} />
       </View>
       {sikayet.pencere}

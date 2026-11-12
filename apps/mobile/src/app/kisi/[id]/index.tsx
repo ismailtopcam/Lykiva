@@ -3,7 +3,7 @@
  */
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { kisiProfili, kisininAktiviteleri, type KisiAktivitesi, type KisiProfili } from '@/akis/akis';
 import { RouteThumb } from '@/components/charts';
@@ -13,6 +13,7 @@ import { SikayetBaglantisi, useSikayet } from '@/components/SikayetPenceresi';
 import { Txt } from '@/components/Txt';
 import { Avatar, Button, SectionHeader } from '@/components/ui';
 import { basHarfler, grupRengi } from '@/grup/gruplar';
+import { kisiEngelle } from '@/lib/gizlilik';
 import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t, yerel } from '@/i18n';
 
@@ -63,6 +64,24 @@ export default function KisiScreen() {
     );
   }
 
+  // Engelle: takipler ve karşılıklı etiketler kalkar, birbirinizin aktivitelerini göremezsiniz (sunucu: kisi_engelle)
+  function engelDegistir(engelle: boolean) {
+    if (!p) return;
+    const yap = async () => {
+      try {
+        await kisiEngelle(p.id, engelle);
+        await yukle();
+      } catch (e) {
+        Alert.alert($t('ayarlar.yapilamadi'), e instanceof Error ? e.message : String(e));
+      }
+    };
+    if (!engelle) return void yap();
+    Alert.alert($t('kisi.engelle_baslik', { ad: p.display_name }), $t('kisi.engelle_metin'), [
+      { text: $t('ortak.vazgec'), style: 'cancel' },
+      { text: $t('kisi.engelle'), style: 'destructive', onPress: () => void yap() },
+    ]);
+  }
+
   const takipListesi = (yon: 'takipci' | 'takip') => router.push({ pathname: '/kisi/[id]/takip', params: { id: p.id, yon } });
   const altBaslik = [`@${p.username}`, p.city].filter(Boolean).join(' · ');
 
@@ -94,6 +113,13 @@ export default function KisiScreen() {
         <View style={{ paddingHorizontal: space.lg, marginBottom: space.lg }}>
           {p.me ? (
             <Button label={$t('kisi.profilim')} variant="outline" onPress={() => router.navigate('/profil')} />
+          ) : p.engelledim ? (
+            <>
+              <Txt variant="small" style={{ textAlign: 'center', marginBottom: 8 }}>
+                {$t('kisi.engelledin')}
+              </Txt>
+              <Button label={$t('gizlilik.engeli_kaldir')} variant="outline" onPress={() => engelDegistir(false)} />
+            </>
           ) : (
             <>
               <TakipDugmesi
@@ -144,6 +170,7 @@ export default function KisiScreen() {
             ))}
           </View>
           {!p.me ? <SikayetBaglantisi etiket={$t('kisi.bu_kisiyi_sikayet_et')} onPress={() => sikayet.ac('user', p.id, `${p.display_name} · @${p.username}`)} /> : null}
+          {!p.me && !p.engelledim ? <SikayetBaglantisi etiket={$t('kisi.bu_kisiyi_engelle')} onPress={() => engelDegistir(true)} /> : null}
         </View>
       </ScrollView>
       {sikayet.pencere}

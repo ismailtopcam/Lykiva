@@ -166,8 +166,8 @@ export default function MeydanOkumaScreen() {
           </Txt>
         ) : (
           <View style={styles.tablo}>
-            {mo.siralama.map((s) => (
-              <SiraSatiri key={s.user_id} s={s} olcu={mo.olcu} hedef={mo.hedef} />
+            {mo.siralama.map((s, i) => (
+              <SiraSatiri key={s.user_id ?? `gizli-${i}`} s={s} olcu={mo.olcu} hedef={mo.hedef} />
             ))}
             {mo.benim && !benimSirada ? (
               <>
@@ -187,22 +187,27 @@ export default function MeydanOkumaScreen() {
 function SiraSatiri({ s, olcu, hedef }: { s: SiralamaSatiri; olcu: MeydanOkumaDetayi['olcu']; hedef: number }) {
   const v = olcuMetni(olcu, s.deger);
   const tamam = s.deger >= hedef;
+  // Meydan okuma katılımını gizleyen kişi (Gizlilik kontrolleri): adı, fotoğrafı ve sayfası yok
+  const ad = s.gizli || !s.display_name ? $t('meydan.gizli_katilimci') : s.display_name;
   return (
     <Pressable
-      accessibilityRole="link"
-      accessibilityLabel={`${s.sira}. ${s.display_name}${s.ben ? ` (${$t('ortak.sen')})` : ''}: ${v.value} ${v.unit}${tamam ? `, ${$t('meydan.tamamladi')}` : ''}`}
-      onPress={() => router.push({ pathname: '/kisi/[id]', params: { id: s.user_id } })}
+      accessibilityRole={s.user_id ? 'link' : 'text'}
+      accessibilityLabel={`${s.sira}. ${ad}${s.ben ? ` (${$t('ortak.sen')})` : ''}: ${v.value} ${v.unit}${tamam ? `, ${$t('meydan.tamamladi')}` : ''}`}
+      disabled={!s.user_id}
+      onPress={() => s.user_id && router.push({ pathname: '/kisi/[id]', params: { id: s.user_id } })}
       style={({ pressed }) => [styles.satir, s.ben && { backgroundColor: colors.terraSoft }, pressed && { opacity: 0.8 }]}>
       <Txt style={[styles.sira, s.sira <= 3 && { color: colors.terraInk }]}>{s.sira}</Txt>
-      <Avatar initials={basHarfler(s.display_name)} tone={s.ben ? 'terra' : 'sea'} size={36} uri={s.avatar_url} />
+      <Avatar initials={s.display_name ? basHarfler(s.display_name) : '?'} tone={s.ben ? 'terra' : 'sea'} size={36} uri={s.avatar_url} />
       <View style={{ flex: 1, minWidth: 0 }}>
         <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14 }} numberOfLines={1}>
-          {s.display_name}
+          {ad}
           {s.ben ? ` · ${$t('ortak.sen')}` : ''}
         </Txt>
-        <Txt variant="small" numberOfLines={1}>
-          @{s.username}
-        </Txt>
+        {s.username ? (
+          <Txt variant="small" numberOfLines={1}>
+            @{s.username}
+          </Txt>
+        ) : null}
       </View>
       {tamam ? <Icon name="medal" size={18} color={colors.sea} /> : null}
       <Txt style={{ fontFamily: fontFamily.display, fontSize: 17 }}>

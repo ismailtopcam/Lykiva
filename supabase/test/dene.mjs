@@ -1028,5 +1028,119 @@ await olarak(PB, `select birlikte_cikar($1, $2)`, [bIkinci, PG]);
 m = await hataMesaji(() => olarak(PB, `select birlikte_ekle($1, $2::uuid[])`, [bIkinci, [PG]]));
 bekle('Bahsetme hiç kimseye: takipçi de etiketleyemez', /izin vermiyor/.test(m ?? ''), m);
 
+console.log('\nEngelleme');
+// Ece, Efe'yi engeller; Eda yabancı
+const EA = '71000000-0000-0000-0000-000000000071';
+const EB = '72000000-0000-0000-0000-000000000072';
+const EC = '73000000-0000-0000-0000-000000000073';
+await db.exec(`
+  insert into auth.users (id, raw_user_meta_data) values
+    ('${EA}', '{"full_name":"Ece Engelleyen"}'), ('${EB}', '{"full_name":"Efe Engellenen"}'), ('${EC}', '{"full_name":"Eda Yabancı"}');
+  insert into follows (follower_id, followee_id) values ('${EA}', '${EB}'), ('${EB}', '${EA}');
+`);
+const engAkt = await aktivite(EA, 'Ece açık', 'public', 27.1, 38.4, 50);
+const bAkt = await aktivite(EB, 'Efe açık', 'public', 27.1, 38.4, 51);
+await olarak(EA, `select birlikte_ekle($1, $2::uuid[])`, [engAkt, [EB]]);
+await olarak(EB, `select birlikte_ekle($1, $2::uuid[])`, [bAkt, [EA]]);
+const goruyor = async (u, id) => (await olarak(u, `select count(*)::int as n from aktivite_ozetleri where id = $1`, [id])).rows[0].n === 1;
+bekle('Engelden önce Efe, Ece\'nin aktivitesini görür', await goruyor(EB, engAkt), null);
+
+m = await hataMesaji(() => olarak(EA, `select kisi_engelle($1, true)`, [EA]));
+bekle('Kendini engelleyemezsin', /Kendini/.test(m ?? ''), m);
+await olarak(EA, `select kisi_engelle($1, true)`, [EB]);
+r = await db.query(`select (select count(*) from follows where (follower_id = '${EA}' and followee_id = '${EB}') or (follower_id = '${EB}' and followee_id = '${EA}'))::int as f,
+  (select count(*) from activity_participants where activity_id in ('${engAkt}', '${bAkt}'))::int as p`);
+bekle('Engellenince iki yöndeki takip ve karşılıklı etiketler kalkar', r.rows[0].f === 0 && r.rows[0].p === 0, r.rows[0]);
+bekle('Engellenen, engelleyenin aktivitesini göremez', !(await goruyor(EB, engAkt)), null);
+bekle('Engelleyen de engellediğinin aktivitesini göremez', !(await goruyor(EA, bAkt)), null);
+bekle('Yabancı ikisini de görmeye devam eder', (await goruyor(EC, engAkt)) && (await goruyor(EC, bAkt)), null);
+r = await olarak(EB, `select kisi_profili($1) as j`, [EA]);
+bekle('Engellenen için engelleyenin profili yok', r.rows[0].j === null, r.rows[0].j);
+r = await olarak(EA, `select kisi_profili($1) as j`, [EB]);
+bekle('Engelleyen engellediğini yalnızca adıyla görür (engelledim)', r.rows[0].j.engelledim === true && r.rows[0].j.kisitli === true && r.rows[0].j.bio === null, r.rows[0].j);
+r = await olarak(EB, `select kisi_ara('ece') as j`);
+bekle('Engellenen aramada engelleyeni bulamaz', !r.rows[0].j.some((x) => x.id === EA), r.rows[0].j);
+m = await hataMesaji(() => olarak(EB, `insert into follows (follower_id, followee_id) values ($1, $2)`, [EB, EA]));
+bekle('Engellenen takip edemez', /row-level security/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(EB, `select yorum_yaz($1, 'merhaba')`, [engAkt]));
+bekle('Engellenen yorum yazamaz', /göremiyorsun/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(EA, `select birlikte_ekle($1, $2::uuid[])`, [engAkt, [EB]]));
+bekle('Engellenen etiketlenemez', !!m, m);
+r = await olarak(EA, `select engellenenler() as j`);
+bekle('Engellenenler listesinde Efe var', r.rows[0].j.length === 1 && r.rows[0].j[0].id === EB, r.rows[0].j);
+r = await olarak(EB, `select count(*)::int as n from engellemeler`);
+bekle('Engellenen, engellendiğini tablodan okuyamaz', r.rows[0].n === 0, r.rows[0].n);
+m = await hataMesaji(() => olarak(EB, `delete from engellemeler where engelleyen = $1`, [EA]));
+bekle('Engel tablodan doğrudan silinemez', /permission denied/.test(m ?? ''), m);
+await olarak(EA, `select kisi_engelle($1, false)`, [EB]);
+bekle('Engel kalkınca aktivite yeniden görünür', await goruyor(EB, engAkt), null);
+r = await olarak(EA, `select engellenenler() as j`);
+bekle('Engel kalkınca liste boş', r.rows[0].j.length === 0, r.rows[0].j);
+
+console.log('\nEk gizlilik kontrolleri');
+// Harita görünürlüğü: hide_endpoints verilmeyen kayıt kişinin varsayılanıyla açılır
+async function hamAktivite(uid, baslik, gun, ekle = {}) {
+  const pts = iz(26.5, 39.0).map((p) => ({ ...p, t: p.t + gun * 86400000 }));
+  const p = {
+    title: baslik, activity: 'run', started_at: new Date(pts[0].t).toISOString(), ended_at: new Date(pts.at(-1).t).toISOString(),
+    moving_time_s: 590, elapsed_time_s: 600, distance_m: 2500, elevation_gain_m: 59, elevation_loss_m: 0, max_elevation_m: 159,
+    avg_speed_mps: 4.2, max_speed_mps: 8, min_moving_speed_mps: 1, points: pts,
+    stops: [{ startT: pts[10].t, endT: pts[12].t, lng: pts[10].lng, lat: pts[10].lat, distanceAtM: 400 }], ...ekle,
+  };
+  return (await olarak(uid, `select kaydet_aktivite($1::jsonb) as id`, [JSON.stringify(p)])).rows[0].id;
+}
+const bayrak = (u, alan, deger) => olarak(u, `select gizlilik_bayragi_ayarla($1, $2)`, [alan, deger]);
+await bayrak(EA, 'uclari_gizle', false);
+const hAcik = await hamAktivite(EA, 'Uçlar açık', 52, { visibility: 'public' });
+const hGizli = await hamAktivite(EA, 'Uçlar gizli', 53, { visibility: 'public', hide_endpoints: true });
+r = await db.query(`select id, hide_endpoints from activities where id in ('${hAcik}', '${hGizli}')`);
+bekle('Harita: uçları gizleme kapalıyken yeni kayıt açık; açıkça istenen korunur',
+  r.rows.find((x) => x.id === hAcik).hide_endpoints === false && r.rows.find((x) => x.id === hGizli).hide_endpoints === true, r.rows);
+let n = (await olarak(EA, `select gecmis_aktiviteleri_duzenle(null, true) as n`)).rows[0].n;
+r = await db.query(`select count(*) filter (where not hide_endpoints)::int as acik, count(*)::int as hepsi from activities where owner_id = '${EA}'`);
+bekle('Geçmiş aktiviteleri düzenle: uçlar hepsinde gizlendi', n === 1 && r.rows[0].acik === 0, { n, ...r.rows[0] });
+n = (await olarak(EA, `select gecmis_aktiviteleri_duzenle('followers', null) as n`)).rows[0].n;
+r = await db.query(`select count(*) filter (where visibility <> 'followers')::int as baska from activities where owner_id = '${EA}'`);
+bekle('Geçmiş aktiviteleri düzenle: hepsi takipçilere', n === 3 && r.rows[0].baska === 0, { n, ...r.rows[0] });
+m = await hataMesaji(() => olarak(EA, `select gecmis_aktiviteleri_duzenle(null, null)`));
+bekle('Geçmiş aktiviteleri düzenle: boş istek reddedilir', /seçilmedi/.test(m ?? ''), m);
+await olarak(EA, `select gecmis_aktiviteleri_duzenle('public', null)`);
+
+// Gizli ayrıntılar: hız ve molalar
+await bayrak(EA, 'gizli_hiz', true);
+const ozet = async (u) => (await olarak(u, `select avg_speed_mps, max_speed_mps from aktivite_ozetleri where id = $1`, [hAcik])).rows[0];
+const detay = async (u) => (await olarak(u, `select aktivite_detay($1) as j`, [hAcik])).rows[0].j;
+let hizOz = await ozet(EC);
+bekle('Hız gizli: başkası ortalama ve en yüksek hızı göremez', hizOz.avg_speed_mps === null && hizOz.max_speed_mps === null, hizOz);
+hizOz = await ozet(EA);
+bekle('Hız gizli: sahibi görür', hizOz.avg_speed_mps === 4.2 && hizOz.max_speed_mps === 8, hizOz);
+let dt = await detay(EC);
+bekle('Hız gizli: hız grafiği boş, yükseklik duruyor', dt.profile.length > 0 && dt.profile.every((x) => x.speed === null) && dt.profile.some((x) => x.alt !== null), dt.profile[0]);
+bekle('Hız gizliyken molalar görünür', dt.stops.length === 1, dt.stops.length);
+await bayrak(EA, 'gizli_molalar', true);
+dt = await detay(EC);
+r = await olarak(EC, `select count(*)::int as n from activity_stops where activity_id = $1`, [hAcik]);
+bekle('Molalar gizli: başkası mola noktalarını göremez (tablodan da)', dt.stops.length === 0 && r.rows[0].n === 0, { stops: dt.stops.length, n: r.rows[0].n });
+bekle('Molalar gizli: sahibi görür', (await detay(EA)).stops.length === 1, null);
+const ecKart = (await olarak(EC, `select akis('yakin', null, null, 26.5, 39.0) as j`)).rows[0].j.find((x) => x.id === hAcik);
+bekle('Akış kartı: hız ve mola sayısı gizli', ecKart && ecKart.avg_speed_mps === null && ecKart.stop_count === 0, ecKart && { hiz: ecKart.avg_speed_mps, mola: ecKart.stop_count });
+
+// Kişisel bilgilerimi paylaşmayın: tercih kaydı
+await bayrak(EA, 'kisisel_veri_paylasimi_kapali', true);
+r = await db.query(`select kisisel_veri_paylasimi_kapali as k from profiles where id = '${EA}'`);
+bekle('Kişisel bilgilerimi paylaşmayın tercihi kaydedilir', r.rows[0].k === true, r.rows[0]);
+m = await hataMesaji(() => bayrak(EA, 'is_admin', true));
+bekle('Bilinmeyen bayrak (ör. is_admin) reddedilir', /Bilinmeyen/.test(m ?? ''), m);
+
+// Meydan okuma katılımı: K sıralamada gizlenir
+await gizlilik(K, 'meydan_okuma_gizliligi', 'kimse');
+md = (await olarak(H, `select meydan_okuma_detay($1) as j`, [mGenel])).rows[0].j;
+let kSatiri = md.siralama.filter((x) => x.gizli);
+bekle('Meydan okuma gizli: başkası adını görmez, sırası ve değeri durur',
+  kSatiri.length === 1 && kSatiri[0].user_id === null && kSatiri[0].display_name === null && typeof kSatiri[0].sira === 'number' && !md.siralama.some((x) => x.user_id === K), md.siralama);
+md = (await olarak(K, `select meydan_okuma_detay($1) as j`, [mGenel])).rows[0].j;
+bekle('Meydan okuma gizli: kendisi adını ve yerini görür', md.benim && md.benim.ben === true && md.benim.gizli === false, md.benim);
+await gizlilik(K, 'meydan_okuma_gizliligi', 'herkes');
+
 console.log(hata ? `\n${hata} senaryo başarısız` : '\nTüm senaryolar geçti');
 process.exit(hata ? 1 : 0);
