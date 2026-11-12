@@ -74,7 +74,8 @@ const ONIZLEME: Record<HaritaTuru, { zemin: string; leke: string; yol?: string; 
   kis: { zemin: '#F3F6F9', leke: '#D3DEDB', pist: '#D9473A' },
 };
 
-export function HaritaTuruDugmesi({ style }: { style?: StyleProp<ViewStyle> }) {
+/** koyu: kayıt ekranı gibi gece temalı haritalarda koyu zemin */
+export function HaritaTuruDugmesi({ style, koyu }: { style?: StyleProp<ViewStyle>; koyu?: boolean }) {
   const [acik, setAcik] = useState(false);
   const tur = useHaritaTuru();
   const isi = useIsiTuru();
@@ -85,7 +86,7 @@ export function HaritaTuruDugmesi({ style }: { style?: StyleProp<ViewStyle> }) {
           isi
             ? $t('haritaTuru.harita_turu_secili_isi', { tur: turAdi(tur), isi: isiAdi(isi) })
             : $t('haritaTuru.harita_turu_secili', { tur: turAdi(tur) })
-        } onPress={() => setAcik(true)} style={style} />
+        } onPress={() => setAcik(true)} color={koyu ? colors.night.text : undefined} style={[koyu && styles.koyu, style]} />
       <Modal visible={acik} transparent animationType="slide" onRequestClose={() => setAcik(false)}>
         <Pressable style={styles.perde} onPress={() => setAcik(false)} accessibilityRole="button" accessibilityLabel={$t('ortak.kapat')} />
         <View style={styles.alt} pointerEvents="box-none">
@@ -149,6 +150,7 @@ export function HaritaTuruDugmesi({ style }: { style?: StyleProp<ViewStyle> }) {
 }
 
 const styles = temaliStil(() => StyleSheet.create({
+  koyu: { backgroundColor: 'rgba(14,21,18,0.85)', borderWidth: 1, borderColor: colors.night.line },
   perde: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(20, 26, 23, 0.45)' },
   alt: { flex: 1, justifyContent: 'flex-end' },
   kart: { backgroundColor: colors.ground, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: space.lg, paddingTop: space.lg },
