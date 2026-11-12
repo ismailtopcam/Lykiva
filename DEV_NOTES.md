@@ -220,6 +220,9 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
 - Hava yalnızca kayıt başında bir kez ölçülüyor; rota detayında tahmin yok (rotanın planlanan tarihi yok).
 - Rota eğimi köprü ve tünelde yanlış olabilir: BRouter çıktısında köprü / tünel etiketi yok (Galata Köprüsü örneğinde denendi), DEM
   köprüde vadinin tabanını, tünelde dağın üstünü verir. Kendi BRouter sunucumuzda etiketin çıktıya eklenip eklenemeyeceğine bakılmalı.
+- Alt menü (12 Kas 2026): sekmeler Ana Sayfa · Haritalar · Egzersiz · Gruplar · Profil oldu (eski: Akış · Keşfet · + · Gruplar · Profil).
+  Haritalar sekmesi şimdilik eski Keşfet ekranını (rota / topluluk / etkinlik / kişi listesi) açıyor; harita görünümü yok.
+  Egzersiz sekmesi kayıt başlatma ekranını açar. Yalnızca JS değişikliği, yeni derleme gerekmez.
 - Serbest çizilen rotada yükseklik yok (BRouter'a sorulmuyor); ayrı bir yükseklik servisi gerekir.
 
 ### [ ] Rakiplere göre eksikler (Kasım 2026 karşılaştırması)
