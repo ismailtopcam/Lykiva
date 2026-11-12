@@ -11,7 +11,6 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | Kim | İş | Dal |
 | --- | --- | --- |
 | İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |
-
 ## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
 
 - **iOS'ta da kilit ekranı penceresi var artık:** Live Activity (kilit ekranı + Dynamic Island), `expo-widgets` ile —
@@ -277,9 +276,15 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
 - Hava yalnızca kayıt başında bir kez ölçülüyor; rota detayında tahmin yok (rotanın planlanan tarihi yok).
 - Rota eğimi köprü ve tünelde yanlış olabilir: BRouter çıktısında köprü / tünel etiketi yok (Galata Köprüsü örneğinde denendi), DEM
   köprüde vadinin tabanını, tünelde dağın üstünü verir. Kendi BRouter sunucumuzda etiketin çıktıya eklenip eklenemeyeceğine bakılmalı.
-- Alt menü (12 Kas 2026): sekmeler Ana Sayfa · Haritalar · Egzersiz · Gruplar · Profil oldu (eski: Akış · Keşfet · + · Gruplar · Profil).
-  Haritalar sekmesi şimdilik eski Keşfet ekranını (rota / topluluk / etkinlik / kişi listesi) açıyor; harita görünümü yok.
+- Alt menü (12 Kas 2026): sekmeler Ana Sayfa · Harita · Egzersiz · Gruplar · Profil oldu (eski: Akış · Keşfet · + · Gruplar · Profil).
   Egzersiz sekmesi kayıt başlatma ekranını açar. Yalnızca JS değişikliği, yeni derleme gerekmez.
+- [x] Harita sekmesi ve yol tarifi (12 Kas 2026, Gökhan, `harita-yol-tarifi`): "Haritalar" sekmesinin adı "Harita" oldu,
+  sekme tam ekran harita açıyor (`app/(tabs)/kesfet.tsx`). Hedef haritaya dokunarak ya da yer aramayla (Photon) seçilir,
+  bulunduğun yerden yol BRouter'la hesaplanır (etkinlik türü + yol / patika öncelikli; mesafe, tırmanış, tahmini süre).
+  "Yola çık" kaydı bu yolla başlatır (kayıt ekranındaki rota takibi, kalan mesafe). Yol geçici: sunucuya rota olarak
+  kaydedilmez, aktiviteye `route_id` gitmez (`kayit/paket.ts` artık yalnızca uuid gönderiyor). Eski Keşfet listesi
+  `app/kesfet-liste.tsx`'e taşındı, haritanın sağ üstündeki pusula düğmesiyle açılır. Sesli / adım adım yönlendirme yok.
+  Yalnızca JS, yeni yerel modül yok. Telefonda denenecek: dokunarak hedef seçme, kamera yolu tam gösteriyor mu, "Yola çık".
 - Serbest çizilen rotada yükseklik yok (BRouter'a sorulmuyor); ayrı bir yükseklik servisi gerekir.
 - Karanlık mod (12 Kas 2026, `gorunum-ayari`): haritanın kendisi (OpenFreeMap stili) karanlıkta da açık renkli; karanlık
   harita stili yok. Örnek veri ekranları (`Ornek*`) ve paylaşım kartı temaları sabit renkli bırakıldı.
