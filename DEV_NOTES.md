@@ -10,7 +10,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
-| İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |
+| İsmail | Telefona kurulum: iOS geliştirme derlemesi (kod değişikliği yok; Android alındı) | — |
 ## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
 
 - **iOS'ta da kilit ekranı penceresi var artık:** Live Activity (kilit ekranı + Dynamic Island), `expo-widgets` ile —
@@ -98,7 +98,12 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
 
 ### [~] Telefona kurulum (EAS)
 EAS projesi `@ismailtopcam/lykiva` bağlandı, `apps/mobile/eas.json` profilleri hazır (development / preview / production).
-Kalan: cihaz kaydı, ilk derleme, telefonda deneme. Yeni yerel modüller (fotoğraf, bildirim, kilit ekranı) bu derlemeyle gelecek.
+Kalan: iPhone cihaz kaydı ve iOS geliştirme derlemesi, telefonda deneme. Yeni yerel modüller (fotoğraf, bildirim, kilit ekranı) bu derlemeyle gelecek.
+- **Android geliştirme derlemesi alındı** (13 Kas 2026, Gökhan'ın telefonu için; main `e7ae72c`, debug APK, development profili).
+  EAS: build `a9dcc157-…`, APK linki 26 Kas 2026'ya kadar geçerli. Kurulduktan sonra `apps/mobile`'da `npm run mobile` ile
+  Metro'ya bağlanılır. Yeni yerel modül / `app.json` değişikliği gelene kadar yeni derleme gerekmez.
+- EAS'taki `expo doctor` uyarısı (derlemeyi durdurmuyor): `expo` 58.0.24 → ~58.0.25, `expo-dev-client` 58.0.19 → ~58.0.20,
+  `expo-location` 58.0.21 → ~58.0.22 yama sürümleri geride. `npx expo install --fix` ile ayrı dalda güncellenecek.
 
 ### [ ] Telefonda ve gerçek sunucuda denenmemiş özellikler
 Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
