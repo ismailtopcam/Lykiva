@@ -10,6 +10,8 @@
 #   YEDEK_DIZIN=/var/backups/lykiva       yerel yedek klasörü
 #   YEDEK_SAKLA_GUN=14                    yerelde kaç günlük yedek kalsın
 #   UZAK_SAKLA_GUN=60                     uzakta kaç günlük yedek kalsın
+#   SAKLA_ADET=1                          doluysa gün yerine adet: yerelde ve uzakta yalnızca son N yedek kalır
+#                                         (eskiler, yeni yedek alınıp uzağa kopyalandıktan sonra silinir)
 #   LYKIVA_SUPABASE_ID=nqyujqqkkjyba4flthzcf9uf
 #   # Sunucu dışı kopya (S3 uyumlu: Backblaze B2, Cloudflare R2, Contabo…). Boşsa yalnızca yerel yedek.
 #   S3_ENDPOINT=https://s3.eu-central-003.backblazeb2.com
@@ -32,6 +34,13 @@ STORAGE="${LYKIVA_STORAGE:-supabase-storage-$KIMLIK}"
 YEDEK_DIZIN="${YEDEK_DIZIN:-/var/backups/lykiva}"
 YEDEK_SAKLA_GUN="${YEDEK_SAKLA_GUN:-14}"
 UZAK_SAKLA_GUN="${UZAK_SAKLA_GUN:-60}"
+SAKLA_ADET="${SAKLA_ADET:-}"
+case "$SAKLA_ADET" in ''|*[!0-9]*|0) SAKLA_ADET="" ;; esac
+# SAKLA_ADET için: verilen ad listesinden, son SAKLA_ADET yedek ve bu çalışmanınki dışındakileri yazar.
+# Yalnızca yedek adlarına (20261112-023001) bakar; başka klasörlere dokunmaz.
+eskiler() {
+  printf '%s\n' "$1" | grep -E '^[0-9]{8}-[0-9]{6}$' | sort | head -n -"$SAKLA_ADET" | grep -vx "$ZAMAN" || true
+}
 KURU=0
 [ "${1:-}" = "--kuru" ] && KURU=1
 
@@ -98,18 +107,38 @@ if [ -n "${S3_KOVA:-}" ] && [ -n "${S3_ANAHTAR:-}" ] && [ -n "${S3_GIZLI:-}" ]; 
     -e RCLONE_CONFIG_UZAK_ACCESS_KEY_ID="$S3_ANAHTAR" -e RCLONE_CONFIG_UZAK_SECRET_ACCESS_KEY="$S3_GIZLI"
     "${RCLONE_IMAJ:-rclone/rclone:latest}")
   calistir "${RCLONE[@]}" copy "/yedek/$ZAMAN" "uzak:$S3_KOVA/$ZAMAN" --s3-no-check-bucket
-  # Uzakta eski yedekleri temizle
-  calistir "${RCLONE[@]}" delete "uzak:$S3_KOVA" --min-age "${UZAK_SAKLA_GUN}d" --s3-no-check-bucket
-  calistir "${RCLONE[@]}" rmdirs "uzak:$S3_KOVA" --leave-root --s3-no-check-bucket
+  # Uzakta eski yedekleri temizle (buraya ancak kopya başarılıysa gelinir: set -e)
+  if [ -n "$SAKLA_ADET" ]; then
+    log "Uzakta son $SAKLA_ADET yedek kalıyor, eskiler siliniyor"
+    if UZAKTAKILER="$("${RCLONE[@]}" lsf --dirs-only "uzak:$S3_KOVA" --s3-no-check-bucket < /dev/null)"; then
+      eskiler "$(printf '%s\n' "$UZAKTAKILER" | sed 's#/$##')" | while read -r eski; do
+        log "  siliniyor: s3://$S3_KOVA/$eski"
+        calistir "${RCLONE[@]}" purge "uzak:$S3_KOVA/$eski" --s3-no-check-bucket < /dev/null \
+          || log "  Uyarı: silinemedi, yarın yeniden denenecek"
+      done
+    else
+      log "  Uyarı: uzaktaki yedekler listelenemedi; eski yedekler yarın silinecek"
+    fi
+  else
+    calistir "${RCLONE[@]}" delete "uzak:$S3_KOVA" --min-age "${UZAK_SAKLA_GUN}d" --s3-no-check-bucket
+    calistir "${RCLONE[@]}" rmdirs "uzak:$S3_KOVA" --leave-root --s3-no-check-bucket
+  fi
 else
   log "Uyarı: S3 ayarı yok; yedek yalnızca bu sunucuda ($YEDEK_DIZIN). Disk kaybında işe yaramaz."
 fi
 
 # 5) Yerelde eski yedekleri temizle
-log "Yerelde $YEDEK_SAKLA_GUN günden eski yedekler siliniyor"
-if [ "$KURU" = 1 ]; then
+if [ -n "$SAKLA_ADET" ]; then
+  log "Yerelde son $SAKLA_ADET yedek kalıyor, eskiler siliniyor"
+  eskiler "$(find "$YEDEK_DIZIN" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null)" | while read -r eski; do
+    log "  siliniyor: $YEDEK_DIZIN/$eski"
+    calistir rm -rf -- "${YEDEK_DIZIN:?}/$eski"
+  done
+elif [ "$KURU" = 1 ]; then
+  log "Yerelde $YEDEK_SAKLA_GUN günden eski yedekler siliniyor"
   find "$YEDEK_DIZIN" -mindepth 1 -maxdepth 1 -type d -mtime +"$YEDEK_SAKLA_GUN" -print 2>/dev/null | sed 's/^/  (kuru) silinecek: /' || true
 else
+  log "Yerelde $YEDEK_SAKLA_GUN günden eski yedekler siliniyor"
   find "$YEDEK_DIZIN" -mindepth 1 -maxdepth 1 -type d -mtime +"$YEDEK_SAKLA_GUN" -exec rm -rf {} + 2>/dev/null || true
 fi
 

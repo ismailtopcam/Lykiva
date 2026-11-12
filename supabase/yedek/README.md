@@ -6,7 +6,7 @@ diğer uygulamalara (artieksi, fatosunkitapligi, gosterge, tez, paylaşılan pos
 | Betik | Ne yapar |
 | --- | --- |
 | `kur.sh` | Bir kez çalıştırılır: betikleri `/opt/lykiva`'ya indirir, `/etc/lykiva-yedek.env` ayar dosyasını yazar, her gece 03:30 için cron ekler, hemen bir deneme yedeği alır |
-| `yedekle.sh` | Yedek alır: `pg_dump` (özel biçim, doğrulanır) + roller + dosya deposu (MinIO `/data` ya da storage klasörü) + `SHA256SUMS` + o anki aktivite/kullanıcı/rota sayıları. S3 ayarı varsa sunucu dışına kopyalar (rclone, Docker imajıyla). Yerelde 14, uzakta 60 günden eskileri siler |
+| `yedekle.sh` | Yedek alır: `pg_dump` (özel biçim, doğrulanır) + roller + dosya deposu (MinIO `/data` ya da storage klasörü) + `SHA256SUMS` + o anki aktivite/kullanıcı/rota sayıları. S3 ayarı varsa sunucu dışına kopyalar (rclone, Docker imajıyla). Yerelde 14, uzakta 60 günden eskileri siler; `SAKLA_ADET` doluysa yalnızca son N yedek kalır (yeni yedek uzağa kopyalandıktan sonra) |
 | `geri-yukle-dene.sh` | Yedeğin geri yüklenebildiğini dener: canlı veritabanıyla aynı imajdan geçici bir konteyner açar, dökümü boş bir veritabanına yükler, sayıları yedek anındakilerle karşılaştırır, konteyneri siler. **Canlı veritabanına dokunmaz** |
 
 ## Kurulum (bir kez)
@@ -24,7 +24,8 @@ Sonra:
    `nano /etc/lykiva-yedek.env` ile `S3_ENDPOINT`, `S3_BOLGE`, `S3_KOVA`, `S3_ANAHTAR`, `S3_GIZLI` alanlarını doldur.
    Anahtarlar bu dosyada kalır (yalnızca root okur); sohbete ya da repoya yazılmaz.
    **Kovada başka veri varsa `S3_KOVA`'ya klasör ver** (ör. `S3_KOVA=ismail/lykiva-yedek`): betik her çalışmada
-   `S3_KOVA` altındaki 60 günden eski **bütün** dosyaları siler. Şu an Hetzner, `S3_KOVA=ismail/lykiva-yedek` (12 Kas 2026).
+   `S3_KOVA` altındaki 60 günden eski **bütün** dosyaları siler (`SAKLA_ADET` doluysa yalnızca tarih adlı yedek klasörlerine
+   dokunur). Şu an Hetzner, `S3_KOVA=ismail/lykiva-yedek`, `SAKLA_ADET=1` (12 Kas 2026).
 2. Bir yedek al ve uzakta göründüğünü kontrol et: `bash /opt/lykiva/yedekle.sh`
 3. **Geri yüklemeyi bir kez dene:** `bash /opt/lykiva/geri-yukle-dene.sh` → "✓ Geri yükleme doğrulandı" görmelisin.
 
