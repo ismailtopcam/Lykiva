@@ -114,6 +114,7 @@ reklam yok. EAS ortam değişkenleri (production / preview / development) girild
 **Dahili test yayında** (11 Kas 2026): sürüm 2 (0.1.0), hedef SDK 36, tester listesi "Gösterge test" (3 kişi).
 **Sürüm 4 yüklendi** (12 Kas 2026, versionCode 4, güncel main): kilit ekranı penceresi, hedefler / meydan okumalar /
 rozetler, harita türleri, ısı haritaları, dil desteği, çevrimdışı harita, kişisel rekorlar.
+Sonraki sürüme girecek: Expo SDK 58 yama güncellemeleri (15 paket, `expo doctor` uyarısı giderildi, 12 Kas 2026).
 Kalan: testerların kurup denemesi; sonra kapalı teste geçiş (bkz. Mağazaya çıkmadan önce).
 
 ### [ ] Mağazaya çıkmadan önce
