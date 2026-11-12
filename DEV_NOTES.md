@@ -117,8 +117,9 @@ reklam yok. EAS ortam değişkenleri (production / preview / development) girild
 **Dahili test yayında** (11 Kas 2026): sürüm 2 (0.1.0), hedef SDK 36, tester listesi "Gösterge test" (3 kişi).
 **Sürüm 4 yüklendi** (12 Kas 2026, versionCode 4, güncel main): kilit ekranı penceresi, hedefler / meydan okumalar /
 rozetler, harita türleri, ısı haritaları, dil desteği, çevrimdışı harita, kişisel rekorlar.
-**Sürüm 5 derleniyor** (12 Kas 2026, Android versionCode 5, iOS build 4, güncel main): Expo SDK 58 yama güncellemeleri,
-kendi BRouter / Photon sunucularımız + uygulama anahtarı, "yalnızca Türkiye" uyarısı.
+**Sürüm 5 derlendi** (12 Kas 2026, güncel main): Expo SDK 58 yama güncellemeleri, kendi BRouter / Photon sunucularımız +
+uygulama anahtarı, "yalnızca Türkiye" uyarısı. **iOS build 4 TestFlight'a gönderildi.** Android versionCode 5 AAB'si hazır,
+Play Console > Dahili test > Yeni sürüm'e elle yüklenecek (İsmail).
 Kalan: testerların kurup denemesi; sonra kapalı teste geçiş (bkz. Mağazaya çıkmadan önce).
 
 ### [ ] Mağazaya çıkmadan önce
