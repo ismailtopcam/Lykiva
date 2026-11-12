@@ -5,9 +5,12 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, Share, StyleSheet, Vie
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { RouteThumb } from '@/components/charts';
+import { GonderiPaylas } from '@/components/GonderiPaylas';
+import { HaftalikIstatistik } from '@/components/HaftalikIstatistik';
 import { FloatingHeader } from '@/components/Header';
 import { Icon, type IconName } from '@/components/Icon';
 import { IconButton } from '@/components/IconButton';
+import { KulupGonderileri } from '@/components/KulupGonderileri';
 import { OrnekGrup } from '@/components/OrnekGrup';
 import { MeydanOkumaKarti } from '@/components/MeydanOkumaKarti';
 import { useSikayet } from '@/components/SikayetPenceresi';
@@ -41,6 +44,7 @@ import {
   type Istek,
   type Uye,
 } from '@/grup/gruplar';
+import { fotoSec, grupFotografiniKaldir, grupFotografiYukle, type Kaynak } from '@/lib/foto';
 import { useHesap } from '@/lib/giris';
 import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
@@ -52,7 +56,7 @@ export default function GrupScreen() {
   return uuidMi(id) ? <GercekGrup id={id} /> : <OrnekGrup />;
 }
 
-type Sekme = 'etkinlikler' | 'rotalar' | 'meydan' | 'uyeler' | 'istekler';
+type Sekme = 'gonderiler' | 'paylas' | 'haftalik' | 'etkinlikler' | 'rotalar' | 'meydan' | 'uyeler' | 'istekler';
 
 function GercekGrup({ id }: { id: string }) {
   const insets = useSafeAreaInsets();
@@ -67,7 +71,10 @@ function GercekGrup({ id }: { id: string }) {
   // Geçmiş etkinlikleri soluk göstermek için yükleme anı (render sırasında saat okunmaz)
   const [yuklenme, setYuklenme] = useState(0);
   const [canliSayisi, setCanliSayisi] = useState(0);
-  const [sekme, setSekme] = useState<Sekme>('etkinlikler');
+  const [sekme, setSekme] = useState<Sekme>('gonderiler');
+  // Yeni paylaşımdan sonra gönderi listesi baştan yüklensin
+  const [gonderiSurumu, setGonderiSurumu] = useState(0);
+  const [fotoYukleniyor, setFotoYukleniyor] = useState(false);
   const [hata, setHata] = useState<string | null>(null);
   const [mesgul, setMesgul] = useState(false);
 
@@ -137,8 +144,42 @@ function GercekGrup({ id }: { id: string }) {
     await Share.share({ message: davetMetni(grup.name, grup.invite_code) }).catch(() => undefined);
   }
 
+  async function fotoDegistir(kaynak: Kaynak) {
+    try {
+      const uri = await fotoSec(kaynak, true);
+      if (!uri) return;
+      setFotoYukleniyor(true);
+      const adres = await grupFotografiYukle(grup.id, uri, grup.avatar_url);
+      setG({ ...grup, avatar_url: adres });
+    } catch (e) {
+      Alert.alert($t('kulup.fotograf_yuklenemedi'), e instanceof Error ? e.message : String(e));
+    } finally {
+      setFotoYukleniyor(false);
+    }
+  }
+
+  function fotoMenusu() {
+    if (!yonetici || fotoYukleniyor) return;
+    const secenekler: { text: string; style?: 'destructive' | 'cancel'; onPress?: () => void }[] = [
+      { text: $t('kulup.galeriden_sec'), onPress: () => void fotoDegistir('galeri') },
+      { text: $t('kulup.fotograf_cek'), onPress: () => void fotoDegistir('kamera') },
+    ];
+    if (grup.avatar_url)
+      secenekler.push({
+        text: $t('kulup.fotografi_kaldir'),
+        style: 'destructive',
+        onPress: () =>
+          void islem(async () => {
+            await grupFotografiniKaldir(grup.id, grup.avatar_url);
+          }),
+      });
+    secenekler.push({ text: $t('ortak.vazgec'), style: 'cancel' });
+    Alert.alert($t('kulup.grup_fotografi'), undefined, secenekler);
+  }
+
   function ayarlar() {
     const secenekler: { text: string; style?: 'destructive' | 'cancel'; onPress?: () => void }[] = [];
+    if (yonetici) secenekler.push({ text: $t('kulup.grup_fotografi'), onPress: fotoMenusu });
     if (yonetici)
       secenekler.push({
         text: $t('grup.davet_kodunu_yenile'),
@@ -206,6 +247,13 @@ function GercekGrup({ id }: { id: string }) {
     : [];
 
   const sekmeler: { id: Sekme; ad: string }[] = [
+    ...(uye
+      ? [
+          { id: 'gonderiler' as Sekme, ad: $t('kulup.gonderiler') },
+          { id: 'paylas' as Sekme, ad: $t('kulup.paylas') },
+          { id: 'haftalik' as Sekme, ad: $t('kulup.haftalik') },
+        ]
+      : []),
     ...(uye ? [{ id: 'etkinlikler' as Sekme, ad: $t('grup.etkinlikler') }, { id: 'rotalar' as Sekme, ad: $t('grup.rotalar') }, { id: 'meydan' as Sekme, ad: $t('meydan.grup_sekmesi') }] : []),
     { id: 'uyeler', ad: $t('grup.uyeler', { member_count: grup.member_count }) },
     ...(yonetici && grup.pending_count > 0 ? [{ id: 'istekler' as Sekme, ad: $t('grup.istekler', { pending_count: grup.pending_count }) }] : []),
@@ -220,7 +268,22 @@ function GercekGrup({ id }: { id: string }) {
           <IconButton icon="more" label={$t('grup.grup_secenekleri')} color="#FFFFFF" onPress={ayarlar} />
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 6 }}>
-          <Avatar initials={basHarfler(grup.name)} tone={grupRengi(grup.id)} size={52} square />
+          <Pressable
+            accessibilityRole={yonetici ? 'button' : 'image'}
+            accessibilityLabel={yonetici ? (grup.avatar_url ? $t('kulup.fotograf_degistir') : $t('kulup.fotograf_ekle')) : $t('kulup.grup_fotografi')}
+            disabled={!yonetici || fotoYukleniyor}
+            onPress={fotoMenusu}>
+            <Avatar initials={basHarfler(grup.name)} tone={grupRengi(grup.id)} size={64} square uri={grup.avatar_url} />
+            {fotoYukleniyor ? (
+              <View style={styles.fotoPerde}>
+                <ActivityIndicator color="#FFFFFF" />
+              </View>
+            ) : yonetici ? (
+              <View style={styles.fotoRozet}>
+                <Icon name="camera" size={13} color={colors.ink} strokeWidth={2.2} />
+              </View>
+            ) : null}
+          </Pressable>
           <View style={{ flex: 1 }}>
             <Txt variant="label" color="#CFE8E5">
               {grupEtiketi(grup)}
@@ -266,16 +329,28 @@ function GercekGrup({ id }: { id: string }) {
         </Pressable>
       ) : null}
 
-      <View accessibilityRole="tablist" style={styles.tabs}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} accessibilityRole="tablist" style={styles.tabs} contentContainerStyle={{ flexGrow: 1 }}>
         {sekmeler.map((s) => (
           <Pressable key={s.id} accessibilityRole="tab" accessibilityState={{ selected: s.id === aktifSekme }} onPress={() => setSekme(s.id)} style={[styles.tab, s.id === aktifSekme && styles.tabOn]}>
             <Txt style={{ fontFamily: s.id === aktifSekme ? fontFamily.bodyBold : fontFamily.bodySemiBold, fontSize: 14, color: s.id === aktifSekme ? colors.ink : colors.inkMuted }}>{s.ad}</Txt>
           </Pressable>
         ))}
-      </View>
+      </ScrollView>
 
       <View style={{ padding: space.lg, gap: 10 }}>
-        {aktifSekme === 'etkinlikler' ? (
+        {aktifSekme === 'gonderiler' ? (
+          <KulupGonderileri grupId={grup.id} surum={gonderiSurumu} />
+        ) : aktifSekme === 'paylas' ? (
+          <GonderiPaylas
+            grupId={grup.id}
+            onPaylasildi={() => {
+              setGonderiSurumu((x) => x + 1);
+              setSekme('gonderiler');
+            }}
+          />
+        ) : aktifSekme === 'haftalik' ? (
+          <HaftalikIstatistik grupId={grup.id} />
+        ) : aktifSekme === 'etkinlikler' ? (
           etkinlikler.length === 0 ? (
             <Txt variant="muted">{$t('grup.planlanmis_etkinlik_yok_etkinlik')}</Txt>
           ) : (
@@ -389,8 +464,10 @@ const styles = temaliStil(() => StyleSheet.create({
   shortcuts: { flexDirection: 'row', gap: 8, padding: space.lg },
   shortcut: { flex: 1, height: 64, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center', gap: 4 },
   kod: { marginHorizontal: space.lg, marginBottom: space.md, padding: 12, borderRadius: 14, backgroundColor: colors.sand, alignItems: 'center' },
-  tabs: { flexDirection: 'row', marginHorizontal: space.lg, borderBottomWidth: 1, borderBottomColor: colors.lineStrong },
-  tab: { flex: 1, height: 44, alignItems: 'center', justifyContent: 'center', borderBottomWidth: 2.5, borderBottomColor: 'transparent' },
+  tabs: { flexGrow: 0, marginHorizontal: space.lg, borderBottomWidth: 1, borderBottomColor: colors.lineStrong },
+  tab: { flexGrow: 1, height: 44, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center', borderBottomWidth: 2.5, borderBottomColor: 'transparent' },
+  fotoPerde: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 64 * 0.3, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center' },
+  fotoRozet: { position: 'absolute', right: -4, bottom: -4, width: 24, height: 24, borderRadius: 12, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.line },
   tabOn: { borderBottomColor: colors.ink },
   card: { flexDirection: 'row', gap: 12, alignItems: 'center', padding: 10, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
   uye: { flexDirection: 'row', gap: 12, alignItems: 'center', paddingVertical: 6 },

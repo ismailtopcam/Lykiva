@@ -90,6 +90,7 @@ const asamalar = [
   ['20261114000000_isi_haritalari', 'isi_haritasi', { tur: 'kisisel', bati: 0, guney: 0, dogu: 0.01, kuzey: 0.01, zoom: 14 }],
   ['20261115000000_gizlilik', 'gizlilik_ayarla', { alan: 'profil_gizliligi', deger: 'herkes', gecmise_uygula: false }],
   ['20261116000000_ek_gizlilik', 'engellenenler', {}],
+  ['20261117000000_kulupler', 'grup_gonderileri', { g: '00000000-0000-0000-0000-000000000000' }],
 ];
 for (const [dosya, fn, govde] of asamalar) {
   try {

@@ -1,6 +1,7 @@
 /**
  * Grupların sunucu tarafı. Fonksiyonlar supabase/migrations/20261109030000_gruplar.sql içinde;
- * üyelik değişiklikleri yalnızca bu fonksiyonlarla yapılır.
+ * üyelik değişiklikleri yalnızca bu fonksiyonlarla yapılır. Gönderiler ve haftalık istatistik:
+ * supabase/migrations/20261117000000_kulupler.sql.
  */
 import { ACTIVITY_LABELS, type ActivityType } from '@lykiva/shared';
 
@@ -17,6 +18,7 @@ export type GrupOzeti = {
   is_private: boolean;
   primary_activity: ActivityType | null;
   city: string | null;
+  avatar_url: string | null;
   my_role: Rol;
   member_count: number;
   last_message: string | null;
@@ -34,6 +36,7 @@ export type KesfetGrubu = {
   requires_approval: boolean;
   primary_activity: ActivityType | null;
   city: string | null;
+  avatar_url: string | null;
   member_count: number;
   requested: boolean;
 };
@@ -47,6 +50,7 @@ export type GrupDetayi = {
   requires_approval: boolean;
   primary_activity: ActivityType | null;
   city: string | null;
+  avatar_url: string | null;
   created_at: string;
   member_count: number;
   my_role: Rol | null;
@@ -106,6 +110,57 @@ export const davetKoduYenile = (id: string) => rpc<string>('davet_kodu_yenile', 
 /** Grubun şu an canlı konum paylaşan üye sayısı */
 export const grupCanliSayisi = (id: string) => rpc<number>('grup_canli_sayisi', { g: id });
 export const okunduIsaretle = (id: string) => rpc<void>('okundu_isaretle', { g: id });
+/* ------------------------------------------------------------------ */
+/* Kulüp gönderileri ve haftalık istatistik                            */
+/* ------------------------------------------------------------------ */
+
+export type Gonderi = {
+  id: string;
+  body: string | null;
+  /** grup_gonderi kovasındaki yollar */
+  photos: string[];
+  created_at: string;
+  author_id: string;
+  display_name: string;
+  username: string;
+  avatar_url: string | null;
+  mine: boolean;
+  silebilir: boolean;
+};
+
+export type HaftalikSatir = {
+  user_id: string;
+  display_name: string;
+  username: string;
+  avatar_url: string | null;
+  mesafe_m: number;
+  sure_s: number;
+  aktivite: number;
+  ben: boolean;
+};
+
+export type HaftalikIstatistik = {
+  hafta_basi: string;
+  uye_sayisi: number;
+  aktivite: number;
+  mesafe_m: number;
+  sure_s: number;
+  tirmanis_m: number;
+  aktif_uye: number;
+  gecen_hafta_mesafe_m: number;
+  gecen_hafta_aktivite: number;
+  /** Pazartesi'den Pazar'a gün gün mesafe (m) */
+  gunler: number[];
+  siralama: HaftalikSatir[];
+};
+
+/** 30'ar gönderi; once: son görülen gönderinin zamanı (daha eskiler için) */
+export const grupGonderileri = (id: string, once?: string) => rpc<Gonderi[]>('grup_gonderileri', { g: id, once: once ?? null });
+export const grupGonderisiPaylas = (id: string, metin: string, fotolar: string[]) => rpc<string>('grup_gonderisi_paylas', { g: id, metin, fotolar });
+/** Silinen gönderinin fotoğraf yollarını döner */
+export const grupGonderisiSil = (gonderi: string) => rpc<string[]>('grup_gonderisi_sil', { gonderi });
+export const grupHaftalikIstatistik = (id: string) => rpc<HaftalikIstatistik | null>('grup_haftalik_istatistik', { g: id });
+
 export const rotayiGrubaPaylas = (rota: string, grup: string, notu?: string) => rpc<string>('rotayi_gruba_paylas', { rota, g: grup, notu: notu ?? null });
 
 /* ------------------------------------------------------------------ */

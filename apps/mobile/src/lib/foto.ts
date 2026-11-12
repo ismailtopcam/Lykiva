@@ -3,6 +3,9 @@
  * Kovalar ve kurallar: supabase/migrations/20261110100000_fotograflar.sql
  *   profil  herkese açık, <kullanıcı id>/<uuid>.jpg
  *   mola    gizli (imzalı adresle okunur), <aktivite id>/<uuid>.jpg
+ * Kulüpler: supabase/migrations/20261117000000_kulupler.sql
+ *   grup          herkese açık, <grup id>/<uuid>.jpg (grup fotoğrafı; yalnızca grup yöneticisi)
+ *   grup_gonderi  gizli (imzalı adresle okunur), <grup id>/<uuid>.jpg (gönderi fotoğrafları; üyeler)
  */
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
@@ -39,7 +42,9 @@ async function kucult(uri: string, kenar: number): Promise<string> {
   return sonuc.uri;
 }
 
-async function yukle(kova: 'profil' | 'mola', klasor: string, uri: string, kenar: number): Promise<string> {
+type Kova = 'profil' | 'mola' | 'grup' | 'grup_gonderi';
+
+async function yukle(kova: Kova, klasor: string, uri: string, kenar: number): Promise<string> {
   await oturumuSagla();
   const kucuk = await kucult(uri, kenar);
   const govde = await (await fetch(kucuk)).arrayBuffer();
@@ -125,4 +130,56 @@ export async function aktiviteFotograflariniSil(aktiviteId: string) {
   const { data } = await supabase.from('activity_stops').select('photo_urls').eq('activity_id', aktiviteId);
   const yollar = (data ?? []).flatMap((s) => (s.photo_urls ?? []) as string[]);
   if (yollar.length) await supabase.storage.from('mola').remove(yollar).catch(() => undefined);
+}
+
+/* ------------------------------------------------------------------ */
+/* Kulüpler: grup fotoğrafı ve gönderi fotoğrafları                     */
+/* ------------------------------------------------------------------ */
+
+/** Kendi kovamızdaki grup fotoğrafının yolu */
+function grupYolu(adres: string | null | undefined) {
+  const m = adres?.match(/\/storage\/v1\/object\/public\/grup\/([^?]+)/);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
+/** Yeni grup fotoğrafını yükler (yalnızca grup yöneticisi), gruba yazar, eskisini siler; yeni adresi döner */
+export async function grupFotografiYukle(grupId: string, uri: string, eskiAdres: string | null): Promise<string> {
+  const yol = await yukle('grup', grupId, uri, 768);
+  const adres = supabase.storage.from('grup').getPublicUrl(yol).data.publicUrl;
+  const { error } = await supabase.from('groups').update({ avatar_url: adres }).eq('id', grupId);
+  if (error) {
+    await supabase.storage.from('grup').remove([yol]);
+    throw new Error(error.message);
+  }
+  const eski = grupYolu(eskiAdres);
+  if (eski) await supabase.storage.from('grup').remove([eski]).catch(() => undefined);
+  return adres;
+}
+
+export async function grupFotografiniKaldir(grupId: string, eskiAdres: string | null) {
+  await oturumuSagla();
+  const { error } = await supabase.from('groups').update({ avatar_url: null }).eq('id', grupId);
+  if (error) throw new Error(error.message);
+  const eski = grupYolu(eskiAdres);
+  if (eski) await supabase.storage.from('grup').remove([eski]).catch(() => undefined);
+}
+
+export const GONDERI_FOTO_SINIRI = 4;
+
+/** Gönderi fotoğrafını gizli kovaya yükler; yolunu döner (gönderi paylaşılmazsa gonderiFotograflariniSil ile silinmeli) */
+export const gonderiFotografiYukle = (grupId: string, uri: string) => yukle('grup_gonderi', grupId, uri, 1600);
+
+export async function gonderiFotograflariniSil(yollar: string[]) {
+  if (yollar.length) await supabase.storage.from('grup_gonderi').remove(yollar).catch(() => undefined);
+}
+
+/** Gönderi fotoğrafları için bir saatlik adresler (yol → adres) */
+export async function gonderiFotoAdresleri(yollar: string[]): Promise<Record<string, string>> {
+  if (!yollar.length) return {};
+  await oturumuSagla();
+  const { data, error } = await supabase.storage.from('grup_gonderi').createSignedUrls(yollar, 3600);
+  if (error) throw new Error(error.message);
+  const sonuc: Record<string, string> = {};
+  for (const d of data ?? []) if (d.path && d.signedUrl) sonuc[d.path] = d.signedUrl;
+  return sonuc;
 }
