@@ -67,6 +67,8 @@ export type Activity = {
   avgSpeed: string;
   maxSpeed: string;
   minSpeed: string;
+  /** Sahibi hızı başkalarından gizlemiş: hız değerleri "—" */
+  hizGizli?: boolean;
   route: LngLat[];
   elevation: number[];
   speed: number[];

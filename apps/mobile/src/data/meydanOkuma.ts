@@ -26,13 +26,15 @@ export type MeydanOkuma = {
 };
 
 export type SiralamaSatiri = {
-  user_id: string;
-  display_name: string;
-  username: string;
+  /** Katılımını gizleyen kişide (gizli: true) kimlik alanları boş gelir */
+  user_id: string | null;
+  display_name: string | null;
+  username: string | null;
   avatar_url: string | null;
   deger: number;
   sira: number;
   ben: boolean;
+  gizli?: boolean;
 };
 
 export type MeydanOkumaDetayi = MeydanOkuma & { siralama: SiralamaSatiri[]; benim: SiralamaSatiri | null };

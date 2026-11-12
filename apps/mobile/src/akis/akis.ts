@@ -68,6 +68,8 @@ export type KisiProfili = {
   activity_count: number;
   /** Profilini gizlemiş (Gizlilik kontrolleri > Profil sayfası): ayrıntılar ve sayılar gelmez */
   kisitli?: boolean;
+  /** Bu kişiyi engelledin (Gizlilik kontrolleri > Engellenen hesaplar) */
+  engelledim?: boolean;
 };
 
 async function rpc<T>(ad: string, args?: Record<string, unknown>): Promise<T> {
@@ -228,7 +230,7 @@ export function kartIstatistikleri(o: AkisOgesi) {
     km: formatKm(o.distance_m),
     tirmanis: String(Math.round(o.elevation_gain_m ?? 0)),
     sure: formatDuration(o.moving_time_s),
-    hiz: formatSpeedKmh(o.avg_speed_mps ?? 0),
+    hiz: o.avg_speed_mps == null ? '—' : formatSpeedKmh(o.avg_speed_mps),
   };
 }
 

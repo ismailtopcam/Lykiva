@@ -11,6 +11,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | Kim | İş | Dal |
 | --- | --- | --- |
 | İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |
+| Gökhan | Gizlilik kontrolleri > Ek kontroller + kullanıcı engelleme (migration: İsmail uygulayacak); ardından birebir mesajlaşma | `ek-gizlilik-kontrolleri` |
 
 ## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
 
@@ -91,6 +92,9 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
 14. **İsmail uygulayacak — gizlilik kontrolleri migration'ı:** `gizlilik-kontrolleri` PR'ı main'e girince
     `20261115000000_gizlilik.sql` (`uygula.sh` ile; önce durum modu). Yeni derleme gerekmez (yalnızca JS).
     Migration uygulanana kadar Ayarlar > Gizlilik kontrolleri "yüklenemedi" der; kayıtlar eskisi gibi takipçilere açılır.
+15. **İsmail uygulayacak — ek gizlilik kontrolleri ve engelleme migration'ı:** `ek-gizlilik-kontrolleri` PR'ı main'e
+    girince `20261116000000_ek_gizlilik.sql` (14. maddedeki `20261115000000_gizlilik.sql`'den sonra; `uygula.sh`).
+    Yeni derleme gerekmez (yalnızca JS).
 
 ## Yapılacaklar
 
@@ -152,6 +156,13 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   yeni kayıt seçilen görünürlükle mi açılıyor (internetsiz kaydedilip sonra gönderilen de)? Grup aktiviteleri
   "Hiç kimse": seni etiketleyen kişinin aktivitesinde başkaları adını görmüyor, akış kartında "X ile" yazmıyor mu?
   Bahsetmeler "Hiç kimse": seni eklemeye çalışınca "izin vermiyor" hatası çıkıyor mu? Isı haritası anahtarı da burada.
+- Ek kontroller ve engelleme (migration'dan sonra; Gizlilik kontrolleri > Ek kontroller): iki hesapla. Engelle (kişi
+  sayfasının altında): öbür hesap seni aramada bulamıyor, profilin "bulunamadı", aktivitelerin akışta yok, takip
+  edemiyor; Engellenen hesaplar listesinde görünüyor, engeli kaldırınca her şey geri geliyor mu (takipler gelmez)?
+  Harita görünürlüğü kapalıyken yeni kayıt uçları açık mı, "Geçmiş aktivitelerime de uygula" hepsini değiştiriyor mu?
+  Gizli ayrıntılar: hız gizliyken öbür hesapta hız "—", "Hız ve molalar" düğmesi molasız aktivitede yok mu; molalar
+  gizliyken mola noktaları / fotoğrafları çıkmıyor mu? Geçmiş aktiviteleri düzenle: görünürlük ve uçlar toplu değişiyor
+  mu? Meydan okuma "Hiç kimse": öbür hesapta sıralamada "Gizli katılımcı", dokununca sayfa açılmıyor mu?
 
 ### [~] Google Play — dahili test
 Play Console'da **Lykiva** oluşturuldu (kişisel geliştirici hesabı, paket `app.lykiva.mobile`, Türkçe, ücretsiz).
@@ -278,6 +289,13 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
   uygulama ve web fonksiyonlardan okuduğu için ekranda görünmez. Kalıcı çözüm: bu sütunları istemciye kapatıp kendi
   profilini `profilim()` gibi bir fonksiyondan okumak. Profili gizli kişinin aktiviteleri akışta kendi görünürlükleriyle
   çıkmaya devam eder (yalnızca profil sayfasında listelenmez).
+- Ek gizlilik kontrolleri (12 Kas 2026, `ek-gizlilik-kontrolleri`): gizli hız `activities` tablosunu API'den doğrudan
+  okuyanlara açık (uygulama `aktivite_ozetleri` / fonksiyonlardan okur); paylaşım bağlantısı açılmış aktivitede web sayfası
+  hızı ve mola sayısını göstermeye devam eder (bilerek: bağlantıyı sahibi açıyor). Başlangıç saatini gizleme yapılmadı
+  (akışın sayfalaması başlangıç saatine göre). Engel ortak grup sohbetini, üye listesini ve meydan okuma sıralamasını
+  etkilemez. Gizleme mesafesi sabit 200 m (seçilebilir değil).
+- [ ] Birebir mesajlaşma + Gizlilik kontrolleri > Ek kontroller > Mesajlaşma ("kim mesaj atabilir"); engellenen mesaj atamaz.
+  Ek kontrollerin ardından ayrı PR (Gökhan).
 
 ### [ ] Rakiplere göre eksikler (Kasım 2026 karşılaştırması)
 Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. Sıra öneri sırasıdır; (D) = yeni yerel modül, telefona yeni derleme gerekir.
@@ -349,6 +367,11 @@ Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde
 
 ## Kararlar
 
+- **Kullanıcı engelleme iki yönlü** (`20261116000000_ek_gizlilik.sql`): `engel_var_mi` `aktivite_gorunur_mu`'ya eklendi, böylece
+  akış, aktivite, yorum, beğeni, mola ve fotoğraf kuralları kendiliğinden uyar; arama, kişi sayfası, takip, etiket ayrıca.
+  Engellenen kişi engellendiğini doğrudan görmez (profil "bulunamadı"). Ek kontrollerdeki açık / kapalı ayarlar
+  `gizlilik_bayragi_ayarla`, geçmişe toplu uygulama `gecmis_aktiviteleri_duzenle` ile; "Kişisel bilgilerimi paylaşmayın"
+  bugün yalnızca tercih kaydı (Lykiva satış / reklam paylaşımı yapmıyor) — böyle bir paylaşım eklenirse bu sütuna uyulmalı.
 - **Gizlilik kontrolleri** (Ayarlar > Gizlilik > Gizlilik kontrolleri, `20261115000000_gizlilik.sql`): dört ayar, her biri
   herkes / takipçiler / hiç kimse; "takipçiler" = seni takip edenler. Profil sayfası: ayrıntılar ve sayılar
   (`kisi_profili` `kisitli` döner); aktiviteler: yeni kayıtların varsayılan görünürlüğü (mobil artık `visibility`

@@ -29,9 +29,9 @@ type Ham = {
   gainM: number;
   lossM: number;
   maxAltM: number | null;
-  avg: number;
-  max: number;
-  min: number;
+  avg: number | null;
+  max: number | null;
+  min: number | null;
   route: LngLat[];
   /** Yükseklikli iz (3B); yoksa route'tan yüksekliksiz üretilir */
   iz3b?: [number, number, number | null][];
@@ -108,9 +108,11 @@ function goruntuyeCevir(h: Ham): Activity {
     climbM: Math.round(h.gainM),
     descentM: Math.round(h.lossM),
     maxElevationM: h.maxAltM == null ? 0 : Math.round(h.maxAltM),
-    avgSpeed: formatSpeedKmh(h.avg),
-    maxSpeed: formatSpeedKmh(h.max),
-    minSpeed: formatSpeedKmh(h.min),
+    avgSpeed: h.avg == null ? '—' : formatSpeedKmh(h.avg),
+    maxSpeed: h.max == null ? '—' : formatSpeedKmh(h.max),
+    minSpeed: h.min == null ? '—' : formatSpeedKmh(h.min),
+    // Sahibi hızı gizlemiş (Gizlilik kontrolleri > Gizli ayrıntılar)
+    hizGizli: h.avg == null && h.max == null,
     route: h.route,
     iz3b: h.iz3b ?? h.route.map((c) => [c[0], c[1], null] as [number, number, number | null]),
     hizProfili: hizli.length > 1 ? hizli.map((x) => ({ d: x.d, v: (x.speed as number) * 3.6 })) : undefined,
@@ -161,9 +163,9 @@ async function sunucudan(id: string): Promise<Activity> {
     gainM: o.elevation_gain_m ?? 0,
     lossM: o.elevation_loss_m ?? 0,
     maxAltM: o.max_elevation_m,
-    avg: o.avg_speed_mps ?? 0,
-    max: o.max_speed_mps ?? 0,
-    min: o.min_moving_speed_mps ?? 0,
+    avg: o.avg_speed_mps,
+    max: o.max_speed_mps,
+    min: o.min_moving_speed_mps,
     route: coords.map((c) => [c[0], c[1]] as LngLat),
     iz3b,
     profile: detay.profile,
