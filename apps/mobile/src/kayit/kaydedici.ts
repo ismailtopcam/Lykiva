@@ -85,7 +85,8 @@ let onPlanAboneligi: Location.LocationSubscription | null = null;
 
 function haberVer() {
   dinleyiciler.forEach((f) => f());
-  kilitEkrani(kayit, () => aktifSure(kayit), KONUM_GOREVI);
+  // aktifSure saniye döner, kilit ekranı milisaniye bekler
+  kilitEkrani(kayit, () => aktifSure(kayit) * 1000, KONUM_GOREVI);
 }
 
 function degistir(yeni: Partial<Kayit>, kaydet = true) {
