@@ -11,7 +11,6 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | Kim | İş | Dal |
 | --- | --- | --- |
 | İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |
-| İsmail | Kilit ekranı: iOS Live Activity | `claude/kilit-ekrani-gosterim-17a0c0` |
 
 ## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
 
