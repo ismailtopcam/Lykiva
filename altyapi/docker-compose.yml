@@ -1,8 +1,25 @@
 # Lykiva — kendi rota (BRouter) ve yer arama (Photon) sunucularımız.
 # Coolify > yeni kaynak > Docker Compose (Git deposu: bu repo, dosya: altyapi/docker-compose.yml).
-# Alan adlarını Coolify arayüzünde her servise ver (ör. brouter.lykiva.app → 17777,
-# photon.lykiva.app → 2322). Ayrıntı: altyapi/README.md
+# Dışarıya yalnızca "kapi" açılır: Coolify'da iki alan adı da kapi servisine verilir
+# (https://brouter.lykiva.app,https://photon.lykiva.app). brouter ve photon'a alan adı VERİLMEZ.
+# Kapı uygulama anahtarını (X-Lykiva-Anahtar) ve IP başına istek sınırını denetler. Ayrıntı: altyapi/README.md
 services:
+  kapi:
+    build: ./kapi
+    restart: unless-stopped
+    environment:
+      # Zorunlu; Coolify'da girilir, repoya yazılmaz. Uygulamadaki EXPO_PUBLIC_ALTYAPI_ANAHTARI ile aynı olmalı.
+      - LYKIVA_UYGULAMA_ANAHTARI=${LYKIVA_UYGULAMA_ANAHTARI}
+      # IP başına: rota isteği dakikada 60 (anlık 30 fazlası), arama dakikada 120 (anlık 40)
+      - LYKIVA_ROTA_SINIRI=${LYKIVA_ROTA_SINIRI:-60r/m}
+      - LYKIVA_ROTA_YIGIN=${LYKIVA_ROTA_YIGIN:-30}
+      - LYKIVA_ARAMA_SINIRI=${LYKIVA_ARAMA_SINIRI:-120r/m}
+      - LYKIVA_ARAMA_YIGIN=${LYKIVA_ARAMA_YIGIN:-40}
+      # Şablonda yalnızca LYKIVA_ ile başlayan değişkenler doldurulsun
+      - NGINX_ENVSUBST_FILTER=^LYKIVA_
+    expose:
+      - '80'
+
   brouter:
     build: ./brouter
     restart: unless-stopped

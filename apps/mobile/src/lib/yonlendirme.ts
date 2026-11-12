@@ -1,16 +1,13 @@
 /**
  * Rota çizimi için yol/patika bulma — BRouter (OpenStreetMap, rakımlı).
  *
- * Şimdilik herkese açık brouter.de sunucusu kullanılıyor (adil kullanım, anahtarsız).
- * Kullanıcı sayısı artınca kendi sunucumuza BRouter kurulacak (DEV_NOTES).
- * Adres EXPO_PUBLIC_BROUTER_URL ile değiştirilebilir.
+ * Kendi sunucumuz (brouter.lykiva.app, Türkiye ve çevresi) ya da herkese açık brouter.de; adres ve anahtar `lib/altyapi.ts`'te.
  */
 import type { ActivityType, RoutePoint } from '@lykiva/shared';
 
 import type { LngLat } from '@/data/ornek';
 import { $t } from '@/i18n';
-
-const BROUTER = process.env.EXPO_PUBLIC_BROUTER_URL || 'https://brouter.de/brouter';
+import { BROUTER_URL as BROUTER, brouterBasliklari } from '@/lib/altyapi';
 
 export type CizimModu = 'patika' | 'yol' | 'serbest';
 
@@ -57,7 +54,7 @@ export async function rotaHesapla(duraklar: LngLat[], mod: CizimModu, activity: 
   }
   const lonlats = duraklar.map(([lng, lat]) => `${lng.toFixed(6)},${lat.toFixed(6)}`).join('|');
   const url = `${BROUTER}?lonlats=${encodeURIComponent(lonlats)}&profile=${profil(mod, activity)}&alternativeidx=0&format=geojson`;
-  const res = await fetch(url, { signal });
+  const res = await fetch(url, { signal, headers: brouterBasliklari() });
   if (!res.ok) {
     const t = await res.text().catch(() => '');
     // "datafile E0_N45.rd5 not found": nokta, sunucudaki harita karolarının dışında (kendi sunucumuz yalnızca Türkiye ve çevresi)

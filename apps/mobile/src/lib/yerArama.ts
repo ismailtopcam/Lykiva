@@ -1,11 +1,10 @@
 /**
- * Yer arama — Photon (OpenStreetMap). Anahtarsız, adil kullanım.
- * Adres EXPO_PUBLIC_PHOTON_URL ile değiştirilebilir.
+ * Yer arama — Photon (OpenStreetMap). Kendi sunucumuz (photon.lykiva.app, yalnızca Türkiye) ya da herkese açık
+ * photon.komoot.io; adres ve anahtar `lib/altyapi.ts`'te.
  */
 import type { LngLat } from '@/data/ornek';
 import { $t } from '@/i18n';
-
-const PHOTON = process.env.EXPO_PUBLIC_PHOTON_URL || 'https://photon.komoot.io/api/';
+import { PHOTON_URL as PHOTON, photonBasliklari } from '@/lib/altyapi';
 
 export type YerSonucu = { id: string; ad: string; ayrinti: string; coord: LngLat };
 
@@ -29,7 +28,7 @@ export async function yerAra(q: string, yakin?: LngLat | null, signal?: AbortSig
   const metin = q.trim();
   if (metin.length < 2) return [];
   const yer = yakin ? `&lon=${yakin[0].toFixed(4)}&lat=${yakin[1].toFixed(4)}` : '';
-  const res = await fetch(`${PHOTON}?q=${encodeURIComponent(metin)}&limit=6${yer}`, { signal });
+  const res = await fetch(`${PHOTON}?q=${encodeURIComponent(metin)}&limit=6${yer}`, { signal, headers: photonBasliklari() });
   if (!res.ok) return [];
   const j = await res.json();
   return (j.features ?? []).map((f: { properties: Record<string, string>; geometry: { coordinates: number[] } }, i: number) => {
