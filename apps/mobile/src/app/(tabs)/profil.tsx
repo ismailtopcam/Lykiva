@@ -145,8 +145,9 @@ export default function ProfilScreen() {
           <Txt style={{ paddingHorizontal: space.lg, marginTop: -4, marginBottom: 12, fontSize: 14 }}>{profil.bio}</Txt>
         ) : null}
         {gercek && profil ? (
-          <View style={{ paddingHorizontal: space.lg, marginBottom: 14 }}>
-            <Button label={$t('profil.profili_duzenle')} icon="user" variant="outline" href="/profil-duzenle" />
+          <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: space.lg, marginBottom: 14 }}>
+            <Button label={$t('profil.profili_duzenle')} icon="user" variant="outline" href="/profil-duzenle" style={{ flex: 1, paddingHorizontal: 10 }} />
+            <Button label={$t('profil.profili_paylas')} icon="share" variant="dark" href="/profil-paylas" style={{ flex: 1, paddingHorizontal: 10 }} />
           </View>
         ) : null}
 

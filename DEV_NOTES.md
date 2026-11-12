@@ -123,6 +123,12 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   ekliyor / değiştiriyor / kaldırıyor mu, listede ve keşfette görünüyor mu? Paylaş sekmesinden metin + 4 fotoğraf paylaş;
   ikinci telefondan (üye) Gönderiler'de görünüyor mu, üye olmayan göremiyor mu, yönetici başkasının gönderisini silebiliyor mu?
   Haftalık sekmesi: bu haftaki kayıtlar, gün gün çubuklar, sıralama; "takipçilere" kaydı takip etmeyen üyede sayılmıyor mu?
+- Profili paylaş (13 Kas 2026, Gökhan; yalnızca JS, yeni derleme gerekmez): Profil'de "Profili düzenle"nin yanındaki
+  "Profili paylaş" düğmesi (Almanca / Rusça sığıyor mu?) → Arkadaşlar / Kulüpler geçişi, "Lykiva'da ara" kutusu
+  (Arkadaşlar'da kişi, Kulüpler'de açık kulüp arar). Arkadaşlar altında Önerilenler (tanıyor olabileceklerin) /
+  Kişiler (takip ettiklerin ve takipçilerin) / QR kodu. QR'ı başka telefonun kamerasıyla okut: web profili
+  (`/u/<kullanıcı>`) açılıyor mu, karanlık temada okunuyor mu? Geçici hesapta QR yerine giriş çağrısı çıkıyor mu?
+  QR için `react-native-qrcode-svg` eklendi (JS; `react-native-svg` zaten vardı, kök `node_modules`'a taşındı).
 - Fotoğraf yükleme (depolama kovaları ve kuralları `postgres` rolüyle kuruldu mu?)
 - Kullanıcı engelleme (`postgres` rolü `auth.users`'a yazabiliyor mu?)
 - Geçersiz push jetonu temizliği (gerçek Expo yanıtıyla)
@@ -292,6 +298,10 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
 **Android sürüm 3 dahili testte yayında** (11 Kas 2026, FCM + Google girişi + anlık hız + rota eğimi). Kalan: telefonda bildirim gelip gelmediğini denemek.
 
 ### [ ] Küçük eksikler
+- Profili paylaş > QR kodu yalnızca kodu gösteriyor: uygulama içinden QR okutma yok (`expo-camera`, yeni derleme
+  gerekir) ve okutulan `/u/<kullanıcı>` adresi uygulamada değil web'de açılıyor (iOS universal link / Android App Links
+  kurulmadı). "Kişiler" sekmesi takip ettiklerini ve takipçilerini gösteriyor; telefon rehberinden arkadaş bulma
+  (`expo-contacts`, yeni derleme + sunucuda eşleştirme) yok.
 - Web profil sayfası (`/u/<kullanıcı>`) profil fotoğrafını göstermiyor, baş harfler görünüyor.
 - Engellenen kullanıcının açık oturumu erişim anahtarının süresi dolana kadar (varsayılan 1 saat) çalışır.
 - Hava yalnızca kayıt başında bir kez ölçülüyor; rota detayında tahmin yok (rotanın planlanan tarihi yok).
