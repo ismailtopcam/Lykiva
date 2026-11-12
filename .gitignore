@@ -19,6 +19,9 @@ web-build/
 # Expo / native
 ios/
 android/
+# Yerel Expo modüllerinin yerel kodu repoda (yukarıdakiler yalnızca prebuild çıktısı için)
+!apps/mobile/modules/*/android/
+!apps/mobile/modules/*/ios/
 *.jks
 *.p8
 *.p12

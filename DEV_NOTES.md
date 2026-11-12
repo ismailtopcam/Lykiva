@@ -11,11 +11,13 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | Kim | İş | Dal |
 | --- | --- | --- |
 | İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |
+| Gökhan | Kilit ekranına anlık hız; kilit ekranı modülünün Kotlin kodu repoya | `kilit-ekrani-anlik-hiz` |
 
 ## Gökhan için: 11 Kasım 2026'da değişenler (İsmail)
 
 - **Play dahili test yayında** (sürüm 2, 0.1.0). Tester listesi "Gösterge test". Katılma bağlantısı aşağıda (Bekleyen elle yapılacaklar 6).
-  Güncel sürüm 4 (12 Kas 2026): main'deki her şey, kilit ekranı penceresi dahil.
+  Güncel sürüm 4 (12 Kas 2026): main'deki her şey. **Kilit ekranı penceresi sürüm 4 ve 5'te yok:** modülün Kotlin kodu
+  `.gitignore` (`android/`) yüzünden repoya girmemişti, derleme modülsüz geçti. Düzeltme PR'ından sonraki derlemeyle gelir.
 - **iOS TestFlight'a gönderildi:** App Store Connect'te "Lykiva" (Apple kimliği `6833386986`), sürüm 0.1.0 (3), güncel
   main'den (senin işlerin dahil). Sen Android'de deneyeceksin: Gmail adresini İsmail'e ilet, dahili test listesine eklensin.
 - **Google ile giriş açık.** Sunucuda `google=true`; uygulama kodu değişmedi, Play'deki sürümde de çalışır.
@@ -62,9 +64,12 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
    - SMTP çalışıyor: deneme şifre sıfırlama postası Gmail'e geldi (11 Kas 2026). Kalan: yeni derlemede uygulamadan dene.
 10. **İlk herkese açık meydan okuma (isteğe bağlı):** `https://lykiva.app/admin/meydan-okumalar`'dan yönetici hesabıyla aç
     (ör. "Aralık'ta 200 km"). Hedefler / meydan okumalar ve ısı haritaları migration'ları uygulandı (12 Kas 2026).
-11. **Android sürüm 4'ü telefonda dene** (12 Kas 2026'da Play dahili teste yüklendi): kilit ekranı penceresi, hedefler /
+11. **Android sürüm 4'ü telefonda dene** (12 Kas 2026'da Play dahili teste yüklendi): hedefler /
     meydan okumalar / rozetler, harita türleri, ısı haritaları ilk kez telefonda. Neye bakılacağı aşağıda
     "Telefonda ve gerçek sunucuda denenmemiş özellikler"de.
+12. **İsmail derleyecek — kilit ekranı için yeni Android derlemesi:** `kilit-ekrani-anlik-hiz` PR'ı main'e girince
+    (modülün Kotlin kodu ilk kez repoda; ilk gerçek derleme denemesi). Derleme günlüğünde `kilit-ekrani` modülünün
+    derlendiği görülmeli (`:kilit-ekrani:compileReleaseKotlin`).
 
 ## Yapılacaklar
 
@@ -102,8 +107,9 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   Yakınlaştırınca (8. düzey, aşağı yukarı bir il) çıkıyor mu, kaydırınca yenileniyor mu, hızlı mı? Kişisel uzaktan da
   görünüyor mu? Yeni bir kayıttan sonra kişiselde çıkıyor mu? Ayarlar > Gizlilik > "Isı haritalarında görün" kapatılınca
   başka hesaptan bakınca o kişinin izleri kayboluyor mu? Uydu / hibrit üstünde renkler okunuyor mu?
-- Kilit ekranı (Android, sürüm 4; Kotlin modülü EAS'ta sorunsuz derlendi, telefonda denenmedi):
-  kayıt başlat, ekranı kapat; kilit ekranında süre sayıyor mu, mesafe ve ort. hız yürüdükçe değişiyor mu? Bildirim
+- Kilit ekranı (Android; sürüm 4 / 5'te yok, Kotlin kodu henüz hiç derlenmedi — bkz. Bekleyen elle yapılacaklar 12):
+  kayıt başlat, ekranı kapat; kilit ekranında süre sayıyor mu, mesafe ve anlık hız yürüdükçe değişiyor mu, durunca
+  anlık hız birkaç saniyede 0'a düşüyor mu? Bildirimi açınca 2×2 düzende ortalama hız da görünüyor mu? Bildirim
   çekmecesinde tek bildirim mi kalıyor ("Lykiva kaydediyor" + pencere iki ayrı bildirim olmamalı)? Duraklat / devam et:
   süre duruyor, devamda kaldığı yerden sayıyor mu? Bitir / iptal: pencere kayboluyor mu? Karanlık temada yazılar
   okunuyor mu, büyük yazı boyutunda kapalı bildirime sığıyor mu? Samsung / Xiaomi gibi kendi arayüzü olanlarda görünüm?
@@ -115,7 +121,7 @@ Kaydedilenler: gizlilik politikası URL'si, uygulama erişimi (giriş zorunlu de
 reklam yok. EAS ortam değişkenleri (production / preview / development) girildi; imzalama anahtarını EAS tutuyor
 (Play App Signing). Mağaza metinleri ve beyan taslakları: `apps/mobile/MAGAZA.md`.
 **Dahili test yayında** (11 Kas 2026): sürüm 2 (0.1.0), hedef SDK 36, tester listesi "Gösterge test" (3 kişi).
-**Sürüm 4 yüklendi** (12 Kas 2026, versionCode 4, güncel main): kilit ekranı penceresi, hedefler / meydan okumalar /
+**Sürüm 4 yüklendi** (12 Kas 2026, versionCode 4, güncel main): hedefler / meydan okumalar /
 rozetler, harita türleri, ısı haritaları, dil desteği, çevrimdışı harita, kişisel rekorlar.
 **Sürüm 5 derlendi** (12 Kas 2026, güncel main): Expo SDK 58 yama güncellemeleri, kendi BRouter / Photon sunucularımız +
 uygulama anahtarı, "yalnızca Türkiye" uyarısı. **iOS build 4 TestFlight'a gönderildi.** Android versionCode 5 AAB'si hazır,
@@ -252,8 +258,8 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
   hesaplayan tablo (şu an her istekte izlerden hesaplanıyor); web'de ısı haritası yok; tür süzgeci (yalnızca bisiklet / koşu).
 
 **Platform**
-- [~] Kayıtta kilit ekranında süre / mesafe / ortalama hız (35. aşama). Android yapıldı: kayıt bildirimi canlı pencereye
-  dönüşüyor (yerel modül `modules/kilit-ekrani`; Android sürüm 4'te, telefonda denenecek). Kalan: iOS Live Activity (widget eklentisi, Apple'da
+- [~] Kayıtta kilit ekranında süre / mesafe / anlık ve ortalama hız (35. aşama). Android yapıldı: kayıt bildirimi canlı
+  pencereye dönüşüyor (yerel modül `modules/kilit-ekrani`; sürüm 4 / 5'te yok, sonraki derlemede, telefonda denenecek). Kalan: iOS Live Activity (widget eklentisi, Apple'da
   yeni bundle ID; Mac / EAS'ta derleyip iPhone'da denemek gerekir — İsmail).
 - [~] Çok dilli arayüz: İngilizce, Almanca ve Rusça yapıldı (31. aşama); Arapça + sağdan sola düzen sıradaki PR.
 - [ ] Saat uygulaması (Apple Watch / Wear OS) — büyük iş, sonraya.
@@ -291,7 +297,8 @@ Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde
   servisi bildirimini sonradan değiştirmenin yolu yok (seçenekleri değiştirmek konum güncellemelerini yeniden başlatıyor),
   bu yüzden yerel modül aynı kimlikle yeni bildirim göndererek onu güncelliyor (servis bağı korunur, tek bildirim kalır).
   Süre `Chronometer` ile telefonda sayar (ekran kapalıyken JS her saniye çalışmayabilir); mesafe / hız JS'ten, en sık
-  saniyede bir. Görünüm `RemoteViews` (üç sütun), sistemin bildirim yazı stilleriyle (karanlık tema). Kanal varsayılan
+  saniyede bir; kayıt sürerken 2 sn'de bir de bakılır (durunca konum gelmez, anlık hız 0'a düşsün). Görünüm `RemoteViews`
+  (kapalı: süre, mesafe, anlık hız; açık: 2×2, ortalama hız da), sistemin bildirim yazı stilleriyle (karanlık tema). Kanal varsayılan
   önemde ama sessiz: düşük önemli ("sessiz") bildirimler Android 10+ kilit ekranında görünmüyor. expo-notifications
   sayaç ve özel görünüm vermediği, üstelik ikinci bir bildirim açacağı için kullanılmadı.
   iOS için Live Activity gerekir (ayrı iş).

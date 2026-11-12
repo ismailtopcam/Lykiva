@@ -1,7 +1,7 @@
 /**
  * Kilit ekranında süren kaydın penceresi (yalnızca Android; yerel modül, yeni derleme gerekir).
  *
- * Kayıt bildirimini (expo-location'ın ön plan servisi bildirimi) süre, mesafe ve ortalama hız gösteren bir
+ * Kayıt bildirimini (expo-location'ın ön plan servisi bildirimi) süre, mesafe, anlık ve ortalama hız gösteren bir
  * pencereye çevirir. Süre telefonda kendi kendine sayar (Chronometer); mesafe ve hız her güncellemede yenilenir.
  * Servis çalışmıyorsa (duraklatıldı, arka plan izni yok) aynı pencere ayrı bir bildirim olarak gösterilir.
  *
@@ -20,10 +20,15 @@ export type KilitEkraniDurumu = {
   sayiyor: boolean;
   mesafe: string;
   mesafeBirim: string;
+  /** Anlık hız ("—": bilinmiyor) */
+  anlik: string;
+  /** Ortalama hız (hareket hâlindeyken) */
   hiz: string;
+  /** İki hızın da birimi */
   hizBirim: string;
   sureEtiket: string;
   mesafeEtiket: string;
+  anlikEtiket: string;
   hizEtiket: string;
   /** Ön plan servisinin görev adı: servisin bildirimi bununla bulunur */
   gorev: string;
