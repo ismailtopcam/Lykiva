@@ -157,6 +157,8 @@ girildi → **sürüm 5'ten itibaren** kendi sunucularımız; o zamana kadar tel
 - [ ] **Kapsam yalnızca Türkiye:** Photon'da yurt dışı yer yok ("Eiffel" → Bandırma'da bir kuaför), BRouter karoları
   E25–E45 / N35–N45 dışında rota çizmez. Almanca / Rusça arayüzle yurt dışındaki kullanıcılar etkilenir. Öneri: kendi
   sunucu hata verirse ya da sonuç boşsa uygulama herkese açık sunuculara düşsün (`lib/yonlendirme.ts`, `lib/yerArama.ts`).
+  Şimdilik yapılmadı (İsmail, 12 Kas 2026); yerine kullanıcıya uyarı: rota çizme panelinde "yalnızca Türkiye'de çalışıyor",
+  arama sonuçlarının altında "yalnızca Türkiye'deki yerler", kapsam dışında rota istenince açıklayıcı hata (dört dilde, sürüm 5).
 - [ ] **Uzun rotalar yavaş:** İstanbul–Bursa (139 km) bizde ~8 sn, brouter.de'de ~2,5 sn. `BROUTER_BELLEK` (512M)
   artırılıp denenebilir; kısa rotalar ~0,3 sn.
 - Adresler herkese açık; tarayıcı botları istek atıyor (normal). Gerekirse ileride erişim sınırlanır.
