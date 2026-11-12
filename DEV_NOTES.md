@@ -10,9 +10,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
-| İsmail | Telefona kurulum: iOS geliştirme derlemesi (kod değişikliği yok; Android alındı) | — |
-| Gökhan | Harita renkleri: gündüz açık / gece ve karanlık temada koyu harita, belirgin patikalar | `gokhan/harita-renkleri` |
-## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
+| İsmail | Telefona kurulum: iOS geliştirme derlemesi (kod değişikliği yok; Android alındı) | — |## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
 
 - **iOS'ta da kilit ekranı penceresi var artık:** Live Activity (kilit ekranı + Dynamic Island), `expo-widgets` ile —
   `modules/kilit-ekrani/index.ios.tsx`. Senin Android modülünün aynı verisini kullanıyor (süre, mesafe, anlık ve ortalama
@@ -330,6 +328,9 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
   kaydedilmez, aktiviteye `route_id` gitmez (`kayit/paket.ts` artık yalnızca uuid gönderiyor). Eski Keşfet listesi
   `app/kesfet-liste.tsx`'e taşındı, haritanın sağ üstündeki pusula düğmesiyle açılır. Sesli / adım adım yönlendirme yok.
   Yalnızca JS, yeni yerel modül yok. Telefonda denenecek: dokunarak hedef seçme, kamera yolu tam gösteriyor mu, "Yola çık".
+- [x] Harita renkleri (13 Kas 2026, Gökhan, `harita-renkleri`): gündüz açık, gün batımından sonra ve karanlık temada koyu
+  harita (Liberty'den türetilen, ayrıntılı); açık haritada patikalar belirgin. Telefonda denenecekler yukarıda
+  ("Telefonda ve gerçek sunucuda denenmemiş özellikler").
 - [x] Kilit ekranı / bildirim sayacı sıfırlanıyordu (13 Kas 2026, Gökhan, `kilit-ekrani-sure`): `kaydedici.ts` süreyi
   saniye veriyordu, kilit ekranı modülü milisaniye bekliyor; her güncellemede (en sık saniyede bir, en geç 15 sn'de bir)
   sayaç ~0'dan yeniden başlıyordu. Android ve iOS ikisi de etkileniyordu. Yalnızca JS, yeni derleme gerekmez.
