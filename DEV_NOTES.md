@@ -306,6 +306,9 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
   kaydedilmez, aktiviteye `route_id` gitmez (`kayit/paket.ts` artık yalnızca uuid gönderiyor). Eski Keşfet listesi
   `app/kesfet-liste.tsx`'e taşındı, haritanın sağ üstündeki pusula düğmesiyle açılır. Sesli / adım adım yönlendirme yok.
   Yalnızca JS, yeni yerel modül yok. Telefonda denenecek: dokunarak hedef seçme, kamera yolu tam gösteriyor mu, "Yola çık".
+- [x] Kilit ekranı / bildirim sayacı sıfırlanıyordu (13 Kas 2026, Gökhan, `kilit-ekrani-sure`): `kaydedici.ts` süreyi
+  saniye veriyordu, kilit ekranı modülü milisaniye bekliyor; her güncellemede (en sık saniyede bir, en geç 15 sn'de bir)
+  sayaç ~0'dan yeniden başlıyordu. Android ve iOS ikisi de etkileniyordu. Yalnızca JS, yeni derleme gerekmez.
 - Serbest çizilen rotada yükseklik yok (BRouter'a sorulmuyor); ayrı bir yükseklik servisi gerekir.
 - Karanlık mod (12 Kas 2026, `gorunum-ayari`): haritanın kendisi (OpenFreeMap stili) karanlıkta da açık renkli; karanlık
   harita stili yok. Örnek veri ekranları (`Ornek*`) ve paylaşım kartı temaları sabit renkli bırakıldı.
