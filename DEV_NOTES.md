@@ -11,6 +11,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | Kim | İş | Dal |
 | --- | --- | --- |
 | İsmail | Telefona kurulum: iOS geliştirme derlemesi (kod değişikliği yok; Android alındı) | — |
+| Gökhan | Harita renkleri: temaya göre açık / koyu harita, belirgin patikalar | `gokhan/harita-renkleri` |
 ## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
 
 - **iOS'ta da kilit ekranı penceresi var artık:** Live Activity (kilit ekranı + Dynamic Island), `expo-widgets` ile —
@@ -112,7 +113,17 @@ Kalan: iPhone cihaz kaydı ve iOS geliştirme derlemesi, telefonda deneme. Yeni 
 
 ### [ ] Telefonda ve gerçek sunucuda denenmemiş özellikler
 Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
-- Kayıt ekranı (13 Kas 2026, Gökhan): standart harita türünde siyah zeminli gece stili (OpenFreeMap Dark), sağda
+- Harita renkleri (13 Kas 2026, Gökhan, `harita-renkleri`): harita uygulamanın görünüm ayarını izliyor (Ayarlar >
+  Görünüm): aydınlıkta açık, karanlıkta koyu; kayıt ekranı dahil bütün haritalar. Koyu harita OpenFreeMap Liberty'den
+  türetiliyor (`stilRenkleri.ts`): patikalar, orman, park, su, yer adları ve ilgi noktaları duruyor (eski OpenFreeMap Dark'ta
+  yollar bile zor seçiliyordu). Açık haritada patikalar beyaz yerine kahve-gri kesikli (rota turuncusundan ayrı).
+  Standart stilin JSON'u telefonda saklanıyor (açılışta hemen hazır). Bakılacaklar: güneşte kayıt ekranında açık harita
+  okunuyor mu, gece koyu harita göz alıyor mu; durum çubuğu (saat, pil) açık haritada koyu mu; ilk kurulumda harita bir kez
+  yeniden yükleniyor mu (stil inince), sonraki açılışlarda yükleniyor mu? Çevrimdışında indirilmiş rota koyu temada da
+  açılıyor mu? Yalnızca JS, yeni derleme gerekmez. Stiller tarayıcıda (maplibre-gl) karşılaştırıldı ve MapLibre stil
+  doğrulayıcısından hatasız geçti; telefonda görülmedi.
+- Kayıt ekranı (13 Kas 2026, Gökhan): ~~standart harita türünde siyah zeminli gece stili (OpenFreeMap Dark)~~ (yukarıda:
+  harita artık temayı izliyor), sağda
   katman / 2D-3D / Konumum düğmeleri (haritayı elle kaydırınca takip bırakılır, Konumum yeniden takibe alır; 3D'de
   kamera 60° eğilir, binalar yükseltilir), harita kalan alanı alır ve alt panel sıkılaştırıldı. Yeni yerel modül yok,
   yeni derleme gerekmez; telefonda geliştirme derlemesiyle denenecek (3D binalar ve yazı katmanı sırası özellikle).
@@ -320,8 +331,8 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
   saniye veriyordu, kilit ekranı modülü milisaniye bekliyor; her güncellemede (en sık saniyede bir, en geç 15 sn'de bir)
   sayaç ~0'dan yeniden başlıyordu. Android ve iOS ikisi de etkileniyordu. Yalnızca JS, yeni derleme gerekmez.
 - Serbest çizilen rotada yükseklik yok (BRouter'a sorulmuyor); ayrı bir yükseklik servisi gerekir.
-- Karanlık mod (12 Kas 2026, `gorunum-ayari`): haritanın kendisi (OpenFreeMap stili) karanlıkta da açık renkli; karanlık
-  harita stili yok. Örnek veri ekranları (`Ornek*`) ve paylaşım kartı temaları sabit renkli bırakıldı.
+- Karanlık mod (12 Kas 2026, `gorunum-ayari`): örnek veri ekranları (`Ornek*`) ve paylaşım kartı temaları sabit renkli
+  bırakıldı. Harita artık karanlıkta koyu (13 Kas 2026, `harita-renkleri`); uydu, hibrit ve kış iki temada aynı.
 - Gizlilik kontrolleri (12 Kas 2026, `gizlilik-kontrolleri`): `profiles` ve `follows` tablolarını doğrudan okuyan biri
   (uygulama değil, API'yi elle kullanan) gizlenmiş profilin hakkında / şehir bilgisini ve takipçi sayısını görebilir;
   uygulama ve web fonksiyonlardan okuduğu için ekranda görünmez. Kalıcı çözüm: bu sütunları istemciye kapatıp kendi

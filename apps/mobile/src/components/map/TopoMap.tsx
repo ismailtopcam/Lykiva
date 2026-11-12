@@ -6,6 +6,7 @@
  *   böylece uygulama Expo Go'da da denenebilir.
  *
  * Harita türü (standart, uydu, hibrit, kış) kullanıcının seçimidir: bkz. haritaTurleri.ts.
+ * Haritanın açık / koyu olması uygulamanın görünüm ayarını izler (Ayarlar > Görünüm), ekrana göre değişmez.
  * Standart stil EXPO_PUBLIC_MAP_STYLE_URL ile değiştirilir (ör. MapTiler Outdoor).
  * Varsayılan: OpenFreeMap Liberty (anahtarsız, OSM verisi).
  */
@@ -14,6 +15,7 @@ import { useState, type ReactNode } from 'react';
 import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import type { LngLat } from '@/data/ornek';
+import { aktifSema } from '@/theme';
 import { FallbackMap } from './FallbackMap';
 import { HaritaTuruDugmesi } from './HaritaTuruSecici';
 import { GECE_STIL_URL, MAP_STYLE_URL, useHaritaStili } from './haritaTurleri';
@@ -43,6 +45,10 @@ export type TopoMapProps = {
    */
   routeColors?: { from: number; to: number; color: string }[];
   markers?: MapMarker[];
+  /**
+   * Ekranın kendisi koyu (ör. kayıt ekranı): haritanın üstündeki katman düğmesi koyu çizilir.
+   * Haritanın rengini değiştirmez; o görünüm ayarından gelir.
+   */
   dark?: boolean;
   interactive?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -52,7 +58,7 @@ export type TopoMapProps = {
   follow?: LngLat | null;
   /** follow için yakınlaştırma (varsayılan 16) */
   followZoom?: number;
-  /** 3B görünüm: kamera eğilir, gece stilinde binalar yükseltilir. Yalnızca gerçek haritada. */
+  /** 3B görünüm: kamera eğilir, binalar yükseltilir. Yalnızca gerçek haritada. */
   ucBoyut?: boolean;
   /** Kullanıcı haritayı elle kaydırınca / yakınlaştırınca (ör. takibi bırakmak için) */
   onKullaniciOynatti?: () => void;
@@ -73,7 +79,7 @@ export function TopoMap(props: TopoMapProps) {
   return (
     <View style={[styles.root, props.style]}>
       <View style={StyleSheet.absoluteFill} accessible accessibilityRole="image" accessibilityLabel={props.accessibilityLabel}>
-        {useFallback ? <FallbackMap {...props} /> : <NativeMap {...props} />}
+        {useFallback ? <FallbackMap {...props} dark={aktifSema() === 'koyu'} /> : <NativeMap {...props} />}
       </View>
       {props.katmanDugmesi && !useFallback ? (
         <HaritaTuruDugmesi koyu={props.dark} style={[styles.katman, { top: props.katmanDugmesi.top }]} />
@@ -86,7 +92,8 @@ function NativeMap(props: TopoMapProps) {
   // Yerel modül yalnızca burada yüklenir; Expo Go bu satıra hiç gelmez.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const ML = require('@maplibre/maplibre-react-native') as typeof import('@maplibre/maplibre-react-native');
-  const mapStyle = useHaritaStili(props.dark);
+  // Tema değişince kök düzen yeniden kurulur; çizim sırasında okumak yeterli
+  const { stil: mapStyle, koyuZemin } = useHaritaStili(aktifSema() === 'koyu');
   const isiTuru = useIsiTuru();
   const [gorunum, setGorunum] = useState<Gorunum | null>(null);
   const isi = useIsiVerisi(isiTuru, gorunum);
@@ -164,7 +171,8 @@ function NativeMap(props: TopoMapProps) {
       ) : null}
 
       {props.ucBoyut && mapStyle === GECE_STIL_URL ? (
-        // Gece stilinde binalar düz; 3B'de yükseltilir (standart stilde zaten var). Yazıların altında.
+        // Yedek gece stilinde (OpenFreeMap Dark) binalar düz; 3B'de yükseltilir (standart ve türetilen gece
+        // stilinde zaten var). Yazıların altında.
         <ML.Layer
           id="binalar-3b"
           type="fill-extrusion"
@@ -219,14 +227,14 @@ function NativeMap(props: TopoMapProps) {
             id="rota-tamam-kenar"
             type="line"
             layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-            paint={{ 'line-color': props.dark ? '#0E1512' : '#FBF8F2', 'line-width': 8 }}
+            paint={{ 'line-color': koyuZemin ? '#0E1512' : '#FBF8F2', 'line-width': 8 }}
           />
           {renkli ? null : (
             <ML.Layer
               id="rota-tamam-cizgi"
               type="line"
               layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-              paint={{ 'line-color': props.dark ? '#E07A4A' : '#B04E25', 'line-width': 4.5 }}
+              paint={{ 'line-color': koyuZemin ? '#E07A4A' : '#B04E25', 'line-width': 4.5 }}
             />
           )}
         </ML.GeoJSONSource>
@@ -271,7 +279,7 @@ function NativeMap(props: TopoMapProps) {
                 'meeting',
                 '#0B6A6A',
                 'me',
-                props.dark ? '#E07A4A' : '#0B6A6A',
+                koyuZemin ? '#E07A4A' : '#0B6A6A',
                 '#16201B',
               ],
               'circle-stroke-color': ['match', ['get', 'kind'], 'start', '#0B6A6A', 'cursor', '#16201B', '#FBF8F2'],
