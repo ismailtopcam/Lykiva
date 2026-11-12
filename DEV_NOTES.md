@@ -102,8 +102,9 @@ Kalan: iPhone cihaz kaydı ve iOS geliştirme derlemesi, telefonda deneme. Yeni 
 - **Android geliştirme derlemesi alındı** (13 Kas 2026, Gökhan'ın telefonu için; main `e7ae72c`, debug APK, development profili).
   EAS: build `a9dcc157-…`, APK linki 26 Kas 2026'ya kadar geçerli. Kurulduktan sonra `apps/mobile`'da `npm run mobile` ile
   Metro'ya bağlanılır. Yeni yerel modül / `app.json` değişikliği gelene kadar yeni derleme gerekmez.
-- EAS'taki `expo doctor` uyarısı (derlemeyi durdurmuyor): `expo` 58.0.24 → ~58.0.25, `expo-dev-client` 58.0.19 → ~58.0.20,
-  `expo-location` 58.0.21 → ~58.0.22 yama sürümleri geride. `npx expo install --fix` ile ayrı dalda güncellenecek.
+- EAS'taki `expo doctor` uyarısı giderildi (13 Kas 2026): `expo` ~58.0.25, `expo-dev-client` ~58.0.20, `expo-location` ~58.0.22
+  (`npx expo install --fix`; `expo-doctor` 20/20). İçlerinde küçük yerel değişiklikler var (dev-launcher, expo-location'ın
+  `next` API'si; kullanmıyoruz), sonraki derlemeyle gelir. Bu Android geliştirme derlemesi yeni JS ile çalışmaya devam eder.
 
 ### [ ] Telefonda ve gerçek sunucuda denenmemiş özellikler
 Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
