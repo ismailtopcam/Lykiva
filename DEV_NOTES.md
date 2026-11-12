@@ -178,7 +178,7 @@ Play Console > Dahili test > Yeni sürüm'e elle yüklenecek (İsmail).
 BRouter / Photon yeni adreste (`*.ismailtopcam.dev`). Android versionCode 6, iOS build 8 (5–7 numaraları başarısız
 denemelerde harcandı). iOS'ta yeni hedef `ExpoWidgetsTarget` için profil etkileşimli derlemeyle (Apple girişi) oluşturuldu;
 App Group `group.app.lykiva.mobile` Apple Developer'da elle açılıp `app.lykiva.mobile` ve `.ExpoWidgetsTarget`'a bağlandı
-(otomatik eşitleme `TIBURON_APP_CONSENT` verdiği için). **Android versionCode 6 Play dahili teste yüklendi** (12 Kas 2026).
+(otomatik eşitleme `TIBURON_APP_CONSENT` verdiği için). **Android versionCode 6 Play dahili teste yüklendi, iOS build 8 TestFlight'a gönderildi** (12 Kas 2026; "Team (Expo)").
 Kalan: testerların kurup denemesi; sonra kapalı teste geçiş (bkz. Mağazaya çıkmadan önce).
 
 ### [ ] Mağazaya çıkmadan önce
