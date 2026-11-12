@@ -51,3 +51,4 @@ tar -C "$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/data"}}{{.S
 - Konteyner adları farklıysa `/etc/lykiva-yedek.env` içinde `LYKIVA_DB`, `LYKIVA_MINIO`, `LYKIVA_STORAGE` ile değiştirilebilir.
 - Coolify'ın kendi "Scheduled Backups" özelliği de veritabanını S3'e yedekleyebilir; bu betikler ek olarak dosya deposunu ve geri yükleme denemesini kapsar.
 - Gerçek sunucuda çalışıyor (12 Kas 2026): yedek Hetzner'e gidiyor, uzak kopya indirilerek doğrulandı, `geri-yukle-dene.sh` geçti.
+  İlk otomatik gece çalışması (13 Kas 03:30) için 13 Kas 09:00'da bu bilgisayarda tek seferlik kontrol görevi var (salt okuma).
