@@ -1,5 +1,5 @@
 /**
- * Yer arama — Photon (OpenStreetMap). Kendi sunucumuz (photon.lykiva.app, yalnızca Türkiye) ya da herkese açık
+ * Yer arama — Photon (OpenStreetMap). Kendi sunucumuz (photon.ismailtopcam.dev, yalnızca Türkiye) ya da herkese açık
  * photon.komoot.io; adres ve anahtar `lib/altyapi.ts`'te.
  */
 import type { LngLat } from '@/data/ornek';

@@ -76,6 +76,13 @@
           "cameraPermission": "Lykiva, profil ya da mola fotoğrafı çekebilmen için kamerayı kullanır.",
           "microphonePermission": false
         }
+      ],
+      [
+        "expo-widgets",
+        {
+          "bundleIdentifier": "app.lykiva.mobile.ExpoWidgetsTarget",
+          "groupIdentifier": "group.app.lykiva.mobile"
+        }
       ]
     ],
     "extra": {

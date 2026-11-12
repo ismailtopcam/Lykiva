@@ -11,7 +11,21 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | Kim | İş | Dal |
 | --- | --- | --- |
 | İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |
-| Gökhan | Ayarlar > Görünüm: telefon varsayılanı / aydınlık / karanlık (bütün ekranların renkleri) | `gorunum-ayari` |
+
+## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
+
+- **iOS'ta da kilit ekranı penceresi var artık:** Live Activity (kilit ekranı + Dynamic Island), `expo-widgets` ile —
+  `modules/kilit-ekrani/index.ios.tsx`. Senin Android modülünün aynı verisini kullanıyor (süre, mesafe, anlık ve ortalama
+  hız; kilit ekranında 2×2). Ortak tip `modules/kilit-ekrani/tipler.ts`'e taşındı; tek ek alan `etkinlik` (iOS'ta simge
+  için; Kotlin tarafı bilmediği alanı yok sayar). Alan eklersen hem `tipler.ts`'e hem `index.ios.tsx`'teki `PencereProps`'a ekle.
+- Android tarafına (Kotlin, düzenler) dokunulmadı: senin `kilit-ekrani-anlik-hiz` PR'ındaki hâli duruyor. Bu dalda Kotlin
+  modülünü ben de yeniden yazmıştım; birleştirirken seninkini esas aldım, benimkini çıkardım.
+- Tek davranış farkı (JS, iki platform): uygulama açılışta kayıt yoksa önceki oturumdan kalan pencereyi bir kez kapatıyor
+  (uygulama kayıt sürerken kapandı / çöktüyse pencere asılı kalmasın).
+- `.gitignore`: senin `ios/` + `android/` ve `!apps/mobile/modules/*/…` kuralların yerine yalnızca `/apps/mobile/ios/` ve
+  `/apps/mobile/android/` (aynı sonuç, daha dar).
+- `expo-widgets` ve `@expo/ui` Android derlemesine girmiyor (`apps/mobile/package.json` > `expo.autolinking.android.exclude`).
+- Yeni iOS derlemesi gerekiyor; derlemeyi İsmail alacak.
 
 ## Gökhan için: 11 Kasım 2026'da değişenler (İsmail)
 
@@ -66,10 +80,17 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
     (ör. "Aralık'ta 200 km"). Hedefler / meydan okumalar ve ısı haritaları migration'ları uygulandı (12 Kas 2026).
 11. **Android sürüm 4'ü telefonda dene** (12 Kas 2026'da Play dahili teste yüklendi): hedefler /
     meydan okumalar / rozetler, harita türleri, ısı haritaları ilk kez telefonda. Neye bakılacağı aşağıda
-    "Telefonda ve gerçek sunucuda denenmemiş özellikler"de.
-12. **İsmail derleyecek — kilit ekranı için yeni Android derlemesi:** `kilit-ekrani-anlik-hiz` PR'ı main'e girince
-    (modülün Kotlin kodu ilk kez repoda; ilk gerçek derleme denemesi). Derleme günlüğünde `kilit-ekrani` modülünün
-    derlendiği görülmeli (`:kilit-ekrani:compileReleaseKotlin`).
+    "Telefonda ve gerçek sunucuda denenmemiş özellikler"de. (Kilit ekranı penceresi bu sürümde yok; madde 12.)
+12. **İsmail derleme alacak — kilit ekranı** (iki platform):
+    - Android: `npx eas-cli@latest build -p android --profile production`. Modülün Kotlin kodu ilk kez repoda (ilk gerçek
+      derleme denemesi); derleme günlüğünde `kilit-ekrani` modülünün derlendiği görülmeli (`:kilit-ekrani:compileReleaseKotlin`).
+    - iOS (`claude/kilit-ekrani-gosterim-17a0c0` main'e girince): yeni widget eklentisi var (bundle ID
+      `app.lykiva.mobile.ExpoWidgetsTarget`, App Group `group.app.lykiva.mobile`). İlk derlemeyi etkileşimli al
+      (`npx eas-cli@latest build -p ios --profile production`, `--non-interactive` olmadan): EAS eklenti için bundle ID'yi
+      ve profili oluşturmayı sorar. Yetki eşitlemesi Apple hatası verirse (`EXPO_NO_CAPABILITY_SYNC=1` ile derliyoruz)
+      Apple Developer > Identifiers'da App Group `group.app.lykiva.mobile`'ı oluştur, `app.lykiva.mobile` ve
+      `app.lykiva.mobile.ExpoWidgetsTarget` için App Groups yetkisini açıp bu gruba bağla.
+    - Sonra telefonda dene (aşağıda "Kilit ekranı" maddesi).
 13. **İsmail derleyecek — görünüm (karanlık mod):** `gorunum-ayari` PR'ı `app.json`'da `userInterfaceStyle`'ı
     `automatic` yaptı (önce `light`). Yeni derlemeye kadar Aydınlık / Karanlık seçimi çalışır, "Telefonun ayarı" ise
     her zaman aydınlık görünür (eski derleme telefonun temasını uygulamaya bildirmiyor).
@@ -110,13 +131,19 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   Yakınlaştırınca (8. düzey, aşağı yukarı bir il) çıkıyor mu, kaydırınca yenileniyor mu, hızlı mı? Kişisel uzaktan da
   görünüyor mu? Yeni bir kayıttan sonra kişiselde çıkıyor mu? Ayarlar > Gizlilik > "Isı haritalarında görün" kapatılınca
   başka hesaptan bakınca o kişinin izleri kayboluyor mu? Uydu / hibrit üstünde renkler okunuyor mu?
-- Kilit ekranı (Android; sürüm 4 / 5'te yok, Kotlin kodu henüz hiç derlenmedi — bkz. Bekleyen elle yapılacaklar 12):
-  kayıt başlat, ekranı kapat; kilit ekranında süre sayıyor mu, mesafe ve anlık hız yürüdükçe değişiyor mu, durunca
+- Kilit ekranı (yeni derlemeyle; sürüm 4 / 5'te yok, Kotlin kodu henüz hiç derlenmedi — bkz. Bekleyen elle yapılacaklar 12).
+  Android: kayıt başlat, ekranı kapat; kilit ekranında süre sayıyor mu, mesafe ve anlık hız yürüdükçe değişiyor mu, durunca
   anlık hız birkaç saniyede 0'a düşüyor mu? Bildirimi açınca 2×2 düzende ortalama hız da görünüyor mu? Bildirim
   çekmecesinde tek bildirim mi kalıyor ("Lykiva kaydediyor" + pencere iki ayrı bildirim olmamalı)? Duraklat / devam et:
   süre duruyor, devamda kaldığı yerden sayıyor mu? Bitir / iptal: pencere kayboluyor mu? Karanlık temada yazılar
   okunuyor mu, büyük yazı boyutunda kapalı bildirime sığıyor mu? Samsung / Xiaomi gibi kendi arayüzü olanlarda görünüm?
   Android 13+'ta bildirim izni reddedilince kayıt yine sürüyor mu? Arka plan izni "Şimdi değil" denince de pencere çıkıyor mu?
+  iOS: kayıt başlat, kilitle; kilit ekranında pencere (2×2) çıkıyor mu, süre sayıyor mu, mesafe / anlık hız yürüdükçe
+  değişiyor mu, durunca anlık hız 0'a düşüyor mu (arka planda JS zamanlayıcısı seyrek çalışabilir)?
+  Dynamic Island'lı iPhone'da küçük görünüm (simge + süre) ve uzun basınca açılan görünüm. Duraklat: süre duruyor mu,
+  devamda kaldığı yerden mi? Bitir / iptal: pencere hemen kalkıyor mu? Uygulamayı kayıt sürerken kapatıp açınca ikinci
+  pencere açılmıyor mu? Ayarlar > Lykiva > Canlı Etkinlikler kapalıyken kayıt sorunsuz sürüyor mu? Karanlık kilit ekranında
+  yazılar okunuyor mu?
 - Görünüm (Ayarlar > Görünüm: Telefonun ayarı / Aydınlık / Karanlık): seçince ekranlar yeni renkle açılıyor mu, uygulama
   kapanıp açılınca seçim kalıyor mu? Karanlıkta her ekranı gez: okunmayan yazı, açık renkli kalan kutu var mı? Uyarı
   pencereleri ve klavye de karanlık mı? "Telefonun ayarı"ndayken telefonun temasını değiştirip uygulamaya dön (yeni
@@ -161,13 +188,17 @@ hepsi çalışıyor, yeniden başlatma gerekmedi. Otomatik güvenlik güncelleme
 
 ### [x] Kendi rota hesaplama ve yer arama sunucumuz (12 Kas 2026)
 Coolify > Uygulamalar > production > **lykiva-altyapi** (Docker Compose, `altyapi/docker-compose.yml`, sunucu "uygulama"):
-`https://brouter.lykiva.app` (BRouter 1.7.10, Türkiye ve çevresi 8 karo) ve `https://photon.lykiva.app` (Photon 1.3.0,
+`https://brouter.ismailtopcam.dev` (BRouter 1.7.10, Türkiye ve çevresi 8 karo) ve `https://photon.ismailtopcam.dev` (Photon 1.3.0,
 Türkiye, tr + en; 1,18 milyon kayıt, 449 MB). `PHOTON_BELLEK=3g` (ilk içe aktarma ~3 GB, 5 dk; sonra ~400 MB).
 Denendi: BRouter dört profilde brouter.de ile aynı sonuç (Kaş 3653 m); Photon Türkçe aramalarda komoot ile aynı ya da daha iyi.
 Haftalık güncelleme Coolify > Scheduled Tasks: pazartesi 05:00 BRouter segmentleri, 05:30 Photon verisi
 (`veri-guncelle.sh && kill 1` — bitince Photon yeniden başlar, ~13 sn kesinti; denendi).
 Uygulama: EAS ortam değişkenleri `EXPO_PUBLIC_BROUTER_URL` / `EXPO_PUBLIC_PHOTON_URL` (production / preview / development)
 girildi → **sürüm 5'ten itibaren** kendi sunucularımız; o zamana kadar telefonlar brouter.de / photon.komoot.io kullanır.
+- **Alan adı değişti (12 Kas 2026):** `brouter.` / `photon.ismailtopcam.dev`; EAS değişkenleri buna çevrildi (sürüm 6'dan
+  itibaren). Sürüm 5 eski `*.lykiva.app` adreslerine gömülü olduğundan eskiler de geçiş süresince `kapi`'da açık.
+- [ ] Sürüm 5 kullanımdan kalkınca (herkes sürüm 6+) eski `brouter.` / `photon.lykiva.app` adlarını Coolify'dan,
+  `altyapi/kapi/varsayilan.conf.template`'ten ve Cloudflare DNS'ten kaldır.
 - [ ] **Kapsam yalnızca Türkiye:** Photon'da yurt dışı yer yok ("Eiffel" → Bandırma'da bir kuaför), BRouter karoları
   E25–E45 / N35–N45 dışında rota çizmez. Almanca / Rusça arayüzle yurt dışındaki kullanıcılar etkilenir. Öneri: kendi
   sunucu hata verirse ya da sonuç boşsa uygulama herkese açık sunuculara düşsün (`lib/yonlendirme.ts`, `lib/yerArama.ts`).
@@ -270,9 +301,9 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
   hesaplayan tablo (şu an her istekte izlerden hesaplanıyor); web'de ısı haritası yok; tür süzgeci (yalnızca bisiklet / koşu).
 
 **Platform**
-- [~] Kayıtta kilit ekranında süre / mesafe / anlık ve ortalama hız (35. aşama). Android yapıldı: kayıt bildirimi canlı
-  pencereye dönüşüyor (yerel modül `modules/kilit-ekrani`; sürüm 4 / 5'te yok, sonraki derlemede, telefonda denenecek). Kalan: iOS Live Activity (widget eklentisi, Apple'da
-  yeni bundle ID; Mac / EAS'ta derleyip iPhone'da denemek gerekir — İsmail).
+- [~] Kayıtta kilit ekranında süre / mesafe / anlık ve ortalama hız (35. aşama). Kod iki platformda hazır
+  (`modules/kilit-ekrani`): Android'de kayıt bildirimi canlı pencereye dönüşüyor (sürüm 4 / 5'te yok, Kotlin kodu
+  repoya girmemişti), iOS'ta Live Activity (`expo-widgets`). Kalan: yeni derleme ve telefonda deneme (Bekleyen elle yapılacaklar 12).
 - [~] Çok dilli arayüz: İngilizce, Almanca ve Rusça yapıldı (31. aşama); Arapça + sağdan sola düzen sıradaki PR.
 - [ ] Saat uygulaması (Apple Watch / Wear OS) — büyük iş, sonraya.
 - [ ] Karar: ücretli üyelik olacak mı, hangi özellikler (rakiplerde çevrimdışı harita ve yönlendirme ücretli katmanda).
@@ -318,8 +349,14 @@ Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde
   saniyede bir; kayıt sürerken 2 sn'de bir de bakılır (durunca konum gelmez, anlık hız 0'a düşsün). Görünüm `RemoteViews`
   (kapalı: süre, mesafe, anlık hız; açık: 2×2, ortalama hız da), sistemin bildirim yazı stilleriyle (karanlık tema). Kanal varsayılan
   önemde ama sessiz: düşük önemli ("sessiz") bildirimler Android 10+ kilit ekranında görünmüyor. expo-notifications
-  sayaç ve özel görünüm vermediği, üstelik ikinci bir bildirim açacağı için kullanılmadı.
-  iOS için Live Activity gerekir (ayrı iş).
+  sayaç ve özel görünüm vermediği, üstelik ikinci bir bildirim açacağı için kullanılmadı. `expo-widgets`'ın Android
+  özel bildirimi de servisin bildirimini devralamadığı ve sayaç vermediği için kullanılmadı.
+- **Kilit ekranı iOS'ta `expo-widgets` Live Activity** (`modules/kilit-ekrani/index.ios.tsx`): Expo'nun resmi paketi
+  (SDK 58); widget eklentisini (ExpoWidgetsTarget) config eklentisi üretir, `ios/`'a elle dokunmak ya da Swift yazmak
+  gerekmez. Pencere `@expo/ui/swift-ui` ile JS'te yazılır, 'widget' yönergesiyle eklentinin içinde ayrı bir JS ortamında
+  çalışır (dışarıdaki sabitlere erişemez, her şey props'tan). Süre SwiftUI timer'ıyla telefonda sayar. Paket Android'e
+  bağlanmaz (`expo.autolinking.android.exclude`): Android'de kendi Kotlin modülümüz var, Glance / Compose yükü gereksiz.
+  expo-widgets yerel modülü yoksa (Expo Go, eski derleme) paket hiç yüklenmez; yoksa içe aktarma uygulamayı düşürür.
 - **Isı haritaları sunucuda, görünen alan için hesaplanır** (`isi_haritasi`): izler ekranda ~6 piksellik ızgara
   hücrelerine toplanır, hücre değeri farklı aktivite sayısı; uygulama MapLibre ısı katmanıyla çizer. Döşeme sunucusu
   (MVT) kurmak yerine bu seçildi: Supabase oturumu ve kuralları olduğu gibi kullanılıyor, ek servis yok. Küresel /
@@ -379,10 +416,10 @@ Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde
   EAS projesi ve bütün derleme / gönderimler İsmail'in hesabından ve bilgisayarından (12 Kas 2026); Gökhan EAS'a eklenmez.
 - **Yönetim paneli** tam yetkili anahtar kullanmaz; her işlem yöneticinin kendi oturumuyla, yetkiyi veritabanı denetler.
 - **Yasal sayfalardaki iletişim bilgileri** panelden değişir (`site_ayarlari`); varsayılan `bilgi@lykiva.app`.
-- **Alan adları:** `lykiva.app` asıl adres (web), `api.lykiva.app` Supabase, `brouter.` / `photon.lykiva.app` kendi
-  sunucularımız (kurulunca). DNS Cloudflare'de, proxy kapalı (Coolify kendi sertifikasını alır; gosterge.app ile aynı düzen).
+- **Alan adları:** `lykiva.app` asıl adres (web), `api.lykiva.app` Supabase, `brouter.` / `photon.ismailtopcam.dev` kendi
+  rota / yer arama sunucularımız (eski `*.lykiva.app` adları geçiş için açık). DNS Cloudflare'de, proxy kapalı (Coolify kendi sertifikasını alır; gosterge.app ile aynı düzen).
   `lykiva.com` ve `www.lykiva.com` Cloudflare yönlendirme kuralıyla `https://lykiva.app`'e 301 (yol ve sorgu korunur).
-  E-posta Zoho Mail (AB sunucuları). ismailtopcam.dev artık Lykiva'yı göstermiyor; Coolify'dan eski adresler kaldırıldı.
+  E-posta Zoho Mail (AB sunucuları). ismailtopcam.dev artık Lykiva web'ini göstermiyor (yalnızca `brouter.` / `photon.` alt adları).
 - **Coolify paneli** Tailscale ağı üzerinden `http://coolify:8000` (eski `coolify.ismailtopcam.dev` kapalı).
   lykiva-web uuid `pjrlciwlsjvr6fpl3lovbaoy`, lykiva-supabase uuid `nqyujqqkkjyba4flthzcf9uf`.
 - **Paket adı / bundle ID: `app.lykiva.mobile`** (Android ve iOS) — Play'e ilk AAB yüklenince kalıcı.
