@@ -6,7 +6,7 @@
  * - Arka plan izni yoksa uygulama açıkken kaydeder.
  * - Kayıt durumu her nokta grubunda telefona yazılır; uygulama kapanırsa kaldığı yerden sürer.
  * - Duraklatma yeni bir "parça" başlatır; parçalar arası yol mesafeye eklenmez.
- * - Android'de kilit ekranında süre, mesafe ve ortalama hız gösterilir (kilitEkrani.ts).
+ * - Kilit ekranında süre, mesafe ve ortalama hız gösterilir: Android bildirim, iOS Live Activity (kilitEkrani.ts).
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { acceptPoint, LOCATION_DISTANCE_INTERVAL_M, prepareRoute, trackOnRoute, type ActivityType, type HavaDurumu, type PreparedRoute, type RouteProgress, type RoutePoint, type TrackPoint } from '@lykiva/shared';
