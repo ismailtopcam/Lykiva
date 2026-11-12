@@ -10,6 +10,9 @@ Güncel durum, yapılacaklar ve kimin neyle uğraştığı: **`DEV_NOTES.md`**.
 - **Sunucuyla ilgili işleri İsmail yapar, Gökhan yapmaz:** migration uygulama, Coolify, sunucu ayarları, ortam değişkenleri.
   Gökhan'ın işinde migration varsa PR'ı main'e girince İsmail (Claude ile) uygular; Gökhan'ın oturumunda Claude sunucuya
   dokunmaz, gerekeni DEV_NOTES'a "İsmail uygulayacak" diye yazar.
+- **EAS derlemeleri ve mağaza gönderimleri İsmail'den yürür** (EAS Build / Submit, TestFlight, Play): EAS projesi
+  `@ismailtopcam/lykiva` İsmail'in hesabında, Gökhan EAS projesine eklenmez. Gökhan'ın işi yeni derleme gerektiriyorsa
+  (yeni yerel modül, `app.json` değişikliği) DEV_NOTES'a "İsmail derleme alacak" diye yazılır; derlemeyi İsmail (Claude ile) alır.
 - İşe başlamadan önce `main`'i çek (`git pull`) ve `DEV_NOTES.md` > "Şu an üzerinde çalışılanlar" bölümüne bak:
   başkasının üzerinde çalıştığı dosyalara / özelliğe dokunma; çakışma varsa önce sor.
 - Yeni bir işe başlarken o bölüme kendi adınla ve dal adıyla bir satır ekle; iş bitince (merge sonrası) satırı kaldır,
