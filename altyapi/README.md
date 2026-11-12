@@ -39,8 +39,8 @@ curl -H "X-Lykiva-Anahtar: $A" "https://brouter.ismailtopcam.dev/brouter?lonlats
 ## Kurulu (12 Kas 2026)
 
 Coolify > Uygulamalar > production > **lykiva-altyapi**, sunucu "uygulama". Alan adları API ile `https://brouter.ismailtopcam.dev`
-ve `https://photon.ismailtopcam.dev` olarak verildi (Coolify portu kendisi ekledi: 17777 / 2322). Sürüm 5 eski
-`brouter.` / `photon.lykiva.app` adreslerini kullandığından onlar da geçiş süresince `kapi`'da açık (12 Kas 2026). Ortam: `PHOTON_BELLEK=3g`.
+ve `https://photon.ismailtopcam.dev` olarak verildi (Coolify portu kendisi ekledi: 17777 / 2322). Eski
+`brouter.` / `photon.lykiva.app` adları 12 Kas 2026'da kaldırıldı. Ortam: `PHOTON_BELLEK=3g`.
 Ölçülen: Photon ilk içe aktarma ~5 dk, ~3 GB bellek; çalışırken ~400 MB. BRouter ~50 MB (boşta).
 Haftalık güncelleme (Scheduled Tasks): pazartesi 05:00 `brouter` → `/brouter/segment-guncelle.sh`;
 05:30 `photon` → `/photon/veri-guncelle.sh && kill 1` (Photon'un 1 numaralı süreci Java; `kill 1` düzgün kapatır,

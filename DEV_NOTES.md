@@ -81,16 +81,10 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
 11. **Android sürüm 4'ü telefonda dene** (12 Kas 2026'da Play dahili teste yüklendi): hedefler /
     meydan okumalar / rozetler, harita türleri, ısı haritaları ilk kez telefonda. Neye bakılacağı aşağıda
     "Telefonda ve gerçek sunucuda denenmemiş özellikler"de. (Kilit ekranı penceresi bu sürümde yok; madde 12.)
-12. **İsmail derleme alacak — kilit ekranı** (iki platform):
-    - Android: `npx eas-cli@latest build -p android --profile production`. Modülün Kotlin kodu ilk kez repoda (ilk gerçek
-      derleme denemesi); derleme günlüğünde `kilit-ekrani` modülünün derlendiği görülmeli (`:kilit-ekrani:compileReleaseKotlin`).
-    - iOS (`claude/kilit-ekrani-gosterim-17a0c0` main'e girince): yeni widget eklentisi var (bundle ID
-      `app.lykiva.mobile.ExpoWidgetsTarget`, App Group `group.app.lykiva.mobile`). İlk derlemeyi etkileşimli al
-      (`npx eas-cli@latest build -p ios --profile production`, `--non-interactive` olmadan): EAS eklenti için bundle ID'yi
-      ve profili oluşturmayı sorar. Yetki eşitlemesi Apple hatası verirse (`EXPO_NO_CAPABILITY_SYNC=1` ile derliyoruz)
-      Apple Developer > Identifiers'da App Group `group.app.lykiva.mobile`'ı oluştur, `app.lykiva.mobile` ve
-      `app.lykiva.mobile.ExpoWidgetsTarget` için App Groups yetkisini açıp bu gruba bağla.
-    - Sonra telefonda dene (aşağıda "Kilit ekranı" maddesi).
+12. **Sürüm 6'da kilit ekranını telefonda dene** (aşağıda "Kilit ekranı" maddesi).
+13. (İsteğe bağlı) **Play gönderimini Claude'a devretmek için:** EAS'ta Google hizmet hesabı anahtarı yok, o yüzden
+    `eas submit -p android` çalışmıyor ve AAB elle yükleniyor. Play Console'da hizmet hesabı açılıp anahtarı EAS'a eklenirse
+    gönderimi Claude yapar.
 
 ## Yapılacaklar
 
@@ -128,7 +122,7 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   Yakınlaştırınca (8. düzey, aşağı yukarı bir il) çıkıyor mu, kaydırınca yenileniyor mu, hızlı mı? Kişisel uzaktan da
   görünüyor mu? Yeni bir kayıttan sonra kişiselde çıkıyor mu? Ayarlar > Gizlilik > "Isı haritalarında görün" kapatılınca
   başka hesaptan bakınca o kişinin izleri kayboluyor mu? Uydu / hibrit üstünde renkler okunuyor mu?
-- Kilit ekranı (yeni derlemeyle; sürüm 4 / 5'te yok, Kotlin kodu henüz hiç derlenmedi — bkz. Bekleyen elle yapılacaklar 12).
+- Kilit ekranı (yeni derlemeyle; sürüm 6'dan itibaren; ilk kez derlendi, telefonda denenmedi).
   Android: kayıt başlat, ekranı kapat; kilit ekranında süre sayıyor mu, mesafe ve anlık hız yürüdükçe değişiyor mu, durunca
   anlık hız birkaç saniyede 0'a düşüyor mu? Bildirimi açınca 2×2 düzende ortalama hız da görünüyor mu? Bildirim
   çekmecesinde tek bildirim mi kalıyor ("Lykiva kaydediyor" + pencere iki ayrı bildirim olmamalı)? Duraklat / devam et:
@@ -153,6 +147,11 @@ rozetler, harita türleri, ısı haritaları, dil desteği, çevrimdışı harit
 **Sürüm 5 derlendi** (12 Kas 2026, güncel main): Expo SDK 58 yama güncellemeleri, kendi BRouter / Photon sunucularımız +
 uygulama anahtarı, "yalnızca Türkiye" uyarısı. **iOS build 4 TestFlight'a gönderildi.** Android versionCode 5 AAB'si hazır,
 Play Console > Dahili test > Yeni sürüm'e elle yüklenecek (İsmail).
+**Sürüm 6 derlendi** (12 Kas 2026, güncel main): kilit ekranı penceresi (Android bildirim + iOS Live Activity, ilk derleme),
+BRouter / Photon yeni adreste (`*.ismailtopcam.dev`). Android versionCode 6, iOS build 8 (5–7 numaraları başarısız
+denemelerde harcandı). iOS'ta yeni hedef `ExpoWidgetsTarget` için profil etkileşimli derlemeyle (Apple girişi) oluşturuldu;
+App Group `group.app.lykiva.mobile` Apple Developer'da elle açılıp `app.lykiva.mobile` ve `.ExpoWidgetsTarget`'a bağlandı
+(otomatik eşitleme `TIBURON_APP_CONSENT` verdiği için). **Android versionCode 6 Play dahili teste yüklendi** (12 Kas 2026).
 Kalan: testerların kurup denemesi; sonra kapalı teste geçiş (bkz. Mağazaya çıkmadan önce).
 
 ### [ ] Mağazaya çıkmadan önce
@@ -189,9 +188,8 @@ Haftalık güncelleme Coolify > Scheduled Tasks: pazartesi 05:00 BRouter segment
 Uygulama: EAS ortam değişkenleri `EXPO_PUBLIC_BROUTER_URL` / `EXPO_PUBLIC_PHOTON_URL` (production / preview / development)
 girildi → **sürüm 5'ten itibaren** kendi sunucularımız; o zamana kadar telefonlar brouter.de / photon.komoot.io kullanır.
 - **Alan adı değişti (12 Kas 2026):** `brouter.` / `photon.ismailtopcam.dev`; EAS değişkenleri buna çevrildi (sürüm 6'dan
-  itibaren). Sürüm 5 eski `*.lykiva.app` adreslerine gömülü olduğundan eskiler de geçiş süresince `kapi`'da açık.
-- [ ] Sürüm 5 kullanımdan kalkınca (herkes sürüm 6+) eski `brouter.` / `photon.lykiva.app` adlarını Coolify'dan,
-  `altyapi/kapi/varsayilan.conf.template`'ten ve Cloudflare DNS'ten kaldır.
+  itibaren). Eski `brouter.` / `photon.lykiva.app` adları aynı gün Coolify'dan, kapıdan ve Cloudflare DNS'ten kaldırıldı
+  (sürüm 5'te rota çizme ve yer arama artık çalışmaz; Android sürüm 6 yayında, iOS'ta henüz tester yok).
 - [ ] **Kapsam yalnızca Türkiye:** Photon'da yurt dışı yer yok ("Eiffel" → Bandırma'da bir kuaför), BRouter karoları
   E25–E45 / N35–N45 dışında rota çizmez. Almanca / Rusça arayüzle yurt dışındaki kullanıcılar etkilenir. Öneri: kendi
   sunucu hata verirse ya da sonuç boşsa uygulama herkese açık sunuculara düşsün (`lib/yonlendirme.ts`, `lib/yerArama.ts`).
@@ -402,7 +400,7 @@ Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde
 - **Yönetim paneli** tam yetkili anahtar kullanmaz; her işlem yöneticinin kendi oturumuyla, yetkiyi veritabanı denetler.
 - **Yasal sayfalardaki iletişim bilgileri** panelden değişir (`site_ayarlari`); varsayılan `bilgi@lykiva.app`.
 - **Alan adları:** `lykiva.app` asıl adres (web), `api.lykiva.app` Supabase, `brouter.` / `photon.ismailtopcam.dev` kendi
-  rota / yer arama sunucularımız (eski `*.lykiva.app` adları geçiş için açık). DNS Cloudflare'de, proxy kapalı (Coolify kendi sertifikasını alır; gosterge.app ile aynı düzen).
+  rota / yer arama sunucularımız (eski `*.lykiva.app` adları kaldırıldı). DNS Cloudflare'de, proxy kapalı (Coolify kendi sertifikasını alır; gosterge.app ile aynı düzen).
   `lykiva.com` ve `www.lykiva.com` Cloudflare yönlendirme kuralıyla `https://lykiva.app`'e 301 (yol ve sorgu korunur).
   E-posta Zoho Mail (AB sunucuları). ismailtopcam.dev artık Lykiva web'ini göstermiyor (yalnızca `brouter.` / `photon.` alt adları).
 - **Coolify paneli** Tailscale ağı üzerinden `http://coolify:8000` (eski `coolify.ismailtopcam.dev` kapalı).
