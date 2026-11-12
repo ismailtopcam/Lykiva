@@ -43,7 +43,9 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
 2. **Yönetim paneli > Site ayarları** (`https://lykiva.app/admin`) — veri sorumlusu ve adresi.
 3. **Telefona geliştirme derlemesi** (`apps/mobile`): `npx eas-cli@latest device:create` (iPhone) →
    `npx eas-cli@latest build --profile development --platform all` → telefonlara kur → `npm run mobile`. Adımlar README'de.
-4. **Yedek:** S3 uyumlu kova aç, `/etc/lykiva-yedek.env` doldur, `yedekle.sh` ve `geri-yukle-dene.sh` çalıştır.
+4. **Hetzner depolama anahtarını yenile:** gizli anahtar sohbette paylaşıldı. Hetzner Console > Security > S3 credentials'ta
+   yeni çift oluştur, `/etc/lykiva-yedek.env`'de `S3_ANAHTAR` / `S3_GIZLI`'yi değiştir (Claude yapabilir: erişim anahtarını
+   sohbete, gizliyi yalnızca sunucuya yaz), sonra eski iki çifti (`3W8WDQ…`, `CZE21…`) sil.
 5. **Kendi rota / yer arama sunucuları:** `altyapi/README.md` adımlarıyla Coolify'da kur, `.env` adreslerini değiştir.
 6. **Play dahili test:** katılma bağlantısını "Gösterge test" listesindekilere gönder:
    https://play.google.com/apps/internaltest/4701532399950766309 — telefonda denenmemiş özellikleri (aşağıda) dene.
@@ -128,9 +130,15 @@ Kalan: testerların kurup denemesi; sonra kapalı teste geçiş (bkz. Mağazaya 
   mağazadaki ücretsiz bir uygulamada bu şekilde (anahtarsız, doğrudan döşeme) kullanılabiliyor mu? Uymuyorsa uydu için
   anahtarlı bir servise geç (ör. Esri ArcGIS Location Platform ya da MapTiler Satellite); adres `haritaTurleri.ts`'te tek yerde.
 
-### [~] Yedekleme
-Betikler sunucuya kuruldu (`supabase/yedek/kur.sh`; her gece 03:30, yerel 14 gün). Kalan: sunucu dışı S3 kopyası ve
-geri yükleme denemesi. O zamana kadar yedek yalnızca aynı sunucuda.
+### [x] Yedekleme
+Betikler sunucuda (`supabase/yedek/kur.sh`; her gece 03:30 TSİ, yerel 14 gün). **Sunucu dışı kopya açık** (12 Kas 2026):
+Hetzner Object Storage, `nbg1.your-objectstorage.com`, kova `ismail` içinde `lykiva-yedek/` klasörü (uzakta 60 gün).
+Kovada başka veri de var (`arsiv/`, `data/`); bu yüzden `S3_KOVA=ismail/lykiva-yedek` — eski yedek silme yalnızca o klasörde.
+İlk uzak yedek indirilerek karşılaştırıldı (5/5 dosya aynı), `geri-yukle-dene.sh` geçti (sayılar aynı).
+Yeni anahtarla ilk dakikalarda ara ara 403 geldi (rclone yeniden deneyip tamamladı); birkaç gün günlüğe bakılmalı:
+`tail -n 50 /var/log/lykiva-yedek.log`.
+Sunucu paketleri güncellendi (12 Kas 2026; Ubuntu 24.04.5, Docker eklentileri, Tailscale 1.104.6, snapd), 27 konteynerin
+hepsi çalışıyor, yeniden başlatma gerekmedi. Otomatik güvenlik güncellemeleri (unattended-upgrades) açık.
 
 ### [~] Kendi rota hesaplama ve yer arama sunucumuz
 Kurulum dosyaları hazır: `altyapi/` (BRouter 1.7.10 + Photon 1.3.0, Coolify Docker Compose). Coolify'da kurulup
