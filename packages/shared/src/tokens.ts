@@ -51,6 +51,39 @@ export const colors = {
   },
 } as const;
 
+/** Renk adları aynı, değerleri temaya göre değişir */
+export type Renkler = { [A in keyof typeof colors]: A extends 'night' ? (typeof colors)['night'] : string };
+
+/**
+ * Karanlık mod (mobilde Ayarlar > Görünüm). Adlar `colors` ile aynı; `ink` açık metin, `ground` koyu zemin olur.
+ * Canlı takip ekranlarının `night` paleti iki temada da aynı kalır.
+ */
+export const colorsDark: Renkler = {
+  ground: '#0F1613',
+  surface: '#18221E',
+  land: '#212B26',
+  line: '#2A3631',
+  lineStrong: '#3A4842',
+  ink: '#EDE7DB',
+  inkMuted: '#A3ACA5',
+
+  terra: '#C25A2B',
+  terraPressed: '#A04720',
+  terraSoft: '#3A251B',
+  terraInk: '#F2A57E',
+
+  sea: '#3A9C95',
+  seaSoft: '#16312E',
+  seaInk: '#8FD3CB',
+  water: '#173330',
+
+  ochre: '#D3A04A',
+  sand: '#2E2A20',
+  sandInk: '#E6D6B3',
+
+  night: colors.night,
+};
+
 export const fonts = {
   /** Başlıklar ve büyük sayılar */
   display: 'Bricolage Grotesque',

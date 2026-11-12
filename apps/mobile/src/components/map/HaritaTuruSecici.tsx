@@ -12,7 +12,7 @@ import { Txt } from '@/components/Txt';
 import { Chip } from '@/components/ui';
 import { $t } from '@/i18n';
 import { supabaseHazir } from '@/lib/supabase';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { HARITA_TURLERI, haritaTuruSec, useHaritaTuru, type HaritaTuru } from './haritaTurleri';
 import { ISI_TURLERI, isiTuruSec, useIsiTuru, type IsiTuru } from './isiHaritasi';
 
@@ -148,7 +148,7 @@ export function HaritaTuruDugmesi({ style }: { style?: StyleProp<ViewStyle> }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   perde: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(20, 26, 23, 0.45)' },
   alt: { flex: 1, justifyContent: 'flex-end' },
   kart: { backgroundColor: colors.ground, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: space.lg, paddingTop: space.lg },
@@ -163,4 +163,4 @@ const styles = StyleSheet.create({
   leke: { position: 'absolute', width: '70%', height: '55%', right: '-15%', bottom: '-10%', borderRadius: 40 },
   yol: { position: 'absolute', height: 5, left: '-10%', right: '-10%', top: '42%', transform: [{ rotate: '-24deg' }] },
   pist: { position: 'absolute', width: 4, top: '-10%', bottom: '-10%', left: '38%', transform: [{ rotate: '18deg' }] },
-});
+}));

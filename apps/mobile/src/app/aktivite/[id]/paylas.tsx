@@ -14,7 +14,7 @@ import type { Activity } from '@/data/ornek';
 import { baglantiAc, baglantiAdresi, baglantiDurumu, baglantiKapat, baglantiPaylas } from '@/lib/baglanti';
 import { dosyaAdi, gpxPaylas } from '@/lib/gpx';
 import { supabaseHazir } from '@/lib/supabase';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 const statDefs = (): [KartIstatistigi, string][] => [
@@ -269,7 +269,7 @@ export default function PaylasimStudyosuScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   shadow: { borderRadius: 18, shadowColor: colors.ink, shadowOpacity: 0.18, shadowRadius: 20, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
   row: { flexDirection: 'row', gap: 8, marginBottom: 14 },
@@ -279,4 +279,4 @@ const styles = StyleSheet.create({
   mesaj: { textAlign: 'center', fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: colors.seaInk, marginBottom: 8 },
   target: { width: '20%', alignItems: 'center', gap: 6 },
   targetIcon: { width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-});
+}));

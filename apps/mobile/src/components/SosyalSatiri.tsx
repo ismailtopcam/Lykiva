@@ -10,7 +10,7 @@ import { aktiviteDegisti, aktiviteSosyal, begen, sunucuAktivitesiMi, type Sosyal
 import { Icon } from '@/components/Icon';
 import { Txt } from '@/components/Txt';
 import { supabaseHazir } from '@/lib/supabase';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 export function SosyalSatiri({ id }: { id: string }) {
@@ -71,7 +71,7 @@ export function SosyalSatiri({ id }: { id: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -85,4 +85,4 @@ const styles = StyleSheet.create({
   },
   item: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 48, paddingHorizontal: 8 },
   text: { fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: colors.ink },
-});
+}));

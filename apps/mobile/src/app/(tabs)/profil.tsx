@@ -16,7 +16,7 @@ import { ACTIVITY_LABELS, DIFFICULTY_LABELS, formatKm, formatMeters, kmUnit, mUn
 import { baglantiPaylas, profilAdresi } from '@/lib/baglanti';
 import { useHesap } from '@/lib/giris';
 import { oturumuSagla, supabaseHazir } from '@/lib/supabase';
-import { colors, fontFamily, space } from '@/theme';
+import { aktifSema, colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 const tabs = () => [$t('profil.aktiviteler'), $t('profil.rotalarim'), $t('profil.gruplar')];
@@ -26,7 +26,7 @@ const basarilar = (): { href: '/rekorlar' | '/hedefler' | '/meydan-okuma' | '/ro
   { href: '/rekorlar', ad: $t('rekorlar.baslik'), alt: $t('rekorlar.profil_alt'), ikon: 'trophy', bg: colors.terraSoft, fg: colors.terraInk },
   { href: '/hedefler', ad: $t('hedefler.baslik'), alt: $t('hedefler.profil_alt'), ikon: 'target', bg: colors.seaSoft, fg: colors.seaInk },
   { href: '/meydan-okuma', ad: $t('meydan.baslik'), alt: $t('meydan.profil_alt'), ikon: 'flag', bg: colors.sand, fg: colors.sandInk },
-  { href: '/rozetler', ad: $t('rozet.baslik'), alt: $t('rozet.profil_alt'), ikon: 'medal', bg: '#F1E1BE', fg: '#6A4A12' },
+  { href: '/rozetler', ad: $t('rozet.baslik'), alt: $t('rozet.profil_alt'), ikon: 'medal', bg: aktifSema() === 'koyu' ? '#33290F' : '#F1E1BE', fg: aktifSema() === 'koyu' ? '#EBCB8B' : '#6A4A12' },
 ];
 
 export default function ProfilScreen() {
@@ -299,7 +299,7 @@ export default function ProfilScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   top: { flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: space.sm },
   identity: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: space.lg, paddingBottom: 14 },
@@ -312,4 +312,4 @@ const styles = StyleSheet.create({
   tab: { flex: 1, height: 44, alignItems: 'center', justifyContent: 'center', borderBottomWidth: 2.5, borderBottomColor: 'transparent' },
   tabOn: { borderBottomColor: colors.ink },
   row: { flexDirection: 'row', gap: 12, alignItems: 'center', padding: 10, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
-});
+}));

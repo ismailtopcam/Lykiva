@@ -11,7 +11,7 @@ import { Icon } from '@/components/Icon';
 import { KisiSatiri } from '@/components/KisiSatiri';
 import { Txt } from '@/components/Txt';
 import { SectionHeader } from '@/components/ui';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 export default function KisilerScreen() {
@@ -87,7 +87,7 @@ export default function KisilerScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   search: {
     flexDirection: 'row',
@@ -102,4 +102,4 @@ const styles = StyleSheet.create({
     marginBottom: space.lg,
   },
   input: { flex: 1, fontFamily: fontFamily.body, fontSize: 15, color: colors.ink },
-});
+}));

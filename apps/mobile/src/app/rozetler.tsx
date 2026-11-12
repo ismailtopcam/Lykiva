@@ -13,7 +13,7 @@ import { Card, SectionHeader } from '@/components/ui';
 import { RozetSimgesi } from '@/components/RozetSimgesi';
 import { rozetAdi, rozetIlerlemesi, rozetKosulu, rozetVerisi } from '@/data/rozet';
 import { oturumuSagla, supabaseHazir } from '@/lib/supabase';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t, yerel } from '@/i18n';
 
 const KATEGORILER: RozetKategori[] = ['toplam', 'tek', 'seri', 'ozel', 'meydan'];
@@ -130,10 +130,10 @@ function RozetKutusu({ d, onPress }: { d: RozetDurumu; onPress: () => void }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.xl },
   izgara: { flexDirection: 'row', flexWrap: 'wrap', rowGap: 14, marginBottom: space.sm },
   kutu: { width: '33.33%', alignItems: 'center', paddingHorizontal: 4, gap: 4 },
   ad: { fontFamily: fontFamily.bodySemiBold, fontSize: 12, textAlign: 'center', lineHeight: 15 },
-});
+}));

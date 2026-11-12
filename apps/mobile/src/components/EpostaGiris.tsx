@@ -24,7 +24,7 @@ import {
   sifreyiYenile,
 } from '@/lib/epostaGiris';
 import type { GirisSonucu } from '@/lib/giris';
-import { colors, fontFamily, radius, space } from '@/theme';
+import { colors, fontFamily, radius, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 type Gorunum = 'giris' | 'kayit' | 'unuttum' | 'kod';
@@ -344,7 +344,7 @@ function Baglanti({ metin, onPress, disabled }: { metin: string; onPress: () => 
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   input: { height: 48, borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, paddingHorizontal: 14, fontFamily: fontFamily.body, fontSize: 15, color: colors.ink },
   kod: { fontSize: 22, letterSpacing: 6, textAlign: 'center', fontFamily: fontFamily.bodySemiBold },
   sifreKutu: { flexDirection: 'row', alignItems: 'center', borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
@@ -356,4 +356,4 @@ const styles = StyleSheet.create({
   baglanti: { paddingVertical: space.sm, minHeight: 44, justifyContent: 'center' },
   bilgi: { backgroundColor: colors.seaSoft, borderRadius: radius.md, padding: space.md },
   hata: { backgroundColor: colors.terraSoft, borderRadius: radius.md, padding: space.md },
-});
+}));

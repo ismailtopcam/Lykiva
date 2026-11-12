@@ -16,7 +16,7 @@ import { rotaKaydet, type Rota } from '@/data/rota';
 import { konumOnizlemeBaslat, useKayit } from '@/kayit/kaydedici';
 import { yerAra, type YerSonucu } from '@/lib/yerArama';
 import { CIZIM_MODLARI, rotaHesapla, type CizimModu, type HesaplananRota } from '@/lib/yonlendirme';
-import { colors, fontFamily, radius, space } from '@/theme';
+import { colors, fontFamily, radius, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 const GORUNURLUK = (): { id: Rota['visibility']; label: string }[] => [
@@ -304,7 +304,7 @@ export default function RotaOlusturScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.land },
   search: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, alignSelf: 'stretch', paddingHorizontal: 14, borderRadius: 22, backgroundColor: colors.surface },
   searchInput: { flex: 1, fontFamily: fontFamily.body, fontSize: 14, color: colors.ink },
@@ -318,4 +318,4 @@ const styles = StyleSheet.create({
   note: { marginBottom: 6 },
   nameInput: { fontFamily: fontFamily.display, fontSize: 22, color: colors.ink, borderBottomWidth: 1.5, borderBottomColor: colors.lineStrong, paddingVertical: 6 },
   bar: { flexDirection: 'row', height: 10, borderRadius: 5, overflow: 'hidden', gap: 2 },
-});
+}));

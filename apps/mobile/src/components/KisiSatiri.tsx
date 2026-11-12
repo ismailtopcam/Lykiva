@@ -10,7 +10,7 @@ import { takipEt, type KisiOzeti } from '@/akis/akis';
 import { Txt } from '@/components/Txt';
 import { Avatar } from '@/components/ui';
 import { basHarfler, grupRengi } from '@/grup/gruplar';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 export function altBilgi(k: KisiOzeti) {
@@ -97,11 +97,11 @@ export function KisiSatiri({ k, onDegisti }: { k: KisiOzeti; onDegisti?: (takipt
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: 10 },
   kisi: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 12 },
   btn: { height: 36, minWidth: 96, paddingHorizontal: 14, borderRadius: 18, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5 },
   genis: { height: 48, borderRadius: 24, alignSelf: 'stretch' },
   btnOff: { backgroundColor: colors.terra, borderColor: colors.terra },
   btnOn: { backgroundColor: 'transparent', borderColor: colors.lineStrong },
-});
+}));

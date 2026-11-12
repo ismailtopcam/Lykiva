@@ -13,7 +13,7 @@ import { SikayetBaglantisi, useSikayet } from '@/components/SikayetPenceresi';
 import { Txt } from '@/components/Txt';
 import { Avatar, Button, SectionHeader } from '@/components/ui';
 import { basHarfler, grupRengi } from '@/grup/gruplar';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t, yerel } from '@/i18n';
 
 export default function KisiScreen() {
@@ -158,8 +158,8 @@ function Sayi({ n, etiket, onPress }: { n: number; etiket: string; onPress?: () 
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   identity: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: space.lg, paddingBottom: 14 },
   row: { flexDirection: 'row', gap: 12, alignItems: 'center', padding: 10, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
-});
+}));

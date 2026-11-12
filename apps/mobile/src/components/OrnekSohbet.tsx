@@ -9,7 +9,7 @@ import { IconButton } from '@/components/IconButton';
 import { Txt } from '@/components/Txt';
 import { Avatar } from '@/components/ui';
 import { groupMessages, kasKalkanRoute, people } from '@/data/ornek';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 
 export function OrnekSohbet() {
   const insets = useSafeAreaInsets();
@@ -130,7 +130,7 @@ export function OrnekSohbet() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   header: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: space.sm, paddingBottom: 8, backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.line },
   pinned: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: space.lg, paddingVertical: 10, backgroundColor: colors.terraSoft },
@@ -144,4 +144,4 @@ const styles = StyleSheet.create({
   composer: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingTop: 8, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.line },
   input: { flex: 1, height: 44, borderRadius: 22, backgroundColor: colors.ground, paddingHorizontal: 14, fontFamily: fontFamily.body, fontSize: 14, color: colors.ink },
   send: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.terra, alignItems: 'center', justifyContent: 'center' },
-});
+}));

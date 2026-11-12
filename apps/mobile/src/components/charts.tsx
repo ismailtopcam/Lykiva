@@ -104,7 +104,7 @@ export function SpeedChart({
     <View accessible accessibilityRole="image" accessibilityLabel={label}>
       <Svg width={width} height={height}>
         {bands.map((b) => (
-          <Rect key={b.n} x={b.x} y={0} width={b.w} height={chartH} fill="#EADFC9" />
+          <Rect key={b.n} x={b.x} y={0} width={b.w} height={chartH} fill={colors.sand} />
         ))}
         <Line x1={0} x2={width} y1={chartH} y2={chartH} stroke={colors.lineStrong} />
         <Line x1={0} x2={width} y1={y(avg)} y2={y(avg)} stroke={colors.sea} strokeWidth={1.5} strokeDasharray="4 4" />

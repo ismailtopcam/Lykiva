@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { colors } from '@/theme';
+import { colors, temaliStil } from '@/theme';
 
 /**
  * İlerleme çubuğu (0–1). `isaret` verilirse o noktada ince bir çizgi: dönemin geçen kısmı ("planda olmak için buradasın").
@@ -28,7 +28,7 @@ export function IlerlemeCubugu({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   zemin: { width: '100%', overflow: 'visible' },
   isaret: { position: 'absolute', width: 2, marginLeft: -1, borderRadius: 1, backgroundColor: colors.ink, opacity: 0.55 },
-});
+}));

@@ -15,7 +15,7 @@ import { Txt } from '@/components/Txt';
 import { Button, Chip, Label } from '@/components/ui';
 import { girdiBirimi, girdidenDeger, olcuAdi, ONERILER } from '@/data/hedef';
 import { meydanOkumaOlustur } from '@/data/meydanOkuma';
-import { colors, fontFamily, radius, space } from '@/theme';
+import { colors, fontFamily, radius, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 type Sure = 'bu_hafta' | 'bu_ay' | 'gun_7' | 'gun_30';
@@ -188,7 +188,7 @@ export default function MeydanOkumaOlusturScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   ad: { fontFamily: fontFamily.display, fontSize: 24, color: colors.ink, borderBottomWidth: 1.5, borderBottomColor: colors.lineStrong, paddingVertical: 6 },
   sarmal: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
@@ -197,4 +197,4 @@ const styles = StyleSheet.create({
   input: { borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, paddingHorizontal: 14, fontFamily: fontFamily.body, fontSize: 15, color: colors.ink },
   hata: { flexDirection: 'row', gap: 8, alignItems: 'center', padding: 12, borderRadius: radius.md, backgroundColor: colors.terraSoft },
   alt: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: space.lg, paddingTop: 12, backgroundColor: colors.ground },
-});
+}));
