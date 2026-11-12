@@ -14,10 +14,15 @@ import { cikisYap, useHesap, type Saglayici } from '@/lib/giris';
 import { hesabiSil } from '@/lib/hesap';
 import { pushAc, pushDurumu, pushKapat, type PushDurumu } from '@/lib/push';
 import { supabase, supabaseHazir } from '@/lib/supabase';
-import { colors, space } from '@/theme';
+import { aktifSema, colors, GORUNUMLER, gorunumSecimi, gorunumSecimiYap, space, temaliStil, type GorunumSecimi } from '@/theme';
 import { $t, cihazDili, DIL_ADLARI, DILLER, dilSecimi, dilSecimiYap, type Dil } from '@/i18n';
 
 const adlar = (): Record<Saglayici, string> => ({ google: 'Google', apple: 'Apple', email: $t('ayarlar.e_posta') });
+const gorunumAdlari = (): Record<GorunumSecimi, string> => ({
+  sistem: $t('ayarlar.gorunum_sistem'),
+  acik: $t('ayarlar.gorunum_acik'),
+  koyu: $t('ayarlar.gorunum_koyu'),
+});
 
 export default function AyarlarScreen() {
   const hesap = useHesap();
@@ -26,6 +31,7 @@ export default function AyarlarScreen() {
   const [push, setPush] = useState<PushDurumu | null>(null);
   const indirilenler = useIndirilenRotalar();
   const [isiHaritasinda, setIsiHaritasinda] = useState<boolean | null>(null);
+  const [gorunum, setGorunum] = useState<GorunumSecimi>(gorunumSecimi);
 
   useEffect(() => {
     if (!hesap?.id) return;
@@ -58,6 +64,15 @@ export default function AyarlarScreen() {
     if (d === dilSecimi()) return;
     await dilSecimiYap(d);
     setTimeout(() => router.push('/ayarlar'), 50);
+  }
+
+  // Tema değişirse de ekranlar yeniden kurulur; seçim aynı temayı veriyorsa (ör. telefon zaten karanlık) kurulmaz
+  async function gorunumDegistir(g: GorunumSecimi) {
+    if (g === gorunumSecimi()) return;
+    const once = aktifSema();
+    await gorunumSecimiYap(g);
+    if (aktifSema() !== once) setTimeout(() => router.push('/ayarlar'), 50);
+    else setGorunum(g);
   }
 
   useFocusEffect(
@@ -191,6 +206,15 @@ export default function AyarlarScreen() {
           </View>
         </View>
 
+        <View>
+          <Label>{$t('ayarlar.gorunum_baslik')}</Label>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }} accessibilityRole="radiogroup">
+            {GORUNUMLER.map((g) => (
+              <Chip key={g} label={gorunumAdlari()[g]} role="radio" selected={gorunum === g} onPress={() => void gorunumDegistir(g)} />
+            ))}
+          </View>
+        </View>
+
         {push && push !== 'desteklenmiyor' ? (
           <View>
             <Label>{$t('ayarlar.bildirimler')}</Label>
@@ -271,6 +295,6 @@ export default function AyarlarScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
-});
+}));

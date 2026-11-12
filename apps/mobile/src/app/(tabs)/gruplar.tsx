@@ -23,7 +23,7 @@ import {
   type KesfetGrubu,
 } from '@/grup/gruplar';
 import { supabaseHazir } from '@/lib/supabase';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 /** Sunucu anahtarı yoksa tasarım örneği, varsa gerçek gruplar */
@@ -252,7 +252,7 @@ function GercekGruplar() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: space.lg },
   newBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, paddingHorizontal: 14, borderRadius: 20, borderWidth: 1.5, borderColor: colors.ink },
@@ -265,4 +265,4 @@ const styles = StyleSheet.create({
   badge: { minWidth: 22, height: 22, borderRadius: 11, backgroundColor: colors.terra, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6 },
   katil: { height: 36, minWidth: 64, paddingHorizontal: 12, borderRadius: 18, backgroundColor: colors.sea, alignItems: 'center', justifyContent: 'center' },
   katilPasif: { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.lineStrong },
-});
+}));

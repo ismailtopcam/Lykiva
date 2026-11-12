@@ -11,7 +11,7 @@ import { TopoMap } from '@/components/map/TopoMap';
 import { Txt } from '@/components/Txt';
 import { Avatar, AvatarStack, Card, Chip, Stat } from '@/components/ui';
 import { kasKalkan, liveFriends, people } from '@/data/ornek';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 
 const filters = ['Takip ettiklerim', 'Gruplarım', 'Yakınımda'];
 
@@ -147,7 +147,7 @@ export function OrnekAkis() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: space.lg, paddingRight: space.sm, paddingBottom: space.sm },
   liveHead: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: space.lg, marginBottom: 10, marginTop: 4 },
@@ -164,4 +164,4 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 6, paddingVertical: 4 },
   action: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 44, paddingHorizontal: 10 },
   actionText: { fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: colors.ink },
-});
+}));

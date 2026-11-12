@@ -27,7 +27,7 @@ import { Pressable, StyleSheet, View, type GestureResponderEvent } from 'react-n
 import Svg, { Circle, Line, Path } from 'react-native-svg';
 
 import type { LngLat } from '@/data/ornek';
-import { colors, fontFamily } from '@/theme';
+import { colors, fontFamily, temaliStil } from '@/theme';
 import { Txt } from './Txt';
 import { $t } from '@/i18n';
 
@@ -199,7 +199,7 @@ export function TirmanisListesi({ egim, onSec }: { egim: RotaEgim; onSec: (imlec
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   ust: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4, gap: 8 },
   okuma: { fontFamily: fontFamily.bodySemiBold, color: colors.ink },
   lejant: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 6 },
@@ -210,4 +210,4 @@ const styles = StyleSheet.create({
   numara: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   numaraYazi: { color: '#FFFFFF', fontFamily: fontFamily.bodyBold, fontSize: 12 },
   tirmanisUst: { fontFamily: fontFamily.bodySemiBold, fontSize: 14 },
-});
+}));

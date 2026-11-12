@@ -26,7 +26,7 @@ import { Txt } from '@/components/Txt';
 import { Avatar } from '@/components/ui';
 import { basHarfler, grupRengi } from '@/grup/gruplar';
 import { supabaseHazir } from '@/lib/supabase';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 export default function YorumlarScreen() {
@@ -235,7 +235,7 @@ function Yorumlar({ id }: { id: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   ozet: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: space.md, paddingRight: space.lg, borderBottomWidth: 1, borderBottomColor: colors.line },
   begen: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, paddingHorizontal: 6 },
@@ -257,4 +257,4 @@ const styles = StyleSheet.create({
     color: colors.ink,
   },
   send: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.terra, alignItems: 'center', justifyContent: 'center' },
-});
+}));

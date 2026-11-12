@@ -19,11 +19,11 @@ import { Txt } from '@/components/Txt';
 import { Stat } from '@/components/ui';
 import { useAktivite } from '@/data/aktivite';
 import type { Activity } from '@/data/ornek';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 const ABARTILAR = [1, 3, 10] as const;
-const RENK: Record<EgimSinifi, string> = { cikis: colors.terra, inis: colors.sea, duz: colors.ink };
+const RENK = temaliStil((): Record<EgimSinifi, string> => ({ cikis: colors.terra, inis: colors.sea, duz: colors.ink }));
 
 const yol = (pts: [number, number][]) => (pts.length ? 'M' + pts.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join(' L') : '');
 
@@ -138,7 +138,7 @@ function UcBoyut({ a }: { a: Activity }) {
         {...surukle}>
         <Svg width={G3.w} height={G3.h}>
           <Path d={perde} fill={colors.terra} fillOpacity={0.08} />
-          <Path d={yol(p.zemin)} fill="none" stroke="#CDBFA6" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+          <Path d={yol(p.zemin)} fill="none" stroke={colors.lineStrong} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
           <G stroke={colors.terra} strokeOpacity={0.28} strokeWidth={1}>
             {p.iz.map((q, i) =>
               i % perdeAdim === 0 ? <Line key={i} x1={q[0]} y1={q[1]} x2={p.zemin[i][0]} y2={p.zemin[i][1]} /> : null,
@@ -234,12 +234,12 @@ function UcBoyut({ a }: { a: Activity }) {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#EFE8DB' },
+const styles = temaliStil(() => StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.ground },
   seg: { flexDirection: 'row', height: 44, borderRadius: 22, padding: 4, backgroundColor: colors.surface },
   segBtn: { minWidth: 44, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   sheet: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, borderTopLeftRadius: 26, borderTopRightRadius: 26, paddingHorizontal: space.lg, paddingTop: 18 },
   lejant: { flexDirection: 'row', gap: 16, marginTop: 8 },
   duzCubuk: { height: 28, borderRadius: 14, backgroundColor: colors.line, overflow: 'hidden', justifyContent: 'center' },
   duzDolu: { height: '100%', backgroundColor: colors.seaSoft },
-});
+}));

@@ -26,7 +26,7 @@ import {
   type SiralamaSatiri,
 } from '@/data/meydanOkuma';
 import { basHarfler } from '@/grup/gruplar';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 export default function MeydanOkumaScreen() {
@@ -213,11 +213,11 @@ function SiraSatiri({ s, olcu, hedef }: { s: SiralamaSatiri; olcu: MeydanOkumaDe
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   center: { alignItems: 'center', justifyContent: 'center' },
   baslik: { fontFamily: fontFamily.displayHeavy, fontSize: 26, lineHeight: 30, color: colors.night.text, marginTop: 8, marginBottom: 4 },
   tablo: { borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, overflow: 'hidden' },
   satir: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line },
   sira: { width: 28, textAlign: 'center', fontFamily: fontFamily.display, fontSize: 17, color: colors.inkMuted },
-});
+}));

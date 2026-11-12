@@ -9,7 +9,7 @@ import { TopoMap } from '@/components/map/TopoMap';
 import { Txt } from '@/components/Txt';
 import { Avatar, Button, ToggleRow } from '@/components/ui';
 import { kasKalkanRoute, liveFriends, people } from '@/data/ornek';
-import { colors, fontFamily, radius, space } from '@/theme';
+import { colors, fontFamily, radius, space, temaliStil } from '@/theme';
 
 export function OrnekCanliHarita() {
   const insets = useSafeAreaInsets();
@@ -95,7 +95,7 @@ export function OrnekCanliHarita() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.land },
   seg: { flexDirection: 'row', height: 44, borderRadius: 22, padding: 4, backgroundColor: colors.surface, alignSelf: 'stretch' },
   segBtn: { flex: 1, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
@@ -106,4 +106,4 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#ECE4D6' },
   small: { height: 36, paddingHorizontal: 14 },
   shareBox: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 12, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 14, backgroundColor: colors.ground },
-});
+}));

@@ -8,7 +8,7 @@ import { Icon } from '@/components/Icon';
 import { Txt } from '@/components/Txt';
 import { Avatar, Button, Card, Label, ListRow, ToggleRow } from '@/components/ui';
 import { faralyaKabak, groups, people } from '@/data/ornek';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 export default function RotaPaylasScreen() {
@@ -85,15 +85,15 @@ export default function RotaPaylasScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   route: { flexDirection: 'row', gap: 12, alignItems: 'center', padding: 10, marginBottom: 14 },
   groupRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, minHeight: 60 },
-  sep: { borderBottomWidth: 1, borderBottomColor: '#ECE4D6' },
+  sep: { borderBottomWidth: 1, borderBottomColor: colors.line },
   box: { width: 24, height: 24, borderRadius: 7, borderWidth: 1.5, borderColor: '#9C9282', alignItems: 'center', justifyContent: 'center' },
   boxOn: { backgroundColor: colors.sea, borderColor: colors.sea },
   person: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 36, paddingLeft: 4, borderRadius: 18, backgroundColor: colors.seaSoft },
   remove: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
   addPerson: { height: 36, paddingHorizontal: 12, borderRadius: 18, borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#9C9282', justifyContent: 'center' },
   bottom: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: space.lg, paddingTop: 12, backgroundColor: colors.ground },
-});
+}));

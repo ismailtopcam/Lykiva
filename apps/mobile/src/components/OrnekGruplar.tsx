@@ -6,7 +6,7 @@ import { Icon } from '@/components/Icon';
 import { Txt } from '@/components/Txt';
 import { Avatar, Button, DateBadge, SectionHeader } from '@/components/ui';
 import { events, groups } from '@/data/ornek';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 
 export function OrnekGruplar() {
   const next = events[0];
@@ -61,11 +61,11 @@ export function OrnekGruplar() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: space.lg },
   newBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, paddingHorizontal: 14, borderRadius: 20, borderWidth: 1.5, borderColor: colors.ink },
   next: { flexDirection: 'row', gap: 12, alignItems: 'center', padding: 12, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, marginBottom: space.xl },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.lineStrong },
   badge: { minWidth: 22, height: 22, borderRadius: 11, backgroundColor: colors.terra, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6 },
-});
+}));

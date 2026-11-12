@@ -18,14 +18,14 @@ import { AppState, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Arka plan konum görevi uygulama açılır açılmaz tanımlanmalı
-import { kaydiGeriYukle } from '@/kayit/kaydedici';
+import { kaydiGeriYukle, kayitSuruyor } from '@/kayit/kaydedici';
 import { bildirimHedefi } from '@/bildirim/bildirimler';
 import { kuyruguGonder } from '@/kayit/kuyruk';
 import { dilDegisikliginiDinle, dilYukle, useDil } from '@/i18n';
 import { haritaIstekleriniAyarla } from '@/lib/cevrimdisi';
 import { bildirimDiliniGuncelle } from '@/lib/dilSunucu';
 import { pushTazele } from '@/lib/push';
-import { colors } from '@/theme';
+import { cihazSemasiniDinle, colors, gorunumYukle, useSema } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -50,9 +50,18 @@ export default function RootLayout() {
     return dilDegisikliginiDinle(() => void bildirimDiliniGuncelle());
   }, []);
 
+  // Görünüm (telefonun teması / aydınlık / karanlık) da açılışta okunur; tema değişince de ekranlar yeniden kurulur.
+  // Telefonun teması kayıt sürerken değişirse ekranlar baştan kurulmasın diye bir sonraki öne gelişe kalır.
+  const [temaHazir, setTemaHazir] = useState(false);
+  const sema = useSema();
   useEffect(() => {
-    if ((loaded || error) && dilHazir) SplashScreen.hideAsync();
-  }, [loaded, error, dilHazir]);
+    void gorunumYukle().finally(() => setTemaHazir(true));
+    return cihazSemasiniDinle(kayitSuruyor);
+  }, []);
+
+  useEffect(() => {
+    if ((loaded || error) && dilHazir && temaHazir) SplashScreen.hideAsync();
+  }, [loaded, error, dilHazir, temaHazir]);
 
   // Yarım kalan kaydı geri yükle; bekleyen kayıtları uygulama her öne geldiğinde göndermeyi dene
   // Telefon bildirimi: jetonu tazele; bildirime dokununca ilgili sayfayı aç (uygulama kapalıyken de)
@@ -78,12 +87,12 @@ export default function RootLayout() {
     return () => sub.remove();
   }, []);
 
-  if ((!loaded && !error) || !dilHazir) return null;
+  if ((!loaded && !error) || !dilHazir || !temaHazir) return null;
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="dark" />
-      <Stack key={dil} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.ground } }}>
+      <StatusBar style={sema === 'koyu' ? 'light' : 'dark'} />
+      <Stack key={`${dil}-${sema}`} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.ground } }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="giris" options={{ gestureEnabled: false, animation: 'fade' }} />
         <Stack.Screen name="giris-donus" options={{ animation: 'none' }} />

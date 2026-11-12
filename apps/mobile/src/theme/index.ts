@@ -1,6 +1,10 @@
-import { colors, fontSize, radius, space } from '@lykiva/shared';
+import { fontSize, radius, space } from '@lykiva/shared';
 
-export { colors, fontSize, radius, space, minTouchTarget } from '@lykiva/shared';
+import { colors } from './renkler';
+
+export { fontSize, radius, space, minTouchTarget } from '@lykiva/shared';
+export { aktifSema, colors, temaliStil, type Sema } from './renkler';
+export { cihazSemasi, cihazSemasiniDinle, GORUNUMLER, gorunumSecimi, gorunumSecimiYap, gorunumYukle, useSema, type GorunumSecimi } from './gorunum';
 
 /**
  * React Native'de her ağırlık ayrı bir font ailesi adıyla yüklenir.

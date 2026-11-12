@@ -10,7 +10,7 @@ import { Icon } from '@/components/Icon';
 import { Txt } from '@/components/Txt';
 import { Chip } from '@/components/ui';
 import { sikayetEt, type SikayetTuru } from '@/lib/sikayet';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 import { tr } from '@/i18n/tr';
 
@@ -116,7 +116,7 @@ function SikayetPenceresi({ hedef, kapat }: { hedef: Hedef; kapat: () => void })
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   perde: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(20, 26, 23, 0.45)' },
   alt: { flex: 1, justifyContent: 'flex-end' },
   kart: { backgroundColor: colors.ground, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: space.lg, paddingTop: space.lg, maxHeight: '85%' },
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   },
   dugme: { height: 50, borderRadius: 25, backgroundColor: colors.terra, alignItems: 'center', justifyContent: 'center' },
   dugmeYazi: { color: '#FFFFFF', fontFamily: fontFamily.bodyBold, fontSize: 15 },
-});
+}));
 
 /** Sayfa altında küçük "… şikayet et" bağlantısı */
 export function SikayetBaglantisi({ etiket, onPress }: { etiket: string; onPress: () => void }) {

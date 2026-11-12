@@ -16,7 +16,7 @@ import { useRota } from '@/data/rota';
 import { useHesap } from '@/lib/giris';
 import { supabaseHazir } from '@/lib/supabase';
 import { SikayetBaglantisi, useSikayet } from '@/components/SikayetPenceresi';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t, yerel } from '@/i18n';
 
 function sureMetni(s: number) {
@@ -125,7 +125,7 @@ export default function RotaDetayScreen() {
           {r.notes ? (
             <>
               <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14, marginTop: 12, marginBottom: 6 }}>{ornek ? $t('rota.topluluk_notlari') : $t('rota.notlar')}</Txt>
-              <Txt style={{ fontSize: 13, lineHeight: 20, color: '#2E3631' }}>{r.notes}</Txt>
+              <Txt style={{ fontSize: 13, lineHeight: 20, color: colors.ink }}>{r.notes}</Txt>
             </>
           ) : null}
           {!ornek && supabaseHazir && r.ownerId && hesap && r.ownerId !== hesap.id ? (
@@ -153,9 +153,9 @@ export default function RotaDetayScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   tag: { height: 24, paddingHorizontal: 10, borderRadius: 12, justifyContent: 'center' },
   done: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, marginTop: 14, borderTopWidth: 1, borderBottomWidth: 1, borderColor: colors.lineStrong },
   bottom: { position: 'absolute', left: 0, right: 0, bottom: 0, flexDirection: 'row', gap: 10, paddingHorizontal: space.lg, paddingTop: 12, backgroundColor: colors.ground },
-});
+}));

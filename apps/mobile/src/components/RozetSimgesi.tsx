@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Icon } from '@/components/Icon';
 import { kademeRengi, rozetIkonu } from '@/data/rozet';
-import { colors } from '@/theme';
+import { colors, temaliStil } from '@/theme';
 
 /** Rozetin yuvarlak simgesi: kazanıldıysa kademe renginde, değilse soluk ve kilitli */
 export function RozetSimgesi({ d, boyut = 64 }: { d: RozetDurumu; boyut?: number }) {
@@ -25,7 +25,7 @@ export function RozetSimgesi({ d, boyut = 64 }: { d: RozetDurumu; boyut?: number
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   simge: { alignItems: 'center', justifyContent: 'center', borderWidth: 2 },
   kilit: { position: 'absolute', right: -2, bottom: -2, width: 22, height: 22, borderRadius: 11, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.line },
-});
+}));

@@ -9,7 +9,7 @@ import { IconButton } from '@/components/IconButton';
 import { Txt } from '@/components/Txt';
 import { Avatar, AvatarStack, DateBadge } from '@/components/ui';
 import { events, kasKalkanRoute, people } from '@/data/ornek';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 
 const tabs = ['Akış', 'Rotalar', 'Etkinlikler', 'Üyeler'];
 
@@ -115,7 +115,7 @@ export function OrnekGrup() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   hero: { backgroundColor: colors.sea, paddingHorizontal: space.lg, paddingBottom: 18 },
   title: { fontFamily: fontFamily.displayHeavy, fontSize: 32, color: '#FFFFFF', letterSpacing: -0.6, marginVertical: 4 },
@@ -128,4 +128,4 @@ const styles = StyleSheet.create({
   card: { flexDirection: 'row', gap: 12, alignItems: 'center', padding: 12, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
   going: { height: 34, paddingHorizontal: 12, borderRadius: 17, backgroundColor: colors.sea, justifyContent: 'center' },
   month: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderRadius: 16, backgroundColor: colors.land },
-});
+}));

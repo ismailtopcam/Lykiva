@@ -7,7 +7,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useBildirimSayisi } from '@/bildirim/bildirimler';
 import { Icon } from '@/components/Icon';
 import { Txt } from '@/components/Txt';
-import { colors, fontFamily, minTouchTarget } from '@/theme';
+import { colors, fontFamily, minTouchTarget, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 export function ZilDugmesi() {
@@ -29,7 +29,7 @@ export function ZilDugmesi() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   base: { width: minTouchTarget, height: minTouchTarget, borderRadius: minTouchTarget / 2, alignItems: 'center', justifyContent: 'center' },
   badge: {
     position: 'absolute',
@@ -46,4 +46,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   badgeText: { color: '#FFFFFF', fontFamily: fontFamily.bodyBold, fontSize: 10, lineHeight: 12 },
-});
+}));

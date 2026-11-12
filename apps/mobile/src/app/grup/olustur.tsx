@@ -10,7 +10,7 @@ import { Txt } from '@/components/Txt';
 import { Button, Chip, Label, ToggleRow } from '@/components/ui';
 import { grupOlustur } from '@/grup/gruplar';
 import { supabaseHazir } from '@/lib/supabase';
-import { colors, fontFamily, radius, space } from '@/theme';
+import { colors, fontFamily, radius, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 const turler = (): { id: 'ozel' | 'acik'; ad: string; aciklama: string; icon: IconName }[] => [
@@ -119,9 +119,9 @@ export default function GrupOlusturScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   input: { height: 48, borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, paddingHorizontal: 14, fontFamily: fontFamily.body, fontSize: 15, color: colors.ink },
   tur: { flexDirection: 'row', gap: 12, alignItems: 'center', padding: 14, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.line },
   turOn: { borderColor: colors.sea, backgroundColor: colors.seaSoft },
-});
+}));

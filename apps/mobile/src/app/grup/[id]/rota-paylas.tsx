@@ -11,7 +11,7 @@ import { Button } from '@/components/ui';
 import type { LngLat } from '@/data/ornek';
 import { rotalarim, type Rota } from '@/data/rota';
 import { rotayiGrubaPaylas } from '@/grup/gruplar';
-import { colors, fontFamily, radius, space } from '@/theme';
+import { colors, fontFamily, radius, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 /** Kendi rotalarından birini gruba paylaş: grubun Rotalar sekmesine ve sohbete düşer */
@@ -100,9 +100,9 @@ export default function GrubaRotaPaylasScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   row: { flexDirection: 'row', gap: 12, alignItems: 'center', padding: 10, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.line },
   alt: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: space.lg, paddingTop: 12, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.line },
   input: { height: 44, borderRadius: radius.md, backgroundColor: colors.ground, paddingHorizontal: 14, fontFamily: fontFamily.body, fontSize: 14, color: colors.ink, marginBottom: 10 },
-});
+}));

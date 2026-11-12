@@ -10,7 +10,7 @@ import { TopoMap } from '@/components/map/TopoMap';
 import { Txt } from '@/components/Txt';
 import { AvatarStack } from '@/components/ui';
 import { kasKalkanRoute, people } from '@/data/ornek';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 
 const rsvps = ['Katılıyorum', 'Belki', 'Gelemem'];
 
@@ -111,7 +111,7 @@ export function OrnekEtkinlik() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   info: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   infoIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' },
@@ -120,4 +120,4 @@ const styles = StyleSheet.create({
   note: { flexDirection: 'row', gap: 10, alignItems: 'center', padding: 12, borderRadius: 14, backgroundColor: colors.seaSoft },
   bottom: { position: 'absolute', left: 0, right: 0, bottom: 0, flexDirection: 'row', gap: 8, paddingHorizontal: space.lg, paddingTop: 12, backgroundColor: colors.ground },
   rsvp: { flex: 1, height: 54, borderRadius: 27, borderWidth: 1, borderColor: colors.lineStrong, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
-});
+}));
