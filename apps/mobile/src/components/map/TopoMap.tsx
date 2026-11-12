@@ -6,7 +6,7 @@
  *   böylece uygulama Expo Go'da da denenebilir.
  *
  * Harita türü (standart, uydu, hibrit, kış) kullanıcının seçimidir: bkz. haritaTurleri.ts.
- * Haritanın açık / koyu olması uygulamanın görünüm ayarını izler (Ayarlar > Görünüm), ekrana göre değişmez.
+ * Harita gündüz açık, gün batımından sonra koyu; karanlık temada hep koyu (bkz. gunduzGece.ts). Ekrana göre değişmez.
  * Standart stil EXPO_PUBLIC_MAP_STYLE_URL ile değiştirilir (ör. MapTiler Outdoor).
  * Varsayılan: OpenFreeMap Liberty (anahtarsız, OSM verisi).
  */
@@ -15,8 +15,8 @@ import { useState, type ReactNode } from 'react';
 import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import type { LngLat } from '@/data/ornek';
-import { aktifSema } from '@/theme';
 import { FallbackMap } from './FallbackMap';
+import { useKoyuHarita } from './gunduzGece';
 import { HaritaTuruDugmesi } from './HaritaTuruSecici';
 import { GECE_STIL_URL, MAP_STYLE_URL, useHaritaStili } from './haritaTurleri';
 import { ISI_RENKLERI, useIsiTuru, useIsiVerisi, type Gorunum } from './isiHaritasi';
@@ -47,7 +47,7 @@ export type TopoMapProps = {
   markers?: MapMarker[];
   /**
    * Ekranın kendisi koyu (ör. kayıt ekranı): haritanın üstündeki katman düğmesi koyu çizilir.
-   * Haritanın rengini değiştirmez; o görünüm ayarından gelir.
+   * Haritanın rengini değiştirmez; o saatten ve görünüm ayarından gelir (gunduzGece.ts).
    */
   dark?: boolean;
   interactive?: boolean;
@@ -76,10 +76,11 @@ const useFallback = Constants.executionEnvironment === ExecutionEnvironment.Stor
 export const gercekHarita = !useFallback;
 
 export function TopoMap(props: TopoMapProps) {
+  const koyu = useKoyuHarita();
   return (
     <View style={[styles.root, props.style]}>
       <View style={StyleSheet.absoluteFill} accessible accessibilityRole="image" accessibilityLabel={props.accessibilityLabel}>
-        {useFallback ? <FallbackMap {...props} dark={aktifSema() === 'koyu'} /> : <NativeMap {...props} />}
+        {useFallback ? <FallbackMap {...props} dark={koyu} /> : <NativeMap {...props} koyu={koyu} />}
       </View>
       {props.katmanDugmesi && !useFallback ? (
         <HaritaTuruDugmesi koyu={props.dark} style={[styles.katman, { top: props.katmanDugmesi.top }]} />
@@ -88,12 +89,11 @@ export function TopoMap(props: TopoMapProps) {
   );
 }
 
-function NativeMap(props: TopoMapProps) {
+function NativeMap(props: TopoMapProps & { koyu: boolean }) {
   // Yerel modül yalnızca burada yüklenir; Expo Go bu satıra hiç gelmez.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const ML = require('@maplibre/maplibre-react-native') as typeof import('@maplibre/maplibre-react-native');
-  // Tema değişince kök düzen yeniden kurulur; çizim sırasında okumak yeterli
-  const { stil: mapStyle, koyuZemin } = useHaritaStili(aktifSema() === 'koyu');
+  const { stil: mapStyle, koyuZemin } = useHaritaStili(props.koyu);
   const isiTuru = useIsiTuru();
   const [gorunum, setGorunum] = useState<Gorunum | null>(null);
   const isi = useIsiVerisi(isiTuru, gorunum);

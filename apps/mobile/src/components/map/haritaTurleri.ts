@@ -7,8 +7,8 @@
  * - hibrit: uydu görüntüsü + standart stilin yolları, sınırları ve yazıları.
  * - kış: standart stil karlı renklerle + OpenSnowMap kayak pistleri / kızak, kar ayakkabısı yolları.
  *
- * Harita uygulamanın görünüm ayarını izler (Ayarlar > Görünüm; varsayılan telefonun ayarı): aydınlıkta açık,
- * karanlıkta koyu harita. Uydu, hibrit ve kış iki temada aynıdır.
+ * Standart harita gündüz açık, gün batımından sonra ve karanlık temada koyu (bkz. gunduzGece.ts).
+ * Uydu, hibrit ve kış hep aynıdır.
  *
  * Standart, gece, hibrit ve kış, standart stilin JSON'undan türetilir. JSON telefonda saklanır (açılışta hemen
  * hazır, çevrimdışında da çalışır) ve her açılışta bir kez sunucudan yenilenir. Hiç inmemişse standart
@@ -240,7 +240,7 @@ function stilOf(t: HaritaTuru, koyu: boolean): string | StyleSpecification {
 
 /**
  * Seçili türün MapLibre stili (adres ya da stil nesnesi; aynı tür için hep aynı nesne).
- * koyu: karanlık tema; standart tür gece haritasıyla çizilir.
+ * koyu: gece ya da karanlık tema (useKoyuHarita); standart tür gece haritasıyla çizilir.
  * koyuZemin: harita koyu mu (rota çizgisi ve işaret renkleri buna göre); kış iki temada da açık.
  */
 export function useHaritaStili(koyu: boolean): { stil: string | StyleSpecification; koyuZemin: boolean } {
