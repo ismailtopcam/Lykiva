@@ -10,7 +10,9 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
-| İsmail | Telefona kurulum: iOS geliştirme derlemesi (kod değişikliği yok; Android alındı) | — |## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
+| İsmail | Telefona kurulum: iOS geliştirme derlemesi (kod değişikliği yok; Android alındı) | — |
+
+## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
 
 - **iOS'ta da kilit ekranı penceresi var artık:** Live Activity (kilit ekranı + Dynamic Island), `expo-widgets` ile —
   `modules/kilit-ekrani/index.ios.tsx`. Senin Android modülünün aynı verisini kullanıyor (süre, mesafe, anlık ve ortalama
