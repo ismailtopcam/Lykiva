@@ -45,6 +45,7 @@ MIGRATIONLAR=(
   "20261112000000_dil.sql|exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'dil')"
   "20261113000000_hedefler_meydan_okumalar.sql|to_regclass('public.meydan_okumalar') is not null"
   "20261114000000_isi_haritalari.sql|exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'isi_haritasinda')"
+  "20261115000000_gizlilik.sql|exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'profil_gizliligi')"
 )
 
 # Betik "curl ... | bash" ile çalışırken kendi girdisi betiğin geri kalanıdır: sorgular girdi okumamalı,

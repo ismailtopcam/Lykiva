@@ -29,7 +29,8 @@ export default function KisiScreen() {
       setHata(null);
       const [pr, ak] = await Promise.all([kisiProfili(id), kisininAktiviteleri(id)]);
       setP(pr);
-      setAktiviteler(ak);
+      // Profilini gizleyen kişinin aktiviteleri profil sayfasında listelenmez (akışta kendi görünürlükleriyle çıkar)
+      setAktiviteler(pr?.kisitli ? [] : ak);
     } catch (e) {
       setHata(e instanceof Error ? e.message : $t('ortak.yuklenemedi'));
       setP((x) => x ?? null);
@@ -78,11 +79,13 @@ export default function KisiScreen() {
             <Txt variant="muted" style={{ fontSize: 13 }}>
               {p.temporary ? $t('kisi.gecici_hesap') : altBaslik}
             </Txt>
-            <View style={{ flexDirection: 'row', gap: 16, marginTop: 8 }}>
-              <Sayi n={p.activity_count} etiket="aktivite" />
-              <Sayi n={p.follower_count} etiket={$t('kisi.takipci')} onPress={() => takipListesi('takipci')} />
-              <Sayi n={p.following_count} etiket="takip" onPress={() => takipListesi('takip')} />
-            </View>
+            {p.kisitli ? null : (
+              <View style={{ flexDirection: 'row', gap: 16, marginTop: 8 }}>
+                <Sayi n={p.activity_count} etiket="aktivite" />
+                <Sayi n={p.follower_count} etiket={$t('kisi.takipci')} onPress={() => takipListesi('takipci')} />
+                <Sayi n={p.following_count} etiket="takip" onPress={() => takipListesi('takip')} />
+              </View>
+            )}
           </View>
         </View>
 
@@ -100,8 +103,8 @@ export default function KisiScreen() {
                 geriTakip={p.follows_me}
                 onDegisti={(t) => {
                   setP((x) => (x ? { ...x, i_follow: t, follower_count: x.follower_count + (t ? 1 : -1) } : x));
-                  // Takipçilere açık aktiviteler görünür / gizlenir
-                  void kisininAktiviteleri(p.id).then(setAktiviteler).catch(() => undefined);
+                  // Takipçilere açık aktiviteler ve takipçilere açık profil görünür / gizlenir
+                  void yukle();
                 }}
               />
               {p.follows_me ? (
@@ -117,7 +120,11 @@ export default function KisiScreen() {
             <SectionHeader title={$t('kisi.aktiviteler')} />
           </View>
           {aktiviteler === null ? <ActivityIndicator color={colors.terra} style={{ marginVertical: space.lg }} /> : null}
-          {aktiviteler && aktiviteler.length === 0 ? (
+          {p.kisitli ? (
+            <Txt variant="muted" style={{ textAlign: 'center', paddingVertical: space.lg, paddingHorizontal: space.lg }}>
+              {$t('kisi.profil_gizli')}
+            </Txt>
+          ) : aktiviteler && aktiviteler.length === 0 ? (
             <Txt variant="muted" style={{ textAlign: 'center', paddingVertical: space.lg, paddingHorizontal: space.lg }}>
               {p.me ? $t('kisi.henuz_kaydin_yok') : p.i_follow ? $t('kisi.gorebilecegin_bir_aktivite_yok') : $t('kisi.gorebilecegin_bir_aktivite_yok_2')}
             </Txt>
