@@ -12,6 +12,30 @@ kendi kopyasını Coolify'da çalıştırmak için.
 İkisi de ilk açılışta verisini kendisi indirir (BRouter birkaç dakika, Photon içe aktarmayla birlikte daha uzun);
 veriler kalıcı birimlerde durur, yeniden başlatmada tekrar indirilmez.
 
+## Kapı: uygulama anahtarı ve istek sınırı (`kapi/`)
+
+Dışarıya yalnızca `kapi` (nginx) açıktır; `brouter` ve `photon`'a alan adı verilmez, yalnızca kapı onlara ulaşır.
+Telefonlar sunuculara doğrudan bağlandığı için IP ile kapatmak mümkün değil; bunun yerine:
+
+- **Uygulama anahtarı:** `X-Lykiva-Anahtar` başlığı `LYKIVA_UYGULAMA_ANAHTARI` ile aynı değilse **403**. Anahtar
+  Coolify'da (lykiva-altyapi > Environment Variables) ve uygulamada `EXPO_PUBLIC_ALTYAPI_ANAHTARI` (EAS + yerel `.env`)
+  olarak durur; repoya yazılmaz. Boş ya da 24 karakterden kısaysa kapı açılmaz. Uygulamanın içinde durduğu için
+  kararlı biri çıkarabilir: sıradan kullanımı ve botları keser, asıl koruma istek sınırıdır.
+- **IP başına istek sınırı (aşılınca 429):** rota dakikada 60 (+30 anlık), arama dakikada 120 (+40 anlık);
+  `LYKIVA_ROTA_SINIRI` / `_YIGIN`, `LYKIVA_ARAMA_SINIRI` / `_YIGIN` ile değişir. Gerçek IP Traefik'in
+  `X-Forwarded-For`'undan alınır. Türkiye'de mobil hatlar çoğunlukla ortak IP (CGNAT) kullandığı için sınırlar geniş;
+  aynı IP'deki çok kullanıcı 429 alırsa artırılır.
+- Yalnızca `/brouter` ve `/api` geçer; başka yol 404, tanınmayan alan adı bağlantıyı kapatır. `/saglik` sağlık kontrolü.
+- Anahtar değişirse: Coolify'da yeni değeri gir ve yeniden kur, EAS'ta `EXPO_PUBLIC_ALTYAPI_ANAHTARI`'yı güncelle,
+  yeni derleme al. Eski sürümler o andan itibaren 403 alır.
+
+Deneme (anahtar `$A`):
+
+```bash
+curl -H "X-Lykiva-Anahtar: $A" "https://photon.lykiva.app/api/?q=Kaş&limit=3"
+curl -H "X-Lykiva-Anahtar: $A" "https://brouter.lykiva.app/brouter?lonlats=29.6386,36.2018|29.6012,36.2088&profile=trekking&format=geojson"
+```
+
 ## Kurulu (12 Kas 2026)
 
 Coolify > Uygulamalar > production > **lykiva-altyapi**, sunucu "uygulama". Alan adları API ile `https://brouter.lykiva.app`
@@ -26,14 +50,11 @@ Haftalık güncelleme (Scheduled Tasks): pazartesi 05:00 `brouter` → `/brouter
 1. **DNS:** `brouter.lykiva.app` ve `photon.lykiva.app` için A kaydı → uygulama sunucusu (91.90.81.195),
    diğer alt alan adları nasıl tanımlıysa öyle.
 2. **Coolify > + New > Docker Compose** (kaynak: bu GitHub deposu, dal `main`, dosya `altyapi/docker-compose.yml`), sunucu: "uygulama".
-3. Servislerin alan adlarını ver: `brouter` → `https://brouter.lykiva.app:17777`, `photon` → `https://photon.lykiva.app:2322`
-   (Coolify'da adresin sonundaki `:port`, isteği konteynerin o portuna yönlendirir).
+3. Alan adlarının **ikisini de `kapi` servisine** ver: `https://brouter.lykiva.app,https://photon.lykiva.app`.
+   `brouter` ve `photon` boş kalır (dışarıya kapalı). Environment Variables'a `LYKIVA_UYGULAMA_ANAHTARI` gir (en az 24
+   karakter, harf / rakam / - / _), uygulamadaki `EXPO_PUBLIC_ALTYAPI_ANAHTARI` ile aynı.
 4. Deploy. İlk açılışta günlükte "segmentler hazır" ve Photon'un içe aktarma satırları görünür; sağlık kontrolü yeşile dönünce hazır.
-5. Dene:
-   ```bash
-   curl "https://brouter.lykiva.app/brouter?lonlats=29.6386,36.2018|29.6012,36.2088&profile=trekking&format=geojson" | head -c 300
-   curl "https://photon.lykiva.app/api/?q=Kaş&limit=3"
-   ```
+5. Dene: yukarıdaki "Kapı" bölümündeki komutlar (anahtarsız istek 403 almalı).
 6. Uygulamayı yeni sunuculara bağla — `apps/mobile/.env`:
    ```
    EXPO_PUBLIC_BROUTER_URL=https://brouter.lykiva.app/brouter

@@ -161,7 +161,11 @@ girildi → **sürüm 5'ten itibaren** kendi sunucularımız; o zamana kadar tel
   arama sonuçlarının altında "yalnızca Türkiye'deki yerler", kapsam dışında rota istenince açıklayıcı hata (dört dilde, sürüm 5).
 - [ ] **Uzun rotalar yavaş:** İstanbul–Bursa (139 km) bizde ~8 sn, brouter.de'de ~2,5 sn. `BROUTER_BELLEK` (512M)
   artırılıp denenebilir; kısa rotalar ~0,3 sn.
-- Adresler herkese açık; tarayıcı botları istek atıyor (normal). Gerekirse ileride erişim sınırlanır.
+- **Kapı (12 Kas 2026):** dışarıya yalnızca nginx kapısı açık (`altyapi/kapi`); `X-Lykiva-Anahtar` olmayan istek 403,
+  IP başına sınır (rota 60/dk, arama 120/dk; aşılınca 429). Anahtar Coolify'da `LYKIVA_UYGULAMA_ANAHTARI`, uygulamada
+  `EXPO_PUBLIC_ALTYAPI_ANAHTARI` (EAS + yerel `.env`); repoda yok. Uygulama anahtarı yalnızca kendi adreslerimize
+  gönderir (`lib/altyapi.ts`). Sürüm 5 kendi sunucuları kullanan ilk sürüm olduğu için eski sürümler etkilenmez.
+  Mobil hatlarda ortak IP (CGNAT) yüzünden 429 görülürse sınırlar artırılır.
 
 ### [~] Giriş: Google ve Apple
 - **Google açık** (11 Kas 2026): Google Cloud projesi `lykiva` (Gösterge'den ayrı), OAuth onay ekranı "In production"
