@@ -903,6 +903,7 @@ export const en: Sozluk = {
     patikaya_yapis: 'Snap to trail',
     rota_hesaplanamadi: 'Couldn\'t calculate the route',
     bu_noktalar_arasinda_yol: 'No road or trail found between these points',
+    yalnizca_turkiye: 'Routes can\'t be drawn in this area; route drawing currently works only in and around Türkiye.',
   },
   molaFotolari: {
     fotograf_cek: 'Take a photo',
@@ -1218,6 +1219,8 @@ export const en: Sozluk = {
     haritaya_dokunarak_rota_cizmek: 'Drawing a route by tapping the map needs the phone build of the app (it can\'t be drawn in Expo Go or on the web).',
     serbest_cizimde_yukseklik_ve: 'Free drawing has no elevation or gradient; choose “Snap to trail” or “Snap to road”.',
     dk: '{dk} min',
+    yalnizca_turkiye: 'Route drawing and place search currently work only in Türkiye.',
+    yalnizca_turkiyedeki_yerler: 'Places in Türkiye only for now',
   },
   rota_paylas: {
     rotayi_paylas: 'Share route',

@@ -904,6 +904,7 @@ export const tr = {
     patikaya_yapis: 'Patikaya yapış',
     rota_hesaplanamadi: 'Rota hesaplanamadı',
     bu_noktalar_arasinda_yol: 'Bu noktalar arasında yol veya patika bulunamadı',
+    yalnizca_turkiye: 'Bu bölgede rota çizilemiyor; rota çizme şimdilik yalnızca Türkiye ve çevresinde çalışıyor.',
   },
   molaFotolari: {
     fotograf_cek: 'Fotoğraf çek',
@@ -1219,6 +1220,8 @@ export const tr = {
     haritaya_dokunarak_rota_cizmek: 'Haritaya dokunarak rota çizmek için uygulamanın telefon derlemesi gerekir (Expo Go ve web’de çizilemez).',
     serbest_cizimde_yukseklik_ve: 'Serbest çizimde yükseklik ve eğim yok; “Patikaya yapış” ya da “Yola yapış” seç.',
     dk: '{dk} dk',
+    yalnizca_turkiye: 'Rota çizme ve yer arama şimdilik yalnızca Türkiye’de çalışıyor.',
+    yalnizca_turkiyedeki_yerler: 'Şimdilik yalnızca Türkiye’deki yerler',
   },
   rota_paylas: {
     rotayi_paylas: 'Rotayı paylaş',

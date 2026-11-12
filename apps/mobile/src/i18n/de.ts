@@ -903,6 +903,7 @@ export const de: Sozluk = {
     patikaya_yapis: 'An Pfad ausrichten',
     rota_hesaplanamadi: 'Route konnte nicht berechnet werden',
     bu_noktalar_arasinda_yol: 'Zwischen diesen Punkten wurde keine Straße und kein Pfad gefunden',
+    yalnizca_turkiye: 'In diesem Gebiet kann keine Route berechnet werden; die Routenplanung funktioniert derzeit nur in der Türkei und Umgebung.',
   },
   molaFotolari: {
     fotograf_cek: 'Foto aufnehmen',
@@ -1218,6 +1219,8 @@ export const de: Sozluk = {
     haritaya_dokunarak_rota_cizmek: 'Zum Zeichnen einer Route per Tippen auf die Karte braucht es die Handy-Version der App (in Expo Go und im Web nicht möglich).',
     serbest_cizimde_yukseklik_ve: 'Beim freien Zeichnen gibt es keine Höhe und Steigung; wähle „An Pfad ausrichten“ oder „An Straße ausrichten“.',
     dk: '{dk} Min.',
+    yalnizca_turkiye: 'Routenplanung und Ortssuche funktionieren derzeit nur in der Türkei.',
+    yalnizca_turkiyedeki_yerler: 'Vorerst nur Orte in der Türkei',
   },
   rota_paylas: {
     rotayi_paylas: 'Route teilen',

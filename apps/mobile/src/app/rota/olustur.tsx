@@ -202,6 +202,9 @@ export default function RotaOlusturScreen() {
               </View>
             </Pressable>
           ))}
+          <Txt variant="small" style={styles.resultsNote}>
+            {$t('rota_olustur.yalnizca_turkiyedeki_yerler')}
+          </Txt>
         </View>
       ) : null}
 
@@ -219,9 +222,14 @@ export default function RotaOlusturScreen() {
           <Txt variant="small" style={styles.note}>
             {$t('rota_olustur.haritaya_dokunarak_rota_cizmek')}</Txt>
         ) : duraklar.length < 2 ? (
-          <Txt variant="small" style={styles.note}>
-            {duraklar.length === 0 ? $t('rota_olustur.baslangic_noktasi_icin_haritaya') : $t('rota_olustur.sonraki_noktaya_dokun_patika')}
-          </Txt>
+          <>
+            <Txt variant="small" style={styles.note}>
+              {duraklar.length === 0 ? $t('rota_olustur.baslangic_noktasi_icin_haritaya') : $t('rota_olustur.sonraki_noktaya_dokun_patika')}
+            </Txt>
+            <Txt variant="small" style={[styles.note, { color: colors.inkMuted }]}>
+              {$t('rota_olustur.yalnizca_turkiye')}
+            </Txt>
+          </>
         ) : null}
 
         <TextInput value={ad} onChangeText={setAd} placeholder={$t('rota_olustur.rota_adi')} placeholderTextColor={colors.inkMuted} accessibilityLabel={$t('rota_olustur.rota_adi')} style={styles.nameInput} />
@@ -302,6 +310,7 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontFamily: fontFamily.body, fontSize: 14, color: colors.ink },
   results: { position: 'absolute', left: space.md, right: space.md, borderRadius: 16, backgroundColor: colors.surface, paddingVertical: 4, borderWidth: 1, borderColor: colors.line },
   result: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 48, paddingHorizontal: 14, paddingVertical: 6 },
+  resultsNote: { color: colors.inkMuted, paddingHorizontal: 14, paddingTop: 4, paddingBottom: 6 },
   modes: { position: 'absolute', left: space.md, flexDirection: 'row', gap: 8 },
   modeWrap: { borderRadius: 18, backgroundColor: colors.surface },
   sheet: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, paddingHorizontal: space.lg, paddingTop: 10 },
