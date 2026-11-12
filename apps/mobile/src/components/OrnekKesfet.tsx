@@ -22,7 +22,7 @@ export function OrnekKesfet() {
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         <View style={styles.head}>
           <Txt variant="display" accessibilityRole="header">
-            Keşfet
+            Haritalar
           </Txt>
           <Pressable accessibilityRole="button" style={styles.newBtn}>
             <Icon name="plus" size={16} strokeWidth={2.2} />

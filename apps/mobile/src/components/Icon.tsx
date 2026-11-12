@@ -9,6 +9,8 @@ import { colors } from '@/theme';
 export type IconName =
   | 'home'
   | 'compass'
+  | 'map'
+  | 'record'
   | 'plus'
   | 'trophy'
   | 'users'
@@ -80,6 +82,15 @@ function render(name: IconName, p: Record<string, unknown>, color: string) {
         <>
           <Circle cx={12} cy={12} r={9} {...p} />
           <Path d="M15.5 8.5l-2 5-5 2 2-5z" {...p} />
+        </>
+      );
+    case 'map':
+      return <Path d="M3 6.5l6-2.5 6 2.5 6-2.5v13.5l-6 2.5-6-2.5-6 2.5zM9 4v13.5M15 6.5V20" {...p} />;
+    case 'record':
+      return (
+        <>
+          <Circle cx={12} cy={12} r={9} {...p} />
+          <Circle cx={12} cy={12} r={4.5} fill={color} />
         </>
       );
     case 'plus':
