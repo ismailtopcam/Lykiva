@@ -742,6 +742,8 @@ export const en: Sozluk = {
     kaydetmek_icin_henuz_yeterli: 'Not enough GPS points to save yet.',
   },
   kayit_kaydedici: {
+    kilit_kanal: 'Ongoing recording',
+    kilit_kaydediyor: 'Recording',
     devam: 'Continue',
     simdi_degil: 'Not now',
     lykiva_kaydediyor: 'Lykiva is recording',

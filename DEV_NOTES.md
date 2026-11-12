@@ -59,12 +59,15 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
    - SMTP çalışıyor: deneme şifre sıfırlama postası Gmail'e geldi (11 Kas 2026). Kalan: yeni derlemede uygulamadan dene.
 10. **İlk herkese açık meydan okuma (isteğe bağlı):** `https://lykiva.app/admin/meydan-okumalar`'dan yönetici hesabıyla aç
     (ör. "Aralık'ta 200 km"). Hedefler / meydan okumalar ve ısı haritaları migration'ları uygulandı (12 Kas 2026).
+11. **İsmail derleme alacak — kilit ekranı penceresi (Android):** yeni yerel modül (`apps/mobile/modules/kilit-ekrani`),
+    `npx eas-cli@latest build -p android --profile production` → Play dahili test. Telefonda: kayıt sürerken ekranı kapat,
+    kilit ekranında süre / mesafe / ort. hız görünüyor mu; Android 13+'ta bildirim izni bir kez soruluyor mu.
 
 ## Yapılacaklar
 
 ### [~] Telefona kurulum (EAS)
 EAS projesi `@ismailtopcam/lykiva` bağlandı, `apps/mobile/eas.json` profilleri hazır (development / preview / production).
-Kalan: cihaz kaydı, ilk derleme, telefonda deneme. Yeni yerel modüller (fotoğraf, bildirim) bu derlemeyle gelecek.
+Kalan: cihaz kaydı, ilk derleme, telefonda deneme. Yeni yerel modüller (fotoğraf, bildirim, kilit ekranı) bu derlemeyle gelecek.
 
 ### [ ] Telefonda ve gerçek sunucuda denenmemiş özellikler
 Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
@@ -96,6 +99,12 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   Yakınlaştırınca (8. düzey, aşağı yukarı bir il) çıkıyor mu, kaydırınca yenileniyor mu, hızlı mı? Kişisel uzaktan da
   görünüyor mu? Yeni bir kayıttan sonra kişiselde çıkıyor mu? Ayarlar > Gizlilik > "Isı haritalarında görün" kapatılınca
   başka hesaptan bakınca o kişinin izleri kayboluyor mu? Uydu / hibrit üstünde renkler okunuyor mu?
+- Kilit ekranı (Android, yeni derlemeden sonra; Kotlin bu bilgisayarda derlenmedi, ilk EAS derlemesi de denemedir):
+  kayıt başlat, ekranı kapat; kilit ekranında süre sayıyor mu, mesafe ve ort. hız yürüdükçe değişiyor mu? Bildirim
+  çekmecesinde tek bildirim mi kalıyor ("Lykiva kaydediyor" + pencere iki ayrı bildirim olmamalı)? Duraklat / devam et:
+  süre duruyor, devamda kaldığı yerden sayıyor mu? Bitir / iptal: pencere kayboluyor mu? Karanlık temada yazılar
+  okunuyor mu, büyük yazı boyutunda kapalı bildirime sığıyor mu? Samsung / Xiaomi gibi kendi arayüzü olanlarda görünüm?
+  Android 13+'ta bildirim izni reddedilince kayıt yine sürüyor mu? Arka plan izni "Şimdi değil" denince de pencere çıkıyor mu?
 
 ### [~] Google Play — dahili test
 Play Console'da **Lykiva** oluşturuldu (kişisel geliştirici hesabı, paket `app.lykiva.mobile`, Türkçe, ücretsiz).
@@ -199,7 +208,9 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
   hesaplayan tablo (şu an her istekte izlerden hesaplanıyor); web'de ısı haritası yok; tür süzgeci (yalnızca bisiklet / koşu).
 
 **Platform**
-- [ ] Kayıtta kilit ekranında hız / mesafe / süre: iOS Live Activity, Android kalıcı bildirimde değerler (D).
+- [~] Kayıtta kilit ekranında süre / mesafe / ortalama hız (35. aşama). Android yapıldı: kayıt bildirimi canlı pencereye
+  dönüşüyor (yerel modül `modules/kilit-ekrani`, yeni derleme gerekir). Kalan: iOS Live Activity (widget eklentisi, Apple'da
+  yeni bundle ID; Mac / EAS'ta derleyip iPhone'da denemek gerekir — İsmail).
 - [~] Çok dilli arayüz: İngilizce, Almanca ve Rusça yapıldı (31. aşama); Arapça + sağdan sola düzen sıradaki PR.
 - [ ] Saat uygulaması (Apple Watch / Wear OS) — büyük iş, sonraya.
 - [ ] Karar: ücretli üyelik olacak mı, hangi özellikler (rakiplerde çevrimdışı harita ve yönlendirme ücretli katmanda).
@@ -232,6 +243,14 @@ Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde
 
 ## Kararlar
 
+- **Kilit ekranı penceresi Android'de konum servisinin bildirimi** (`modules/kilit-ekrani`): expo-location'ın ön plan
+  servisi bildirimini sonradan değiştirmenin yolu yok (seçenekleri değiştirmek konum güncellemelerini yeniden başlatıyor),
+  bu yüzden yerel modül aynı kimlikle yeni bildirim göndererek onu güncelliyor (servis bağı korunur, tek bildirim kalır).
+  Süre `Chronometer` ile telefonda sayar (ekran kapalıyken JS her saniye çalışmayabilir); mesafe / hız JS'ten, en sık
+  saniyede bir. Görünüm `RemoteViews` (üç sütun), sistemin bildirim yazı stilleriyle (karanlık tema). Kanal varsayılan
+  önemde ama sessiz: düşük önemli ("sessiz") bildirimler Android 10+ kilit ekranında görünmüyor. expo-notifications
+  sayaç ve özel görünüm vermediği, üstelik ikinci bir bildirim açacağı için kullanılmadı.
+  iOS için Live Activity gerekir (ayrı iş).
 - **Isı haritaları sunucuda, görünen alan için hesaplanır** (`isi_haritasi`): izler ekranda ~6 piksellik ızgara
   hücrelerine toplanır, hücre değeri farklı aktivite sayısı; uygulama MapLibre ısı katmanıyla çizer. Döşeme sunucusu
   (MVT) kurmak yerine bu seçildi: Supabase oturumu ve kuralları olduğu gibi kullanılıyor, ek servis yok. Küresel /

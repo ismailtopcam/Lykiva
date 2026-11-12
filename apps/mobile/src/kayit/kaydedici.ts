@@ -6,6 +6,7 @@
  * - Arka plan izni yoksa uygulama açıkken kaydeder.
  * - Kayıt durumu her nokta grubunda telefona yazılır; uygulama kapanırsa kaldığı yerden sürer.
  * - Duraklatma yeni bir "parça" başlatır; parçalar arası yol mesafeye eklenmez.
+ * - Android'de kilit ekranında süre, mesafe ve ortalama hız gösterilir (kilitEkrani.ts).
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { acceptPoint, LOCATION_DISTANCE_INTERVAL_M, prepareRoute, trackOnRoute, type ActivityType, type HavaDurumu, type PreparedRoute, type RouteProgress, type RoutePoint, type TrackPoint } from '@lykiva/shared';
@@ -18,6 +19,7 @@ import { Alert, Platform } from 'react-native';
 import { simdikiHava } from '@/lib/hava';
 
 import { hemenYayinla, konumYayinla, paylasimiBitir, type PaylasimGrubu } from './canliPaylasim';
+import { kilitEkrani, kilitEkraniIzniIste, kilitEkraniniYenile } from './kilitEkrani';
 import { kuyrugaEkle, kuyruguGonder, sunucuIdsi } from './kuyruk';
 import { paketOlustur } from './paket';
 import { $t } from '@/i18n';
@@ -81,9 +83,14 @@ let yuklendi = false;
 const dinleyiciler = new Set<() => void>();
 let onPlanAboneligi: Location.LocationSubscription | null = null;
 
+function haberVer() {
+  dinleyiciler.forEach((f) => f());
+  kilitEkrani(kayit, () => aktifSure(kayit), KONUM_GOREVI);
+}
+
 function degistir(yeni: Partial<Kayit>, kaydet = true) {
   kayit = { ...kayit, ...yeni };
-  dinleyiciler.forEach((f) => f());
+  haberVer();
   if (kaydet) void yaz();
 }
 
@@ -112,7 +119,7 @@ export async function kaydiGeriYukle(): Promise<Kayit> {
   } catch {
     kayit = BOS;
   }
-  dinleyiciler.forEach((f) => f());
+  haberVer();
   // Yarım kalan ve arka plansız kayıtta ön plan izlemesini yeniden başlat
   if (kayit.durum === 'kayitta' && !kayit.arkaPlan) await onPlanIzle();
   return kayit;
@@ -284,6 +291,9 @@ export async function baslat(activity: ActivityType, rota: KayitRotasi | null = 
   havayiYakala();
   const arkaPlan = await izlemeyiBaslat();
   degistir({ arkaPlan });
+  kilitEkraniniYenile(1500);
+  // İzin yeni verildiyse bildirim ancak yeniden gönderilince görünür
+  void kilitEkraniIzniIste().then(() => kilitEkraniniYenile());
 }
 
 export async function duraklat() {
@@ -302,6 +312,7 @@ export async function devamEt() {
   if (kayit.paylasim) hemenYayinla(paylasimDurumu());
   const arkaPlan = await izlemeyiBaslat();
   degistir({ arkaPlan });
+  kilitEkraniniYenile(1500);
 }
 
 /**
