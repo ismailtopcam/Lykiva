@@ -180,7 +180,9 @@ export function Button({
         style,
       ]}>
       {icon ? <Icon name={icon} size={20} color={v.fg} strokeWidth={icon === 'play' || icon === 'stop' ? 1 : 1.8} /> : null}
-      <Txt style={{ fontFamily: big ? fontFamily.display : fontFamily.bodyBold, fontSize: big ? 20 : 15, color: v.fg }}>{label}</Txt>
+      <Txt numberOfLines={1} adjustsFontSizeToFit style={{ flexShrink: 1, fontFamily: big ? fontFamily.display : fontFamily.bodyBold, fontSize: big ? 20 : 15, color: v.fg }}>
+        {label}
+      </Txt>
     </Pressable>
   );
 }

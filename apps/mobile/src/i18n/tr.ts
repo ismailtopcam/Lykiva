@@ -1440,6 +1440,25 @@ export const tr = {
     giris_gerekli: 'Gizlilik ayarları için giriş yapmalısın.',
     yuklenemedi: 'Gizlilik ayarların yüklenemedi. İnternet bağlantını kontrol edip yeniden dene.',
   },
+  profilPaylas: {
+    arkadaslar: 'Arkadaşlar',
+    kulupler: 'Kulüpler',
+    lykiva_da_ara: 'Lykiva\'da ara',
+    kulup_ara: 'Kulüp ara',
+    aramayi_temizle: 'Aramayı temizle',
+    onerilenler: 'Önerilenler',
+    kisiler: 'Kişiler',
+    qr_kodu: 'QR kodu',
+    takip_ettiklerin: 'Takip ettiklerin',
+    takipcilerin: 'Takipçilerin',
+    kimse_yok: 'Henüz kimseyi takip etmiyorsun, seni takip eden de yok. Önerilenler\'e bak ya da adıyla ara.',
+    qr_etiket: '@{username} profilinin QR kodu',
+    qr_aciklama: 'Arkadaşın bu kodu telefonunun kamerasıyla okutunca Lykiva profilin açılır.',
+    qr_gecici: 'Geçici hesabın profili yok. Giriş yapınca ya da hesap açınca QR kodun burada görünür.',
+    baglantiyi_paylas: 'Bağlantıyı paylaş',
+    onerilen_kulupler: 'Önerilen kulüpler',
+    kuluplerin: 'Kulüplerin',
+  },
 };
 
 export type Sozluk = { [A in keyof typeof tr]: Record<keyof (typeof tr)[A], string> };
