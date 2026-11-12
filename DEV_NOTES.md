@@ -153,13 +153,17 @@ hepsi çalışıyor, yeniden başlatma gerekmedi. Otomatik güvenlik güncelleme
 
 ### [x] Kendi rota hesaplama ve yer arama sunucumuz (12 Kas 2026)
 Coolify > Uygulamalar > production > **lykiva-altyapi** (Docker Compose, `altyapi/docker-compose.yml`, sunucu "uygulama"):
-`https://brouter.lykiva.app` (BRouter 1.7.10, Türkiye ve çevresi 8 karo) ve `https://photon.lykiva.app` (Photon 1.3.0,
+`https://brouter.ismailtopcam.dev` (BRouter 1.7.10, Türkiye ve çevresi 8 karo) ve `https://photon.ismailtopcam.dev` (Photon 1.3.0,
 Türkiye, tr + en; 1,18 milyon kayıt, 449 MB). `PHOTON_BELLEK=3g` (ilk içe aktarma ~3 GB, 5 dk; sonra ~400 MB).
 Denendi: BRouter dört profilde brouter.de ile aynı sonuç (Kaş 3653 m); Photon Türkçe aramalarda komoot ile aynı ya da daha iyi.
 Haftalık güncelleme Coolify > Scheduled Tasks: pazartesi 05:00 BRouter segmentleri, 05:30 Photon verisi
 (`veri-guncelle.sh && kill 1` — bitince Photon yeniden başlar, ~13 sn kesinti; denendi).
 Uygulama: EAS ortam değişkenleri `EXPO_PUBLIC_BROUTER_URL` / `EXPO_PUBLIC_PHOTON_URL` (production / preview / development)
 girildi → **sürüm 5'ten itibaren** kendi sunucularımız; o zamana kadar telefonlar brouter.de / photon.komoot.io kullanır.
+- **Alan adı değişti (12 Kas 2026):** `brouter.` / `photon.ismailtopcam.dev`; EAS değişkenleri buna çevrildi (sürüm 6'dan
+  itibaren). Sürüm 5 eski `*.lykiva.app` adreslerine gömülü olduğundan eskiler de geçiş süresince `kapi`'da açık.
+- [ ] Sürüm 5 kullanımdan kalkınca (herkes sürüm 6+) eski `brouter.` / `photon.lykiva.app` adlarını Coolify'dan,
+  `altyapi/kapi/varsayilan.conf.template`'ten ve Cloudflare DNS'ten kaldır.
 - [ ] **Kapsam yalnızca Türkiye:** Photon'da yurt dışı yer yok ("Eiffel" → Bandırma'da bir kuaför), BRouter karoları
   E25–E45 / N35–N45 dışında rota çizmez. Almanca / Rusça arayüzle yurt dışındaki kullanıcılar etkilenir. Öneri: kendi
   sunucu hata verirse ya da sonuç boşsa uygulama herkese açık sunuculara düşsün (`lib/yonlendirme.ts`, `lib/yerArama.ts`).
@@ -363,10 +367,10 @@ Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde
   EAS projesi ve bütün derleme / gönderimler İsmail'in hesabından ve bilgisayarından (12 Kas 2026); Gökhan EAS'a eklenmez.
 - **Yönetim paneli** tam yetkili anahtar kullanmaz; her işlem yöneticinin kendi oturumuyla, yetkiyi veritabanı denetler.
 - **Yasal sayfalardaki iletişim bilgileri** panelden değişir (`site_ayarlari`); varsayılan `bilgi@lykiva.app`.
-- **Alan adları:** `lykiva.app` asıl adres (web), `api.lykiva.app` Supabase, `brouter.` / `photon.lykiva.app` kendi
-  sunucularımız (kurulunca). DNS Cloudflare'de, proxy kapalı (Coolify kendi sertifikasını alır; gosterge.app ile aynı düzen).
+- **Alan adları:** `lykiva.app` asıl adres (web), `api.lykiva.app` Supabase, `brouter.` / `photon.ismailtopcam.dev` kendi
+  rota / yer arama sunucularımız (eski `*.lykiva.app` adları geçiş için açık). DNS Cloudflare'de, proxy kapalı (Coolify kendi sertifikasını alır; gosterge.app ile aynı düzen).
   `lykiva.com` ve `www.lykiva.com` Cloudflare yönlendirme kuralıyla `https://lykiva.app`'e 301 (yol ve sorgu korunur).
-  E-posta Zoho Mail (AB sunucuları). ismailtopcam.dev artık Lykiva'yı göstermiyor; Coolify'dan eski adresler kaldırıldı.
+  E-posta Zoho Mail (AB sunucuları). ismailtopcam.dev artık Lykiva web'ini göstermiyor (yalnızca `brouter.` / `photon.` alt adları).
 - **Coolify paneli** Tailscale ağı üzerinden `http://coolify:8000` (eski `coolify.ismailtopcam.dev` kapalı).
   lykiva-web uuid `pjrlciwlsjvr6fpl3lovbaoy`, lykiva-supabase uuid `nqyujqqkkjyba4flthzcf9uf`.
 - **Paket adı / bundle ID: `app.lykiva.mobile`** (Android ve iOS) — Play'e ilk AAB yüklenince kalıcı.

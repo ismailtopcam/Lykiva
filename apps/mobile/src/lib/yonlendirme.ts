@@ -1,7 +1,7 @@
 /**
  * Rota çizimi için yol/patika bulma — BRouter (OpenStreetMap, rakımlı).
  *
- * Kendi sunucumuz (brouter.lykiva.app, Türkiye ve çevresi) ya da herkese açık brouter.de; adres ve anahtar `lib/altyapi.ts`'te.
+ * Kendi sunucumuz (brouter.ismailtopcam.dev, Türkiye ve çevresi) ya da herkese açık brouter.de; adres ve anahtar `lib/altyapi.ts`'te.
  */
 import type { ActivityType, RoutePoint } from '@lykiva/shared';
 

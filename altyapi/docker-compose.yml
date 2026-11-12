@@ -1,7 +1,7 @@
 # Lykiva — kendi rota (BRouter) ve yer arama (Photon) sunucularımız.
 # Coolify > yeni kaynak > Docker Compose (Git deposu: bu repo, dosya: altyapi/docker-compose.yml).
 # Dışarıya yalnızca "kapi" açılır: Coolify'da iki alan adı da kapi servisine verilir
-# (https://brouter.lykiva.app,https://photon.lykiva.app). brouter ve photon'a alan adı VERİLMEZ.
+# (https://brouter.ismailtopcam.dev,https://photon.ismailtopcam.dev; geçiş süresince eski *.lykiva.app adları da). brouter ve photon'a alan adı VERİLMEZ.
 # Kapı uygulama anahtarını (X-Lykiva-Anahtar) ve IP başına istek sınırını denetler. Ayrıntı: altyapi/README.md
 services:
   kapi:
