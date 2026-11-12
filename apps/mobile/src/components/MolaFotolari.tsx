@@ -6,7 +6,7 @@ import { Icon } from '@/components/Icon';
 import { IconButton } from '@/components/IconButton';
 import { Txt } from '@/components/Txt';
 import { fotoSec, MOLA_FOTO_SINIRI, molaFotoAdresleri, molaFotografiEkle, molaFotografiSil, type Kaynak } from '@/lib/foto';
-import { colors, fontFamily, radius } from '@/theme';
+import { colors, fontFamily, radius, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 /**
@@ -114,11 +114,11 @@ export function MolaFotolari({ aktiviteId, molaId, ilk, sahibi, molaAdi }: { akt
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   sira: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
   kucuk: { width: 64, height: 48, borderRadius: radius.sm, overflow: 'hidden', backgroundColor: colors.sand, alignItems: 'center', justifyContent: 'center' },
   ekle: { backgroundColor: 'transparent', borderWidth: 1.5, borderStyle: 'dashed', borderColor: colors.terra },
   perde: { flex: 1, backgroundColor: 'rgba(0,0,0,0.92)', alignItems: 'center', justifyContent: 'center' },
   ust: { position: 'absolute', left: 8, right: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   sil: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: radius.pill, backgroundColor: 'rgba(255,255,255,0.15)' },
-});
+}));

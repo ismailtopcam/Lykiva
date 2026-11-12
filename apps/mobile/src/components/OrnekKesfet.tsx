@@ -7,7 +7,7 @@ import { Icon } from '@/components/Icon';
 import { Txt } from '@/components/Txt';
 import { Avatar, Button, Chip, DateBadge, SectionHeader } from '@/components/ui';
 import { communities, events } from '@/data/ornek';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 
 const tabs = ['Tümü', 'Rotalar', 'Topluluklar', 'Etkinlikler'];
 
@@ -109,7 +109,7 @@ export function OrnekKesfet() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: space.lg, paddingTop: space.sm, marginBottom: space.md },
   newBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, paddingHorizontal: 14, borderRadius: 20, borderWidth: 1.5, borderColor: colors.ink },
@@ -121,4 +121,4 @@ const styles = StyleSheet.create({
   eventLight: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
   community: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.lineStrong },
   smallBtn: { height: 38, paddingHorizontal: 14 },
-});
+}));

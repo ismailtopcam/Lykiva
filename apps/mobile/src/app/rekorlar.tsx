@@ -31,7 +31,7 @@ import { Txt } from '@/components/Txt';
 import { Card, Chip } from '@/components/ui';
 import { rekorAdi, rekorAktiviteleri } from '@/data/rekor';
 import { oturumuSagla, supabaseHazir } from '@/lib/supabase';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t, yerel } from '@/i18n';
 
 const IKON: Record<RekorTuru, IconName> = { mesafe: 'route', sure: 'clock', hiz: 'gauge', tirmanis: 'mountain' };
@@ -198,7 +198,7 @@ function RekorKarti({ tur, rekor, turGoster }: { tur: RekorTuru; rekor?: Rekor; 
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.xl },
   chips: { gap: 8, paddingHorizontal: space.md, paddingBottom: space.md },
@@ -206,4 +206,4 @@ const styles = StyleSheet.create({
   toplamSatir: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 18, rowGap: 4, marginVertical: 8 },
   kart: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
   ikon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.sand },
-});
+}));

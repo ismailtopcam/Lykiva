@@ -9,7 +9,7 @@ import { takipListesi, type KisiOzeti } from '@/akis/akis';
 import { Header } from '@/components/Header';
 import { KisiSatiri } from '@/components/KisiSatiri';
 import { Txt } from '@/components/Txt';
-import { colors, space } from '@/theme';
+import { colors, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 export default function TakipListesiScreen() {
@@ -58,6 +58,6 @@ export default function TakipListesiScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
-});
+}));

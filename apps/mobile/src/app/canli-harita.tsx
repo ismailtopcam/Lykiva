@@ -20,7 +20,7 @@ import { basHarfler, grupDetayi, grupRengi } from '@/grup/gruplar';
 import { useHesap } from '@/lib/giris';
 import { oturumuSagla, supabase } from '@/lib/supabase';
 import { useKayit } from '@/kayit/kaydedici';
-import { colors, fontFamily, radius, space } from '@/theme';
+import { colors, fontFamily, radius, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 const uuidMi = (id: string | undefined) => !!id && /^[0-9a-f-]{36}$/i.test(id);
@@ -213,7 +213,7 @@ function GrupCanliHaritasi({ grupId }: { grupId: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.land },
   baslik: { height: 40, paddingHorizontal: 16, borderRadius: 20, backgroundColor: colors.surface, justifyContent: 'center', maxWidth: '100%' },
   tag: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10, backgroundColor: colors.ink, maxWidth: 160 },
@@ -221,6 +221,6 @@ const styles = StyleSheet.create({
   pin: { width: 36, height: 36, borderRadius: 18, borderWidth: 3, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   sheet: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, paddingHorizontal: space.lg, paddingTop: 10 },
   grip: { width: 40, height: 5, borderRadius: 3, backgroundColor: colors.lineStrong, alignSelf: 'center', marginBottom: 12 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#ECE4D6' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.line },
   paylasim: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 12, padding: 12, borderRadius: 14, backgroundColor: colors.ground },
-});
+}));

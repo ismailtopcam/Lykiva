@@ -17,7 +17,7 @@ import {
 import { Icon, type IconName } from '@/components/Icon';
 import { Txt } from '@/components/Txt';
 import type { AvatarTone } from '@/data/ornek';
-import { colors, fontFamily, minTouchTarget, radius, space } from '@/theme';
+import { aktifSema, colors, fontFamily, minTouchTarget, radius, space, temaliStil } from '@/theme';
 
 /* ---------- Kart ---------- */
 export function Card({ children, style, dark }: { children: ReactNode; style?: StyleProp<ViewStyle>; dark?: boolean }) {
@@ -25,13 +25,13 @@ export function Card({ children, style, dark }: { children: ReactNode; style?: S
 }
 
 /* ---------- Avatar ---------- */
-const toneMap: Record<AvatarTone, { bg: string; fg: string }> = {
+const toneMap = temaliStil((): Record<AvatarTone, { bg: string; fg: string }> => ({
   sea: { bg: colors.seaSoft, fg: colors.seaInk },
   terra: { bg: colors.terraSoft, fg: colors.terraInk },
   sand: { bg: colors.sand, fg: colors.sandInk },
-  green: { bg: '#CFE0D0', fg: '#2E4A33' },
+  green: aktifSema() === 'koyu' ? { bg: '#1F3324', fg: '#B5D6B9' } : { bg: '#CFE0D0', fg: '#2E4A33' },
   ink: { bg: colors.ink, fg: colors.ground },
-};
+}));
 
 export function Avatar({
   initials,
@@ -185,13 +185,13 @@ export function Button({
   );
 }
 
-const buttonVariants: Record<ButtonVariant, { bg: string; fg: string; border?: string }> = {
+const buttonVariants = temaliStil((): Record<ButtonVariant, { bg: string; fg: string; border?: string }> => ({
   primary: { bg: colors.terra, fg: '#FFFFFF' },
   outline: { bg: 'transparent', fg: colors.ink, border: colors.ink },
   dark: { bg: colors.ink, fg: colors.ground },
   night: { bg: colors.night.accent, fg: colors.night.ground },
   nightOutline: { bg: 'transparent', fg: colors.night.text, border: '#3A4842' },
-};
+}));
 
 /* ---------- İstatistik ---------- */
 export function Stat({
@@ -309,9 +309,9 @@ export function ToggleRow({
         accessibilityLabel={title}
         value={value}
         onValueChange={onChange}
-        trackColor={{ false: '#C9BFAE', true: colors.sea }}
+        trackColor={{ false: aktifSema() === 'koyu' ? colors.lineStrong : '#C9BFAE', true: colors.sea }}
         thumbColor="#FFFFFF"
-        ios_backgroundColor="#C9BFAE"
+        ios_backgroundColor={aktifSema() === 'koyu' ? colors.lineStrong : '#C9BFAE'}
       />
     </View>
   );
@@ -329,7 +329,7 @@ export function DateBadge({ month, day, tone = 'terra' }: { month: string; day: 
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.xl,
@@ -375,4 +375,4 @@ const styles = StyleSheet.create({
   listIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.sm },
   dateBadge: { width: 48, height: 52, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-});
+}));

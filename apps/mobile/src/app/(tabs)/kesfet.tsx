@@ -16,7 +16,7 @@ import { kisaTarih, tarihRozeti } from '@/etkinlik/etkinlikler';
 import { basHarfler, grubaKatil, grupEtiketi, grupRengi, istegiGeriAl, kesfetGruplar, onizleme, uyeSayisi, type KesfetGrubu } from '@/grup/gruplar';
 import { izinliKonum, kesfetEtkinlikler, kesfetRotalar, uzaklikMetni, type KesfetEtkinligi, type KesfetRotasi } from '@/kesfet/kesfet';
 import { supabaseHazir } from '@/lib/supabase';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 /** Sunucu anahtarı yoksa tasarım örneği, varsa gerçek Keşfet */
@@ -330,7 +330,7 @@ function RotaSatiri({ r }: { r: KesfetRotasi }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: space.lg, paddingTop: space.sm, marginBottom: space.md },
   newBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, paddingHorizontal: 14, borderRadius: 20, borderWidth: 1.5, borderColor: colors.ink },
@@ -344,4 +344,4 @@ const styles = StyleSheet.create({
   community: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.lineStrong },
   smallBtn: { height: 38, paddingHorizontal: 14 },
   row: { flexDirection: 'row', gap: 12, alignItems: 'center', padding: 10, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
-});
+}));

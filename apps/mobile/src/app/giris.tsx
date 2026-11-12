@@ -10,7 +10,7 @@ import { Logo } from '@/components/Logo';
 import { Txt } from '@/components/Txt';
 import { Button } from '@/components/ui';
 import { appleIleGiris, appleKullanilabilir, GirisIptal, girisiAtla, googleIleGiris, type GirisSonucu } from '@/lib/giris';
-import { colors, fontFamily, radius, space } from '@/theme';
+import { colors, fontFamily, radius, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 const maddeler = (): [IconName, string][] => [
@@ -156,7 +156,7 @@ function hataMetni(e: unknown): string {
   return $t('giris.giris_yapilamadi', { m });
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground, paddingHorizontal: space.xl },
   ust: { paddingTop: space.lg },
   orta: { flex: 1, justifyContent: 'center' },
@@ -167,4 +167,4 @@ const styles = StyleSheet.create({
   atla: { alignSelf: 'center', paddingVertical: space.sm, minHeight: 44, justifyContent: 'center' },
   hata: { backgroundColor: colors.terraSoft, borderRadius: radius.md, padding: space.md },
   epostaIcerik: { flexGrow: 1, paddingBottom: space.xl },
-});
+}));

@@ -42,7 +42,7 @@ import {
   type Uye,
 } from '@/grup/gruplar';
 import { useHesap } from '@/lib/giris';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 const uuidMi = (id: string | undefined) => !!id && /^[0-9a-f-]{36}$/i.test(id);
@@ -382,7 +382,7 @@ function GercekGrup({ id }: { id: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   hero: { backgroundColor: colors.sea, paddingHorizontal: space.lg, paddingBottom: 18 },
   title: { fontFamily: fontFamily.displayHeavy, fontSize: 28, color: '#FFFFFF', letterSpacing: -0.6 },
@@ -396,4 +396,4 @@ const styles = StyleSheet.create({
   uye: { flexDirection: 'row', gap: 12, alignItems: 'center', paddingVertical: 6 },
   rol: { height: 24, paddingHorizontal: 10, borderRadius: 12, backgroundColor: colors.seaSoft, justifyContent: 'center' },
   onay: { height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.sea, justifyContent: 'center' },
-});
+}));

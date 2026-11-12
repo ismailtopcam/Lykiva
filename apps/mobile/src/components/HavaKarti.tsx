@@ -6,7 +6,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Txt } from '@/components/Txt';
 import type { LngLat } from '@/data/ornek';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 export function HavaKarti({ hava, iz, baslik = $t('ortak.hava') }: { hava: HavaDurumu; iz?: LngLat[]; baslik?: string }) {
@@ -34,10 +34,10 @@ export function HavaKarti({ hava, iz, baslik = $t('ortak.hava') }: { hava: HavaD
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   kart: { marginHorizontal: space.lg, marginTop: space.md, padding: 14, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
   ust: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 },
   izgara: { flexDirection: 'row', flexWrap: 'wrap', rowGap: 10, columnGap: 18 },
   hucre: { minWidth: 90, flexShrink: 1 },
   kaynak: { fontSize: 10, color: colors.inkMuted, marginTop: 10 },
-});
+}));

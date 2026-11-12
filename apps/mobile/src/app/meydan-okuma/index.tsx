@@ -14,7 +14,7 @@ import { Txt } from '@/components/Txt';
 import { SectionHeader } from '@/components/ui';
 import { durumu, meydanOkumalar, type MeydanOkuma } from '@/data/meydanOkuma';
 import { supabaseHazir } from '@/lib/supabase';
-import { colors, space } from '@/theme';
+import { colors, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 export default function MeydanOkumalarScreen() {
@@ -93,7 +93,7 @@ export default function MeydanOkumalarScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.xl },
-});
+}));

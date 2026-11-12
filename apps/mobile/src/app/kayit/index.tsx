@@ -15,7 +15,7 @@ import { gruplarim, type GrupOzeti } from '@/grup/gruplar';
 import type { PaylasimGrubu } from '@/kayit/canliPaylasim';
 import { supabaseHazir } from '@/lib/supabase';
 import { baslat, IzinHatasi, konumOnizlemeBaslat, useKayit } from '@/kayit/kaydedici';
-import { colors, fontFamily, radius, space } from '@/theme';
+import { colors, fontFamily, radius, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 const icons: Record<ActivityType, IconName> = {
@@ -236,7 +236,7 @@ export default function KayitBaslatScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.land },
   gps: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 32, paddingHorizontal: 12, borderRadius: 16, backgroundColor: colors.surface },
   gpsDot: { width: 8, height: 8, borderRadius: 4 },
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginBottom: space.sm },
   tile: { width: '31.6%', height: 72, borderRadius: 16, backgroundColor: colors.ground, alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1.5, borderColor: 'transparent' },
   tileOn: { backgroundColor: colors.ink, borderColor: colors.ink },
-  error: { padding: 12, borderRadius: 12, backgroundColor: '#F6E3D9' },
+  error: { padding: 12, borderRadius: 12, backgroundColor: colors.terraSoft },
   rotaRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 16, backgroundColor: colors.ground },
   secenek: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 12, backgroundColor: colors.ground },
-});
+}));

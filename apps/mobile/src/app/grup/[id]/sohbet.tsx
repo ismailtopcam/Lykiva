@@ -14,7 +14,7 @@ import { Avatar, DateBadge } from '@/components/ui';
 import { grupEtkinlikleri, kisaTarih, tarihRozeti, type EtkinlikOzeti } from '@/etkinlik/etkinlikler';
 import { basHarfler, grupDetayi, grupRengi, grupRotalari, onizleme, uyeSayisi, type GrupDetayi, type GrupRotasi } from '@/grup/gruplar';
 import { useSohbet, type Mesaj } from '@/grup/sohbet';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t, yerel } from '@/i18n';
 
 const uuidMi = (id: string | undefined) => !!id && /^[0-9a-f-]{36}$/i.test(id);
@@ -247,7 +247,7 @@ function GercekSohbet({ id }: { id: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   header: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: space.sm, paddingBottom: 8, backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.line },
   satir: { flexDirection: 'row', gap: 8, alignItems: 'flex-end' },
@@ -258,4 +258,4 @@ const styles = StyleSheet.create({
   composer: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingTop: 8, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.line },
   input: { flex: 1, height: 44, borderRadius: 22, backgroundColor: colors.ground, paddingHorizontal: 14, fontFamily: fontFamily.body, fontSize: 14, color: colors.ink },
   send: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.terra, alignItems: 'center', justifyContent: 'center' },
-});
+}));

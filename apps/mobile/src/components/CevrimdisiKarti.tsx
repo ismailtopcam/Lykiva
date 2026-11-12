@@ -8,7 +8,7 @@ import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-nat
 
 import type { Rota } from '@/data/rota';
 import { cevrimdisiDestekleniyor, cevrimdisiSil, indirmeyiIptalEt, rotaPlani, rotayiIndir, useCevrimdisiRota } from '@/lib/cevrimdisi';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { Icon } from './Icon';
 import { Txt } from './Txt';
 import { Button } from './ui';
@@ -88,10 +88,10 @@ export function CevrimdisiKarti({ rota }: { rota: Rota }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   kart: { marginTop: 14, padding: space.md, borderRadius: 14, borderWidth: 1, borderColor: colors.lineStrong, backgroundColor: colors.surface },
   ust: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
   baslik: { fontFamily: fontFamily.bodyBold, fontSize: 14 },
   satir: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   baglanti: { fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: colors.sea },
-});
+}));

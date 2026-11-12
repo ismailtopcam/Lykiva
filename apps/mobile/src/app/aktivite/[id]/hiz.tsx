@@ -11,7 +11,7 @@ import { Txt } from '@/components/Txt';
 import { Card, SectionHeader } from '@/components/ui';
 import { useAktivite } from '@/data/aktivite';
 import { supabaseHazir } from '@/lib/supabase';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 export default function HizMolalarScreen() {
@@ -60,7 +60,7 @@ export default function HizMolalarScreen() {
             <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14 }}>{$t('aktivite_hiz.hiz_km_sa')}</Txt>
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <View style={styles.legend}>
-                <View style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: '#EADFC9' }} />
+                <View style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: colors.sand }} />
                 <Txt variant="small">{$t('aktivite_hiz.mola')}</Txt>
               </View>
               <View style={styles.legend}>
@@ -129,7 +129,7 @@ export default function HizMolalarScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   kpi: { flex: 1, padding: 12, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
   kpiValue: { fontFamily: fontFamily.displayHeavy, fontSize: 24, color: colors.ink },
@@ -140,4 +140,4 @@ const styles = StyleSheet.create({
   numDashed: { backgroundColor: 'transparent', borderWidth: 2, borderStyle: 'dashed', borderColor: '#9C9282' },
   rail: { flex: 1, width: 2, backgroundColor: colors.lineStrong, marginVertical: 4 },
   photo: { width: 56, height: 42, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
-});
+}));

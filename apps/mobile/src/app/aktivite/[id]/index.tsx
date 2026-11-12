@@ -22,7 +22,7 @@ import type { Activity, BirlikteKisi } from '@/data/ornek';
 import { aktivitedenRota } from '@/data/rota';
 import { basHarfler, grupRengi } from '@/grup/gruplar';
 import { supabaseHazir } from '@/lib/supabase';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 export default function AktiviteOzetiScreen() {
@@ -245,7 +245,7 @@ function BirlikteSatiri({ a }: { a: Activity }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   birlikte: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 40, marginTop: 4 },
   rekor: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: colors.terraSoft },
   rozet: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: colors.seaSoft },
@@ -255,4 +255,4 @@ const styles = StyleSheet.create({
   cell: { width: '33.1%', flexGrow: 1, backgroundColor: colors.surface, paddingHorizontal: 12, paddingVertical: 10 },
   link3d: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: space.lg, marginTop: space.lg, padding: 14, borderRadius: 16, backgroundColor: colors.seaSoft },
   bottom: { position: 'absolute', left: 0, right: 0, bottom: 0, flexDirection: 'row', gap: 10, paddingHorizontal: space.lg, paddingTop: 12, backgroundColor: colors.ground },
-});
+}));

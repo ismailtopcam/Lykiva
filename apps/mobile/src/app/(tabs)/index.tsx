@@ -24,7 +24,7 @@ import { ZilDugmesi } from '@/components/ZilDugmesi';
 import { Button, Card, Chip } from '@/components/ui';
 import type { LngLat } from '@/data/ornek';
 import { supabaseHazir } from '@/lib/supabase';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 /** Sunucu anahtarı yoksa tasarım örneği, varsa gerçek akış */
@@ -229,11 +229,11 @@ function BosAkis({ filtre, konumYok, onTekrar }: { filtre: AkisFiltresi; konumYo
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: space.lg, paddingRight: space.sm, paddingBottom: space.sm },
   filters: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, paddingHorizontal: space.lg, paddingTop: 4, paddingBottom: space.md },
   hata: { color: colors.terraInk, paddingHorizontal: space.lg, marginBottom: space.md },
   oneri: { marginHorizontal: space.md, marginBottom: space.md, padding: space.lg },
   bos: { paddingHorizontal: space.xl, paddingVertical: space.xl },
-});
+}));

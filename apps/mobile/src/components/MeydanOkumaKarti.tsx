@@ -7,7 +7,7 @@ import { IlerlemeCubugu } from '@/components/IlerlemeCubugu';
 import { Txt } from '@/components/Txt';
 import { olcuMetni, olcuYazi } from '@/data/hedef';
 import { durumu, tamamlandiMi, type MeydanOkuma } from '@/data/meydanOkuma';
-import { colors, fontFamily } from '@/theme';
+import { colors, fontFamily, temaliStil } from '@/theme';
 import { $t, yerel } from '@/i18n';
 
 /** "9 Kas – 15 Kas" (bitiş dahil değil: bir önceki gün yazılır) */
@@ -88,8 +88,8 @@ export function MeydanOkumaKarti({ m, simdi, grupGoster = true }: { m: MeydanOku
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   kart: { padding: 12, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
   ust: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   ikon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-});
+}));

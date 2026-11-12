@@ -354,6 +354,11 @@ export function useKayit(): Kayit {
   return useSyncExternalStore(abone, () => kayit, () => kayit);
 }
 
+/** Kayıt sürüyor ya da duraklatılmış mı (bileşeni yeniden çizmeden okumak için) */
+export function kayitSuruyor(): boolean {
+  return kayit.durum !== 'bos';
+}
+
 /** Başlat ekranı için: kayıt başlamadan GPS'i ısıtır ve konumu gösterir */
 export function konumOnizlemeBaslat(): () => void {
   let sub: Location.LocationSubscription | null = null;

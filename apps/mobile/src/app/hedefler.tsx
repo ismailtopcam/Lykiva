@@ -17,7 +17,7 @@ import { Button } from '@/components/ui';
 import { donemAdi, hedeflerim, hedefSil, olcuAdi, olcuMetni, olcuYazi } from '@/data/hedef';
 import { rekorAktiviteleri } from '@/data/rekor';
 import { oturumuSagla, supabaseHazir } from '@/lib/supabase';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 export default function HedeflerScreen() {
@@ -152,11 +152,11 @@ function HedefKarti({ hedef, liste, simdi, onPress }: { hedef: Hedef; liste: Rek
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.xl },
   kart: { padding: 14, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
   ust: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   etiket: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
   etiketYazi: { fontFamily: fontFamily.bodyBold, fontSize: 11 },
-});
+}));

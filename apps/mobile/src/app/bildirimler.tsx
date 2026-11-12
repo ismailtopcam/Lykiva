@@ -17,7 +17,7 @@ import { Avatar } from '@/components/ui';
 import { kisaTarih } from '@/etkinlik/etkinlikler';
 import { basHarfler, grupRengi } from '@/grup/gruplar';
 import { supabaseHazir } from '@/lib/supabase';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 export default function BildirimlerScreen() {
@@ -210,7 +210,7 @@ function Satir({ b }: { b: Bildirim }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: space.lg, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.line },
   yeni: { backgroundColor: colors.surface },
@@ -231,4 +231,4 @@ const styles = StyleSheet.create({
   nokta: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.terra },
   oneri: { flexDirection: 'row', alignItems: 'center', gap: 12, margin: space.md, padding: 14, borderRadius: 16, backgroundColor: colors.seaSoft },
   oneriBtn: { height: 36, paddingHorizontal: 16, borderRadius: 18, backgroundColor: colors.sea, alignItems: 'center', justifyContent: 'center' },
-});
+}));

@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Icon, type IconName } from '@/components/Icon';
-import { colors, minTouchTarget } from '@/theme';
+import { colors, minTouchTarget, temaliStil } from '@/theme';
 
 type Props = {
   icon: IconName;
@@ -26,7 +26,7 @@ export function IconButton({ icon, label, onPress, color = colors.ink, floating,
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   base: {
     width: minTouchTarget,
     height: minTouchTarget,
@@ -43,4 +43,4 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   pressed: { opacity: 0.6 },
-});
+}));

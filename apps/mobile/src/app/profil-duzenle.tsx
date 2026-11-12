@@ -11,7 +11,7 @@ import { KULLANICI_ADI_BICIMI, kullaniciAdiMusait, kullaniciAdiSadelestir, profi
 import { profilAdresi } from '@/lib/baglanti';
 import { fotoSec, profilFotografiniKaldir, profilFotografiYukle, type Kaynak } from '@/lib/foto';
 import { supabaseHazir } from '@/lib/supabase';
-import { colors, fontFamily, radius, space } from '@/theme';
+import { colors, fontFamily, radius, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 type AdDurumu = 'ayni' | 'bakiliyor' | 'musait' | 'alinmis' | 'gecersiz';
@@ -212,7 +212,7 @@ export default function ProfilDuzenleScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   input: { height: 48, borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, paddingHorizontal: 14, fontFamily: fontFamily.body, fontSize: 15, color: colors.ink },
   fotoSatir: { flexDirection: 'row', alignItems: 'center', gap: 16 },
@@ -220,4 +220,4 @@ const styles = StyleSheet.create({
   kadiKutu: { flexDirection: 'row', alignItems: 'center', borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, paddingLeft: 14 },
   hata: { flexDirection: 'row', gap: 8, alignItems: 'center', padding: 12, borderRadius: radius.md, backgroundColor: colors.terraSoft },
   bottom: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: space.lg, paddingTop: 12, backgroundColor: colors.ground },
-});
+}));

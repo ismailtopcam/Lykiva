@@ -11,6 +11,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | Kim | İş | Dal |
 | --- | --- | --- |
 | İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |
+| Gökhan | Ayarlar > Görünüm: telefon varsayılanı / aydınlık / karanlık (bütün ekranların renkleri) | `gorunum-ayari` |
 
 ## Gökhan için: 11 Kasım 2026'da değişenler (İsmail)
 
@@ -69,6 +70,9 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
 12. **İsmail derleyecek — kilit ekranı için yeni Android derlemesi:** `kilit-ekrani-anlik-hiz` PR'ı main'e girince
     (modülün Kotlin kodu ilk kez repoda; ilk gerçek derleme denemesi). Derleme günlüğünde `kilit-ekrani` modülünün
     derlendiği görülmeli (`:kilit-ekrani:compileReleaseKotlin`).
+13. **İsmail derleyecek — görünüm (karanlık mod):** `gorunum-ayari` PR'ı `app.json`'da `userInterfaceStyle`'ı
+    `automatic` yaptı (önce `light`). Yeni derlemeye kadar Aydınlık / Karanlık seçimi çalışır, "Telefonun ayarı" ise
+    her zaman aydınlık görünür (eski derleme telefonun temasını uygulamaya bildirmiyor).
 
 ## Yapılacaklar
 
@@ -113,6 +117,10 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   süre duruyor, devamda kaldığı yerden sayıyor mu? Bitir / iptal: pencere kayboluyor mu? Karanlık temada yazılar
   okunuyor mu, büyük yazı boyutunda kapalı bildirime sığıyor mu? Samsung / Xiaomi gibi kendi arayüzü olanlarda görünüm?
   Android 13+'ta bildirim izni reddedilince kayıt yine sürüyor mu? Arka plan izni "Şimdi değil" denince de pencere çıkıyor mu?
+- Görünüm (Ayarlar > Görünüm: Telefonun ayarı / Aydınlık / Karanlık): seçince ekranlar yeni renkle açılıyor mu, uygulama
+  kapanıp açılınca seçim kalıyor mu? Karanlıkta her ekranı gez: okunmayan yazı, açık renkli kalan kutu var mı? Uyarı
+  pencereleri ve klavye de karanlık mı? "Telefonun ayarı"ndayken telefonun temasını değiştirip uygulamaya dön (yeni
+  derlemeden sonra); kayıt sürerken değiştirince kayıt ekranı bozulmuyor mu (kayıt bitip uygulama öne gelince uygulanmalı)?
 
 ### [~] Google Play — dahili test
 Play Console'da **Lykiva** oluşturuldu (kişisel geliştirici hesabı, paket `app.lykiva.mobile`, Türkçe, ücretsiz).
@@ -224,6 +232,8 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
   Haritalar sekmesi şimdilik eski Keşfet ekranını (rota / topluluk / etkinlik / kişi listesi) açıyor; harita görünümü yok.
   Egzersiz sekmesi kayıt başlatma ekranını açar. Yalnızca JS değişikliği, yeni derleme gerekmez.
 - Serbest çizilen rotada yükseklik yok (BRouter'a sorulmuyor); ayrı bir yükseklik servisi gerekir.
+- Karanlık mod (12 Kas 2026, `gorunum-ayari`): haritanın kendisi (OpenFreeMap stili) karanlıkta da açık renkli; karanlık
+  harita stili yok. Örnek veri ekranları (`Ornek*`) ve paylaşım kartı temaları sabit renkli bırakıldı.
 
 ### [ ] Rakiplere göre eksikler (Kasım 2026 karşılaştırması)
 Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. Sıra öneri sırasıdır; (D) = yeni yerel modül, telefona yeni derleme gerekir.
@@ -295,6 +305,12 @@ Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde
 
 ## Kararlar
 
+- **Karanlık mod: renkler okunduğu anda temadan gelir** (`apps/mobile/src/theme/renkler.ts`). `colors.ink` gibi her okuma
+  o anki temanın değerini verir; dosya düzeyindeki stiller `temaliStil(() => StyleSheet.create({...}))` ile yazılır (her
+  tema için bir kez kurulur). Tema değişince kök düzen dil değişimindeki gibi yeniden kurulur. Karanlık palet
+  `packages/shared/src/tokens.ts` > `colorsDark` (adlar `colors` ile aynı). **Yeni ekran yazarken:** renkleri dosya
+  düzeyinde bir değişkene kopyalama; dosya düzeyinde `colors.` içeren stil ya da nesne `temaliStil` içinde olmalı.
+  Telefonun teması kayıt sürerken değişirse uygulanmaz (ekranlar baştan kurulmasın), uygulama sonraki öne gelişte uygular.
 - **Kilit ekranı penceresi Android'de konum servisinin bildirimi** (`modules/kilit-ekrani`): expo-location'ın ön plan
   servisi bildirimini sonradan değiştirmenin yolu yok (seçenekleri değiştirmek konum güncellemelerini yeniden başlatıyor),
   bu yüzden yerel modül aynı kimlikle yeni bildirim göndererek onu güncelliyor (servis bağı korunur, tek bildirim kalır).

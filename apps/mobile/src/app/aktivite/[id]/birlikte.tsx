@@ -24,7 +24,7 @@ import { Avatar, SectionHeader } from '@/components/ui';
 import { useAktivite } from '@/data/aktivite';
 import { basHarfler, grupRengi } from '@/grup/gruplar';
 import { supabaseHazir } from '@/lib/supabase';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 export default function BirlikteScreen() {
@@ -260,7 +260,7 @@ function Satir({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: 10 },
   btn: { height: 36, minWidth: 80, paddingHorizontal: 14, borderRadius: 18, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5 },
@@ -279,4 +279,4 @@ const styles = StyleSheet.create({
     marginBottom: space.sm,
   },
   input: { flex: 1, fontFamily: fontFamily.body, fontSize: 15, color: colors.ink },
-});
+}));

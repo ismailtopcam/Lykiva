@@ -13,7 +13,7 @@ import { Icon } from '@/components/Icon';
 import { Txt } from '@/components/Txt';
 import { Button, Chip, Label } from '@/components/ui';
 import { degerdenGirdi, donemAdi, girdiBirimi, girdidenDeger, hedefKaydet, hedefSil, olcuAdi, ONERILER } from '@/data/hedef';
-import { colors, fontFamily, radius, space } from '@/theme';
+import { colors, fontFamily, radius, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 const donemMi = (x: unknown): x is Donem => DONEMLER.includes(x as Donem);
@@ -135,7 +135,7 @@ export default function HedefEkleScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
   seg: { flexDirection: 'row', gap: 6, padding: 4, borderRadius: 14, backgroundColor: colors.land },
   segBtn: { flex: 1, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
@@ -144,4 +144,4 @@ const styles = StyleSheet.create({
   girdi: { flex: 1, fontFamily: fontFamily.display, fontSize: 34, color: colors.ink, borderBottomWidth: 1.5, borderBottomColor: colors.lineStrong, paddingVertical: 4 },
   hata: { flexDirection: 'row', gap: 8, alignItems: 'center', padding: 12, borderRadius: radius.md, backgroundColor: colors.terraSoft },
   alt: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: space.lg, paddingTop: 12, backgroundColor: colors.ground },
-});
+}));

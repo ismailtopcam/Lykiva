@@ -13,7 +13,7 @@ import { TopoMap } from '@/components/map/TopoMap';
 import { Txt } from '@/components/Txt';
 import { Avatar, AvatarStack, Card, Stat } from '@/components/ui';
 import { basHarfler, grupRengi } from '@/grup/gruplar';
-import { colors, fontFamily, space } from '@/theme';
+import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
 const GORUNURLUK = (): Record<AkisOgesi['visibility'], string> => ({
@@ -126,7 +126,7 @@ function AkisKartiIc({ o, onBegen }: Props) {
 
 export const AkisKarti = memo(AkisKartiIc);
 
-const styles = StyleSheet.create({
+const styles = temaliStil(() => StyleSheet.create({
   post: { marginHorizontal: space.md, marginBottom: space.md },
   head: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, paddingBottom: 10 },
   typeBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 26, paddingHorizontal: 10, borderRadius: 13, backgroundColor: colors.seaSoft },
@@ -136,4 +136,4 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6, paddingVertical: 4 },
   action: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 44, paddingHorizontal: 10 },
   actionText: { fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: colors.ink },
-});
+}));
