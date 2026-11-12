@@ -117,8 +117,9 @@ reklam yok. EAS ortam değişkenleri (production / preview / development) girild
 **Dahili test yayında** (11 Kas 2026): sürüm 2 (0.1.0), hedef SDK 36, tester listesi "Gösterge test" (3 kişi).
 **Sürüm 4 yüklendi** (12 Kas 2026, versionCode 4, güncel main): kilit ekranı penceresi, hedefler / meydan okumalar /
 rozetler, harita türleri, ısı haritaları, dil desteği, çevrimdışı harita, kişisel rekorlar.
-Sonraki sürüme girecek: Expo SDK 58 yama güncellemeleri (15 paket, `expo doctor` uyarısı giderildi, 12 Kas 2026);
-kendi BRouter / Photon sunucularımız (EAS ortam değişkenleri, aşağıda).
+**Sürüm 5 derlendi** (12 Kas 2026, güncel main): Expo SDK 58 yama güncellemeleri, kendi BRouter / Photon sunucularımız +
+uygulama anahtarı, "yalnızca Türkiye" uyarısı. **iOS build 4 TestFlight'a gönderildi.** Android versionCode 5 AAB'si hazır,
+Play Console > Dahili test > Yeni sürüm'e elle yüklenecek (İsmail).
 Kalan: testerların kurup denemesi; sonra kapalı teste geçiş (bkz. Mağazaya çıkmadan önce).
 
 ### [ ] Mağazaya çıkmadan önce
@@ -159,8 +160,18 @@ girildi → **sürüm 5'ten itibaren** kendi sunucularımız; o zamana kadar tel
   sunucu hata verirse ya da sonuç boşsa uygulama herkese açık sunuculara düşsün (`lib/yonlendirme.ts`, `lib/yerArama.ts`).
   Şimdilik yapılmadı (İsmail, 12 Kas 2026); yerine kullanıcıya uyarı: rota çizme panelinde "yalnızca Türkiye'de çalışıyor",
   arama sonuçlarının altında "yalnızca Türkiye'deki yerler", kapsam dışında rota istenince açıklayıcı hata (dört dilde, sürüm 5).
-- [ ] **Uzun rotalar yavaş:** İstanbul–Bursa (139 km) bizde ~8 sn, brouter.de'de ~2,5 sn. `BROUTER_BELLEK` (512M)
-  artırılıp denenebilir; kısa rotalar ~0,3 sn.
+- [~] **Uzun rotalar yavaş — sebep işlemci hızı, bellek değil** (12 Kas 2026 ölçümü, kapı üzerinden, bizde | brouter.de):
+  Kaş yürüyüş ~4 km 0,41 | 0,44 sn · Belgrad Ormanı ~15 km 0,42 | 0,32 · Kaş–Kalkan ~27 km 0,58 | 0,66 ·
+  Antalya–Kemer ~45 km 2,5 | 0,8 · İstanbul–Bursa 139 km 7,5 | 2,4. Kısa rotalarda fark yok, uzunlarda ~3 kat yavaş.
+  `BROUTER_BELLEK=1G` denendi, fark yok (bellek kullanımı ~300 MB); 512M'ye geri alındı. Bir rota **tek çekirdekte**
+  hesaplanır (ölçümde %104 işlemci) → çekirdek sayısı tek rotayı hızlandırmaz, her çekirdeğin hızı hızlandırır.
+  Şimdilik kabul (uygulama hesaplarken bekleme göstergesi gösteriyor).
+- **Ölçekleme planı (BRouter):** sunucu "uygulama" 6 çekirdek (AMD EPYC, paylaşımlı vCPU), diğer uygulamalarla ortak;
+  BRouter aynı anda en fazla 4 rota hesaplar (`BROUTER_ISLEM=4`), fazlası sırada bekler. Kullanıcı artınca:
+  1) `BROUTER_ISLEM` artır (Coolify > lykiva-altyapi > Environment Variables, yeniden kur; ücretsiz),
+  2) çekirdek yetmezse sunucuyu büyüt ya da BRouter'ı ayrı sunucuya taşı (kapı ve alan adları aynı kalır, uygulama değişmez),
+  3) tek rotanın hızı da önemliyse ayrılmış ve daha hızlı işlemcili (dedicated vCPU) sunucu. Ne zaman: kapının günlüğündeki
+  bekleme süreleri ve 429'lar izlenerek karar verilir. Fiyatlar o zaman sağlayıcıdan bakılır.
 - **Kapı (12 Kas 2026):** dışarıya yalnızca nginx kapısı açık (`altyapi/kapi`); `X-Lykiva-Anahtar` olmayan istek 403,
   IP başına sınır (rota 60/dk, arama 120/dk; aşılınca 429). Anahtar Coolify'da `LYKIVA_UYGULAMA_ANAHTARI`, uygulamada
   `EXPO_PUBLIC_ALTYAPI_ANAHTARI` (EAS + yerel `.env`); repoda yok. Uygulama anahtarı yalnızca kendi adreslerimize
