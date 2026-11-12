@@ -66,6 +66,8 @@ export type KisiProfili = {
   follows_me: boolean;
   common_group: boolean;
   activity_count: number;
+  /** Profilini gizlemiş (Gizlilik kontrolleri > Profil sayfası): ayrıntılar ve sayılar gelmez */
+  kisitli?: boolean;
 };
 
 async function rpc<T>(ad: string, args?: Record<string, unknown>): Promise<T> {

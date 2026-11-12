@@ -935,5 +935,98 @@ bekle('Isı haritasına geri dönen sayılır', enCok(ih) === 3, enCok(ih));
 r = await db.query(`select round(gunes_yuksekligi('2026-06-21 12:00+00', 0, 23.44)::numeric) as ogle, gunes_yuksekligi('2026-06-21 00:00+00', 0, 23.44) < -6 as gece`);
 bekle('Güneş yüksekliği: dönencede yaz öğlesi ~90°, gece yarısı ufkun altında', Number(r.rows[0].ogle) >= 88 && r.rows[0].gece, r.rows[0]);
 
+console.log('\nGizlilik kontrolleri');
+// Gül ayarları değiştirir; Barış onu takip eder; Gül, Can'ı takip eder (tanıdık ama takipçisi değil); Deniz yabancı
+const PG = '61000000-0000-0000-0000-000000000061';
+const PB = '62000000-0000-0000-0000-000000000062';
+const PC = '63000000-0000-0000-0000-000000000063';
+const PD = '64000000-0000-0000-0000-000000000064';
+await db.exec(`
+  insert into auth.users (id, raw_user_meta_data) values
+    ('${PG}', '{"full_name":"Gül Gizli"}'), ('${PB}', '{"full_name":"Barış Takipçi"}'),
+    ('${PC}', '{"full_name":"Can Tanıdık"}'), ('${PD}', '{"full_name":"Deniz Yabancı"}');
+  update profiles set bio = 'Dağ bisikleti', city = 'Fethiye' where id = '${PG}';
+  insert into follows (follower_id, followee_id) values ('${PB}', '${PG}'), ('${PG}', '${PC}');
+`);
+const gizlilik = (u, alan, deger, gecmis = false) => olarak(u, `select gizlilik_ayarla($1, $2, $3) as n`, [alan, deger, gecmis]).then((x) => x.rows[0].n);
+const profilOf = async (u, kisi) => (await olarak(u, `select kisi_profili($1) as j`, [kisi])).rows[0].j;
+const ayarlar = async () => (await db.query(`select profil_gizliligi, aktivite_gizliligi, grup_aktivite_gizliligi, bahsetme_izni from profiles where id = '${PG}'`)).rows[0];
+
+let ay = await ayarlar();
+bekle('Varsayılanlar: profil herkes, aktiviteler takipçiler, grup aktiviteleri herkes, bahsetme herkes',
+  ay.profil_gizliligi === 'herkes' && ay.aktivite_gizliligi === 'takipciler' && ay.grup_aktivite_gizliligi === 'herkes' && ay.bahsetme_izni === 'herkes', ay);
+let kpG = await profilOf(PD, PG);
+bekle('Profil herkese açıkken yabancı ayrıntıları görür', kpG.kisitli === false && kpG.bio === 'Dağ bisikleti' && kpG.follower_count === 1, kpG);
+
+await gizlilik(PG, 'profil_gizliligi', 'takipciler');
+kpG = await profilOf(PD, PG);
+bekle('Profil takipçilere: yabancı yalnızca adı görür', kpG.kisitli === true && kpG.bio === null && kpG.city === null && kpG.follower_count === 0 && kpG.display_name === 'Gül Gizli', kpG);
+kpG = await profilOf(PB, PG);
+bekle('Profil takipçilere: takipçi ayrıntıları görür', kpG.kisitli === false && kpG.city === 'Fethiye', kpG);
+r = await olarak(PD, `select takip_listesi($1, 'takipci') as j`, [PG]);
+bekle('Profil takipçilere: yabancıya takip listesi boş', r.rows[0].j.length === 0, r.rows[0].j);
+r = await olarak(PB, `select takip_listesi($1, 'takipci') as j`, [PG]);
+bekle('Profil takipçilere: takipçi listeyi görür', r.rows[0].j.length === 1, r.rows[0].j);
+const gulAdi = (await db.query(`select username from profiles where id = '${PG}'`)).rows[0].username;
+r = await anonOlarak(`select herkese_acik_profil($1) as j`, [gulAdi]);
+bekle('Profil herkese açık değilse web profili yok', r.rows[0].j === null, r.rows[0].j);
+
+await gizlilik(PG, 'profil_gizliligi', 'kimse');
+kpG = await profilOf(PB, PG);
+bekle('Profil hiç kimseye: takipçi de yalnızca adı görür', kpG.kisitli === true && kpG.bio === null, kpG);
+kpG = await profilOf(PG, PG);
+bekle('Kendi profilini her zaman tam görür', kpG.kisitli === false && kpG.bio === 'Dağ bisikleti', kpG);
+m = await hataMesaji(() => gizlilik(PG, 'isi_haritasinda', 'kimse'));
+bekle('Bilinmeyen ayar reddedilir', /Bilinmeyen/.test(m ?? ''), m);
+m = await hataMesaji(() => gizlilik(PG, 'profil_gizliligi', 'arkadaslar'));
+bekle('Geçersiz seçim reddedilir', /Geçersiz/.test(m ?? ''), m);
+m = await hataMesaji(() => anonOlarak(`select gizlilik_ayarla('profil_gizliligi', 'herkes', false)`));
+bekle('Oturumsuz ayar değiştirilemez', !!m, m);
+await gizlilik(PG, 'profil_gizliligi', 'herkes');
+
+// Aktiviteler: görünürlük verilmeyen yeni kayıt kişinin varsayılanıyla açılır; geçmişe uygulanabilir
+await gizlilik(PG, 'aktivite_gizliligi', 'kimse');
+const gOzel = await aktivite(PG, 'Gül varsayılan', undefined, 28.1, 36.6, 40);
+const gAcik = await aktivite(PG, 'Gül açık', 'public', 28.1, 36.6, 41);
+r = await db.query(`select id, visibility from activities where id in ('${gOzel}', '${gAcik}')`);
+bekle('Aktiviteler hiç kimseye: görünürlüğü verilmeyen kayıt özel; açıkça seçilen korunur',
+  r.rows.find((x) => x.id === gOzel).visibility === 'private' && r.rows.find((x) => x.id === gAcik).visibility === 'public', r.rows);
+let degisen = await gizlilik(PG, 'aktivite_gizliligi', 'takipciler', true);
+r = await db.query(`select count(*)::int as n from activities where owner_id = '${PG}' and visibility = 'followers'`);
+bekle('Geçmişe uygula: bütün aktiviteler takipçilere', degisen === 2 && r.rows[0].n === 2, { degisen, n: r.rows[0].n });
+degisen = await gizlilik(PG, 'aktivite_gizliligi', 'herkes');
+r = await db.query(`select count(*)::int as n from activities where owner_id = '${PG}' and visibility = 'followers'`);
+bekle('Geçmişe uygulanmazsa eski aktiviteler değişmez', degisen === 0 && r.rows[0].n === 2, { degisen, n: r.rows[0].n });
+
+// Grup aktiviteleri: Can, Gül'ü kendi herkese açık aktivitesine etiketler
+const cBirlikte = await aktivite(PC, 'Can ile Gül', 'public', 28.2, 36.7, 42);
+await olarak(PC, `select birlikte_ekle($1, $2::uuid[])`, [cBirlikte, [PG]]);
+const birlikte = async (u) => (await olarak(u, `select birlikte_kisiler($1) as j`, [cBirlikte])).rows[0].j.map((x) => x.user_id);
+bekle('Grup aktiviteleri herkese: yabancı Gül\'ü etiketli görür', (await birlikte(PD)).includes(PG), await birlikte(PD));
+await gizlilik(PG, 'grup_aktivite_gizliligi', 'takipciler');
+bekle('Grup aktiviteleri takipçilere: yabancı görmez, takipçi görür', !(await birlikte(PD)).includes(PG) && (await birlikte(PB)).includes(PG), [await birlikte(PD), await birlikte(PB)]);
+await gizlilik(PG, 'grup_aktivite_gizliligi', 'kimse');
+bekle('Grup aktiviteleri hiç kimseye: takipçi görmez; aktivitenin sahibi ve kendisi görür',
+  !(await birlikte(PB)).includes(PG) && (await birlikte(PC)).includes(PG) && (await birlikte(PG)).includes(PG), [await birlikte(PB), await birlikte(PC)]);
+r = await olarak(PB, `select count(*)::int as n from activity_participants where activity_id = $1`, [cBirlikte]);
+bekle('Grup aktiviteleri: tablodan doğrudan okunamaz', r.rows[0].n === 0, r.rows[0].n);
+await olarak(PB, `insert into follows (follower_id, followee_id) values ($1, $2)`, [PB, PC]);
+const gKart = (await olarak(PB, `select akis('takip') as j`)).rows[0].j.find((x) => x.id === cBirlikte);
+bekle('Grup aktiviteleri: akış kartında da sayılmaz', gKart && gKart.with_count === 0 && gKart.with.length === 0, gKart && { with: gKart.with, n: gKart.with_count });
+await gizlilik(PG, 'grup_aktivite_gizliligi', 'herkes');
+
+// Bahsetmeler: Can tanıdık ama Gül'ü takip etmiyor; Barış takip ediyor (ve Gül'le tanıdık)
+const cIkinci = await aktivite(PC, 'Can ikinci', 'public', 28.2, 36.7, 43);
+const bIkinci = await aktivite(PB, 'Barış', 'public', 28.2, 36.7, 44);
+await gizlilik(PG, 'bahsetme_izni', 'takipciler');
+m = await hataMesaji(() => olarak(PC, `select birlikte_ekle($1, $2::uuid[])`, [cIkinci, [PG]]));
+bekle('Bahsetme takipçilere: takipçi olmayan tanıdık etiketleyemez', /izin vermiyor/.test(m ?? ''), m);
+const bEklenen = (await olarak(PB, `select birlikte_ekle($1, $2::uuid[]) as n`, [bIkinci, [PG]])).rows[0].n;
+bekle('Bahsetme takipçilere: takipçi etiketler', bEklenen === 1, bEklenen);
+await gizlilik(PG, 'bahsetme_izni', 'kimse');
+await olarak(PB, `select birlikte_cikar($1, $2)`, [bIkinci, PG]);
+m = await hataMesaji(() => olarak(PB, `select birlikte_ekle($1, $2::uuid[])`, [bIkinci, [PG]]));
+bekle('Bahsetme hiç kimseye: takipçi de etiketleyemez', /izin vermiyor/.test(m ?? ''), m);
+
 console.log(hata ? `\n${hata} senaryo başarısız` : '\nTüm senaryolar geçti');
 process.exit(hata ? 1 : 0);

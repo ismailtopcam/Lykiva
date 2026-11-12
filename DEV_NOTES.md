@@ -11,6 +11,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | Kim | İş | Dal |
 | --- | --- | --- |
 | İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |
+| Gökhan | Ayarlar > Gizlilik kontrolleri: profil, aktiviteler, grup aktiviteleri, bahsetmeler (migration: İsmail uygulayacak) | `gizlilik-kontrolleri` |
 
 ## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
 
@@ -94,6 +95,9 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
 13. **İsmail derleyecek — görünüm (karanlık mod):** `gorunum-ayari` PR'ı `app.json`'da `userInterfaceStyle`'ı
     `automatic` yaptı (önce `light`). Yeni derlemeye kadar Aydınlık / Karanlık seçimi çalışır, "Telefonun ayarı" ise
     her zaman aydınlık görünür (eski derleme telefonun temasını uygulamaya bildirmiyor).
+14. **İsmail uygulayacak — gizlilik kontrolleri migration'ı:** `gizlilik-kontrolleri` PR'ı main'e girince
+    `20261115000000_gizlilik.sql` (`uygula.sh` ile; önce durum modu). Yeni derleme gerekmez (yalnızca JS).
+    Migration uygulanana kadar Ayarlar > Gizlilik kontrolleri "yüklenemedi" der; kayıtlar eskisi gibi takipçilere açılır.
 
 ## Yapılacaklar
 
@@ -148,6 +152,13 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   kapanıp açılınca seçim kalıyor mu? Karanlıkta her ekranı gez: okunmayan yazı, açık renkli kalan kutu var mı? Uyarı
   pencereleri ve klavye de karanlık mı? "Telefonun ayarı"ndayken telefonun temasını değiştirip uygulamaya dön (yeni
   derlemeden sonra); kayıt sürerken değiştirince kayıt ekranı bozulmuyor mu (kayıt bitip uygulama öne gelince uygulanmalı)?
+- Gizlilik kontrolleri (migration uygulandıktan sonra; Ayarlar > Gizlilik > Gizlilik kontrolleri): iki hesapla dene.
+  Profil sayfası "Takipçiler" / "Hiç kimse": öbür hesaptan kişi sayfasında yalnızca ad ve fotoğraf, "Bu kişi profil
+  ayrıntılarını gizliyor" yazısı; takip edince (Takipçiler'de) ayrıntılar açılıyor mu? Web profili (`/u/<kullanıcı>`)
+  "Herkes" dışında bulunamadı diyor mu? Aktiviteler: seçince "Yalnızca yeni kayıtlar / Hepsine uygula" soruluyor mu,
+  yeni kayıt seçilen görünürlükle mi açılıyor (internetsiz kaydedilip sonra gönderilen de)? Grup aktiviteleri
+  "Hiç kimse": seni etiketleyen kişinin aktivitesinde başkaları adını görmüyor, akış kartında "X ile" yazmıyor mu?
+  Bahsetmeler "Hiç kimse": seni eklemeye çalışınca "izin vermiyor" hatası çıkıyor mu? Isı haritası anahtarı da burada.
 
 ### [~] Google Play — dahili test
 Play Console'da **Lykiva** oluşturuldu (kişisel geliştirici hesabı, paket `app.lykiva.mobile`, Türkçe, ücretsiz).
@@ -265,6 +276,11 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
 - Serbest çizilen rotada yükseklik yok (BRouter'a sorulmuyor); ayrı bir yükseklik servisi gerekir.
 - Karanlık mod (12 Kas 2026, `gorunum-ayari`): haritanın kendisi (OpenFreeMap stili) karanlıkta da açık renkli; karanlık
   harita stili yok. Örnek veri ekranları (`Ornek*`) ve paylaşım kartı temaları sabit renkli bırakıldı.
+- Gizlilik kontrolleri (12 Kas 2026, `gizlilik-kontrolleri`): `profiles` ve `follows` tablolarını doğrudan okuyan biri
+  (uygulama değil, API'yi elle kullanan) gizlenmiş profilin hakkında / şehir bilgisini ve takipçi sayısını görebilir;
+  uygulama ve web fonksiyonlardan okuduğu için ekranda görünmez. Kalıcı çözüm: bu sütunları istemciye kapatıp kendi
+  profilini `profilim()` gibi bir fonksiyondan okumak. Profili gizli kişinin aktiviteleri akışta kendi görünürlükleriyle
+  çıkmaya devam eder (yalnızca profil sayfasında listelenmez).
 
 ### [ ] Rakiplere göre eksikler (Kasım 2026 karşılaştırması)
 Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. Sıra öneri sırasıdır; (D) = yeni yerel modül, telefona yeni derleme gerekir.
@@ -336,6 +352,12 @@ Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde
 
 ## Kararlar
 
+- **Gizlilik kontrolleri** (Ayarlar > Gizlilik > Gizlilik kontrolleri, `20261115000000_gizlilik.sql`): dört ayar, her biri
+  herkes / takipçiler / hiç kimse; "takipçiler" = seni takip edenler. Profil sayfası: ayrıntılar ve sayılar
+  (`kisi_profili` `kisitli` döner); aktiviteler: yeni kayıtların varsayılan görünürlüğü (mobil artık `visibility`
+  göndermiyor, sunucu kişinin ayarını kullanır; istenirse geçmişe uygulanır); grup aktiviteleri: başkasının aktivitesinde
+  etiketli olduğunu kim görür (sahibi her zaman); bahsetmeler: seni kim etiketleyebilir ("herkes" = önceki kural, tanıdıklar).
+  Web profili oturumsuz olduğu için yalnızca "herkes" iken açılır.
 - **Karanlık mod: renkler okunduğu anda temadan gelir** (`apps/mobile/src/theme/renkler.ts`). `colors.ink` gibi her okuma
   o anki temanın değerini verir; dosya düzeyindeki stiller `temaliStil(() => StyleSheet.create({...}))` ile yazılır (her
   tema için bir kez kurulur). Tema değişince kök düzen dil değişimindeki gibi yeniden kurulur. Karanlık palet

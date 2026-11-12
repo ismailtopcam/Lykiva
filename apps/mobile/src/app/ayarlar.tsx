@@ -1,7 +1,7 @@
 import { formatBytes } from '@lykiva/shared';
 import { router, useFocusEffect } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Header } from '@/components/Header';
@@ -13,7 +13,7 @@ import { cevrimdisiDestekleniyor, useIndirilenRotalar } from '@/lib/cevrimdisi';
 import { cikisYap, useHesap, type Saglayici } from '@/lib/giris';
 import { hesabiSil } from '@/lib/hesap';
 import { pushAc, pushDurumu, pushKapat, type PushDurumu } from '@/lib/push';
-import { supabase, supabaseHazir } from '@/lib/supabase';
+import { supabaseHazir } from '@/lib/supabase';
 import { aktifSema, colors, GORUNUMLER, gorunumSecimi, gorunumSecimiYap, space, temaliStil, type GorunumSecimi } from '@/theme';
 import { $t, cihazDili, DIL_ADLARI, DILLER, dilSecimi, dilSecimiYap, type Dil } from '@/i18n';
 
@@ -30,34 +30,7 @@ export default function AyarlarScreen() {
   const [siliniyor, setSiliniyor] = useState(false);
   const [push, setPush] = useState<PushDurumu | null>(null);
   const indirilenler = useIndirilenRotalar();
-  const [isiHaritasinda, setIsiHaritasinda] = useState<boolean | null>(null);
   const [gorunum, setGorunum] = useState<GorunumSecimi>(gorunumSecimi);
-
-  useEffect(() => {
-    if (!hesap?.id) return;
-    let acik = true;
-    supabase
-      .from('profiles')
-      .select('isi_haritasinda')
-      .eq('id', hesap.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (acik && typeof data?.isi_haritasinda === 'boolean') setIsiHaritasinda(data.isi_haritasinda);
-      });
-    return () => {
-      acik = false;
-    };
-  }, [hesap?.id]);
-
-  async function isiHaritasiDegistir(v: boolean) {
-    const once = isiHaritasinda;
-    setIsiHaritasinda(v);
-    const { error } = await supabase.rpc('isi_haritasi_ayarla', { katil: v });
-    if (error) {
-      setIsiHaritasinda(once);
-      Alert.alert($t('ayarlar.yapilamadi'), error.message);
-    }
-  }
 
   // Dil değişince bütün ekranlar yeniden kurulur (kök düzen); kullanıcı Ayarlar'a geri getirilir
   async function dilDegistir(d: Dil | null) {
@@ -224,16 +197,11 @@ export default function AyarlarScreen() {
           </View>
         ) : null}
 
-        {supabaseHazir && hesap && isiHaritasinda !== null ? (
+        {supabaseHazir && hesap ? (
           <View>
             <Label>{$t('ayarlar.gizlilik')}</Label>
             <Card style={{ paddingHorizontal: space.lg }}>
-              <ToggleRow
-                title={$t('ayarlar.isi_haritalarinda_gorun')}
-                subtitle={$t('ayarlar.isi_haritalarinda_gorun_alt')}
-                value={isiHaritasinda}
-                onChange={(v) => void isiHaritasiDegistir(v)}
-              />
+              <ListRow icon="lock" iconTone="sea" caption={$t('ayarlar.gizlilik_kontrolleri_alt')} title={$t('ayarlar.gizlilik_kontrolleri')} href="/gizlilik" />
             </Card>
           </View>
         ) : null}

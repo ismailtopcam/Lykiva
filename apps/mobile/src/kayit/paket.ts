@@ -20,7 +20,8 @@ export type KayitPaketi = {
   avg_speed_mps: number;
   max_speed_mps: number;
   min_moving_speed_mps: number;
-  visibility: 'private' | 'followers' | 'public';
+  /** Verilmezse sunucu kişinin varsayılanını kullanır (Gizlilik kontrolleri > Aktiviteler) */
+  visibility?: 'private' | 'followers' | 'public';
   hide_endpoints: boolean;
   points: TrackPoint[];
   stops: TrackStop[];
@@ -92,7 +93,6 @@ export function paketOlustur(opts: {
     avg_speed_mps: r2(s.avgMovingSpeed),
     max_speed_mps: r2(s.maxSpeed),
     min_moving_speed_mps: r2(s.minMovingSpeed),
-    visibility: 'followers',
     hide_endpoints: true,
     points: points.map((p) => ({
       t: p.t,
