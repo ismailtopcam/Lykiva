@@ -1,30 +1,36 @@
 /**
  * Harita türleri: standart, uydu, hibrit, kış. Seçim telefonda saklanır ve bütün haritalara uygulanır.
  *
- * - standart: MAP_STYLE_URL (varsayılan OpenFreeMap Liberty).
+ * - standart: MAP_STYLE_URL (varsayılan OpenFreeMap Liberty), patikalar belirgin (stilRenkleri.ts > acikStil).
+ *   Karanlık temada aynı ayrıntıda gece haritası (stilRenkleri.ts > koyuStil).
  * - uydu: Esri World Imagery döşemeleri (anahtarsız).
  * - hibrit: uydu görüntüsü + standart stilin yolları, sınırları ve yazıları.
  * - kış: standart stil karlı renklerle + OpenSnowMap kayak pistleri / kızak, kar ayakkabısı yolları.
- * - gece (yalnızca koyu ekranlarda, ör. kayıt sırasında): standart yerine siyah zeminli OpenFreeMap Dark.
- *   Kullanıcı başka bir tür seçtiyse o kullanılır.
  *
- * Hibrit ve kış, standart stilin JSON'undan türetilir (bir kez indirilir). İnemezse (çevrimdışı) hibrit uyduya,
- * kış standarda düşer. Stil nesneleri önbellekte tutulur: her çizimde yeni nesne verilirse harita stili
- * baştan yükler.
+ * Standart harita gündüz açık, gün batımından sonra ve karanlık temada koyu (bkz. gunduzGece.ts).
+ * Uydu, hibrit ve kış hep aynıdır.
+ *
+ * Standart, gece, hibrit ve kış, standart stilin JSON'undan türetilir. JSON telefonda saklanır (açılışta hemen
+ * hazır, çevrimdışında da çalışır) ve her açılışta bir kez sunucudan yenilenir. Hiç inmemişse standart
+ * MAP_STYLE_URL'e, gece OpenFreeMap Dark'a, hibrit uyduya, kış standarda düşer. Stil nesneleri önbellekte
+ * tutulur: her çizimde yeni nesne verilirse harita stili baştan yükler.
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { LayerSpecification, StyleSpecification } from '@maplibre/maplibre-react-native';
-import { useEffect, useSyncExternalStore } from 'react';
+import { useSyncExternalStore } from 'react';
+
+import { acikStil, koyuStil } from './stilRenkleri';
 
 export type HaritaTuru = 'standart' | 'uydu' | 'hibrit' | 'kis';
 export const HARITA_TURLERI: HaritaTuru[] = ['standart', 'uydu', 'hibrit', 'kis'];
 
 export const MAP_STYLE_URL = process.env.EXPO_PUBLIC_MAP_STYLE_URL || 'https://tiles.openfreemap.org/styles/liberty';
 
-/** Koyu ekranlarda standart türün yerine (siyah zemin) */
+/** Standart stil henüz inmemişken karanlık temada (aynı döşemeler, daha az ayrıntı) */
 export const GECE_STIL_URL = 'https://tiles.openfreemap.org/styles/dark';
 
-const SECIM_ANAHTARI ='lykiva.harita_turu.v1';
+const SECIM_ANAHTARI = 'lykiva.harita_turu.v1';
+const TEMEL_ANAHTARI = 'lykiva.harita_temel_stil.v1';
 
 // Kaynak metni Esri'nin hizmet bilgisinden (MapServer?f=json > copyrightText)
 const UYDU_KAYNAK = {
@@ -94,24 +100,51 @@ export function useHaritaTuru(): HaritaTuru {
 
 type Katman = LayerSpecification;
 
-let temel: StyleSpecification | null = null;
-let temelIstegi: Promise<void> | null = null;
-const onbellek = new Map<'hibrit' | 'kis', StyleSpecification>();
+type Turetilen = 'standart' | 'gece' | 'hibrit' | 'kis';
 
-function temeliIndir() {
-  if (temel || temelIstegi) return;
-  temelIstegi = fetch(MAP_STYLE_URL)
-    .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-    .then((s: StyleSpecification) => {
-      temel = s;
-      onbellek.clear();
-      haberVer();
+let temel: StyleSpecification | null = null;
+/** temel'in metni: sunucudan gelen aynıysa stil değiştirilmez (haritalar boşuna baştan yüklenmesin) */
+let temelMetni: string | null = null;
+let temelBasladi = false;
+const onbellek = new Map<Turetilen, StyleSpecification>();
+
+function temeliKoy(metin: string): boolean {
+  if (metin === temelMetni) return false;
+  try {
+    const s = JSON.parse(metin) as StyleSpecification;
+    if (s?.version !== 8 || !Array.isArray(s.layers)) return false;
+    temel = s;
+    temelMetni = metin;
+    onbellek.clear();
+    haberVer();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Önce telefondaki kopya, ardından sunucudan güncel stil (açılışta bir kez) */
+function temeliYukle() {
+  if (temelBasladi) return;
+  temelBasladi = true;
+  AsyncStorage.getItem(TEMEL_ANAHTARI)
+    .then((k) => {
+      const kayit = k ? (JSON.parse(k) as { adres?: string; stil?: string }) : null;
+      if (kayit && kayit.adres === MAP_STYLE_URL && kayit.stil) temeliKoy(kayit.stil);
     })
     .catch(() => undefined)
-    .finally(() => {
-      temelIstegi = null;
-    });
+    .then(() => fetch(MAP_STYLE_URL))
+    .then((r) => (r.ok ? r.text() : Promise.reject(new Error(String(r.status)))))
+    .then((metin) => {
+      if (temeliKoy(metin)) {
+        void AsyncStorage.setItem(TEMEL_ANAHTARI, JSON.stringify({ adres: MAP_STYLE_URL, stil: metin })).catch(() => undefined);
+      }
+    })
+    .catch(() => undefined);
 }
+
+// Uygulama açılırken başlar: ilk harita çizildiğinde stil çoğunlukla hazır olur
+temeliYukle();
 
 /** Temel stile bağlı değil: hemen kullanılır ve hep aynı nesnedir */
 const UYDU_STILI: StyleSpecification = {
@@ -178,30 +211,41 @@ function kisStili(s: StyleSpecification): StyleSpecification {
   return { ...s, sources: { ...s.sources, pistler: PIST_KAYNAK }, layers: katmanlar };
 }
 
-function stilOf(t: HaritaTuru): string | StyleSpecification {
-  if (t === 'standart') return MAP_STYLE_URL;
+const TURETICI: Record<Turetilen, (s: StyleSpecification) => StyleSpecification> = {
+  standart: acikStil,
+  gece: koyuStil,
+  hibrit: hibritStili,
+  kis: kisStili,
+};
+
+/** Temel stil gelmeden kullanılan */
+const YEDEK: Record<Turetilen, string | StyleSpecification> = {
+  standart: MAP_STYLE_URL,
+  gece: GECE_STIL_URL,
+  hibrit: UYDU_STILI,
+  kis: MAP_STYLE_URL,
+};
+
+function stilOf(t: HaritaTuru, koyu: boolean): string | StyleSpecification {
   if (t === 'uydu') return UYDU_STILI;
-  // Temel stil gelmeden: hibrit → yalnızca uydu, kış → standart
-  if (!temel) return t === 'kis' ? MAP_STYLE_URL : UYDU_STILI;
-  let s = onbellek.get(t);
+  const tt: Turetilen = t === 'standart' && koyu ? 'gece' : t;
+  if (!temel) return YEDEK[tt];
+  let s = onbellek.get(tt);
   if (!s) {
-    s = t === 'hibrit' ? hibritStili(temel) : kisStili(temel);
-    onbellek.set(t, s);
+    s = TURETICI[tt](temel);
+    onbellek.set(tt, s);
   }
   return s;
 }
 
 /**
  * Seçili türün MapLibre stili (adres ya da stil nesnesi; aynı tür için hep aynı nesne).
- * karanlik: standart tür siyah zeminli gece stiliyle çizilir.
+ * koyu: gece ya da karanlık tema (useKoyuHarita); standart tür gece haritasıyla çizilir.
+ * koyuZemin: harita koyu mu (rota çizgisi ve işaret renkleri buna göre); kış iki temada da açık.
  */
-export function useHaritaStili(karanlik = false): string | StyleSpecification {
+export function useHaritaStili(koyu: boolean): { stil: string | StyleSpecification; koyuZemin: boolean } {
   const t = useHaritaTuru();
   // Temel stil değişince yeniden çizilsin diye aynı depoya bağlı
   useSyncExternalStore(abone, () => temel, () => temel);
-  useEffect(() => {
-    if (t === 'hibrit' || t === 'kis') temeliIndir();
-  }, [t]);
-  if (karanlik && t === 'standart') return GECE_STIL_URL;
-  return stilOf(t);
+  return { stil: stilOf(t, koyu), koyuZemin: koyu && t !== 'kis' };
 }

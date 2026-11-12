@@ -7,6 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FloatingHeader } from '@/components/Header';
 import { Icon } from '@/components/Icon';
+import { useKoyuHarita } from '@/components/map/gunduzGece';
+import { useHaritaTuru } from '@/components/map/haritaTurleri';
 import { gercekHarita, TopoMap } from '@/components/map/TopoMap';
 import { Txt } from '@/components/Txt';
 import { Stat } from '@/components/ui';
@@ -32,6 +34,8 @@ export default function CanliTakipScreen() {
   const [ucBoyut, setUcBoyut] = useState(false);
   const [boy, setBoy] = useState<PanelBoyu>('normal');
   const [kaydediyor, setKaydediyor] = useState(false);
+  const haritaTuru = useHaritaTuru();
+  const koyuHarita = useKoyuHarita() && haritaTuru !== 'kis';
 
   const buyut = () => setBoy((b) => BOYLAR[Math.min(BOYLAR.indexOf(b) + 1, BOYLAR.length - 1)]);
   const kucult = () => setBoy((b) => BOYLAR[Math.max(BOYLAR.indexOf(b) - 1, 0)]);
@@ -128,7 +132,8 @@ export default function CanliTakipScreen() {
 
   return (
     <View style={styles.root}>
-      <StatusBar style="light" />
+      {/* Harita görünüm ayarına göre açık ya da koyu; durum çubuğu üstünde okunsun */}
+      <StatusBar style={tam || koyuHarita || haritaTuru === 'uydu' || haritaTuru === 'hibrit' ? 'light' : 'dark'} />
       <TopoMap
         dark
         style={{ flex: 1 }}
