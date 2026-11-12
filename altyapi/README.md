@@ -32,14 +32,15 @@ Telefonlar sunuculara doğrudan bağlandığı için IP ile kapatmak mümkün de
 Deneme (anahtar `$A`):
 
 ```bash
-curl -H "X-Lykiva-Anahtar: $A" "https://photon.lykiva.app/api/?q=Kaş&limit=3"
-curl -H "X-Lykiva-Anahtar: $A" "https://brouter.lykiva.app/brouter?lonlats=29.6386,36.2018|29.6012,36.2088&profile=trekking&format=geojson"
+curl -H "X-Lykiva-Anahtar: $A" "https://photon.ismailtopcam.dev/api/?q=Kaş&limit=3"
+curl -H "X-Lykiva-Anahtar: $A" "https://brouter.ismailtopcam.dev/brouter?lonlats=29.6386,36.2018|29.6012,36.2088&profile=trekking&format=geojson"
 ```
 
 ## Kurulu (12 Kas 2026)
 
-Coolify > Uygulamalar > production > **lykiva-altyapi**, sunucu "uygulama". Alan adları API ile `https://brouter.lykiva.app`
-ve `https://photon.lykiva.app` olarak verildi (Coolify portu kendisi ekledi: 17777 / 2322). Ortam: `PHOTON_BELLEK=3g`.
+Coolify > Uygulamalar > production > **lykiva-altyapi**, sunucu "uygulama". Alan adları API ile `https://brouter.ismailtopcam.dev`
+ve `https://photon.ismailtopcam.dev` olarak verildi (Coolify portu kendisi ekledi: 17777 / 2322). Sürüm 5 eski
+`brouter.` / `photon.lykiva.app` adreslerini kullandığından onlar da geçiş süresince `kapi`'da açık (12 Kas 2026). Ortam: `PHOTON_BELLEK=3g`.
 Ölçülen: Photon ilk içe aktarma ~5 dk, ~3 GB bellek; çalışırken ~400 MB. BRouter ~50 MB (boşta).
 Haftalık güncelleme (Scheduled Tasks): pazartesi 05:00 `brouter` → `/brouter/segment-guncelle.sh`;
 05:30 `photon` → `/photon/veri-guncelle.sh && kill 1` (Photon'un 1 numaralı süreci Java; `kill 1` düzgün kapatır,
@@ -47,18 +48,18 @@ Haftalık güncelleme (Scheduled Tasks): pazartesi 05:00 `brouter` → `/brouter
 
 ## Kurulum (Coolify)
 
-1. **DNS:** `brouter.lykiva.app` ve `photon.lykiva.app` için A kaydı → uygulama sunucusu (91.90.81.195),
+1. **DNS:** `brouter.ismailtopcam.dev` ve `photon.ismailtopcam.dev` için A kaydı → uygulama sunucusu (91.90.81.195),
    diğer alt alan adları nasıl tanımlıysa öyle.
 2. **Coolify > + New > Docker Compose** (kaynak: bu GitHub deposu, dal `main`, dosya `altyapi/docker-compose.yml`), sunucu: "uygulama".
-3. Alan adlarının **ikisini de `kapi` servisine** ver: `https://brouter.lykiva.app,https://photon.lykiva.app`.
+3. Alan adlarının **ikisini de `kapi` servisine** ver: `https://brouter.ismailtopcam.dev,https://photon.ismailtopcam.dev`.
    `brouter` ve `photon` boş kalır (dışarıya kapalı). Environment Variables'a `LYKIVA_UYGULAMA_ANAHTARI` gir (en az 24
    karakter, harf / rakam / - / _), uygulamadaki `EXPO_PUBLIC_ALTYAPI_ANAHTARI` ile aynı.
 4. Deploy. İlk açılışta günlükte "segmentler hazır" ve Photon'un içe aktarma satırları görünür; sağlık kontrolü yeşile dönünce hazır.
 5. Dene: yukarıdaki "Kapı" bölümündeki komutlar (anahtarsız istek 403 almalı).
 6. Uygulamayı yeni sunuculara bağla — `apps/mobile/.env`:
    ```
-   EXPO_PUBLIC_BROUTER_URL=https://brouter.lykiva.app/brouter
-   EXPO_PUBLIC_PHOTON_URL=https://photon.lykiva.app/api/
+   EXPO_PUBLIC_BROUTER_URL=https://brouter.ismailtopcam.dev/brouter
+   EXPO_PUBLIC_PHOTON_URL=https://photon.ismailtopcam.dev/api/
    ```
    ve telefona yeniden derle (`.env` derleme sırasında okunur).
 
