@@ -26,7 +26,7 @@ export function OrnekAkis() {
       <View style={styles.header}>
         <Logo />
         <View style={{ flexDirection: 'row' }}>
-          <IconButton icon="search" label="Ara" onPress={() => router.push('/kesfet')} />
+          <IconButton icon="search" label="Ara" onPress={() => router.push('/kesfet-liste')} />
           <IconButton icon="chat" label="Mesajlar" onPress={() => router.push('/grup/ornek/sohbet')} />
           <IconButton icon="bell" label="Bildirimler" />
         </View>

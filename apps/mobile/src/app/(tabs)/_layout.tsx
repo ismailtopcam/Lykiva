@@ -21,7 +21,7 @@ function tabIcon(name: IconName, sabitRenk?: string) {
 }
 
 /**
- * Alt menü: Ana Sayfa · Haritalar · Egzersiz · Gruplar · Profil
+ * Alt menü: Ana Sayfa · Harita · Egzersiz · Gruplar · Profil
  * Egzersiz bir ekran değil; basınca kayıt başlatma ekranını açar.
  * Dosya adları (index, kesfet, kaydet) bağlantılar bozulmasın diye aynı kaldı.
  */
@@ -46,7 +46,7 @@ export default function TabsLayout() {
         sceneStyle: { backgroundColor: colors.ground },
       }}>
       <Tabs.Screen name="index" options={{ title: $t('sekmeler.ana_sayfa'), tabBarIcon: tabIcon('home') }} />
-      <Tabs.Screen name="kesfet" options={{ title: $t('sekmeler.haritalar'), tabBarIcon: tabIcon('map') }} />
+      <Tabs.Screen name="kesfet" options={{ title: $t('sekmeler.harita'), tabBarIcon: tabIcon('map') }} />
       <Tabs.Screen
         name="kaydet"
         options={{

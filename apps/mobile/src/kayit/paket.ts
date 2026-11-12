@@ -4,6 +4,8 @@
 import { computeSegmentedStats, detectStops, type ActivityType, type HavaDurumu, type TrackPoint, type TrackStop, haversine } from '@lykiva/shared';
 import { $t } from '@/i18n';
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export type KayitPaketi = {
   client_id: string;
   route_id?: string | null;
@@ -79,8 +81,8 @@ export function paketOlustur(opts: {
   const start = new Date(points[0].t);
   return {
     client_id: opts.clientId,
-    // Örnek rota sunucuda yok; yalnızca gerçek rota id'si gönderilir
-    route_id: opts.routeId && opts.routeId !== 'ornek' ? opts.routeId : null,
+    // Örnek rota ve haritadaki yol tarifi ("tarif-…") sunucuda yok; yalnızca gerçek rota id'si (uuid) gönderilir
+    route_id: opts.routeId && UUID.test(opts.routeId) ? opts.routeId : null,
     title: opts.title?.trim() || varsayilanBaslik(opts.activity, start),
     activity: opts.activity,
     started_at: start.toISOString(),
