@@ -13,6 +13,7 @@
   "dependencies": {
     "@expo-google-fonts/bricolage-grotesque": "^0.4.1",
     "@expo-google-fonts/inter": "^0.4.2",
+    "@expo/ui": "~58.0.28",
     "@lykiva/shared": "*",
     "@maplibre/maplibre-react-native": "^11.5.1",
     "@react-native-async-storage/async-storage": "^2.2.0",
@@ -37,6 +38,7 @@
     "expo-system-ui": "~58.0.7",
     "expo-task-manager": "~58.0.14",
     "expo-web-browser": "~58.0.8",
+    "expo-widgets": "~58.0.28",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-native": "0.88.1",
@@ -55,5 +57,15 @@
     "eslint": "^9.39.5",
     "eslint-config-expo": "~58.0.4",
     "typescript": "~6.0.3"
+  },
+  "expo": {
+    "autolinking": {
+      "android": {
+        "exclude": [
+          "expo-widgets",
+          "@expo/ui"
+        ]
+      }
+    }
   }
 }

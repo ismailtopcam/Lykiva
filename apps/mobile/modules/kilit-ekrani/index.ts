@@ -1,33 +1,18 @@
 /**
- * Kilit ekranında süren kaydın penceresi (yalnızca Android; yerel modül, yeni derleme gerekir).
+ * Kilit ekranında süren kaydın penceresi — Android (yerel modül `android/`, yeni derleme gerekir).
+ * iOS karşılığı `index.ios.tsx` (Live Activity); Metro platforma göre seçer.
  *
  * Kayıt bildirimini (expo-location'ın ön plan servisi bildirimi) süre, mesafe ve ortalama hız gösteren bir
  * pencereye çevirir. Süre telefonda kendi kendine sayar (Chronometer); mesafe ve hız her güncellemede yenilenir.
  * Servis çalışmıyorsa (duraklatıldı, arka plan izni yok) aynı pencere ayrı bir bildirim olarak gösterilir.
  *
- * iOS'ta, Expo Go'da ve web'de modül yoktur; fonksiyonlar hiçbir şey yapmaz.
+ * Expo Go'da, web'de ve modülsüz eski derlemelerde modül yoktur; fonksiyonlar hiçbir şey yapmaz.
  */
 import { requireOptionalNativeModule } from 'expo';
 
-export type KilitEkraniDurumu = {
-  /** Kanal adı (Android ayarlarında görünür) */
-  kanalAdi: string;
-  /** Başlıkta: "Bisiklet · Kaydediyor" */
-  baslik: string;
-  /** Duraklatmalar hariç geçen süre (ms) */
-  gecenMs: number;
-  /** false: süre durur (duraklatıldı) */
-  sayiyor: boolean;
-  mesafe: string;
-  mesafeBirim: string;
-  hiz: string;
-  hizBirim: string;
-  sureEtiket: string;
-  mesafeEtiket: string;
-  hizEtiket: string;
-  /** Ön plan servisinin görev adı: servisin bildirimi bununla bulunur */
-  gorev: string;
-};
+import type { KilitEkraniDurumu } from './tipler';
+
+export type { KilitEkraniDurumu } from './tipler';
 
 type Modul = {
   guncelle(durum: KilitEkraniDurumu): void;

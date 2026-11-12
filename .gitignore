@@ -17,8 +17,8 @@ web-build/
 *.tsbuildinfo
 
 # Expo / native
-ios/
-android/
+/apps/mobile/ios/
+/apps/mobile/android/
 *.jks
 *.p8
 *.p12

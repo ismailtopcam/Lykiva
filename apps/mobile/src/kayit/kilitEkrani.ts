@@ -1,6 +1,7 @@
 /**
- * Kilit ekranında süren kaydın penceresi: süre, mesafe, ortalama hız (yalnızca Android).
- * Yerel modül: modules/kilit-ekrani. Kaydedici her durum değişikliğinde `kilitEkrani` çağırır.
+ * Kilit ekranında süren kaydın penceresi: süre, mesafe, ortalama hız.
+ * Android'de kayıt bildirimi, iOS'ta Live Activity (kilit ekranı + Dynamic Island).
+ * Modül: modules/kilit-ekrani. Kaydedici her durum değişikliğinde `kilitEkrani` çağırır.
  *
  * Süre telefonda kendi kendine sayar; mesafe ve hız her yeni konumda yenilenir (en sık saniyede bir).
  * Ortalama hız kayıt ekranındakiyle aynı: yalnızca hareket hâlindeyken.
@@ -21,6 +22,8 @@ let sonGonderim = 0;
 let bekleyen: ReturnType<typeof setTimeout> | null = null;
 let sonIstek: { k: Kayit; gecenMs: () => number; gorev: string } | null = null;
 let zorla = false;
+/** Açılışta bir kez: önceki oturumdan kalan pencere (uygulama kapandı / çöktü) kapatılır */
+let ilkKapatma = true;
 /** Değerler değişmese de arada bir yeniden gönder: servis bildirimi kendi metnine dönmüş olabilir */
 const ONARIM_MS = 15_000;
 
@@ -31,10 +34,12 @@ export function kilitEkrani(k: Kayit, gecenMs: () => number, gorev: string): voi
     if (bekleyen) clearTimeout(bekleyen);
     bekleyen = null;
     sonIstek = null;
-    if (sonAnahtar != null) kilitEkraniKapat();
+    if (sonAnahtar != null || ilkKapatma) kilitEkraniKapat();
+    ilkKapatma = false;
     sonAnahtar = null;
     return;
   }
+  ilkKapatma = false;
   sonIstek = { k, gecenMs, gorev };
   // Durum değişince (duraklat / devam) hemen; değer değişince en sık saniyede bir
   const durumDegisti = !sonAnahtar?.startsWith(`${k.clientId}|${k.durum}|`);
@@ -64,6 +69,7 @@ function gonder() {
   sonGonderim = Date.now();
   kilitEkraniGuncelle({
     kanalAdi: $t('kayit_kaydedici.kilit_kanal'),
+    etkinlik: k.activity,
     baslik: `${activityLabel(k.activity)} · ${sayiyor ? $t('kayit_kaydedici.kilit_kaydediyor') : $t('kayit_duraklatildi.duraklatildi')}`,
     gecenMs: istek.gecenMs(),
     sayiyor,

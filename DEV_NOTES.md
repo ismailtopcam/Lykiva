@@ -11,11 +11,28 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | Kim | İş | Dal |
 | --- | --- | --- |
 | İsmail | Telefona kurulum: EAS geliştirme derlemesi (kod değişikliği yok, derleme bekliyor) | — |
+| İsmail | Kilit ekranı: Android Kotlin modülü (repoya girmemişti) + iOS Live Activity | `claude/kilit-ekrani-gosterim-17a0c0` |
+
+## Gökhan için: kilit ekranı (12 Kasım 2026, İsmail)
+
+- **Kilit ekranının Kotlin kodu repoya hiç girmemişti.** Kökteki `.gitignore`'da `android/` satırı vardı; bu,
+  `apps/mobile/modules/kilit-ekrani/android/` klasörünü de dışarıda bıraktı. Senin commit'inde (`f841339`) modülden yalnızca
+  `expo-module.config.json` ve `index.ts` var. EAS yalnızca git'teki dosyaları paketlediği için **sürüm 4 ve 5'te kilit ekranı
+  penceresi yok** (JS tarafı modülü bulamayınca sessizce hiçbir şey yapmıyor; derleme bu yüzden "sorunsuz" geçti).
+- **Düzeltildi:** `.gitignore` artık yalnızca `/apps/mobile/ios/` ve `/apps/mobile/android/`'ı dışarıda bırakıyor. Yerel
+  modüllerin `android/` / `ios/` klasörleri git'e girer; commit'ten önce `git status`'ta göründüklerine bak.
+- **Kotlin modülü yeniden yazıldı** (`modules/kilit-ekrani/android/`, aşağıda Kararlar'daki tasarımla aynı: servis
+  bildiriminin kimliğiyle yeni bildirim, `Chronometer`, `RemoteViews`, sessiz ama varsayılan önemde kanal). Bilgisayarında
+  eski Kotlin dosyaların duruyorsa üstüne yazma: `main`'i çektikten sonra farkı karşılaştır, eklemek istediğin bir şey
+  varsa ayrı PR aç.
+- **iOS'ta da var artık:** Live Activity (kilit ekranı + Dynamic Island), `expo-widgets` ile — `modules/kilit-ekrani/index.ios.tsx`.
+  `expo-widgets` ve `@expo/ui` Android derlemesine girmiyor (`apps/mobile/package.json` > `expo.autolinking.android.exclude`).
+- Yeni derleme gerekiyor (iki platform); derlemeyi İsmail alacak.
 
 ## Gökhan için: 11 Kasım 2026'da değişenler (İsmail)
 
 - **Play dahili test yayında** (sürüm 2, 0.1.0). Tester listesi "Gösterge test". Katılma bağlantısı aşağıda (Bekleyen elle yapılacaklar 6).
-  Güncel sürüm 4 (12 Kas 2026): main'deki her şey, kilit ekranı penceresi dahil.
+  Güncel sürüm 4 (12 Kas 2026): main'deki her şey (kilit ekranı penceresi hariç: Kotlin kodu repoya girmemişti, yukarıda).
 - **iOS TestFlight'a gönderildi:** App Store Connect'te "Lykiva" (Apple kimliği `6833386986`), sürüm 0.1.0 (3), güncel
   main'den (senin işlerin dahil). Sen Android'de deneyeceksin: Gmail adresini İsmail'e ilet, dahili test listesine eklensin.
 - **Google ile giriş açık.** Sunucuda `google=true`; uygulama kodu değişmedi, Play'deki sürümde de çalışır.
@@ -62,9 +79,17 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
    - SMTP çalışıyor: deneme şifre sıfırlama postası Gmail'e geldi (11 Kas 2026). Kalan: yeni derlemede uygulamadan dene.
 10. **İlk herkese açık meydan okuma (isteğe bağlı):** `https://lykiva.app/admin/meydan-okumalar`'dan yönetici hesabıyla aç
     (ör. "Aralık'ta 200 km"). Hedefler / meydan okumalar ve ısı haritaları migration'ları uygulandı (12 Kas 2026).
-11. **Android sürüm 4'ü telefonda dene** (12 Kas 2026'da Play dahili teste yüklendi): kilit ekranı penceresi, hedefler /
+11. **Android sürüm 4'ü telefonda dene** (12 Kas 2026'da Play dahili teste yüklendi): hedefler /
     meydan okumalar / rozetler, harita türleri, ısı haritaları ilk kez telefonda. Neye bakılacağı aşağıda
-    "Telefonda ve gerçek sunucuda denenmemiş özellikler"de.
+    "Telefonda ve gerçek sunucuda denenmemiş özellikler"de. (Kilit ekranı penceresi bu sürümde yok; madde 12.)
+12. **İsmail derleme alacak — kilit ekranı** (bu iş main'e girince, iki platform):
+    - iOS: yeni widget eklentisi var (bundle ID `app.lykiva.mobile.ExpoWidgetsTarget`, App Group `group.app.lykiva.mobile`).
+      İlk derlemeyi etkileşimli al (`npx eas-cli@latest build -p ios --profile production`, `--non-interactive` olmadan):
+      EAS eklenti için bundle ID'yi ve profili oluşturmayı sorar. Yetki eşitlemesi Apple hatası verirse
+      (`EXPO_NO_CAPABILITY_SYNC=1` ile derliyoruz) Apple Developer > Identifiers'da App Group `group.app.lykiva.mobile`'ı
+      oluştur, `app.lykiva.mobile` ve `app.lykiva.mobile.ExpoWidgetsTarget` için App Groups yetkisini açıp bu gruba bağla.
+    - Android: `npx eas-cli@latest build -p android --profile production` (Kotlin modülü bu kez pakete girer).
+    - Sonra telefonda dene (aşağıda "Kilit ekranı" maddesi).
 
 ## Yapılacaklar
 
@@ -102,12 +127,17 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   Yakınlaştırınca (8. düzey, aşağı yukarı bir il) çıkıyor mu, kaydırınca yenileniyor mu, hızlı mı? Kişisel uzaktan da
   görünüyor mu? Yeni bir kayıttan sonra kişiselde çıkıyor mu? Ayarlar > Gizlilik > "Isı haritalarında görün" kapatılınca
   başka hesaptan bakınca o kişinin izleri kayboluyor mu? Uydu / hibrit üstünde renkler okunuyor mu?
-- Kilit ekranı (Android, sürüm 4; Kotlin modülü EAS'ta sorunsuz derlendi, telefonda denenmedi):
+- Kilit ekranı (yeni derlemeyle; sürüm 4 / 5'te yok). Android:
   kayıt başlat, ekranı kapat; kilit ekranında süre sayıyor mu, mesafe ve ort. hız yürüdükçe değişiyor mu? Bildirim
   çekmecesinde tek bildirim mi kalıyor ("Lykiva kaydediyor" + pencere iki ayrı bildirim olmamalı)? Duraklat / devam et:
   süre duruyor, devamda kaldığı yerden sayıyor mu? Bitir / iptal: pencere kayboluyor mu? Karanlık temada yazılar
   okunuyor mu, büyük yazı boyutunda kapalı bildirime sığıyor mu? Samsung / Xiaomi gibi kendi arayüzü olanlarda görünüm?
   Android 13+'ta bildirim izni reddedilince kayıt yine sürüyor mu? Arka plan izni "Şimdi değil" denince de pencere çıkıyor mu?
+  iOS: kayıt başlat, kilitle; kilit ekranında pencere çıkıyor mu, süre sayıyor mu, mesafe / hız yürüdükçe değişiyor mu?
+  Dynamic Island'lı iPhone'da küçük görünüm (simge + süre) ve uzun basınca açılan görünüm. Duraklat: süre duruyor mu,
+  devamda kaldığı yerden mi? Bitir / iptal: pencere hemen kalkıyor mu? Uygulamayı kayıt sürerken kapatıp açınca ikinci
+  pencere açılmıyor mu? Ayarlar > Lykiva > Canlı Etkinlikler kapalıyken kayıt sorunsuz sürüyor mu? Karanlık kilit ekranında
+  yazılar okunuyor mu?
 
 ### [~] Google Play — dahili test
 Play Console'da **Lykiva** oluşturuldu (kişisel geliştirici hesabı, paket `app.lykiva.mobile`, Türkçe, ücretsiz).
@@ -252,9 +282,9 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
   hesaplayan tablo (şu an her istekte izlerden hesaplanıyor); web'de ısı haritası yok; tür süzgeci (yalnızca bisiklet / koşu).
 
 **Platform**
-- [~] Kayıtta kilit ekranında süre / mesafe / ortalama hız (35. aşama). Android yapıldı: kayıt bildirimi canlı pencereye
-  dönüşüyor (yerel modül `modules/kilit-ekrani`; Android sürüm 4'te, telefonda denenecek). Kalan: iOS Live Activity (widget eklentisi, Apple'da
-  yeni bundle ID; Mac / EAS'ta derleyip iPhone'da denemek gerekir — İsmail).
+- [~] Kayıtta kilit ekranında süre / mesafe / ortalama hız (35. aşama). Kod iki platformda hazır (`modules/kilit-ekrani`):
+  Android'de kayıt bildirimi canlı pencereye dönüşüyor (Kotlin modülü 12 Kas 2026'da yeniden yazıldı, ilki repoya
+  girmemişti), iOS'ta Live Activity (`expo-widgets`). Kalan: yeni derleme ve telefonda deneme (Bekleyen elle yapılacaklar 12).
 - [~] Çok dilli arayüz: İngilizce, Almanca ve Rusça yapıldı (31. aşama); Arapça + sağdan sola düzen sıradaki PR.
 - [ ] Saat uygulaması (Apple Watch / Wear OS) — büyük iş, sonraya.
 - [ ] Karar: ücretli üyelik olacak mı, hangi özellikler (rakiplerde çevrimdışı harita ve yönlendirme ücretli katmanda).
@@ -293,8 +323,14 @@ Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde
   Süre `Chronometer` ile telefonda sayar (ekran kapalıyken JS her saniye çalışmayabilir); mesafe / hız JS'ten, en sık
   saniyede bir. Görünüm `RemoteViews` (üç sütun), sistemin bildirim yazı stilleriyle (karanlık tema). Kanal varsayılan
   önemde ama sessiz: düşük önemli ("sessiz") bildirimler Android 10+ kilit ekranında görünmüyor. expo-notifications
-  sayaç ve özel görünüm vermediği, üstelik ikinci bir bildirim açacağı için kullanılmadı.
-  iOS için Live Activity gerekir (ayrı iş).
+  sayaç ve özel görünüm vermediği, üstelik ikinci bir bildirim açacağı için kullanılmadı. `expo-widgets`'ın Android
+  özel bildirimi de servisin bildirimini devralamadığı ve sayaç vermediği için kullanılmadı.
+- **Kilit ekranı iOS'ta `expo-widgets` Live Activity** (`modules/kilit-ekrani/index.ios.tsx`): Expo'nun resmi paketi
+  (SDK 58); widget eklentisini (ExpoWidgetsTarget) config eklentisi üretir, `ios/`'a elle dokunmak ya da Swift yazmak
+  gerekmez. Pencere `@expo/ui/swift-ui` ile JS'te yazılır, 'widget' yönergesiyle eklentinin içinde ayrı bir JS ortamında
+  çalışır (dışarıdaki sabitlere erişemez, her şey props'tan). Süre SwiftUI timer'ıyla telefonda sayar. Paket Android'e
+  bağlanmaz (`expo.autolinking.android.exclude`): Android'de kendi Kotlin modülümüz var, Glance / Compose yükü gereksiz.
+  expo-widgets yerel modülü yoksa (Expo Go, eski derleme) paket hiç yüklenmez; yoksa içe aktarma uygulamayı düşürür.
 - **Isı haritaları sunucuda, görünen alan için hesaplanır** (`isi_haritasi`): izler ekranda ~6 piksellik ızgara
   hücrelerine toplanır, hücre değeri farklı aktivite sayısı; uygulama MapLibre ısı katmanıyla çizer. Döşeme sunucusu
   (MVT) kurmak yerine bu seçildi: Supabase oturumu ve kuralları olduğu gibi kullanılıyor, ek servis yok. Küresel /
