@@ -16,7 +16,7 @@ import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from 'reac
 import type { LngLat } from '@/data/ornek';
 import { FallbackMap } from './FallbackMap';
 import { HaritaTuruDugmesi } from './HaritaTuruSecici';
-import { MAP_STYLE_URL, useHaritaStili } from './haritaTurleri';
+import { GECE_STIL_URL, MAP_STYLE_URL, useHaritaStili } from './haritaTurleri';
 import { ISI_RENKLERI, useIsiTuru, useIsiVerisi, type Gorunum } from './isiHaritasi';
 
 export { MAP_STYLE_URL };
@@ -52,6 +52,10 @@ export type TopoMapProps = {
   follow?: LngLat | null;
   /** follow için yakınlaştırma (varsayılan 16) */
   followZoom?: number;
+  /** 3B görünüm: kamera eğilir, gece stilinde binalar yükseltilir. Yalnızca gerçek haritada. */
+  ucBoyut?: boolean;
+  /** Kullanıcı haritayı elle kaydırınca / yakınlaştırınca (ör. takibi bırakmak için) */
+  onKullaniciOynatti?: () => void;
   /** Haritaya dokununca (yalnızca gerçek haritada) */
   onPress?: (coord: LngLat) => void;
   /** Sağ üstte harita türü (katman) düğmesi; top: haritanın üst kenarından uzaklık. Yalnızca gerçek haritada. */
@@ -72,7 +76,7 @@ export function TopoMap(props: TopoMapProps) {
         {useFallback ? <FallbackMap {...props} /> : <NativeMap {...props} />}
       </View>
       {props.katmanDugmesi && !useFallback ? (
-        <HaritaTuruDugmesi style={[styles.katman, { top: props.katmanDugmesi.top }]} />
+        <HaritaTuruDugmesi koyu={props.dark} style={[styles.katman, { top: props.katmanDugmesi.top }]} />
       ) : null}
     </View>
   );
@@ -82,11 +86,12 @@ function NativeMap(props: TopoMapProps) {
   // Yerel modül yalnızca burada yüklenir; Expo Go bu satıra hiç gelmez.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const ML = require('@maplibre/maplibre-react-native') as typeof import('@maplibre/maplibre-react-native');
-  const mapStyle = useHaritaStili();
+  const mapStyle = useHaritaStili(props.dark);
   const isiTuru = useIsiTuru();
   const [gorunum, setGorunum] = useState<Gorunum | null>(null);
   const isi = useIsiVerisi(isiTuru, gorunum);
   const { route = [], progress, markers = [], interactive = true, padding } = props;
+  const egim = props.ucBoyut ? 60 : 0;
   const pts = route.length ? route : markers.map((m) => m.coord);
   const bounds = boundsOf(pts);
   const split = progress !== undefined ? Math.max(1, Math.round(progress * (route.length - 1))) : route.length - 1;
@@ -128,18 +133,50 @@ function NativeMap(props: TopoMapProps) {
       touchRotate={false}
       touchPitch={false}
       onPress={props.onPress ? (e) => props.onPress?.([e.nativeEvent.lngLat[0], e.nativeEvent.lngLat[1]]) : undefined}
+      onRegionWillChange={
+        props.onKullaniciOynatti
+          ? (e) => {
+              if (e.nativeEvent.userInteraction) props.onKullaniciOynatti?.();
+            }
+          : undefined
+      }
       // Görünen alan hep izlenir: ısı haritası sonradan açılınca haritayı kımıldatmadan veri gelsin
       onRegionDidChange={(e) => {
         const { bounds, zoom } = e.nativeEvent;
         setGorunum({ bounds: [bounds[0], bounds[1], bounds[2], bounds[3]], zoom });
       }}>
       {props.follow ? (
-        <ML.Camera center={props.follow} zoom={props.followZoom ?? 16} duration={800} padding={{ top: 0, right: 0, left: 0, bottom: 0, ...padding }} />
+        <ML.Camera
+          center={props.follow}
+          zoom={props.followZoom ?? 16}
+          pitch={egim}
+          duration={800}
+          padding={{ top: 0, right: 0, left: 0, bottom: 0, ...padding }}
+        />
       ) : bounds ? (
         <ML.Camera
           initialViewState={{
             bounds,
             padding: { top: 60, right: 40, bottom: 40, left: 40, ...padding },
+          }}
+          {...(props.ucBoyut !== undefined ? { pitch: egim, duration: 500 } : null)}
+        />
+      ) : null}
+
+      {props.ucBoyut && mapStyle === GECE_STIL_URL ? (
+        // Gece stilinde binalar düz; 3B'de yükseltilir (standart stilde zaten var). Yazıların altında.
+        <ML.Layer
+          id="binalar-3b"
+          type="fill-extrusion"
+          source="openmaptiles"
+          source-layer="building"
+          minzoom={14}
+          beforeId="highway_name_other"
+          paint={{
+            'fill-extrusion-color': '#1E2422',
+            'fill-extrusion-height': ['coalesce', ['get', 'render_height'], 6],
+            'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], 0],
+            'fill-extrusion-opacity': 0.9,
           }}
         />
       ) : null}

@@ -10,8 +10,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
-| İsmail | Telefona kurulum: iOS geliştirme derlemesi (kod değişikliği yok; Android alındı) | — |
-## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
+| İsmail | Telefona kurulum: iOS geliştirme derlemesi (kod değişikliği yok; Android alındı) | — |## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
 
 - **iOS'ta da kilit ekranı penceresi var artık:** Live Activity (kilit ekranı + Dynamic Island), `expo-widgets` ile —
   `modules/kilit-ekrani/index.ios.tsx`. Senin Android modülünün aynı verisini kullanıyor (süre, mesafe, anlık ve ortalama
@@ -108,6 +107,10 @@ Kalan: iPhone cihaz kaydı ve iOS geliştirme derlemesi, telefonda deneme. Yeni 
 
 ### [ ] Telefonda ve gerçek sunucuda denenmemiş özellikler
 Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
+- Kayıt ekranı (13 Kas 2026, Gökhan): standart harita türünde siyah zeminli gece stili (OpenFreeMap Dark), sağda
+  katman / 2D-3D / Konumum düğmeleri (haritayı elle kaydırınca takip bırakılır, Konumum yeniden takibe alır; 3D'de
+  kamera 60° eğilir, binalar yükseltilir), harita kalan alanı alır ve alt panel sıkılaştırıldı. Yeni yerel modül yok,
+  yeni derleme gerekmez; telefonda geliştirme derlemesiyle denenecek (3D binalar ve yazı katmanı sırası özellikle).
 - Fotoğraf yükleme (depolama kovaları ve kuralları `postgres` rolüyle kuruldu mu?)
 - Kullanıcı engelleme (`postgres` rolü `auth.users`'a yazabiliyor mu?)
 - Geçersiz push jetonu temizliği (gerçek Expo yanıtıyla)

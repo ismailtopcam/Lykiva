@@ -5,6 +5,8 @@
  * - uydu: Esri World Imagery döşemeleri (anahtarsız).
  * - hibrit: uydu görüntüsü + standart stilin yolları, sınırları ve yazıları.
  * - kış: standart stil karlı renklerle + OpenSnowMap kayak pistleri / kızak, kar ayakkabısı yolları.
+ * - gece (yalnızca koyu ekranlarda, ör. kayıt sırasında): standart yerine siyah zeminli OpenFreeMap Dark.
+ *   Kullanıcı başka bir tür seçtiyse o kullanılır.
  *
  * Hibrit ve kış, standart stilin JSON'undan türetilir (bir kez indirilir). İnemezse (çevrimdışı) hibrit uyduya,
  * kış standarda düşer. Stil nesneleri önbellekte tutulur: her çizimde yeni nesne verilirse harita stili
@@ -19,7 +21,10 @@ export const HARITA_TURLERI: HaritaTuru[] = ['standart', 'uydu', 'hibrit', 'kis'
 
 export const MAP_STYLE_URL = process.env.EXPO_PUBLIC_MAP_STYLE_URL || 'https://tiles.openfreemap.org/styles/liberty';
 
-const SECIM_ANAHTARI = 'lykiva.harita_turu.v1';
+/** Koyu ekranlarda standart türün yerine (siyah zemin) */
+export const GECE_STIL_URL = 'https://tiles.openfreemap.org/styles/dark';
+
+const SECIM_ANAHTARI ='lykiva.harita_turu.v1';
 
 // Kaynak metni Esri'nin hizmet bilgisinden (MapServer?f=json > copyrightText)
 const UYDU_KAYNAK = {
@@ -186,13 +191,17 @@ function stilOf(t: HaritaTuru): string | StyleSpecification {
   return s;
 }
 
-/** Seçili türün MapLibre stili (adres ya da stil nesnesi; aynı tür için hep aynı nesne) */
-export function useHaritaStili(): string | StyleSpecification {
+/**
+ * Seçili türün MapLibre stili (adres ya da stil nesnesi; aynı tür için hep aynı nesne).
+ * karanlik: standart tür siyah zeminli gece stiliyle çizilir.
+ */
+export function useHaritaStili(karanlik = false): string | StyleSpecification {
   const t = useHaritaTuru();
   // Temel stil değişince yeniden çizilsin diye aynı depoya bağlı
   useSyncExternalStore(abone, () => temel, () => temel);
   useEffect(() => {
     if (t === 'hibrit' || t === 'kis') temeliIndir();
   }, [t]);
+  if (karanlik && t === 'standart') return GECE_STIL_URL;
   return stilOf(t);
 }
