@@ -23,6 +23,8 @@ Sonra:
    (Backblaze B2, Cloudflare R2, Contabo Object Storage…), yalnızca o kovaya yazabilen bir anahtar oluştur ve
    `nano /etc/lykiva-yedek.env` ile `S3_ENDPOINT`, `S3_BOLGE`, `S3_KOVA`, `S3_ANAHTAR`, `S3_GIZLI` alanlarını doldur.
    Anahtarlar bu dosyada kalır (yalnızca root okur); sohbete ya da repoya yazılmaz.
+   **Kovada başka veri varsa `S3_KOVA`'ya klasör ver** (ör. `S3_KOVA=ismail/lykiva-yedek`): betik her çalışmada
+   `S3_KOVA` altındaki 60 günden eski **bütün** dosyaları siler. Şu an Hetzner, `S3_KOVA=ismail/lykiva-yedek` (12 Kas 2026).
 2. Bir yedek al ve uzakta göründüğünü kontrol et: `bash /opt/lykiva/yedekle.sh`
 3. **Geri yüklemeyi bir kez dene:** `bash /opt/lykiva/geri-yukle-dene.sh` → "✓ Geri yükleme doğrulandı" görmelisin.
 
@@ -47,4 +49,4 @@ tar -C "$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/data"}}{{.S
 
 - Konteyner adları farklıysa `/etc/lykiva-yedek.env` içinde `LYKIVA_DB`, `LYKIVA_MINIO`, `LYKIVA_STORAGE` ile değiştirilebilir.
 - Coolify'ın kendi "Scheduled Backups" özelliği de veritabanını S3'e yedekleyebilir; bu betikler ek olarak dosya deposunu ve geri yükleme denemesini kapsar.
-- Bu betikler Windows'ta sahte bir `docker` komutuyla denendi (akış, sağlama toplamı, S3 komutları, eski yedek temizliği); gerçek sunucuda henüz çalıştırılmadı.
+- Gerçek sunucuda çalışıyor (12 Kas 2026): yedek Hetzner'e gidiyor, uzak kopya indirilerek doğrulandı, `geri-yukle-dene.sh` geçti.
