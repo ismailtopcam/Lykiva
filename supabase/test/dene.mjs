@@ -637,7 +637,7 @@ await db.exec(`update activities set title = 'A Kaş herkese açık' where id = 
 console.log('\nFotoğraflar');
 const u1 = '11111111-2222-3333-4444-555555555555';
 const u2 = '66666666-7777-8888-9999-aaaaaaaaaaaa';
-r = await db.query(`select id, public from storage.buckets order by id`);
+r = await db.query(`select id, public from storage.buckets where id in ('mola', 'profil') order by id`);
 bekle('Kovalar: mola gizli, profil herkese açık', JSON.stringify(r.rows) === JSON.stringify([{ id: 'mola', public: false }, { id: 'profil', public: true }]), r.rows);
 await olarak(A, `insert into storage.objects (bucket_id, name) values ('profil', $1)`, [`${A}/${u1}.jpg`]);
 m = await hataMesaji(() => olarak(A, `insert into storage.objects (bucket_id, name) values ('profil', $1)`, [`${B}/${u1}.jpg`]));
@@ -1141,6 +1141,105 @@ bekle('Meydan okuma gizli: başkası adını görmez, sırası ve değeri durur'
 md = (await olarak(K, `select meydan_okuma_detay($1) as j`, [mGenel])).rows[0].j;
 bekle('Meydan okuma gizli: kendisi adını ve yerini görür', md.benim && md.benim.ben === true && md.benim.gizli === false, md.benim);
 await gizlilik(K, 'meydan_okuma_gizliligi', 'herkes');
+
+console.log('\nKulüpler: grup fotoğrafı, gönderiler, haftalık istatistik');
+const KA = 'd1000000-0000-0000-0000-0000000000d1';
+const KB = 'd2000000-0000-0000-0000-0000000000d2';
+const KC = 'd3000000-0000-0000-0000-0000000000d3';
+await db.exec(`
+  insert into auth.users (id, is_anonymous, raw_user_meta_data) values
+    ('${KA}', false, '{"full_name":"Kaan Aksoy"}'),
+    ('${KB}', false, '{"full_name":"Kerem Bulut"}'),
+    ('${KC}', false, '{"full_name":"Kübra Can"}');
+`);
+const kGrup = (await olarak(KA, `select grup_olustur('{"name":"Pedal Kulübü","is_private":false,"is_community":true}'::jsonb) as id`)).rows[0].id;
+await olarak(KB, `select gruba_katil($1)`, [kGrup]);
+const kFoto = `${kGrup}/${u1}.jpg`;
+
+// Grup fotoğrafı: yalnızca yönetici yükler, adresi gruba yazar; keşfette de görünür
+await olarak(KA, `insert into storage.objects (bucket_id, name) values ('grup', $1)`, [kFoto]);
+m = await hataMesaji(() => olarak(KB, `insert into storage.objects (bucket_id, name) values ('grup', $1)`, [`${kGrup}/${u2}.jpg`]));
+bekle('Grup fotoğrafı: yönetici olmayan üye yükleyemez', /row-level security/.test(m ?? ''), m);
+await olarak(KB, `delete from storage.objects where bucket_id = 'grup' and name = $1`, [kFoto]);
+bekle('Grup fotoğrafı: yönetici olmayan silemez', (await db.query(`select count(*)::int n from storage.objects where bucket_id = 'grup'`)).rows[0].n === 1, null);
+const kAdres = `https://api.lykiva.app/storage/v1/object/public/grup/${kFoto}`;
+await olarak(KA, `update groups set avatar_url = $2 where id = $1`, [kGrup, kAdres]);
+m = await hataMesaji(() => olarak(KA, `update groups set avatar_url = 'javascript:alert(1)' where id = $1`, [kGrup]));
+bekle('Grup fotoğrafı: https olmayan adres reddedilir', /grup_foto_adresi/.test(m ?? ''), m);
+await olarak(KB, `update groups set avatar_url = null where id = $1`, [kGrup]);
+r = await olarak(KC, `select kesfet_gruplar() as j`);
+bekle('Grup fotoğrafı: üye olmayan değiştiremez, keşfette görür', r.rows[0].j.find((x) => x.id === kGrup)?.avatar_url === kAdres, r.rows[0].j);
+r = await olarak(KB, `select grup_detay($1) as d, gruplarim() as l`, [kGrup]);
+bekle('Grup fotoğrafı: grup_detay ve gruplarim adresi döner', r.rows[0].d.avatar_url === kAdres && r.rows[0].l.find((x) => x.id === kGrup)?.avatar_url === kAdres, r.rows[0].d);
+
+// Gönderiler
+const gFoto = `${kGrup}/${u2}.jpg`;
+m = await hataMesaji(() => olarak(KC, `insert into storage.objects (bucket_id, name) values ('grup_gonderi', $1)`, [gFoto]));
+bekle('Gönderi fotoğrafı: üye olmayan yükleyemez', /row-level security/.test(m ?? ''), m);
+await olarak(KB, `insert into storage.objects (bucket_id, name) values ('grup_gonderi', $1)`, [gFoto]);
+m = await hataMesaji(() => olarak(KC, `select grup_gonderisi_paylas($1, 'merhaba')`, [kGrup]));
+bekle('Gönderi: üye olmayan paylaşamaz', /üyesi değilsin/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(KB, `select grup_gonderisi_paylas($1, '   ', '{}')`, [kGrup]));
+bekle('Gönderi: boş gönderi reddedilir', /Boş/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(KB, `select grup_gonderisi_paylas($1, 'x', $2::text[])`, [kGrup, [`${KA}/${u1}.jpg`]]));
+bekle('Gönderi: başka klasördeki fotoğraf reddedilir', /geçersiz/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(KB, `select grup_gonderisi_paylas($1, 'x', $2::text[])`, [kGrup, Array.from({ length: 5 }, () => gFoto)]));
+bekle('Gönderi: en fazla 4 fotoğraf', /geçersiz/.test(m ?? ''), m);
+const gon = (await olarak(KB, `select grup_gonderisi_paylas($1, '  İlk tur, pazar 08:00  ', $2::text[]) as id`, [kGrup, [gFoto]])).rows[0].id;
+await olarak(KA, `select grup_gonderisi_paylas($1, 'Hoş geldin')`, [kGrup]);
+r = await olarak(KA, `select grup_gonderileri($1) as j`, [kGrup]);
+let gl = r.rows[0].j;
+bekle('Gönderiler: yeniden eskiye, metin kırpılmış, fotoğraf yolu duruyor',
+  gl.length === 2 && gl[0].body === 'Hoş geldin' && gl[1].body === 'İlk tur, pazar 08:00' && gl[1].photos[0] === gFoto, gl);
+bekle('Gönderiler: yönetici başkasının gönderisini silebilir', gl[1].mine === false && gl[1].silebilir === true && gl[1].display_name === 'Kerem Bulut', gl[1]);
+r = await olarak(KB, `select grup_gonderileri($1) as j`, [kGrup]);
+bekle('Gönderiler: üye yalnızca kendininkini silebilir', r.rows[0].j.find((x) => x.body === 'Hoş geldin')?.silebilir === false && r.rows[0].j.find((x) => x.id === gon)?.silebilir === true, r.rows[0].j);
+r = await olarak(KB, `select grup_gonderileri($1, $2) as j`, [kGrup, gl[0].created_at]);
+bekle('Gönderiler: sayfalama (once)', r.rows[0].j.length === 1 && r.rows[0].j[0].id === gon, r.rows[0].j);
+r = await olarak(KC, `select grup_gonderileri($1) as j`, [kGrup]);
+bekle('Gönderiler: üye olmayan göremez', r.rows[0].j.length === 0, r.rows[0].j);
+m = await hataMesaji(() => olarak(KB, `select count(*) from grup_gonderileri`));
+bekle('Gönderiler: tablo istemciye kapalı', /permission denied/.test(m ?? ''), m);
+r = await olarak(KC, `select count(*)::int as n from storage.objects where bucket_id = 'grup_gonderi'`);
+const kaGorur = (await olarak(KA, `select count(*)::int as n from storage.objects where bucket_id = 'grup_gonderi'`)).rows[0].n;
+bekle('Gönderi fotoğrafı: üye okur, üye olmayan okuyamaz', r.rows[0].n === 0 && kaGorur === 1, { kc: r.rows[0].n, ka: kaGorur });
+m = await hataMesaji(() => olarak(KC, `select grup_gonderisi_sil($1)`, [gon]));
+bekle('Gönderi: üye olmayan silemez', /yetkin yok/.test(m ?? ''), m);
+r = await olarak(KA, `select grup_gonderisi_sil($1) as f`, [gon]);
+bekle('Gönderi: yönetici siler, fotoğraf yolları döner', JSON.stringify(r.rows[0].f) === JSON.stringify([gFoto]), r.rows[0].f);
+await olarak(KA, `delete from storage.objects where bucket_id = 'grup_gonderi' and name = $1`, [gFoto]);
+bekle('Gönderi fotoğrafı: yönetici başkasının dosyasını silebilir', (await db.query(`select count(*)::int n from storage.objects where bucket_id = 'grup_gonderi'`)).rows[0].n === 0, null);
+
+// Haftalık istatistik: bu hafta = Pazartesi 00:00 (Türkiye saati) ve sonrası
+const haftaBasi = Date.parse((await db.query(`select (date_trunc('week', now() at time zone 'Europe/Istanbul') at time zone 'Europe/Istanbul') as b`)).rows[0].b);
+async function kAkt(uid, t0, mesafe, gorunurluk) {
+  const pts = iz(30.7, 36.9, 20).map((p, i) => ({ ...p, t: t0 + i * 10000 }));
+  const p = {
+    title: 'Kulüp turu', activity: 'bike', started_at: new Date(pts[0].t).toISOString(), ended_at: new Date(pts.at(-1).t).toISOString(),
+    moving_time_s: 1800, elapsed_time_s: 1900, distance_m: mesafe, elevation_gain_m: 100, elevation_loss_m: 0, max_elevation_m: 200,
+    avg_speed_mps: 5, max_speed_mps: 9, min_moving_speed_mps: 1, visibility: gorunurluk, hide_endpoints: true, points: pts, stops: [],
+  };
+  return (await olarak(uid, `select kaydet_aktivite($1::jsonb) as id`, [JSON.stringify(p)])).rows[0].id;
+}
+await kAkt(KA, haftaBasi + 60_000, 10000, 'public');
+await kAkt(KB, haftaBasi + 120_000, 5000, 'followers');
+await kAkt(KB, haftaBasi + 180_000, 3000, 'private');
+await kAkt(KA, haftaBasi - 2 * 86400000, 4000, 'public');
+await kAkt(KC, haftaBasi + 240_000, 7000, 'public');
+r = await olarak(KA, `select grup_haftalik_istatistik($1) as j`, [kGrup]);
+let hs = r.rows[0].j;
+bekle('Haftalık: takip etmediği üyenin "takipçiler" aktivitesi, gizli aktivite ve üye olmayan sayılmaz',
+  hs.mesafe_m === 10000 && hs.aktivite === 1 && hs.aktif_uye === 1 && hs.uye_sayisi === 2, hs);
+bekle('Haftalık: geçen hafta ayrı, gün gün toplam Pazartesi\'de', hs.gecen_hafta_mesafe_m === 4000 && hs.gunler.length === 7 && hs.gunler[0] === 10000 && hs.gunler.slice(1).every((x) => x === 0), hs);
+r = await olarak(KB, `select grup_haftalik_istatistik($1) as j`, [kGrup]);
+hs = r.rows[0].j;
+bekle('Haftalık: kendi "takipçiler" aktivitesi sayılır, kendi gizlisi sayılmaz', hs.mesafe_m === 15000 && hs.aktif_uye === 2, hs);
+bekle('Haftalık: sıralama mesafeye göre, ben işaretli', hs.siralama.length === 2 && hs.siralama[0].user_id === KA && hs.siralama[1].ben === true && hs.siralama[1].mesafe_m === 5000, hs.siralama);
+await olarak(KA, `insert into follows (follower_id, followee_id) values ($1, $2)`, [KA, KB]);
+r = await olarak(KA, `select grup_haftalik_istatistik($1) as j`, [kGrup]);
+bekle('Haftalık: takip edince "takipçiler" aktivitesi de sayılır', r.rows[0].j.mesafe_m === 15000, r.rows[0].j);
+r = await olarak(KC, `select grup_haftalik_istatistik($1) as j`, [kGrup]);
+bekle('Haftalık: üye olmayan göremez', r.rows[0].j === null, r.rows[0].j);
 
 console.log(hata ? `\n${hata} senaryo başarısız` : '\nTüm senaryolar geçti');
 process.exit(hata ? 1 : 0);

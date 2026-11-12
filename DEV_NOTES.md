@@ -10,7 +10,10 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
-| İsmail | Telefona kurulum: iOS geliştirme derlemesi (kod değişikliği yok; Android alındı) | — |## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
+| İsmail | Telefona kurulum: iOS geliştirme derlemesi (kod değişikliği yok; Android alındı) | — |
+| Gökhan | Gruplar sekmesi: Meydan okumalar / Kulüpler / Etkinlikler; kulüp fotoğrafı, Gönderiler, Paylaş, Haftalık sekmeleri | `gokhan/gruplar-kulupler` |
+
+## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
 
 - **iOS'ta da kilit ekranı penceresi var artık:** Live Activity (kilit ekranı + Dynamic Island), `expo-widgets` ile —
   `modules/kilit-ekrani/index.ios.tsx`. Senin Android modülünün aynı verisini kullanıyor (süre, mesafe, anlık ve ortalama
@@ -92,6 +95,10 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
 15. **İsmail uygulayacak — ek gizlilik kontrolleri ve engelleme migration'ı:** `ek-gizlilik-kontrolleri` PR'ı main'e
     girince `20261116000000_ek_gizlilik.sql` (14. maddedeki `20261115000000_gizlilik.sql`'den sonra; `uygula.sh`).
     Yeni derleme gerekmez (yalnızca JS).
+16. **İsmail uygulayacak — kulüpler migration'ı:** `gokhan/gruplar-kulupler` PR'ı main'e girince
+    `20261117000000_kulupler.sql` (15. maddeden sonra; `uygula.sh`, önce durum modu). İki yeni depolama kovası açar
+    (`grup` herkese açık, `grup_gonderi` gizli) — fotoğraflar kovasındaki gibi `postgres` rolüyle kurulup kurulmadığına bak.
+    Migration uygulanana kadar kulüpteki Gönderiler / Haftalık sekmeleri "yüklenemedi" der. Yeni derleme gerekmez (yalnızca JS).
 
 ## Yapılacaklar
 
@@ -113,6 +120,11 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   yeni derleme gerekmez; telefonda geliştirme derlemesiyle denenecek (3D binalar ve yazı katmanı sırası özellikle).
   Aynı gün: kayıt sırasında Duraklat ve Bitir ayrı düğmeler (Bitir onay sorar; yeterli GPS noktası yoksa silmeyi
   önerir). Bilgi paneli küçük (tek satır) / normal / tam ekran: tutamacı yukarı-aşağı kaydır ya da sağdaki oklara bas.
+- Kulüpler (13 Kas 2026, Gökhan; migration uygulandıktan sonra): Gruplar sekmesinde Meydan okumalar / Kulüpler /
+  Etkinlikler geçişi (Almanca, Rusça dar ekranda sığıyor mu?). Kulüp sayfasında yönetici fotoğrafa dokunup grup fotoğrafı
+  ekliyor / değiştiriyor / kaldırıyor mu, listede ve keşfette görünüyor mu? Paylaş sekmesinden metin + 4 fotoğraf paylaş;
+  ikinci telefondan (üye) Gönderiler'de görünüyor mu, üye olmayan göremiyor mu, yönetici başkasının gönderisini silebiliyor mu?
+  Haftalık sekmesi: bu haftaki kayıtlar, gün gün çubuklar, sıralama; "takipçilere" kaydı takip etmeyen üyede sayılmıyor mu?
 - Fotoğraf yükleme (depolama kovaları ve kuralları `postgres` rolüyle kuruldu mu?)
 - Kullanıcı engelleme (`postgres` rolü `auth.users`'a yazabiliyor mu?)
 - Geçersiz push jetonu temizliği (gerçek Expo yanıtıyla)
@@ -354,6 +366,18 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
 - [ ] Saat uygulaması (Apple Watch / Wear OS) — büyük iş, sonraya.
 - [ ] Karar: ücretli üyelik olacak mı, hangi özellikler (rakiplerde çevrimdışı harita ve yönlendirme ücretli katmanda).
 
+### [~] Kulüpler (13 Kas 2026, `20261117000000_kulupler.sql`)
+- [x] Gruplar sekmesi üç bölüm: Meydan okumalar (eski /meydan-okuma listesi, `MeydanOkumaListesi`), Kulüpler (gruplar,
+  davet kodu, keşfet), Etkinlikler (yaklaşan etkinliklerin hepsi + oluştur).
+- [x] Kulüp fotoğrafı: yönetici kulüp sayfasındaki fotoğrafa (ya da ⋯ > Grup fotoğrafı) dokunarak ekler / değiştirir / kaldırır.
+- [x] Kulüp sayfasında Gönderiler, Paylaş (metin + en fazla 4 fotoğraf) ve Haftalık (toplam, gün gün, geçen hafta, sıralama) sekmeleri.
+- [ ] Gönderiye beğeni / yorum; gönderiye aktivite ya da rota ekleme.
+- [ ] Gönderi şikayeti: `reports.target_type`'a gönderi eklenmeli, yönetim paneline gönderi silme. Şimdilik grup yöneticisi siler.
+- [ ] Yeni gönderi bildirimi (uygulama içi + push).
+- [ ] Hesap ya da grup silinince gönderi fotoğrafları depoda kalıyor (satırlar siliniyor); `hesap.ts` > `fotograflariSil`'e
+  ve grup silmeye `grup_gonderi` kovası eklenmeli.
+- [ ] Grup kurarken fotoğraf seçme (şimdi kurduktan sonra kulüp sayfasından).
+
 ### [~] Dil desteği (31. aşama)
 Yapıldı: uygulamanın bütün ekranları, telefon bildirimleri ve web (karşılama, paylaşım, web profili, önizleme görseli)
 Türkçe, İngilizce, Almanca ve Rusça. Rusçada birimler Kiril (км, м, км/ч) ve üç biçimli çoğul
@@ -381,6 +405,13 @@ Tırmanış bölümü: en az 20 m kazanç, 200 m uzunluk, ort. %3; tepeden 10 m 
 Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde; web paylaşım sayfasında da.
 
 ## Kararlar
+
+- **Kulüp haftalık istatistiği bakana göre** (`grup_haftalik_istatistik`, 13 Kas 2026): yalnızca bakan kişinin görebildiği
+  (`aktivite_gorunur_mu`) ve "yalnızca ben" olmayan aktiviteler sayılır; bu yüzden iki üye farklı toplam görebilir
+  ("takipçilere" kaydı yalnızca takip edenlerde sayılır). Meydan okumadaki gibi bütün aktiviteleri saymak için üyenin açık
+  onayı gerekirdi; kulübe katılmak bunu vermiyor. Yalnızca toplamlar döner, aktivitenin kendisi / haritası dönmez.
+  Hafta Pazartesi 00:00 Türkiye saatiyle başlar. Gönderi fotoğrafları gizli kovada (yalnızca üyeler), grup fotoğrafı
+  herkese açık kovada (keşfette üye olmayan da görsün diye; profil fotoğrafı gibi).
 
 - **Kullanıcı engelleme iki yönlü** (`20261116000000_ek_gizlilik.sql`): `engel_var_mi` `aktivite_gorunur_mu`'ya eklendi, böylece
   akış, aktivite, yorum, beğeni, mola ve fotoğraf kuralları kendiliğinden uyar; arama, kişi sayfası, takip, etiket ayrıca.
