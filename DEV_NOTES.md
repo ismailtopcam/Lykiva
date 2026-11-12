@@ -132,7 +132,10 @@ Kalan: testerların kurup denemesi; sonra kapalı teste geçiş (bkz. Mağazaya 
 
 ### [x] Yedekleme
 Betikler sunucuda (`supabase/yedek/kur.sh`; her gece 03:30 TSİ, yerel 14 gün). **Sunucu dışı kopya açık** (12 Kas 2026):
-Hetzner Object Storage, `nbg1.your-objectstorage.com`, kova `ismail` içinde `lykiva-yedek/` klasörü (uzakta 60 gün).
+Hetzner Object Storage, `nbg1.your-objectstorage.com`, kova `ismail` içinde `lykiva-yedek/` klasörü.
+**Yalnızca son yedek tutuluyor** (`SAKLA_ADET=1`, İsmail'in kararı, 12 Kas 2026): her gece yeni yedek alınıp Hetzner'e
+kopyalandıktan sonra önceki gün silinir (yerelde ve uzakta). Yedek bozuksa ya da bir veri kaybı ertesi gece fark edilirse
+daha eski kopya yok; istenirse `SAKLA_ADET` artırılır.
 Kovada başka veri de var (`arsiv/`, `data/`); bu yüzden `S3_KOVA=ismail/lykiva-yedek` — eski yedek silme yalnızca o klasörde.
 İlk uzak yedek indirilerek karşılaştırıldı (5/5 dosya aynı), `geri-yukle-dene.sh` geçti (sayılar aynı).
 Yeni anahtarla ilk dakikalarda ara ara 403 geldi (rclone yeniden deneyip tamamladı); birkaç gün günlüğe bakılmalı:

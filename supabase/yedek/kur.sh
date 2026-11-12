@@ -32,6 +32,8 @@ if [ ! -f "$AYAR" ]; then
 YEDEK_DIZIN=/var/backups/lykiva
 YEDEK_SAKLA_GUN=14
 UZAK_SAKLA_GUN=60
+# Doluysa gün yerine adet: yerelde ve uzakta yalnızca son N yedek kalır (ör. 1 = yalnızca dünkü gece)
+SAKLA_ADET=
 LYKIVA_SUPABASE_ID=nqyujqqkkjyba4flthzcf9uf
 
 # Sunucu dışı kopya (S3 uyumlu). Doldurulmazsa yedek yalnızca bu sunucuda kalır.
