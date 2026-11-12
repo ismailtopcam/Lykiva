@@ -5,7 +5,7 @@
  * Pencere expo-widgets ile çizilir: `KayitPenceresi` 'widget' yönergesiyle derlemede metne çevrilir ve
  * widget eklentisinin (ExpoWidgetsTarget) içinde ayrı bir JS ortamında çalışır. O yüzden fonksiyon dışarıdaki
  * hiçbir şeye (sabit, yardımcı) erişemez; her şey props'tan gelir. Süre telefonda kendi kendine sayar
- * (SwiftUI timer); mesafe ve hız her güncellemede yenilenir.
+ * (SwiftUI timer); mesafe, anlık ve ortalama hız her güncellemede yenilenir.
  *
  * expo-widgets yerel modülü olmayan derlemelerde (Expo Go, eski geliştirme derlemesi) hiçbir şey yapmaz.
  * Live Activity yalnızca uygulama öndeyken başlatılabilir (kayıt uygulamadan başladığı için sorun değil);
@@ -40,10 +40,14 @@ type PencereProps = {
   durak: number | null;
   mesafe: string;
   mesafeBirim: string;
+  /** Anlık hız ("—": bilinmiyor) */
+  anlik: string;
+  /** Ortalama hız */
   hiz: string;
   hizBirim: string;
   sureEtiket: string;
   mesafeEtiket: string;
+  anlikEtiket: string;
   hizEtiket: string;
 };
 
@@ -77,16 +81,19 @@ const KayitPenceresi = (p: PencereProps, env: LiveActivityEnvironment) => {
 
   return {
     banner: (
-      <VStack alignment="leading" spacing={10} modifiers={[padding({ all: 16 })]}>
+      <VStack alignment="leading" spacing={8} modifiers={[padding({ all: 14 })]}>
         <HStack spacing={8}>
           <Image systemName={p.simge} size={15} color={vurgu} />
           <Text modifiers={[font({ textStyle: 'subheadline', weight: 'semibold' }), lineLimit(1)]}>{p.baslik}</Text>
           <Spacer />
         </HStack>
         <HStack alignment="top" spacing={12}>
-          {sutun(sure(24), p.sureEtiket)}
-          {sutun(deger(p.mesafe, p.mesafeBirim, 24), p.mesafeEtiket)}
-          {sutun(deger(p.hiz, p.hizBirim, 24), p.hizEtiket)}
+          {sutun(sure(22), p.sureEtiket)}
+          {sutun(deger(p.mesafe, p.mesafeBirim, 22), p.mesafeEtiket)}
+        </HStack>
+        <HStack alignment="top" spacing={12}>
+          {sutun(deger(p.anlik, p.hizBirim, 22), p.anlikEtiket)}
+          {sutun(deger(p.hiz, p.hizBirim, 22), p.hizEtiket)}
         </HStack>
       </VStack>
     ),
@@ -103,8 +110,8 @@ const KayitPenceresi = (p: PencereProps, env: LiveActivityEnvironment) => {
     ),
     expandedTrailing: (
       <VStack alignment="trailing" spacing={2} modifiers={[padding({ trailing: 6, top: 4 })]}>
-        {deger(p.hiz, p.hizBirim, 20)}
-        {etiket(p.hizEtiket)}
+        {deger(p.anlik, p.hizBirim, 20)}
+        {etiket(p.anlikEtiket)}
       </VStack>
     ),
     expandedBottom: (
@@ -112,7 +119,10 @@ const KayitPenceresi = (p: PencereProps, env: LiveActivityEnvironment) => {
         <Image systemName={p.simge} size={14} color={vurgu} />
         {sure(22)}
         <Spacer />
-        {etiket(p.sureEtiket)}
+        <VStack alignment="trailing" spacing={2}>
+          {deger(p.hiz, p.hizBirim, 15)}
+          {etiket(p.hizEtiket)}
+        </VStack>
       </HStack>
     ),
   };
@@ -156,10 +166,12 @@ function props(d: KilitEkraniDurumu): PencereProps {
     durak: d.sayiyor ? null : simdi,
     mesafe: d.mesafe,
     mesafeBirim: d.mesafeBirim,
+    anlik: d.anlik,
     hiz: d.hiz,
     hizBirim: d.hizBirim,
     sureEtiket: d.sureEtiket,
     mesafeEtiket: d.mesafeEtiket,
+    anlikEtiket: d.anlikEtiket,
     hizEtiket: d.hizEtiket,
   };
 }

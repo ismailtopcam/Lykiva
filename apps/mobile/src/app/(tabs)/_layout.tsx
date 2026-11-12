@@ -1,17 +1,17 @@
 import { Redirect, router, Tabs } from 'expo-router';
-import { Pressable, StyleSheet, View, type ColorValue } from 'react-native';
+import { type ColorValue } from 'react-native';
 
 import { Icon, type IconName } from '@/components/Icon';
 import { useGirisGerekli } from '@/lib/giris';
 import { colors, fontFamily } from '@/theme';
 import { $t } from '@/i18n';
 
-function tabIcon(name: IconName) {
+function tabIcon(name: IconName, sabitRenk?: string) {
   function TabIcon({ color, focused }: { color: ColorValue; focused: boolean }) {
     return (
       <Icon
         name={name}
-        color={typeof color === 'string' ? color : colors.ink}
+        color={sabitRenk ?? (typeof color === 'string' ? color : colors.ink)}
         size={23}
         strokeWidth={focused ? 2 : 1.8}
       />
@@ -21,8 +21,9 @@ function tabIcon(name: IconName) {
 }
 
 /**
- * Alt menü: Akış · Keşfet · [Kayıt] · Gruplar · Profil
- * Ortadaki büyük buton bir sekme değil; kayıt başlatma ekranını açar.
+ * Alt menü: Ana Sayfa · Haritalar · Egzersiz · Gruplar · Profil
+ * Egzersiz bir ekran değil; basınca kayıt başlatma ekranını açar.
+ * Dosya adları (index, kesfet, kaydet) bağlantılar bozulmasın diye aynı kaldı.
  */
 export default function TabsLayout() {
   // İlk açılışta giriş ekranı. Durum bilinene kadar sekmeler gösterilir (internetsiz açılışı bekletmemek için).
@@ -44,24 +45,14 @@ export default function TabsLayout() {
         },
         sceneStyle: { backgroundColor: colors.ground },
       }}>
-      <Tabs.Screen name="index" options={{ title: $t('sekmeler.akis'), tabBarIcon: tabIcon('home') }} />
-      <Tabs.Screen name="kesfet" options={{ title: $t('sekmeler.kesfet'), tabBarIcon: tabIcon('compass') }} />
+      <Tabs.Screen name="index" options={{ title: $t('sekmeler.ana_sayfa'), tabBarIcon: tabIcon('home') }} />
+      <Tabs.Screen name="kesfet" options={{ title: $t('sekmeler.haritalar'), tabBarIcon: tabIcon('map') }} />
       <Tabs.Screen
         name="kaydet"
         options={{
-          title: $t('sekmeler.kayit'),
-          tabBarAccessibilityLabel: $t('sekmeler.kayit_baslat'),
-          tabBarButton: () => (
-            <View style={styles.recordSlot}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={$t('sekmeler.kayit_baslat')}
-                onPress={() => router.push('/kayit')}
-                style={({ pressed }) => [styles.recordButton, pressed && { backgroundColor: colors.terraPressed }]}>
-                <Icon name="plus" color="#FFFFFF" size={26} strokeWidth={2.4} />
-              </Pressable>
-            </View>
-          ),
+          title: $t('sekmeler.egzersiz'),
+          tabBarAccessibilityLabel: $t('sekmeler.egzersiz_baslat'),
+          tabBarIcon: tabIcon('record', colors.terra),
         }}
         listeners={{
           tabPress: (e) => {
@@ -75,21 +66,3 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  recordSlot: { flex: 1, alignItems: 'center' },
-  recordButton: {
-    width: 58,
-    height: 58,
-    marginTop: -14,
-    borderRadius: 29,
-    backgroundColor: colors.terra,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: colors.terra,
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
-  },
-});

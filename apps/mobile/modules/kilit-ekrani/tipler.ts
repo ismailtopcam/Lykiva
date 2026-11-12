@@ -12,10 +12,15 @@ export type KilitEkraniDurumu = {
   sayiyor: boolean;
   mesafe: string;
   mesafeBirim: string;
+  /** Anlık hız ("—": bilinmiyor) */
+  anlik: string;
+  /** Ortalama hız (hareket hâlindeyken) */
   hiz: string;
+  /** İki hızın da birimi */
   hizBirim: string;
   sureEtiket: string;
   mesafeEtiket: string;
+  anlikEtiket: string;
   hizEtiket: string;
   /** Ön plan servisinin görev adı: Android'de servisin bildirimi bununla bulunur */
   gorev: string;

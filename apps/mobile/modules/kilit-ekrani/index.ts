@@ -2,7 +2,7 @@
  * Kilit ekranında süren kaydın penceresi — Android (yerel modül `android/`, yeni derleme gerekir).
  * iOS karşılığı `index.ios.tsx` (Live Activity); Metro platforma göre seçer.
  *
- * Kayıt bildirimini (expo-location'ın ön plan servisi bildirimi) süre, mesafe ve ortalama hız gösteren bir
+ * Kayıt bildirimini (expo-location'ın ön plan servisi bildirimi) süre, mesafe, anlık ve ortalama hız gösteren bir
  * pencereye çevirir. Süre telefonda kendi kendine sayar (Chronometer); mesafe ve hız her güncellemede yenilenir.
  * Servis çalışmıyorsa (duraklatıldı, arka plan izni yok) aynı pencere ayrı bir bildirim olarak gösterilir.
  *
