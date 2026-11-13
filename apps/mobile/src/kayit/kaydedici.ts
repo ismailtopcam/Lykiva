@@ -9,7 +9,7 @@
  * - Kilit ekranında süre, mesafe ve ortalama hız gösterilir: Android bildirim, iOS Live Activity (kilitEkrani.ts).
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { acceptPoint, LOCATION_DISTANCE_INTERVAL_M, prepareRoute, trackOnRoute, type ActivityType, type HavaDurumu, type PreparedRoute, type RouteProgress, type RoutePoint, type TrackPoint } from '@lykiva/shared';
+import { acceptPoint, haversine, LOCATION_DISTANCE_INTERVAL_M, prepareRoute, trackOnRoute, type ActivityType, type HavaDurumu, type PreparedRoute, type RouteProgress, type RoutePoint, type TrackPoint } from '@lykiva/shared';
 import { randomUUID } from 'expo-crypto';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
@@ -365,16 +365,36 @@ export function kayitSuruyor(): boolean {
   return kayit.durum !== 'bos';
 }
 
-/** Başlat ekranı için: kayıt başlamadan GPS'i ısıtır ve konumu gösterir */
+/** Önizlemede kullanılacak son bilinen konumun en fazla yaşı (daha eskisi yanlış yere götürebilir) */
+const SON_BILINEN_EN_ESKI_MS = 5 * 60_000;
+
+/** Önizleme konumu: kayıt yokken sonKonum'u günceller; ekranı gereksiz yere yeniden çizmemek için kıpırtıyı atlar */
+function onizlemeKonumu(l: Location.LocationObject) {
+  if (kayit.durum !== 'bos') return;
+  const yeni = konumdanNokta(l);
+  const eski = kayit.sonKonum;
+  if (eski && yeni.t <= eski.t) return;
+  // Yerinde dururken GPS saniyede bir aynı noktayı verir; 1 m'den az kıpırtı ve aynı doğruluk için çizim yok
+  if (eski && Math.abs((yeni.acc ?? 0) - (eski.acc ?? 0)) < 1 && haversine(eski, yeni) < 1) return;
+  degistir({ sonKonum: yeni }, false);
+}
+
+/** Başlat ekranı ve Harita sekmesi için: kayıt başlamadan GPS'i ısıtır ve konumu gösterir */
 export function konumOnizlemeBaslat(): () => void {
   let sub: Location.LocationSubscription | null = null;
   let iptal = false;
   (async () => {
-    const fg = await Location.requestForegroundPermissionsAsync();
+    // İzin zaten verildiyse yeniden istenmez (istek her seferinde yerel köprüden geçer, ilk konumu geciktirir)
+    let fg = await Location.getForegroundPermissionsAsync();
+    if (!fg.granted && fg.canAskAgain) fg = await Location.requestForegroundPermissionsAsync();
     if (!fg.granted || iptal) return;
-    sub = await Location.watchPositionAsync({ accuracy: Location.Accuracy.BestForNavigation, timeInterval: 1000, distanceInterval: 0 }, (l) => {
-      if (kayit.durum === 'bos') degistir({ sonKonum: konumdanNokta(l) }, false);
-    });
+    // İlk GPS konumu soğuk başlangıçta birkaç saniye sürebilir; beklerken son bilinen konum hemen gösterilir
+    if (!kayit.sonKonum) {
+      void Location.getLastKnownPositionAsync({ maxAge: SON_BILINEN_EN_ESKI_MS })
+        .then((l) => l && !iptal && onizlemeKonumu(l))
+        .catch(() => undefined);
+    }
+    sub = await Location.watchPositionAsync({ accuracy: Location.Accuracy.BestForNavigation, timeInterval: 1000, distanceInterval: 0 }, onizlemeKonumu);
     if (iptal) sub.remove();
   })().catch(() => undefined);
   return () => {

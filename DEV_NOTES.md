@@ -10,6 +10,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
+| Gökhan | Harita sekmesinde konumun geç gelmesi (`kaydedici.ts` > `konumOnizlemeBaslat`) | `gokhan/harita-konum-hizli` |
 
 ## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
 
@@ -116,6 +117,12 @@ Kalan: telefonlarda deneme. Yeni yerel modüller (fotoğraf, bildirim, kilit ekr
 
 ### [ ] Telefonda ve gerçek sunucuda denenmemiş özellikler
 Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
+- Harita sekmesinde konum hızlı (13 Kas 2026, Gökhan, `harita-konum-hizli`): sekme açılınca harita önce telefonun son
+  bilinen konumuna (en fazla 5 dk eski) hemen gelir, GPS'in ilk konumu gelince oradan sürer; izin zaten verildiyse her
+  açılışta yeniden istenmez; yerinde dururken 1 m'den az GPS kıpırtısında ekran yeniden çizilmez (önceden saniyede bir
+  bütün ekran çiziliyordu). Aynısı Kayıt başlat ve Rota oluştur ekranlarında. Bakılacaklar: Harita sekmesine dokununca
+  konum ~1 sn içinde geliyor mu; uygulama açıkken akıcı mı; başlat ekranındaki GPS etiketi ilk saniyelerde doğru mu
+  (son bilinen konumun doğruluğunu gösterebilir)? Yalnızca JS, yeni derleme gerekmez.
 - Harita renkleri (13 Kas 2026, Gökhan, `harita-renkleri`): harita gündüz açık, gün batımından gün doğumuna kadar koyu;
   uygulama karanlık temadaysa (telefonun ayarı ya da Ayarlar > Görünüm > Karanlık) gündüz de koyu. Kayıt ekranı dahil
   bütün haritalar; kayıt sürerken gün batarsa harita koyuya geçer. Gün batımı telefonun son bilinen konumundan
