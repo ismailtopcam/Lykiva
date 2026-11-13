@@ -10,8 +10,6 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
-| İsmail | Telefona kurulum: iOS geliştirme derlemesi (kod değişikliği yok; Android alındı) | — |
-| Gökhan | Haritayı döndürme (`TopoMap.tsx`) | `gokhan/harita-dondurme` |
 
 ## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
 
@@ -58,8 +56,8 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
 1. **Zoho Mail (bilgi@lykiva.app):** DNS kayıtlarının hepsi yerinde (MX, SPF, DMARC, doğrulama TXT, DKIM `zmail`).
    Zoho Mail Admin > Domains > lykiva.app'te doğrulama ve DKIM için **Verify**'a bas; bir deneme postası gönderip al.
 2. **Yönetim paneli > Site ayarları** (`https://lykiva.app/admin`) — veri sorumlusu ve adresi.
-3. **Telefona geliştirme derlemesi** (`apps/mobile`): `npx eas-cli@latest device:create` (iPhone) →
-   `npx eas-cli@latest build --profile development --platform all` → telefonlara kur → `npm run mobile`. Adımlar README'de.
+3. **Geliştirme derlemelerini telefonlara kur** (Android APK + iOS, 13 Kas 2026'da alındı; EAS build kimlikleri "Telefona kurulum"da):
+   iPhone'da Geliştirici Modu'nu aç, Gökhan `npm run mobile` ile Metro'ya bağlansın.
 4. **Hetzner depolama anahtarını yenile:** gizli anahtar sohbette paylaşıldı. Hetzner Console > Security > S3 credentials'ta
    yeni çift oluştur, `/etc/lykiva-yedek.env`'de `S3_ANAHTAR` / `S3_GIZLI`'yi değiştir (Claude yapabilir: erişim anahtarını
    sohbete, gizliyi yalnızca sunucuya yaz), sonra eski iki çifti (`3W8WDQ…`, `CZE21…`) sil.
@@ -104,7 +102,14 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
 
 ### [~] Telefona kurulum (EAS)
 EAS projesi `@ismailtopcam/lykiva` bağlandı, `apps/mobile/eas.json` profilleri hazır (development / preview / production).
-Kalan: iPhone cihaz kaydı ve iOS geliştirme derlemesi, telefonda deneme. Yeni yerel modüller (fotoğraf, bildirim, kilit ekranı) bu derlemeyle gelecek.
+Kalan: telefonlarda deneme. Yeni yerel modüller (fotoğraf, bildirim, kilit ekranı) bu derlemelerle geldi.
+- **iOS geliştirme derlemesi alındı** (13 Kas 2026; main `b7a2824`, build 8, development profili). Kayıtlı cihaz: iPhone 8 Plus
+  (`eas device:create`). Ad hoc profiller iki hedef için (Lykiva + ExpoWidgetsTarget) etkileşimli derlemede Apple girişiyle
+  oluşturuldu. EAS: build `81eb7a73-…`, kurulum linki 26 Kas 2026'ya kadar. SDK 58'in alt sınırı iOS 16.4; iPhone 8 Plus
+  en fazla 16.7'ye çıkar, yeterli. Telefonda Geliştirici Modu açılmalı (Ayarlar > Gizlilik ve Güvenlik; seçenek ancak
+  uygulama kurulup bir kez açılmaya çalışılınca görünür). Yeni iPhone eklenirse `device:create` + yeni derleme gerekir.
+- Metro'yu Gökhan kendi bilgisayarında çalıştırır (`npm run mobile`). Telefon aynı ağda değilse
+  `npm run start --workspace @lykiva/mobile -- --tunnel`.
 - **Android geliştirme derlemesi alındı** (13 Kas 2026, Gökhan'ın telefonu için; main `e7ae72c`, debug APK, development profili).
   EAS: build `a9dcc157-…`, APK linki 26 Kas 2026'ya kadar geçerli. Kurulduktan sonra `apps/mobile`'da `npm run mobile` ile
   Metro'ya bağlanılır. Yeni yerel modül / `app.json` değişikliği gelene kadar yeni derleme gerekmez.
@@ -114,11 +119,6 @@ Kalan: iPhone cihaz kaydı ve iOS geliştirme derlemesi, telefonda deneme. Yeni 
 
 ### [ ] Telefonda ve gerçek sunucuda denenmemiş özellikler
 Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
-- Haritayı döndürme (13 Kas 2026, Gökhan, `harita-dondurme`): bütün haritalar iki parmakla döndürülebiliyor (önceden
-  kapalıydı). Döndürünce katman düğmesinin solunda pusula çıkar, dokununca kuzey yukarı döner. Kayıt ekranında takip
-  sürerken döndürme takibi bırakmaz: hareket bitince harita senin noktanı yeniden ortalar (nokta etrafında döner);
-  kaydırma / yakınlaştırma eskisi gibi takibi bırakır. Bakılacaklar: 2D ve 3D'de döndürme, pusula yeri (kayıt, Harita
-  sekmesi, rota oluştur), döndürürken takip bırakılmıyor mu, kaydırınca bırakılıyor mu? Yalnızca JS, yeni derleme gerekmez.
 - Harita renkleri (13 Kas 2026, Gökhan, `harita-renkleri`): harita gündüz açık, gün batımından gün doğumuna kadar koyu;
   uygulama karanlık temadaysa (telefonun ayarı ya da Ayarlar > Görünüm > Karanlık) gündüz de koyu. Kayıt ekranı dahil
   bütün haritalar; kayıt sürerken gün batarsa harita koyuya geçer. Gün batımı telefonun son bilinen konumundan
@@ -336,6 +336,10 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
   kaydedilmez, aktiviteye `route_id` gitmez (`kayit/paket.ts` artık yalnızca uuid gönderiyor). Eski Keşfet listesi
   `app/kesfet-liste.tsx`'e taşındı, haritanın sağ üstündeki pusula düğmesiyle açılır. Sesli / adım adım yönlendirme yok.
   Yalnızca JS, yeni yerel modül yok. Telefonda denenecek: dokunarak hedef seçme, kamera yolu tam gösteriyor mu, "Yola çık".
+- [x] Haritayı döndürme (13 Kas 2026, Gökhan, `harita-dondurme`): bütün haritalar iki parmakla döndürülebiliyor (önceden
+  kapalıydı). Döndürünce katman düğmesinin solunda pusula çıkar, dokununca kuzey yukarı döner. Kayıt ekranında takip
+  sürerken döndürme takibi bırakmaz: hareket bitince harita takip edilen noktayı yeniden ortalar (nokta etrafında döner);
+  kaydırma / yakınlaştırma takibi bırakır. Yalnızca JS. İki telefonda denendi, çalışıyor.
 - [x] Harita renkleri (13 Kas 2026, Gökhan, `harita-renkleri`): gündüz açık, gün batımından sonra ve karanlık temada koyu
   harita (Liberty'den türetilen, ayrıntılı); açık haritada patikalar belirgin. Telefonda denenecekler yukarıda
   ("Telefonda ve gerçek sunucuda denenmemiş özellikler").
