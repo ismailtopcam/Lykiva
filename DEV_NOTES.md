@@ -333,6 +333,11 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
   iOS'ta geri kaydırma kapalı olduğu için (haritada yanlışlıkla çıkılmasın) çıkış yolu yoktu; Android'de donanım geri tuşu
   çalışıyordu. Sol üste ev simgeli düğme eklendi (`components/AnaSayfaDugmesi.tsx`): kayıt arka planda sürer, alt menüdeki
   Egzersiz kayda geri götürür. Yalnızca JS, yeni derleme gerekmez. iPhone'da denenecek.
+- [x] Egzersiz sekmesinin geçişi (13 Kas 2026, Gökhan, `egzersiz-gecis`): iOS'ta başlat ekranı aşağıdan kayan kart (modal)
+  olarak, canlı ekran yandan kayarak açılıyordu; kayıt sürerken önce başlat ekranı açılıp sonra canlıya yönleniyordu.
+  Artık sekmeler arası geçiş ve kayıt ekranları (başlat, canlı, duraklatıldı) aynı kısa solmayla (fade, iOS'ta 200 ms);
+  Egzersiz kayıt sürüyorsa doğrudan canlı / duraklatıldı ekranını açar. Başlat ekranı aşağı kaydırılarak kapanmıyor,
+  sol üstteki kapat düğmesi var. Yalnızca JS. iPhone'da denenecek.
 - [x] Harita sekmesi ve yol tarifi (12 Kas 2026, Gökhan, `harita-yol-tarifi`): "Haritalar" sekmesinin adı "Harita" oldu,
   sekme tam ekran harita açıyor (`app/(tabs)/kesfet.tsx`). Hedef haritaya dokunarak ya da yer aramayla (Photon) seçilir,
   bulunduğun yerden yol BRouter'la hesaplanır (etkinlik türü + yol / patika öncelikli; mesafe, tırmanış, tahmini süre).

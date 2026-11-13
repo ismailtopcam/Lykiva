@@ -2,6 +2,7 @@ import { Redirect, router, Tabs } from 'expo-router';
 import { type ColorValue } from 'react-native';
 
 import { Icon, type IconName } from '@/components/Icon';
+import { kayitDurumu } from '@/kayit/kaydedici';
 import { useGirisGerekli } from '@/lib/giris';
 import { colors, fontFamily } from '@/theme';
 import { $t } from '@/i18n';
@@ -24,6 +25,7 @@ function tabIcon(name: IconName, sabitRenk?: string) {
  * Alt menü: Ana Sayfa · Harita · Egzersiz · Gruplar · Profil
  * Egzersiz bir ekran değil; basınca kayıt başlatma ekranını açar.
  * Dosya adları (index, kesfet, kaydet) bağlantılar bozulmasın diye aynı kaldı.
+ * Sekmeler arası geçiş ve kayıt ekranlarının açılışı aynı kısa solma (fade) ile; bkz. kök `_layout.tsx`.
  */
 export default function TabsLayout() {
   // İlk açılışta giriş ekranı. Durum bilinene kadar sekmeler gösterilir (internetsiz açılışı bekletmemek için).
@@ -34,6 +36,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        animation: 'fade',
         tabBarActiveTintColor: colors.ink,
         tabBarInactiveTintColor: colors.inkMuted,
         tabBarLabelStyle: { fontFamily: fontFamily.bodySemiBold, fontSize: 11 },
@@ -57,7 +60,9 @@ export default function TabsLayout() {
         listeners={{
           tabPress: (e) => {
             e.preventDefault();
-            router.push('/kayit');
+            // Kayıt sürüyorsa doğrudan o ekrana: önce başlat ekranı açılıp sonra yönlendirilince iki geçiş üst üste biniyordu
+            const durum = kayitDurumu();
+            router.push(durum === 'kayitta' ? '/kayit/canli' : durum === 'duraklatildi' ? '/kayit/duraklatildi' : '/kayit');
           },
         }}
       />
