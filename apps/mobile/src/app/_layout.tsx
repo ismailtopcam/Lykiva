@@ -18,7 +18,7 @@ import { AppState, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Arka plan konum görevi uygulama açılır açılmaz tanımlanmalı
-import { kaydiGeriYukle, kayitSuruyor } from '@/kayit/kaydedici';
+import { kaydiGeriYukle, kayitSuruyor, konumuIsit } from '@/kayit/kaydedici';
 import { bildirimHedefi } from '@/bildirim/bildirimler';
 import { kuyruguGonder } from '@/kayit/kuyruk';
 import { dilDegisikliginiDinle, dilYukle, useDil } from '@/i18n';
@@ -82,10 +82,13 @@ export default function RootLayout() {
 
   useEffect(() => {
     haritaIstekleriniAyarla();
-    void kaydiGeriYukle();
+    // Kayıt geri yüklendikten sonra konum önceden alınır: Harita sekmesine geçince harita beklemeden konuma gelir
+    void kaydiGeriYukle().then(() => konumuIsit());
     void kuyruguGonder().catch(() => undefined);
     const sub = AppState.addEventListener('change', (s) => {
-      if (s === 'active') void kuyruguGonder().catch(() => undefined);
+      if (s !== 'active') return;
+      void kuyruguGonder().catch(() => undefined);
+      void konumuIsit();
     });
     return () => sub.remove();
   }, []);

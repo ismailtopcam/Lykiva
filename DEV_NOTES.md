@@ -122,6 +122,10 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   bütün ekran çiziliyordu). Aynısı Kayıt başlat ve Rota oluştur ekranlarında. Bakılacaklar: Harita sekmesine dokununca
   konum ~1 sn içinde geliyor mu; uygulama açıkken akıcı mı; başlat ekranındaki GPS etiketi ilk saniyelerde doğru mu
   (son bilinen konumun doğruluğunu gösterebilir)? Yalnızca JS, yeni derleme gerekmez.
+  Açılışta konum (13 Kas 2026, Gökhan, `acilista-konum`): uygulama açılınca ve arka plandan öne gelince konum önceden
+  alınıyor (`konumuIsit`: son bilinen + tek bir Balanced konum; GPS sürekli açık kalmaz, son 30 sn'de konum varsa
+  alınmaz). İzin istemez: izin hiç verilmediyse bir şey yapmaz, izni Harita sekmesi ister. Bakılacaklar: uygulamayı
+  açıp hemen Harita sekmesine geçince harita doğrudan konumda açılıyor mu; açılışta izin penceresi çıkmıyor mu?
 - Harita renkleri (13 Kas 2026, Gökhan, `harita-renkleri`): harita gündüz açık, gün batımından gün doğumuna kadar koyu;
   uygulama karanlık temadaysa (telefonun ayarı ya da Ayarlar > Görünüm > Karanlık) gündüz de koyu. Kayıt ekranı dahil
   bütün haritalar; kayıt sürerken gün batarsa harita koyuya geçer. Gün batımı telefonun son bilinen konumundan
