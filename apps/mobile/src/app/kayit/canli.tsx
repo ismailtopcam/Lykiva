@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Alert, PanResponder, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AnaSayfaDugmesi } from '@/components/AnaSayfaDugmesi';
 import { FloatingHeader } from '@/components/Header';
 import { Icon } from '@/components/Icon';
 import { useKoyuHarita } from '@/components/map/gunduzGece';
@@ -123,10 +124,14 @@ export default function CanliTakipScreen() {
     ]);
   }
 
+  // Sol üst: ana sayfaya dönüş (kayıt sürer; iOS'ta geri hareketi kapalı) + kayıt rozeti
   const kayittaRozeti = (
-    <View style={styles.pill}>
-      <View style={[styles.dot, { backgroundColor: n.recording }]} />
-      <Txt style={styles.pillText}>{$t('kayit_canli.kayitta', { a: ACTIVITY_LABELS[kayit.activity] })}</Txt>
+    <View style={styles.solUst}>
+      <AnaSayfaDugmesi />
+      <View style={styles.pill}>
+        <View style={[styles.dot, { backgroundColor: n.recording }]} />
+        <Txt style={styles.pillText}>{$t('kayit_canli.kayitta', { a: ACTIVITY_LABELS[kayit.activity] })}</Txt>
+      </View>
     </View>
   );
 
@@ -322,6 +327,7 @@ export default function CanliTakipScreen() {
 const styles = StyleSheet.create({
   paylasim: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, height: 32, borderRadius: 10, backgroundColor: n.surface, marginBottom: 6 },
   root: { flex: 1, backgroundColor: n.ground },
+  solUst: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   pill: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: 'rgba(14,21,18,0.85)' },
   pillText: { fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: n.text },
   dot: { width: 9, height: 9, borderRadius: 5 },

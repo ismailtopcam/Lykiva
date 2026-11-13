@@ -708,6 +708,7 @@ export const tr = {
     ayarlari_ac: 'Ayarları aç',
   },
   kayit_canli: {
+    ana_sayfaya_don: 'Ana sayfaya dön, kayıt sürsün',
     kalan: 'Kalan',
     rakim: 'Rakım',
     varisa: 'Varışa',
