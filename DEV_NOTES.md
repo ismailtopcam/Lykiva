@@ -80,11 +80,14 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
 11. **Android sürüm 4'ü telefonda dene** (12 Kas 2026'da Play dahili teste yüklendi): hedefler /
     meydan okumalar / rozetler, harita türleri, ısı haritaları ilk kez telefonda. Neye bakılacağı aşağıda
     "Telefonda ve gerçek sunucuda denenmemiş özellikler"de. (Kilit ekranı penceresi bu sürümde yok; madde 12.)
-12. **Sürüm 6'da kilit ekranını telefonda dene** (aşağıda "Kilit ekranı" maddesi).
+12. **Android sürüm 7'yi Play'e yükle** (13 Kas 2026'da derlendi): EAS > lykiva > Builds'ten versionCode 7 AAB'sini indir,
+    Play Console > Lykiva > Test > Dahili test > Yeni sürüm oluştur'a yükle, yayınla. Sonra telefonda dene.
+    Geliştirme APK'sı Metro'suz açılınca beyaz ekranda kalır; günlük kullanım için Play sürümünü kur.
+12b. **Sürüm 6'da kilit ekranını telefonda dene** (aşağıda "Kilit ekranı" maddesi).
 13. (İsteğe bağlı) **Play gönderimini Claude'a devretmek için:** EAS'ta Google hizmet hesabı anahtarı yok, o yüzden
     `eas submit -p android` çalışmıyor ve AAB elle yükleniyor. Play Console'da hizmet hesabı açılıp anahtarı EAS'a eklenirse
     gönderimi Claude yapar.
-14. **İsmail derleyecek — görünüm (karanlık mod):** `gorunum-ayari` PR'ı (sürüm 6'dan sonra main'e girdi, sürüm 7'de gelecek) `app.json`'da `userInterfaceStyle`'ı
+14. **Görünüm (karanlık mod), iOS'ta derleme bekliyor:** Android sürüm 7'de geldi. `gorunum-ayari` PR'ı (sürüm 6'dan sonra main'e girdi) `app.json`'da `userInterfaceStyle`'ı
     `automatic` yaptı (önce `light`). Yeni derlemeye kadar Aydınlık / Karanlık seçimi çalışır, "Telefonun ayarı" ise
     her zaman aydınlık görünür (eski derleme telefonun temasını uygulamaya bildirmiyor).
 
@@ -219,6 +222,9 @@ BRouter / Photon yeni adreste (`*.ismailtopcam.dev`). Android versionCode 6, iOS
 denemelerde harcandı). iOS'ta yeni hedef `ExpoWidgetsTarget` için profil etkileşimli derlemeyle (Apple girişi) oluşturuldu;
 App Group `group.app.lykiva.mobile` Apple Developer'da elle açılıp `app.lykiva.mobile` ve `.ExpoWidgetsTarget`'a bağlandı
 (otomatik eşitleme `TIBURON_APP_CONSENT` verdiği için). **Android versionCode 6 Play dahili teste yüklendi, iOS build 8 TestFlight'a gönderildi** (12 Kas 2026; "Team (Expo)").
+**Sürüm 7 derlendi** (13 Kas 2026, main `230e3fe`): sürüm 6'dan sonra gelen her şey (görünüm / karanlık mod, gizlilik
+kontrolleri ve engelleme, kulüpler, harita döndürme, profil çevirileri). Android versionCode 7 AAB'si hazır (EAS build
+`e82b3034-…`), Play Console > Dahili test > Yeni sürüm'e elle yüklenecek (İsmail). iOS bu sefer derlenmedi.
 Kalan: testerların kurup denemesi; sonra kapalı teste geçiş (bkz. Mağazaya çıkmadan önce).
 
 ### [ ] Mağazaya çıkmadan önce
