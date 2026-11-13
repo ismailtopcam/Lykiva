@@ -42,7 +42,8 @@ export type TopoMapProps = {
   progress?: number;
   /**
    * Rotanın parçalarını ayrı renklerle çizmek için (ör. eğime göre): route dizisindeki nokta aralığı
-   * [from, to] (ikisi dahil) ve rengi. progress ile birlikte kullanılmaz. Yalnızca gerçek haritada.
+   * [from, to] (ikisi dahil) ve rengi. progress ile birlikte verilirse yalnızca kalan kısım renklenir (kesikli).
+   * Yalnızca gerçek haritada.
    */
   routeColors?: { from: number; to: number; color: string }[];
   markers?: MapMarker[];
@@ -117,11 +118,14 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
   const split = progress !== undefined ? Math.max(1, Math.round(progress * (route.length - 1))) : route.length - 1;
   const done = route.slice(0, split + 1);
   const rest = route.slice(split);
+  // Kayıtta (progress) tamamlanan kısım turuncu kalır; eğim renkleri yalnızca kalan kısma
+  const renkBasi = progress !== undefined ? split : 0;
   const renkli =
-    progress === undefined && props.routeColors?.length && route.length > 1
+    props.routeColors?.length && route.length > 1
       ? {
           type: 'FeatureCollection' as const,
           features: props.routeColors
+            .map((r) => ({ ...r, from: Math.max(r.from, renkBasi) }))
             .filter((r) => r.to > r.from)
             .map((r) => ({
               type: 'Feature' as const,
@@ -269,7 +273,7 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
             layout={{ 'line-cap': 'round', 'line-join': 'round' }}
             paint={{ 'line-color': koyuZemin ? '#0E1512' : '#FBF8F2', 'line-width': 8 }}
           />
-          {renkli ? null : (
+          {renkli && progress === undefined ? null : (
             <ML.Layer
               id="rota-tamam-cizgi"
               type="line"
@@ -286,12 +290,16 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
             id="rota-renkli-cizgi"
             type="line"
             layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-            paint={{ 'line-color': ['get', 'c'], 'line-width': 4.5 }}
+            paint={
+              progress === undefined
+                ? { 'line-color': ['get', 'c'], 'line-width': 4.5 }
+                : { 'line-color': ['get', 'c'], 'line-width': 4, 'line-dasharray': [1, 1.6] }
+            }
           />
         </ML.GeoJSONSource>
       ) : null}
 
-      {progress !== undefined && rest.length > 1 ? (
+      {progress !== undefined && !renkli && rest.length > 1 ? (
         <ML.GeoJSONSource id="rota-kalan" data={lineOf(rest)}>
           <ML.Layer
             id="rota-kalan-cizgi"

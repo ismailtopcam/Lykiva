@@ -345,6 +345,11 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
   kaydedilmez, aktiviteye `route_id` gitmez (`kayit/paket.ts` artık yalnızca uuid gönderiyor). Eski Keşfet listesi
   `app/kesfet-liste.tsx`'e taşındı, haritanın sağ üstündeki pusula düğmesiyle açılır. Sesli / adım adım yönlendirme yok.
   Yalnızca JS, yeni yerel modül yok. Telefonda denenecek: dokunarak hedef seçme, kamera yolu tam gösteriyor mu, "Yola çık".
+- [x] Ortak harita: Harita sekmesi + kayıt ekranı (13 Kas 2026, Gökhan, `ortak-harita`): iki ekran da
+  `components/map/YolHaritasi.tsx`'i kullanıyor (harita, eğime göre renkli yol, sağ sütunda 3B/2B ve konum düğmeleri;
+  Harita sekmesinde açık, kayıtta koyu düğmeler). **İki haritada da olması gereken değişiklik buraya yapılır.** Kayıtta
+  tamamlanan kısım turuncu, kalan kısım eğim renginde kesikli (TopoMap: `routeColors` artık `progress` ile de çalışıyor).
+  Konum düğmesi Harita sekmesinde bir kez konuma götürür, kayıtta takibi açar. Yalnızca JS. Telefonda denenecek.
 - [x] Yol tarifinde ve rotalarda eğim, tırmanışlar, rüzgâr (13 Kas 2026, Gökhan, `rota-irtifa-ruzgar`): Harita sekmesinde
   yol çizgisi eğime göre renkli; panelde iniş, eğim profili (parmakla gezilir, "Rakım" aralığı), tırmanış listesi ve
   şu anki rüzgâr: rotanın ortası için MET Norway, rüzgârın rota boyunca karşıdan / yandan / arkadan payı (`izdeRuzgar`;
