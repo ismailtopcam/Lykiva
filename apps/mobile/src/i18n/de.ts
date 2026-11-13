@@ -707,6 +707,7 @@ export const de: Sozluk = {
     ayarlari_ac: 'Einstellungen öffnen',
   },
   kayit_canli: {
+    ana_sayfaya_don: 'Zur Startseite, Aufzeichnung läuft weiter',
     kalan: 'Verbleibend',
     rakim: 'Höhe',
     varisa: 'Bis zum Ziel',

@@ -707,6 +707,7 @@ export const ru: Sozluk = {
     ayarlari_ac: 'Открыть настройки',
   },
   kayit_canli: {
+    ana_sayfaya_don: 'На главную, запись продолжится',
     kalan: 'Осталось',
     rakim: 'Высота',
     varisa: 'До финиша',
