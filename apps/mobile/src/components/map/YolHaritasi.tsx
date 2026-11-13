@@ -1,7 +1,7 @@
 /**
  * Yol haritası: Harita sekmesinin (yol tarifi) ve egzersiz kaydının ortak haritası.
  *
- * - Yol eğime göre renkli; kayıtta tamamlanan kısım turuncu, kalan kısım eğim renginde.
+ * - Yol eğime göre renkli; kayıtta tamamlanan kısım rota renginde (mor), kalan kısım eğim renginde.
  * - Sağ sütunda, katman düğmesinin altında 3B/2B ve konum düğmeleri.
  * İki ekranda da görünmesi gereken harita değişiklikleri buraya yapılır.
  */

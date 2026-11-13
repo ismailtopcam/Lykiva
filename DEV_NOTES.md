@@ -121,13 +121,17 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   bütün haritalar; kayıt sürerken gün batarsa harita koyuya geçer. Gün batımı telefonun son bilinen konumundan
   (`gunduzGece.ts`, hesap `packages/shared/src/gunes.ts`; konum izni yoksa 07:00–19:00 gündüz). Koyu harita OpenFreeMap Liberty'den
   türetiliyor (`stilRenkleri.ts`): patikalar, orman, park, su, yer adları ve ilgi noktaları duruyor (eski OpenFreeMap Dark'ta
-  yollar bile zor seçiliyordu). Açık haritada patikalar beyaz yerine kahve-gri kesikli (rota turuncusundan ayrı).
+  yollar bile zor seçiliyordu). Açık haritada patikalar beyaz yerine kahve-gri kesikli (rota çizgisinin morundan ayrı).
   Standart stilin JSON'u telefonda saklanıyor (açılışta hemen hazır). Bakılacaklar: güneşte kayıt ekranında açık harita
   okunuyor mu, gece koyu harita göz alıyor mu; gün batımında (bir dakika içinde) koyuya geçiyor mu, geçerken rota çizgisi
   kayboluyor mu; durum çubuğu (saat, pil) açık haritada koyu mu; ilk kurulumda harita bir kez
   yeniden yükleniyor mu (stil inince), sonraki açılışlarda yükleniyor mu? Çevrimdışında indirilmiş rota koyu temada da
   açılıyor mu? Yalnızca JS, yeni derleme gerekmez. Stiller tarayıcıda (maplibre-gl) karşılaştırıldı ve MapLibre stil
   doğrulayıcısından hatasız geçti; telefonda görülmedi.
+- Rota çizgisi rengi (13 Kas 2026, Gökhan, `rota-rengi`): rota çizgisi turuncu yerine mor; başlangıç mor halka, bitiş
+  dolu mor nokta. Kayıtta (canlı takip) gidilen kısım mavi, kalan kısım gri düz çizgi (önceden kesikliydi); kayıt
+  ekranında başlangıç işareti de çıkıyor. Bakılacaklar: mor, mavi ve gri açık / koyu haritada ayırt ediliyor mu, eğim
+  renkli rotada kalan kısım düz renkli mi? Yalnızca JS, yeni derleme gerekmez.
 - Kayıt ekranı (13 Kas 2026, Gökhan): ~~standart harita türünde siyah zeminli gece stili (OpenFreeMap Dark)~~ (yukarıda:
   harita artık temayı izliyor), sağda
   katman / 2D-3D / Konumum düğmeleri (haritayı elle kaydırınca takip bırakılır, Konumum yeniden takibe alır; 3D'de
@@ -348,8 +352,12 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
 - [x] Ortak harita: Harita sekmesi + kayıt ekranı (13 Kas 2026, Gökhan, `ortak-harita`): iki ekran da
   `components/map/YolHaritasi.tsx`'i kullanıyor (harita, eğime göre renkli yol, sağ sütunda 3B/2B ve konum düğmeleri;
   Harita sekmesinde açık, kayıtta koyu düğmeler). **İki haritada da olması gereken değişiklik buraya yapılır.** Kayıtta
-  tamamlanan kısım turuncu, kalan kısım eğim renginde kesikli (TopoMap: `routeColors` artık `progress` ile de çalışıyor).
+  tamamlanan kısım rota renginde (mor), kalan kısım eğim renginde kesikli (TopoMap: `routeColors` artık `progress` ile de çalışıyor).
   Konum düğmesi Harita sekmesinde bir kez konuma götürür, kayıtta takibi açar. Yalnızca JS. Telefonda denenecek.
+- [x] Rota çizgisi rengi (13 Kas 2026, Gökhan, `rota-rengi`): haritalardaki düz rota çizgisi turuncu yerine mor
+  (açık harita `#6A3FD0`, koyu `#A98BFF`; `stilRenkleri.ts` > `ROTA_RENGI`, gerçek harita ve Expo Go yedek haritası).
+  Karar: Strava'nın turuncusuna benzemesin; mor haritadaki su, yeşil alan, sarı-turuncu ana yol, kahve patika ve eğim
+  renkleriyle de karışmıyor. Eğim renkleri (rakımı olan rotalarda) ve marka rengi (`terra`) değişmedi. Yalnızca JS.
 - [x] Yol tarifinde ve rotalarda eğim, tırmanışlar, rüzgâr (13 Kas 2026, Gökhan, `rota-irtifa-ruzgar`): Harita sekmesinde
   yol çizgisi eğime göre renkli; panelde iniş, eğim profili (parmakla gezilir, "Rakım" aralığı), tırmanış listesi ve
   şu anki rüzgâr: rotanın ortası için MET Norway, rüzgârın rota boyunca karşıdan / yandan / arkadan payı (`izdeRuzgar`;

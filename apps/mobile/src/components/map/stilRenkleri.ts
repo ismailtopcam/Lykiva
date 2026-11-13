@@ -4,7 +4,7 @@
  *
  * - acikStil: Liberty'nin kendisi; yalnızca patikalar (path / pedestrian) görünür yapılır. Liberty'de patikalar
  *   beyaz kesikli çizgi, açık zeminde neredeyse kaybolur; yürüyüş / koşu / dağ bisikleti için en önemli yollar bunlar.
- *   Renk bilerek rota çizgisinden (turuncu) ayrı: kahve-gri.
+ *   Renk bilerek rota çizgisinden (mor) ayrı: kahve-gri.
  * - koyuStil: aynı ayrıntıda gece haritası (karanlık tema). Zemin, alanlar ve yazılar açıklığı tersine çevrilerek
  *   koyulaştırılır (renk tonu korunur: su mavi, orman yeşil kalır), yollar koyu zeminde açık gri / soluk renkli olur.
  *   OpenFreeMap Dark'tan farkı: patikalar, parklar, orman, yer adları ve ilgi noktaları kaybolmuyor.
@@ -13,8 +13,21 @@ import type { LayerSpecification, StyleSpecification } from '@maplibre/maplibre-
 
 type Katman = LayerSpecification;
 
-/** Patika rengi (açık / koyu harita): rota çizgisinin turuncusundan ayrı, toprak tonu */
+/** Patika rengi (açık / koyu harita): rota çizgisinin morundan ayrı, toprak tonu */
 export const PATIKA = { acik: 'hsl(28,30%,46%)', koyu: 'hsl(30,28%,62%)' };
+
+/**
+ * Rota çizgisi (açık / koyu harita): mor. Strava'nın turuncusuna benzemesin; haritadaki su (mavi), orman / park
+ * (yeşil), ana yollar (sarı-turuncu), patikalar (kahve) ve eğim renkleriyle (deniz, gri, hardal, kiremit, bordo)
+ * karışmasın diye.
+ */
+export const ROTA_RENGI = { acik: '#6A3FD0', koyu: '#A98BFF' };
+
+/**
+ * Kayıtta rotanın gidilen kısmı (açık / koyu harita): canlı mavi. Mor rotadan, deniz (camgöbeği) eğim renginden
+ * ve soluk su renginden ayrılsın diye doygun.
+ */
+export const GIDILEN_RENGI = { acik: '#1F6FEB', koyu: '#58A6FF' };
 
 /** Gece haritasının zemini */
 export const KOYU_ZEMIN = 'hsl(150,9%,10%)';
