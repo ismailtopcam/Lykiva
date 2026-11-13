@@ -116,13 +116,23 @@ Kalan: telefonlarda deneme. Yeni yerel modüller (fotoğraf, bildirim, kilit ekr
 
 ### [ ] Telefonda ve gerçek sunucuda denenmemiş özellikler
 Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
-- Harita sekmesi bilgi paneli 3 kademe (13 Kas 2026, Gökhan, `harita-panel-kademe`): hedef seçilince panel küçük açılır
-  (1: hedef, etkinlik, tercih, mesafe / tırmanış / iniş / süre, Yola çık). Panelin üstü (tutamaç ve hedef satırı)
-  parmakla sürüklenir (`harita-panel-surukle`; ok düğmeleri kaldırıldı): parmak yukarı gittikçe panel büyür
-  (2: + yükselti, 3: + tırmanışlar ve rüzgâr), aşağı gittikçe küçülür, her ~45 px bir kademe; bırakınca kalır.
-  Tutamacın altındaki üç nokta kademeyi gösterir. Seçilen kademe hedef değişince de kalır. Bakılacaklar: sürükleme
-  haritayı oynatmadan çalışıyor mu, 45 px eşiği elde rahat mı; 3. kademede harita yeterince görünüyor mu (en fazla
-  ekranın %45'i kayar); kademe değişince harita yolu panelin üstüne sığdırıyor mu?
+- Kaydırılan bilgi paneli: Harita sekmesi ve Egzersiz kaydı (13 Kas 2026, Gökhan; `harita-panel-kademe`,
+  `harita-panel-surukle`, `panel-akici`; ortak kanca `components/panelKademesi.ts`). Panel tek uzun sayfa, kademeler
+  o sayfanın bölümleri; panel ekranın altına yaslı, görünen boyu tek bir Animated değeri ve taşanı keser. Parmakla
+  sürükleyince aşağıdaki bölümler görünür, içerik hiç değişmez; bırakınca parmağın hızına göre en yakın bölüm sonuna
+  oturur (260 ms). En üst / en alt durağın ötesine lastik gibi az gider. Ok düğmeleri kaldırıldı.
+  - Harita sekmesi: 1. özet (hedef, etkinlik, tercih, mesafe / tırmanış / iniş / süre, Yola çık; hedef seçilince bununla
+    açılır), 2. yükselti (eğim profili; rakım yoksa bu bölüm yok), 3. tırmanışlar ve rüzgâr (uzunsa içi kayar).
+    Sürükleme alanı 1. bölüm. Tutamacın altındaki noktalar kademeyi gösterir; seçilen kademe hedef değişince de kalır.
+  - Egzersiz kaydı: 1. küçük satır (mesafe / kalan, süre, anlık hız) ve Duraklat / Bitir, 2. rota ilerlemesi ve
+    diğer değerler, 3. tam ekran: büyük yazılı anlık hız, mesafe, süre, varışa / ort. hız, tırmanış (panel durum
+    çubuğunun altına kadar). Harita tam ekran, panel üstünde; panelin tamamı sürükleme alanı.
+  - Denemeler: önce kademe değişince içerik değişiyordu (sürüklerken her adımda ekran yeniden çiziliyordu: gecikme;
+    sonra LayoutAnimation + Animated birlikte: bırakınca titreme). Tek sayfa + tek animasyonla ikisi de gitmeli.
+  Bakılacaklar: iki ekranda da sürükleme parmağa gecikmesiz geliyor mu, bırakınca titremeden oturuyor mu; kısa hızlı
+  fırlatma bir sonraki bölüme gidiyor mu; bölümler arasında boşluk / kesik görünüyor mu; Egzersizde tam ekranda büyük
+  değerler okunuyor mu, ana sayfa düğmesi tutamaçta çıkıyor mu; takip açıkken konum işareti panelin üstünde mi;
+  Duraklat / Bitir dokunması sürüklemeyle karışıyor mu; Harita 3. kademede harita yeterince görünüyor mu?
 - Harita sekmesinde konum hızlı (13 Kas 2026, Gökhan, `harita-konum-hizli`): sekme açılınca harita önce telefonun son
   bilinen konumuna (en fazla 5 dk eski) hemen gelir, GPS'in ilk konumu gelince oradan sürer; izin zaten verildiyse her
   açılışta yeniden istenmez; yerinde dururken 1 m'den az GPS kıpırtısında ekran yeniden çizilmez (önceden saniyede bir
