@@ -29,6 +29,9 @@ import { cihazSemasiniDinle, colors, gorunumYukle, useSema } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
 
+/** Kayıt ekranlarının geçişi: sekme geçişine yakın, kısa solma (süre yalnızca iOS'ta ayarlanabiliyor) */
+const kayitGecisi = { animation: 'fade', animationDuration: 200 } as const;
+
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     Inter_400Regular,
@@ -96,7 +99,9 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="giris" options={{ gestureEnabled: false, animation: 'fade' }} />
         <Stack.Screen name="giris-donus" options={{ animation: 'none' }} />
-        <Stack.Screen name="kayit/index" options={{ presentation: 'modal' }} />
+        {/* Kayıt ekranları sekmeler gibi kısa solmayla açılır. Eskiden başlat ekranı iOS'ta aşağıdan kayan kart
+            (modal) idi, canlı ekran yandan kayıyordu: Egzersiz sekmesi diğerlerinden farklı geçiyordu. */}
+        <Stack.Screen name="kayit/index" options={{ ...kayitGecisi, gestureEnabled: false }} />
         <Stack.Screen name="grup/olustur" options={{ presentation: 'modal' }} />
         <Stack.Screen name="etkinlik/olustur" options={{ presentation: 'modal' }} />
         <Stack.Screen name="hedef-ekle" options={{ presentation: 'modal' }} />
@@ -105,8 +110,8 @@ export default function RootLayout() {
         <Stack.Screen name="aktivite/[id]/duzenle" options={{ presentation: 'modal' }} />
         <Stack.Screen name="rota/[id]/duzenle" options={{ presentation: 'modal' }} />
         <Stack.Screen name="grup/[id]/rota-paylas" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="kayit/canli" options={{ gestureEnabled: false }} />
-        <Stack.Screen name="kayit/duraklatildi" options={{ gestureEnabled: false, animation: 'fade' }} />
+        <Stack.Screen name="kayit/canli" options={{ ...kayitGecisi, gestureEnabled: false }} />
+        <Stack.Screen name="kayit/duraklatildi" options={{ ...kayitGecisi, gestureEnabled: false }} />
       </Stack>
     </SafeAreaProvider>
   );

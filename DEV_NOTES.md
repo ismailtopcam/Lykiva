@@ -329,6 +329,11 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
   köprüde vadinin tabanını, tünelde dağın üstünü verir. Kendi BRouter sunucumuzda etiketin çıktıya eklenip eklenemeyeceğine bakılmalı.
 - Alt menü (12 Kas 2026): sekmeler Ana Sayfa · Harita · Egzersiz · Gruplar · Profil oldu (eski: Akış · Keşfet · + · Gruplar · Profil).
   Egzersiz sekmesi kayıt başlatma ekranını açar. Yalnızca JS değişikliği, yeni derleme gerekmez.
+- [x] Egzersiz sekmesinin geçişi (13 Kas 2026, Gökhan, `egzersiz-gecis`): iOS'ta başlat ekranı aşağıdan kayan kart (modal)
+  olarak, canlı ekran yandan kayarak açılıyordu; kayıt sürerken önce başlat ekranı açılıp sonra canlıya yönleniyordu.
+  Artık sekmeler arası geçiş ve kayıt ekranları (başlat, canlı, duraklatıldı) aynı kısa solmayla (fade, iOS'ta 200 ms);
+  Egzersiz kayıt sürüyorsa doğrudan canlı / duraklatıldı ekranını açar. Başlat ekranı aşağı kaydırılarak kapanmıyor,
+  sol üstteki kapat düğmesi var. Yalnızca JS. iPhone'da denenecek.
 - [x] Harita sekmesi ve yol tarifi (12 Kas 2026, Gökhan, `harita-yol-tarifi`): "Haritalar" sekmesinin adı "Harita" oldu,
   sekme tam ekran harita açıyor (`app/(tabs)/kesfet.tsx`). Hedef haritaya dokunarak ya da yer aramayla (Photon) seçilir,
   bulunduğun yerden yol BRouter'la hesaplanır (etkinlik türü + yol / patika öncelikli; mesafe, tırmanış, tahmini süre).

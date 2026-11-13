@@ -355,6 +355,11 @@ export function useKayit(): Kayit {
   return useSyncExternalStore(abone, () => kayit, () => kayit);
 }
 
+/** Kaydın şu anki durumu (bileşeni yeniden çizmeden okumak için; ör. sekme düğmesi) */
+export function kayitDurumu(): KayitDurumu {
+  return kayit.durum;
+}
+
 /** Kayıt sürüyor ya da duraklatılmış mı (bileşeni yeniden çizmeden okumak için) */
 export function kayitSuruyor(): boolean {
   return kayit.durum !== 'bos';
