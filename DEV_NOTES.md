@@ -11,6 +11,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | Kim | İş | Dal |
 | --- | --- | --- |
 | İsmail | Telefona kurulum: iOS geliştirme derlemesi (kod değişikliği yok; Android alındı) | — |
+| Gökhan | Haritayı döndürme (`TopoMap.tsx`) | `gokhan/harita-dondurme` |
 
 ## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
 
@@ -113,6 +114,11 @@ Kalan: iPhone cihaz kaydı ve iOS geliştirme derlemesi, telefonda deneme. Yeni 
 
 ### [ ] Telefonda ve gerçek sunucuda denenmemiş özellikler
 Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
+- Haritayı döndürme (13 Kas 2026, Gökhan, `harita-dondurme`): bütün haritalar iki parmakla döndürülebiliyor (önceden
+  kapalıydı). Döndürünce katman düğmesinin solunda pusula çıkar, dokununca kuzey yukarı döner. Kayıt ekranında takip
+  sürerken döndürme takibi bırakmaz: hareket bitince harita senin noktanı yeniden ortalar (nokta etrafında döner);
+  kaydırma / yakınlaştırma eskisi gibi takibi bırakır. Bakılacaklar: 2D ve 3D'de döndürme, pusula yeri (kayıt, Harita
+  sekmesi, rota oluştur), döndürürken takip bırakılmıyor mu, kaydırınca bırakılıyor mu? Yalnızca JS, yeni derleme gerekmez.
 - Harita renkleri (13 Kas 2026, Gökhan, `harita-renkleri`): harita gündüz açık, gün batımından gün doğumuna kadar koyu;
   uygulama karanlık temadaysa (telefonun ayarı ya da Ayarlar > Görünüm > Karanlık) gündüz de koyu. Kayıt ekranı dahil
   bütün haritalar; kayıt sürerken gün batarsa harita koyuya geçer. Gün batımı telefonun son bilinen konumundan
