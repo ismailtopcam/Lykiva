@@ -825,6 +825,8 @@ export const de: Sozluk = {
     engelledin: 'Du hast diese Person blockiert.',
     profil_gizli: 'Diese Person hält ihre Profildetails privat.',
     takipci: 'Follower',
+    aktivite: 'Aktivität|Aktivitäten',
+    takip: 'Gefolgt',
     profilim: 'Mein Profil',
     aktiviteler: 'Aktivitäten',
     gecici_hesap: 'Temporäres Konto',
@@ -957,7 +959,7 @@ export const de: Sozluk = {
   profil: {
     gruplar: 'Gruppen',
     takipci: 'Follower',
-    aktivite: 'Aktivitäten',
+    aktivite: 'Aktivität|Aktivitäten',
     takip: 'Gefolgt',
     ayarlar: 'Einstellungen',
     dongu: ' · Rundtour',

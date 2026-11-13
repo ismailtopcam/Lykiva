@@ -100,9 +100,9 @@ export default function KisiScreen() {
             </Txt>
             {p.kisitli ? null : (
               <View style={{ flexDirection: 'row', gap: 16, marginTop: 8 }}>
-                <Sayi n={p.activity_count} etiket="aktivite" />
-                <Sayi n={p.follower_count} etiket={$t('kisi.takipci')} onPress={() => takipListesi('takipci')} />
-                <Sayi n={p.following_count} etiket="takip" onPress={() => takipListesi('takip')} />
+                <Sayi n={p.activity_count} etiket={$t('kisi.aktivite', { n: p.activity_count })} />
+                <Sayi n={p.follower_count} etiket={$t('kisi.takipci', { n: p.follower_count })} onPress={() => takipListesi('takipci')} />
+                <Sayi n={p.following_count} etiket={$t('kisi.takip', { n: p.following_count })} onPress={() => takipListesi('takip')} />
               </View>
             )}
           </View>

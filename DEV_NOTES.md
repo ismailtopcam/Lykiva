@@ -317,8 +317,6 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
   kurulmadı). "Kişiler" sekmesi takip ettiklerini ve takipçilerini gösteriyor; telefon rehberinden arkadaş bulma
   (`expo-contacts`, yeni derleme + sunucuda eşleştirme) yok.
 - Web profil sayfası (`/u/<kullanıcı>`) profil fotoğrafını göstermiyor, baş harfler görünüyor.
-- Geliştirme derlemesinde açılışta `The action 'ROUTE_NAMES_CHANGED' ... was not handled by any navigator` hatası
-  çıkıyor (sekme rotaları: index, kesfet, kaydet, gruplar, profil). Kullanıcı derlemesinde görünmüyor; kaynağı bulunmadı.
 - Engellenen kullanıcının açık oturumu erişim anahtarının süresi dolana kadar (varsayılan 1 saat) çalışır.
 - Hava yalnızca kayıt başında bir kez ölçülüyor; rota detayında tahmin yok (rotanın planlanan tarihi yok).
 - Rota eğimi köprü ve tünelde yanlış olabilir: BRouter çıktısında köprü / tünel etiketi yok (Galata Köprüsü örneğinde denendi), DEM
@@ -434,6 +432,8 @@ Türkçe, İngilizce, Almanca ve Rusça. Rusçada birimler Kiril (км, м, км
 - [ ] Örnek veriler (`data/ornek.ts`, `components/Ornek*`; sunucu anahtarı yokken görünür) Türkçe bırakıldı.
 - [x] Profil sayaçlarında "aktivite" / "takip" sabit Türkçeydi (İngilizce arayüzde "0 aktivite · 0 followers · 0 takip");
   `profil.aktivite` / `profil.takip` anahtarlarına çevrildi (13 Kas 2026, Android emülatör denemesinde görüldü).
+- [x] Sayaçlarda tekil / çoğul: uygulamada profil ve kişi sayfası, web'de `/u/<kullanıcı>` ("1 activity · 2 followers",
+  Rusçada üç biçim). Kişi sayfasındaki sabit "aktivite" / "takip" de çeviriye bağlandı.
 
 ### [x] Rota eğimi (28. aşama, `packages/shared/src/egim.ts`)
 Eğim her zaman 100 m'lik pencereyle ölçülür (DEM gürültülü; komşu iki nokta yanıltır). Sınıflar: iniş (≤ -%3), düz, %3–6, %6–10, %10+.
@@ -450,6 +450,12 @@ Tırmanış bölümü: en az 20 m kazanç, 200 m uzunluk, ort. %3; tepeden 10 m 
 Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde; web paylaşım sayfasında da.
 
 ## Kararlar
+
+- **Açılışta sekmeler giriş durumunu bekler** (13 Kas 2026): giriş durumu (oturum + "Şimdilik geç") 800 ms içinde belli olursa sekmeler hiç kurulmaz; doğrudan giriş
+  ekranına ya da sekmelere gidilir. Önceden sekmeler kurulup hemen giriş ekranına geçiliyordu; expo-router 58'de sekme
+  gezgininin açılışta kuyruğa koyduğu `ROUTE_NAMES_CHANGED` sekmeler kalkınca işlenemiyor, geliştirme derlemesinde
+  "was not handled by any navigator" uyarısı çıkıyordu. 800 ms dolarsa (internetsiz açılışta oturum yenilemesi) sekmeler
+  eskisi gibi açılır (`app/(tabs)/_layout.tsx`).
 
 - **Kulüp haftalık istatistiği bakana göre** (`grup_haftalik_istatistik`, 13 Kas 2026): yalnızca bakan kişinin görebildiği
   (`aktivite_gorunur_mu`) ve "yalnızca ben" olmayan aktiviteler sayılır; bu yüzden iki üye farklı toplam görebilir

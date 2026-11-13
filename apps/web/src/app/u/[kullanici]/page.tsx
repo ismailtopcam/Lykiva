@@ -85,10 +85,10 @@ function basHarfler(ad: string) {
 
 function Profil({ p, dil, m }: { p: HerkeseAcikProfil; dil: Dil; m: Metin }) {
   const sayilar: [string, string][] = [
-    [String(p.aktivite_sayisi), m('aktivite_sayisi')],
+    [String(p.aktivite_sayisi), m('aktivite_sayisi', { n: p.aktivite_sayisi })],
     [formatKm(p.toplam_km * 1000, dil), kmUnit(dil)],
-    [String(p.takipci), m('takipci')],
-    [String(p.takip), m('takip')],
+    [String(p.takipci), m('takipci', { n: p.takipci })],
+    [String(p.takip), m('takip', { n: p.takip })],
   ];
   return (
     <article>

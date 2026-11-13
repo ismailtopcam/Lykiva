@@ -1,5 +1,6 @@
 import { Redirect, router, Tabs } from 'expo-router';
-import { type ColorValue } from 'react-native';
+import { useEffect, useState } from 'react';
+import { type ColorValue, View } from 'react-native';
 
 import { Icon, type IconName } from '@/components/Icon';
 import { kayitDurumu } from '@/kayit/kaydedici';
@@ -21,6 +22,9 @@ function tabIcon(name: IconName, sabitRenk?: string) {
   return TabIcon;
 }
 
+/** Giriş durumu bu süre içinde belli olmazsa sekmeler yine de açılır (internetsiz açılışta oturum yenilemesi uzayabilir) */
+const GIRIS_BEKLEME_MS = 800;
+
 /**
  * Alt menü: Ana Sayfa · Harita · Egzersiz · Gruplar · Profil
  * Egzersiz bir ekran değil; basınca kayıt başlatma ekranını açar.
@@ -28,9 +32,18 @@ function tabIcon(name: IconName, sabitRenk?: string) {
  * Sekmeler arası geçiş ve kayıt ekranlarının açılışı aynı kısa solma (fade) ile; bkz. kök `_layout.tsx`.
  */
 export default function TabsLayout() {
-  // İlk açılışta giriş ekranı. Durum bilinene kadar sekmeler gösterilir (internetsiz açılışı bekletmemek için).
+  // İlk açılışta giriş ekranı. Durum kısa sürede belli olmazsa sekmeler gösterilir (internetsiz açılışı bekletmemek için).
   const girisGerekli = useGirisGerekli();
+  const [beklemeBitti, setBeklemeBitti] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setBeklemeBitti(true), GIRIS_BEKLEME_MS);
+    return () => clearTimeout(t);
+  }, []);
   if (girisGerekli) return <Redirect href="/giris" />;
+  // Sekmeler kurulup hemen giriş ekranına geçilirse sekme gezgininin açılışta sıraya koyduğu
+  // ROUTE_NAMES_CHANGED işlenemiyor ("was not handled by any navigator" uyarısı). Durum belli olana
+  // kadar boş zemin gösterilir; ilk kurulumda oturum telefonda olmadığı için bu birkaç milisaniye sürer.
+  if (girisGerekli === undefined && !beklemeBitti) return <View style={{ flex: 1, backgroundColor: colors.ground }} />;
 
   return (
     <Tabs

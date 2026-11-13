@@ -826,6 +826,8 @@ export const tr = {
     engelledin: 'Bu kişiyi engelledin.',
     profil_gizli: 'Bu kişi profil ayrıntılarını gizliyor.',
     takipci: 'takipçi',
+    aktivite: 'aktivite',
+    takip: 'takip',
     profilim: 'Profilim',
     aktiviteler: 'Aktiviteler',
     gecici_hesap: 'Geçici hesap',
