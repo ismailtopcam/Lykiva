@@ -7,10 +7,11 @@ import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import Svg, { Circle, Ellipse, G, Path, Rect, Text as SvgText } from 'react-native-svg';
 
 import type { LngLat } from '@/data/ornek';
+import { ROTA_RENGI } from './stilRenkleri';
 import type { TopoMapProps } from './TopoMap';
 
-const light = { land: '#E8E0CF', water: '#CBE1DC', contour: '#D3C7B0', casing: '#FBF8F2', line: '#B04E25', rest: '#9C9282' };
-const night = { land: '#121B17', water: '#12302E', contour: '#24302B', casing: '#0E1512', line: '#E07A4A', rest: '#6E7A73' };
+const light = { land: '#E8E0CF', water: '#CBE1DC', contour: '#D3C7B0', casing: '#FBF8F2', line: ROTA_RENGI.acik, rest: '#9C9282' };
+const night = { land: '#121B17', water: '#12302E', contour: '#24302B', casing: '#0E1512', line: ROTA_RENGI.koyu, rest: '#6E7A73' };
 
 export function FallbackMap({ route = [], progress, markers = [], dark, padding }: TopoMapProps) {
   const [size, setSize] = useState({ w: 0, h: 0 });

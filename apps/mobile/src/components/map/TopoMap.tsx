@@ -21,6 +21,7 @@ import { useKoyuHarita } from './gunduzGece';
 import { HaritaTuruDugmesi } from './HaritaTuruSecici';
 import { GECE_STIL_URL, MAP_STYLE_URL, useHaritaStili } from './haritaTurleri';
 import { ISI_RENKLERI, useIsiTuru, useIsiVerisi, type Gorunum } from './isiHaritasi';
+import { ROTA_RENGI } from './stilRenkleri';
 
 export { MAP_STYLE_URL };
 
@@ -118,7 +119,7 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
   const split = progress !== undefined ? Math.max(1, Math.round(progress * (route.length - 1))) : route.length - 1;
   const done = route.slice(0, split + 1);
   const rest = route.slice(split);
-  // Kayıtta (progress) tamamlanan kısım turuncu kalır; eğim renkleri yalnızca kalan kısma
+  // Kayıtta (progress) tamamlanan kısım rota renginde (mor) kalır; eğim renkleri yalnızca kalan kısma
   const renkBasi = progress !== undefined ? split : 0;
   const renkli =
     props.routeColors?.length && route.length > 1
@@ -278,7 +279,7 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
               id="rota-tamam-cizgi"
               type="line"
               layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-              paint={{ 'line-color': koyuZemin ? '#E07A4A' : '#B04E25', 'line-width': 4.5 }}
+              paint={{ 'line-color': koyuZemin ? ROTA_RENGI.koyu : ROTA_RENGI.acik, 'line-width': 4.5 }}
             />
           )}
         </ML.GeoJSONSource>
