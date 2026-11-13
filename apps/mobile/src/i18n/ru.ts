@@ -369,7 +369,7 @@ export const ru: Sozluk = {
     tirmanis_kilometrede_basliyor_kilometre: 'Подъём {a}: начинается на {km}-м километре, длина {km2} км, набор {meters} м, в среднем {grade}, максимум {grade2}. Показать на профиле',
     km_m: '{km} км · {meters} м · ',
     en_dik_cikis_en: 'Самый крутой подъём {grade} · самый крутой спуск {grade2}',
-    m: '{meters}–{meters2} м',
+    m: 'Высота {meters}–{meters2} м',
     tirmanislar: 'Подъёмы',
     km_m_ort: '{km} км · ↑ {meters} м · в среднем {grade}',
     km_de_baslar_en: 'Начинается на {km}-м км · максимум {grade}',
@@ -679,6 +679,14 @@ export const ru: Sozluk = {
   },
   havaKarti: {
     kaynak_met_norway: 'Источник: MET Norway',
+  },
+  rotaRuzgari: {
+    simdiki_ruzgar: 'Ветер сейчас',
+    karsidan: 'Встречный',
+    arkadan: 'Попутный',
+    yandan: 'Боковой',
+    yuzde: '{label}: {pct} %',
+    aciklama: 'Текущий прогноз для середины маршрута · Источник: MET Norway',
   },
   kayit: {
     baslat: 'Старт',

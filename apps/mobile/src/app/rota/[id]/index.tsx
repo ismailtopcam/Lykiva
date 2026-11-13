@@ -8,6 +8,7 @@ import { CevrimdisiKarti } from '@/components/CevrimdisiKarti';
 import { EgimProfili, imlecKonumu, TirmanisListesi, useRotaEgim } from '@/components/EgimProfili';
 import { FloatingHeader } from '@/components/Header';
 import { IconButton } from '@/components/IconButton';
+import { RotaRuzgari } from '@/components/RotaRuzgari';
 import { TopoMap, type MapMarker } from '@/components/map/TopoMap';
 import { Txt } from '@/components/Txt';
 import { AvatarStack, Button, Stat } from '@/components/ui';
@@ -109,6 +110,8 @@ export default function RotaDetayScreen() {
           ) : (
             <Txt variant="small">{$t('rota.bu_rota_serbest_cizildigi')}</Txt>
           )}
+
+          {!ornek && noktalar.length > 1 ? <RotaRuzgari points={noktalar} /> : null}
 
           <CevrimdisiKarti rota={r} />
 

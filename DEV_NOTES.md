@@ -345,6 +345,12 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
   kaydedilmez, aktiviteye `route_id` gitmez (`kayit/paket.ts` artık yalnızca uuid gönderiyor). Eski Keşfet listesi
   `app/kesfet-liste.tsx`'e taşındı, haritanın sağ üstündeki pusula düğmesiyle açılır. Sesli / adım adım yönlendirme yok.
   Yalnızca JS, yeni yerel modül yok. Telefonda denenecek: dokunarak hedef seçme, kamera yolu tam gösteriyor mu, "Yola çık".
+- [x] Yol tarifinde ve rotalarda eğim, tırmanışlar, rüzgâr (13 Kas 2026, Gökhan, `rota-irtifa-ruzgar`): Harita sekmesinde
+  yol çizgisi eğime göre renkli; panelde iniş, eğim profili (parmakla gezilir, "Rakım" aralığı), tırmanış listesi ve
+  şu anki rüzgâr: rotanın ortası için MET Norway, rüzgârın rota boyunca karşıdan / yandan / arkadan payı (`izdeRuzgar`;
+  2 m/s altında pay gösterilmez). Bileşen `components/RotaRuzgari.tsx`; rota çizme ekranında ve kayıtlı rota sayfasında da
+  var, rota çizme ekranına tırmanış listesi eklendi. Uzayan paneller kayıyor (harita görünür kalsın diye). Yalnızca
+  şimdiki rüzgâr (saat seçilemiyor). Yalnızca JS. Telefonda denenecek.
 - [x] Harita sekmesinde 3B/2B ve konum düğmesi sağda (13 Kas 2026, Gökhan, `harita-3b-konum`): Harita sekmesinde 3B/2B
   düğmesi yoktu (yalnızca kayıt ekranında vardı); katman düğmesinin altına eklendi. "Konumuma git" düğmesi sol üstten
   3B/2B'nin altına, sağ sütuna taşındı; arama kutusu sola kadar uzuyor. Yalnızca JS. Telefonda denenecek.

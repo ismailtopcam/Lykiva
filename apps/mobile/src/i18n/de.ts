@@ -369,7 +369,7 @@ export const de: Sozluk = {
     tirmanis_kilometrede_basliyor_kilometre: 'Anstieg {a}: beginnt bei Kilometer {km}, {km2} Kilometer, {meters} Höhenmeter, durchschnittlich {grade}, am steilsten {grade2}. Im Profil zeigen',
     km_m: '{km} km · {meters} m · ',
     en_dik_cikis_en: 'Steilster Anstieg {grade} · steilster Abstieg {grade2}',
-    m: '{meters}–{meters2} m',
+    m: 'Höhe {meters}–{meters2} m',
     tirmanislar: 'Anstiege',
     km_m_ort: '{km} km · ↑ {meters} m · Ø {grade}',
     km_de_baslar_en: 'Beginnt bei km {km} · am steilsten {grade}',
@@ -679,6 +679,14 @@ export const de: Sozluk = {
   },
   havaKarti: {
     kaynak_met_norway: 'Quelle: MET Norway',
+  },
+  rotaRuzgari: {
+    simdiki_ruzgar: 'Aktueller Wind',
+    karsidan: 'Gegenwind',
+    arkadan: 'Rückenwind',
+    yandan: 'Seitenwind',
+    yuzde: '{label} {pct} Prozent',
+    aciklama: 'Aktuelle Vorhersage für die Mitte der Route · Quelle: MET Norway',
   },
   kayit: {
     baslat: 'Starten',

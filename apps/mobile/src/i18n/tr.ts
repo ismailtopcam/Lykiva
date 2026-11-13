@@ -370,7 +370,7 @@ export const tr = {
     tirmanis_kilometrede_basliyor_kilometre: '{a}. tırmanış: {km}. kilometrede başlıyor, {km2} kilometre, {meters} metre tırmanış, ortalama {grade}, en dik {grade2}. Profilde göster',
     km_m: '{km} km · {meters} m · ',
     en_dik_cikis_en: 'En dik çıkış {grade} · en dik iniş {grade2}',
-    m: '{meters}–{meters2} m',
+    m: 'Rakım {meters}–{meters2} m',
     tirmanislar: 'Tırmanışlar',
     km_m_ort: '{km} km · ↑ {meters} m · ort. {grade}',
     km_de_baslar_en: '{km}. km’de başlar · en dik {grade}',
@@ -680,6 +680,14 @@ export const tr = {
   },
   havaKarti: {
     kaynak_met_norway: 'Kaynak: MET Norway',
+  },
+  rotaRuzgari: {
+    simdiki_ruzgar: 'Şu anki rüzgâr',
+    karsidan: 'Karşıdan',
+    arkadan: 'Arkadan',
+    yandan: 'Yandan',
+    yuzde: '{label} yüzde {pct}',
+    aciklama: 'Rotanın ortası için şu anki tahmin · Kaynak: MET Norway',
   },
   kayit: {
     baslat: 'Başlat',
