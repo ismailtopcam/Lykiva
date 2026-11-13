@@ -10,7 +10,6 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
-| Gökhan | Harita sekmesinde konumun geç gelmesi (`kaydedici.ts` > `konumOnizlemeBaslat`) | `gokhan/harita-konum-hizli` |
 
 ## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
 
