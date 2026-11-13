@@ -10,7 +10,6 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
-| Gökhan | Harita sekmesi: 3B/2B düğmesi, konum düğmesi sağda | `gokhan/harita-3b-konum` |
 
 ## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
 
