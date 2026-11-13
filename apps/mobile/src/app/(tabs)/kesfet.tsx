@@ -32,6 +32,8 @@ type Hedef = { c: LngLat; ad: string | null };
 type Odak = { c: LngLat; z: number };
 /** Bilgi panelinin kademesi */
 type Kademe = 1 | 2 | 3;
+/** Sürüklerken bir kademe değişmesi için parmağın gitmesi gereken yol (px) */
+const KADEME_ADIMI = 45;
 const KADEME_ADI: Record<Kademe, () => string> = {
   1: () => $t('harita.panel_ozet'),
   2: () => $t('harita.panel_yukselti'),
@@ -91,16 +93,21 @@ export default function HaritaScreen() {
   const [kademe, setKademe] = useState<Kademe>(1);
   const buyut = () => setKademe((k) => (k < 3 ? ((k + 1) as Kademe) : k));
   const kucult = () => setKademe((k) => (k > 1 ? ((k - 1) as Kademe) : k));
-  // Tutamacı yukarı kaydır: büyüt, aşağı kaydır: küçült (kayıt ekranındaki panelle aynı)
-  const [surukle] = useState(() =>
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_e, g) => Math.abs(g.dy) > 8 && Math.abs(g.dy) > Math.abs(g.dx),
-      onPanResponderRelease: (_e, g) => {
-        if (g.dy < -30) buyut();
-        else if (g.dy > 30) kucult();
-      },
-    }),
-  );
+  // Panelin üstünü (tutamaç ve hedef satırı) parmakla tutup sürükle: parmak yukarı gittikçe panel büyür, aşağı gittikçe
+  // küçülür; bırakınca o kademede kalır. Her KADEME_ADIMI px bir kademe.
+  const [surukle] = useState(() => {
+    // Sürüklemenin başladığı kademe (yalnızca bu tutucunun içinde, çizimde okunmaz)
+    let bas: Kademe = 1;
+    return PanResponder.create({
+      onMoveShouldSetPanResponder: (_e, g) => Math.abs(g.dy) > 6 && Math.abs(g.dy) > Math.abs(g.dx),
+      onPanResponderGrant: () =>
+        setKademe((k) => {
+          bas = k;
+          return k;
+        }),
+      onPanResponderMove: (_e, g) => setKademe(Math.min(3, Math.max(1, bas + Math.round(-g.dy / KADEME_ADIMI))) as Kademe),
+    });
+  });
 
   // Sekme açıkken GPS'i çalıştır (kayıt sürmüyorsa konumu yalnızca gösterir); sekmeden çıkınca durur
   useFocusEffect(useCallback(() => konumOnizlemeBaslat(), []));
@@ -280,49 +287,37 @@ export default function HaritaScreen() {
       ) : null}
 
       <View style={styles.sheet} onLayout={(e) => setPanelH(Math.round(e.nativeEvent.layout.height))}>
-        {yolVar ? (
-          // Tutamaç: yukarı kaydır ya da ˄ ile büyüt (özet → yükselti → tırmanışlar), aşağı kaydır ya da ˅ ile küçült
-          <View
-            {...surukle.panHandlers}
-            style={styles.tutamac}
-            accessible
-            accessibilityRole="adjustable"
-            accessibilityLabel={$t('harita.bilgi_paneli')}
-            accessibilityValue={{ text: KADEME_ADI[kademe]() }}
-            accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
-            onAccessibilityAction={(e) => (e.nativeEvent.actionName === 'increment' ? buyut() : kucult())}>
-            <View style={styles.tutamacYan}>
-              <Txt variant="small">{KADEME_ADI[kademe]()}</Txt>
+        {/* Hedef seçiliyken panelin üstü sürükleme alanı: tutamaç ve hedef satırı */}
+        <View {...(hedef ? surukle.panHandlers : null)}>
+          {yolVar ? (
+            <View
+              style={styles.tutamac}
+              accessible
+              accessibilityRole="adjustable"
+              accessibilityLabel={$t('harita.bilgi_paneli')}
+              accessibilityValue={{ text: KADEME_ADI[kademe]() }}
+              accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+              onAccessibilityAction={(e) => (e.nativeEvent.actionName === 'increment' ? buyut() : kucult())}>
+              <View style={styles.cizgi} />
+              <View style={styles.kademeNoktalari}>
+                {([1, 2, 3] as const).map((k) => (
+                  <View key={k} style={[styles.kademeNoktasi, k <= kademe && styles.kademeNoktasiDolu]} />
+                ))}
+              </View>
             </View>
-            <View style={styles.cizgi} />
-            <View style={[styles.tutamacYan, { flexDirection: 'row', justifyContent: 'flex-end', gap: 6 }]}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={$t('kayit_canli.paneli_kucult')}
-                disabled={kademe === 1}
-                onPress={kucult}
-                hitSlop={6}
-                style={[styles.boyDugmesi, kademe === 1 && { opacity: 0.3 }]}>
-                <View style={{ transform: [{ rotate: '90deg' }] }}>
-                  <Icon name="chevron" size={18} color={colors.ink} strokeWidth={2.4} />
-                </View>
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={$t('kayit_canli.paneli_buyut')}
-                disabled={kademe === 3}
-                onPress={buyut}
-                hitSlop={6}
-                style={[styles.boyDugmesi, kademe === 3 && { opacity: 0.3 }]}>
-                <View style={{ transform: [{ rotate: '-90deg' }] }}>
-                  <Icon name="chevron" size={18} color={colors.ink} strokeWidth={2.4} />
-                </View>
-              </Pressable>
+          ) : (
+            <View style={styles.grip} />
+          )}
+          {hedef ? (
+            <View style={styles.hedefSatiri}>
+              <Icon name="flag" size={20} color={colors.terra} />
+              <Txt style={{ flex: 1, fontFamily: fontFamily.bodyBold, fontSize: 16 }} numberOfLines={1}>
+                {hedefAdi}
+              </Txt>
+              <IconButton icon="close" label={$t('harita.hedefi_kaldir')} onPress={temizle} />
             </View>
-          </View>
-        ) : (
-          <View style={styles.grip} />
-        )}
+          ) : null}
+        </View>
         {!hedef ? (
           <>
             <Txt variant="heading">{$t('harita.nereye_gitmek_istiyorsun')}</Txt>
@@ -337,14 +332,6 @@ export default function HaritaScreen() {
           </>
         ) : (
           <>
-            <View style={styles.hedefSatiri}>
-              <Icon name="flag" size={20} color={colors.terra} />
-              <Txt style={{ flex: 1, fontFamily: fontFamily.bodyBold, fontSize: 16 }} numberOfLines={1}>
-                {hedefAdi}
-              </Txt>
-              <IconButton icon="close" label={$t('harita.hedefi_kaldir')} onPress={temizle} />
-            </View>
-
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingVertical: 8 }} accessibilityRole="radiogroup">
               {ACTIVITY_TYPES.map((t) => (
                 <Chip key={t} label={ACTIVITY_LABELS[t]} role="radio" selected={t === activity} onPress={() => setActivity(t)} />
@@ -424,9 +411,11 @@ const styles = temaliStil(() => StyleSheet.create({
   resultsNote: { color: colors.inkMuted, paddingHorizontal: 14, paddingTop: 4, paddingBottom: 6 },
   sheet: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, paddingHorizontal: space.lg, paddingTop: 10, paddingBottom: 16 },
   grip: { width: 40, height: 5, borderRadius: 3, backgroundColor: colors.lineStrong, alignSelf: 'center', marginBottom: 10 },
-  tutamac: { flexDirection: 'row', alignItems: 'center', minHeight: 36, marginTop: -4, marginBottom: 4 },
-  tutamacYan: { flex: 1 },
-  cizgi: { width: 40, height: 5, borderRadius: 3, backgroundColor: colors.lineStrong },
-  boyDugmesi: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.ground },
+  // Parmakla tutması kolay olsun diye yüksek; ortada çizgi, altında hangi kademede olduğunu gösteren üç nokta
+  tutamac: { alignItems: 'center', justifyContent: 'center', gap: 5, minHeight: 28, marginTop: -6, marginBottom: 4 },
+  cizgi: { width: 44, height: 5, borderRadius: 3, backgroundColor: colors.lineStrong },
+  kademeNoktalari: { flexDirection: 'row', gap: 4 },
+  kademeNoktasi: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.line },
+  kademeNoktasiDolu: { backgroundColor: colors.inkMuted },
   hedefSatiri: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 }));
