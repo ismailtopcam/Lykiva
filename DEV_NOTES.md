@@ -336,6 +336,10 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
   kaydedilmez, aktiviteye `route_id` gitmez (`kayit/paket.ts` artık yalnızca uuid gönderiyor). Eski Keşfet listesi
   `app/kesfet-liste.tsx`'e taşındı, haritanın sağ üstündeki pusula düğmesiyle açılır. Sesli / adım adım yönlendirme yok.
   Yalnızca JS, yeni yerel modül yok. Telefonda denenecek: dokunarak hedef seçme, kamera yolu tam gösteriyor mu, "Yola çık".
+- [x] Haritayı döndürme (13 Kas 2026, Gökhan, `harita-dondurme`): bütün haritalar iki parmakla döndürülebiliyor (önceden
+  kapalıydı). Döndürünce katman düğmesinin solunda pusula çıkar, dokununca kuzey yukarı döner. Kayıt ekranında takip
+  sürerken döndürme takibi bırakmaz: hareket bitince harita takip edilen noktayı yeniden ortalar (nokta etrafında döner);
+  kaydırma / yakınlaştırma takibi bırakır. Yalnızca JS. İki telefonda denendi, çalışıyor.
 - [x] Harita renkleri (13 Kas 2026, Gökhan, `harita-renkleri`): gündüz açık, gün batımından sonra ve karanlık temada koyu
   harita (Liberty'den türetilen, ayrıntılı); açık haritada patikalar belirgin. Telefonda denenecekler yukarıda
   ("Telefonda ve gerçek sunucuda denenmemiş özellikler").

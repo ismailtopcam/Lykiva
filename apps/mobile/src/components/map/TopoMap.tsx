@@ -10,8 +10,9 @@
  * Standart stil EXPO_PUBLIC_MAP_STYLE_URL ile değiştirilir (ör. MapTiler Outdoor).
  * Varsayılan: OpenFreeMap Liberty (anahtarsız, OSM verisi).
  */
+import type { CameraRef } from '@maplibre/maplibre-react-native';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
-import { useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import type { LngLat } from '@/data/ornek';
@@ -60,7 +61,10 @@ export type TopoMapProps = {
   followZoom?: number;
   /** 3B görünüm: kamera eğilir, binalar yükseltilir. Yalnızca gerçek haritada. */
   ucBoyut?: boolean;
-  /** Kullanıcı haritayı elle kaydırınca / yakınlaştırınca (ör. takibi bırakmak için) */
+  /**
+   * Kullanıcı haritayı elle kaydırınca / yakınlaştırınca (ör. takibi bırakmak için).
+   * Döndürme sayılmaz: takip sürerken harita takip edilen noktanın etrafında döner, takip bırakılmaz.
+   */
   onKullaniciOynatti?: () => void;
   /** Haritaya dokununca (yalnızca gerçek haritada) */
   onPress?: (coord: LngLat) => void;
@@ -99,6 +103,15 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
   const isi = useIsiVerisi(isiTuru, gorunum);
   const { route = [], progress, markers = [], interactive = true, padding } = props;
   const egim = props.ucBoyut ? 60 : 0;
+  const takipPadding = { top: 0, right: 0, left: 0, bottom: 0, ...padding };
+
+  // Takip sürerken (kayıt) el hareketi: hareket bitene kadar kamera yeni konuma kaydırılmaz (hareket bölünmesin).
+  // Hareket bitince yön değiştiyse döndürmedir: kamera takip edilen noktayı yeniden ortalar, harita o noktanın
+  // etrafında dönmüş olur. Değişmediyse kaydırma / yakınlaştırmadır: takip bırakılır (onKullaniciOynatti).
+  const kamera = useRef<CameraRef>(null);
+  const hareketBasiYon = useRef<number | null>(null);
+  const [sabitMerkez, setSabitMerkez] = useState<LngLat | null>(null);
+  const takipMerkezi = sabitMerkez ?? props.follow;
   const pts = route.length ? route : markers.map((m) => m.coord);
   const bounds = boundsOf(pts);
   const split = progress !== undefined ? Math.max(1, Math.round(progress * (route.length - 1))) : route.length - 1;
@@ -131,34 +144,61 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
       style={StyleSheet.absoluteFill}
       mapStyle={mapStyle}
       logo={false}
-      compass={false}
+      // Pusula yalnızca harita döndürülünce görünür; dokununca kuzey yukarı döner. Katman düğmesinin solunda.
+      compass={interactive}
+      compassPosition={props.katmanDugmesi ? { top: props.katmanDugmesi.top + 4, right: 16 + 44 + 10 } : { top: 12, right: 12 }}
       scaleBar={false}
       attribution
       dragPan={interactive}
       touchZoom={interactive}
       doubleTapZoom={interactive}
-      touchRotate={false}
+      touchRotate={interactive}
       touchPitch={false}
       onPress={props.onPress ? (e) => props.onPress?.([e.nativeEvent.lngLat[0], e.nativeEvent.lngLat[1]]) : undefined}
       onRegionWillChange={
         props.onKullaniciOynatti
           ? (e) => {
-              if (e.nativeEvent.userInteraction) props.onKullaniciOynatti?.();
+              const { userInteraction, bearing } = e.nativeEvent;
+              if (!userInteraction) return;
+              if (!props.follow) {
+                props.onKullaniciOynatti?.();
+                return;
+              }
+              if (hareketBasiYon.current === null) {
+                hareketBasiYon.current = bearing;
+                setSabitMerkez(props.follow);
+              }
             }
           : undefined
       }
       // Görünen alan hep izlenir: ısı haritası sonradan açılınca haritayı kımıldatmadan veri gelsin
       onRegionDidChange={(e) => {
-        const { bounds, zoom } = e.nativeEvent;
+        const { bounds, zoom, bearing } = e.nativeEvent;
         setGorunum({ bounds: [bounds[0], bounds[1], bounds[2], bounds[3]], zoom });
+        const basYon = hareketBasiYon.current;
+        if (basYon === null) return;
+        hareketBasiYon.current = null;
+        setSabitMerkez(null);
+        if (Math.abs(aciFarki(bearing, basYon)) > 2 && props.follow) {
+          kamera.current?.easeTo({
+            center: props.follow,
+            zoom: props.followZoom ?? 16,
+            pitch: egim,
+            padding: takipPadding,
+            duration: 300,
+          });
+        } else {
+          props.onKullaniciOynatti?.();
+        }
       }}>
-      {props.follow ? (
+      {props.follow && takipMerkezi ? (
         <ML.Camera
-          center={props.follow}
+          ref={kamera}
+          center={takipMerkezi}
           zoom={props.followZoom ?? 16}
           pitch={egim}
           duration={800}
-          padding={{ top: 0, right: 0, left: 0, bottom: 0, ...padding }}
+          padding={takipPadding}
         />
       ) : bounds ? (
         <ML.Camera
@@ -313,6 +353,11 @@ function boundsOf(pts: LngLat[]): [number, number, number, number] | null {
   const ys = pts.map((p) => p[1]);
   const pad = 0.002;
   return [Math.min(...xs) - pad, Math.min(...ys) - pad, Math.max(...xs) + pad, Math.max(...ys) + pad];
+}
+
+/** İki yön arasındaki en kısa fark, derece (-180..180) */
+function aciFarki(a: number, b: number) {
+  return ((((a - b) % 360) + 540) % 360) - 180;
 }
 
 function lineOf(coords: LngLat[]) {
