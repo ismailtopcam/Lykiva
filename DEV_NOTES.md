@@ -10,6 +10,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
+| Gökhan | Harita sekmesi ve kayıt ekranı için ortak harita bileşeni (`components/map/YolHaritasi.tsx`): eğim renkli yol, 3B/2B, konum | `gokhan/ortak-harita` |
 
 ## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
 

@@ -1,4 +1,4 @@
-import { ACTIVITY_LABELS, formatDuration, formatKm, formatMeters, formatSpeedKmh, OFF_ROUTE_M, kmUnit, mUnit } from '@lykiva/shared';
+import { ACTIVITY_LABELS, formatDuration, formatKm, formatMeters, formatSpeedKmh, OFF_ROUTE_M, kmUnit, mUnit, type RoutePoint } from '@lykiva/shared';
 import { Redirect, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
@@ -10,7 +10,7 @@ import { FloatingHeader } from '@/components/Header';
 import { Icon } from '@/components/Icon';
 import { useKoyuHarita } from '@/components/map/gunduzGece';
 import { useHaritaTuru } from '@/components/map/haritaTurleri';
-import { gercekHarita, TopoMap } from '@/components/map/TopoMap';
+import { YolHaritasi } from '@/components/map/YolHaritasi';
 import { Txt } from '@/components/Txt';
 import { Stat } from '@/components/ui';
 import { bitir, duraklat, iptalEt } from '@/kayit/kaydedici';
@@ -19,6 +19,7 @@ import { colors, fontFamily, space } from '@/theme';
 import { $t } from '@/i18n';
 
 const n = colors.night;
+const BOS: RoutePoint[] = [];
 
 /** Bilgi panelinin boyu: küçük (tek satır), normal, tam ekran (harita kapanır) */
 type PanelBoyu = 'kucuk' | 'normal' | 'tam';
@@ -32,7 +33,6 @@ export default function CanliTakipScreen() {
   const { kayit, stats, anlikHiz, aktifS, iz, ben, gpsDogruluk } = veri;
   const rb = rotaBilgisi(veri);
   const [takip, setTakip] = useState(true);
-  const [ucBoyut, setUcBoyut] = useState(false);
   const [boy, setBoy] = useState<PanelBoyu>('normal');
   const [kaydediyor, setKaydediyor] = useState(false);
   const haritaTuru = useHaritaTuru();
@@ -139,54 +139,33 @@ export default function CanliTakipScreen() {
     <View style={styles.root}>
       {/* Harita görünüm ayarına göre açık ya da koyu; durum çubuğu üstünde okunsun */}
       <StatusBar style={tam || koyuHarita || haritaTuru === 'uydu' || haritaTuru === 'hibrit' ? 'light' : 'dark'} />
-      <TopoMap
-        dark
+      {/* Harita sekmesiyle ortak harita: kalan yol eğime göre renkli, 3B/2B ve konum (takip) düğmeleri */}
+      <YolHaritasi
+        koyu
         style={{ flex: 1 }}
-        route={kayit.rota ? kayit.rota.points.map((p) => [p.lng, p.lat] as [number, number]) : iz}
+        points={kayit.rota?.points ?? BOS}
+        iz={iz}
         progress={rb ? Math.max(0.001, rb.kesir) : undefined}
-        markers={[
-          ...(kayit.rota && kayit.rota.points.length > 1
-            ? [{ id: 'end', coord: [kayit.rota.points[kayit.rota.points.length - 1].lng, kayit.rota.points[kayit.rota.points.length - 1].lat] as [number, number], kind: 'end' as const }]
-            : []),
-          ...(ben ? [{ id: 'me', coord: ben, kind: 'me' as const }] : []),
-        ]}
+        ben={ben}
+        markers={
+          kayit.rota && kayit.rota.points.length > 1
+            ? [{ id: 'end', coord: [kayit.rota.points[kayit.rota.points.length - 1].lng, kayit.rota.points[kayit.rota.points.length - 1].lat], kind: 'end' }]
+            : []
+        }
+        onKonum={() => setTakip(true)}
+        konumSecili={takip}
+        ustBosluk={insets.top + 6}
         follow={takip ? ben : null}
-        ucBoyut={ucBoyut}
         onKullaniciOynatti={() => setTakip(false)}
-        katmanDugmesi={{ top: insets.top + 6 }}
         padding={{ top: 60, bottom: 40 }}
         accessibilityLabel={rb ? $t('kayit_canli.canli_rota_haritasi_tamamlanan', { ad: rb.ad }) : $t('kayit_canli.canli_kayit_haritasi_simdiye')}
       />
       {tam ? null : (
-        <>
-          <FloatingHeader
-            left={kayittaRozeti}
-            // Sağ üst köşe haritanın katman düğmesinde; boş yer tutucu dokunmayı engellemesin
-            right={<View />}
-          />
-          {gercekHarita ? (
-            <View style={[styles.haritaDugmeleri, { top: insets.top + 6 + 44 + 8 }]} pointerEvents="box-none">
-              <Pressable
-                accessibilityRole="switch"
-                accessibilityState={{ checked: ucBoyut }}
-                accessibilityLabel={$t('kayit_canli.uc_boyutlu_gorunum')}
-                onPress={() => setUcBoyut((u) => !u)}
-                hitSlop={4}
-                style={({ pressed }) => [styles.haritaDugmesi, pressed && { opacity: 0.6 }]}>
-                <Txt style={[styles.haritaDugmesiYazi, ucBoyut && { color: n.accent }]}>{ucBoyut ? '3D' : '2D'}</Txt>
-              </Pressable>
-              <Pressable
-                accessibilityRole="switch"
-                accessibilityState={{ checked: takip }}
-                accessibilityLabel={$t('kayit_canli.konumum')}
-                onPress={() => setTakip(true)}
-                hitSlop={4}
-                style={({ pressed }) => [styles.haritaDugmesi, pressed && { opacity: 0.6 }]}>
-                <Icon name="target" size={22} color={takip ? n.accent : n.text} strokeWidth={2} />
-              </Pressable>
-            </View>
-          ) : null}
-        </>
+        <FloatingHeader
+          left={kayittaRozeti}
+          // Sağ üst köşe haritanın katman düğmesinde; boş yer tutucu dokunmayı engellemesin
+          right={<View />}
+        />
       )}
 
       <View style={[styles.panel, tam && [styles.panelTam, { paddingTop: insets.top + 6 }], { paddingBottom: insets.bottom + 8 }]}>
@@ -331,18 +310,6 @@ const styles = StyleSheet.create({
   pill: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: 'rgba(14,21,18,0.85)' },
   pillText: { fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: n.text },
   dot: { width: 9, height: 9, borderRadius: 5 },
-  haritaDugmeleri: { position: 'absolute', right: 16, gap: 8, zIndex: 10 },
-  haritaDugmesi: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(14,21,18,0.85)',
-    borderWidth: 1,
-    borderColor: n.line,
-  },
-  haritaDugmesiYazi: { fontFamily: fontFamily.bodyBold, fontSize: 14, color: n.text },
   // Harita kalan bütün alanı alır; panel yalnızca içeriği kadar yer kaplar
   panel: { marginTop: -18, backgroundColor: n.ground, borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingHorizontal: 16, paddingTop: 4 },
   // Tam ekran: haritanın üstünü kaplar (harita yerinde kalır, yeniden yüklenmez)
