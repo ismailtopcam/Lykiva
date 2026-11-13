@@ -9,7 +9,7 @@
 import { ACTIVITY_LABELS, ACTIVITY_TYPES, estimateDuration, formatKm, formatMeters, kmUnit, routeStats, type ActivityType, type RoutePoint } from '@lykiva/shared';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Keyboard, Pressable, ScrollView, StyleSheet, TextInput, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Keyboard, PanResponder, Pressable, ScrollView, StyleSheet, TextInput, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EgimProfili, imlecKonumu, TirmanisListesi, useRotaEgim } from '@/components/EgimProfili';
@@ -30,6 +30,13 @@ import { $t } from '@/i18n';
 
 type Hedef = { c: LngLat; ad: string | null };
 type Odak = { c: LngLat; z: number };
+/** Bilgi panelinin kademesi */
+type Kademe = 1 | 2 | 3;
+const KADEME_ADI: Record<Kademe, () => string> = {
+  1: () => $t('harita.panel_ozet'),
+  2: () => $t('harita.panel_yukselti'),
+  3: () => $t('egimProfili.tirmanislar'),
+};
 
 const TERCIHLER = (): { id: Exclude<CizimModu, 'serbest'>; label: string }[] => [
   { id: 'yol', label: $t('harita.yol_oncelikli') },
@@ -80,6 +87,20 @@ export default function HaritaScreen() {
   const [secim, setSecim] = useState<{ points: RoutePoint[]; v: number } | null>(null);
   // Kameranın en son hangi yol + panel yüksekliği için yola sığdırıldığı
   const [cerceveli, setCerceveli] = useState<string | null>(null);
+  // Bilgi paneli kademesi: 1 özet, 2 + yükselti, 3 + tırmanışlar ve rüzgâr. Hedef değişse de kullanıcının seçimi kalır
+  const [kademe, setKademe] = useState<Kademe>(1);
+  const buyut = () => setKademe((k) => (k < 3 ? ((k + 1) as Kademe) : k));
+  const kucult = () => setKademe((k) => (k > 1 ? ((k - 1) as Kademe) : k));
+  // Tutamacı yukarı kaydır: büyüt, aşağı kaydır: küçült (kayıt ekranındaki panelle aynı)
+  const [surukle] = useState(() =>
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_e, g) => Math.abs(g.dy) > 8 && Math.abs(g.dy) > Math.abs(g.dx),
+      onPanResponderRelease: (_e, g) => {
+        if (g.dy < -30) buyut();
+        else if (g.dy > 30) kucult();
+      },
+    }),
+  );
 
   // Sekme açıkken GPS'i çalıştır (kayıt sürmüyorsa konumu yalnızca gösterir); sekmeden çıkınca durur
   useFocusEffect(useCallback(() => konumOnizlemeBaslat(), []));
@@ -154,6 +175,8 @@ export default function HaritaScreen() {
     if (f) setOdak(f);
   }
   const gorunenHata = anahtar ? hata : null;
+  // Kademe tutamacı yalnızca gösterilecek yol bilgisi varken
+  const yolVar = !!hedef && !!baslangic && points.length > 1;
   const kayitta = kayit.durum !== 'bos';
 
   const markers: MapMarker[] = [];
@@ -257,7 +280,49 @@ export default function HaritaScreen() {
       ) : null}
 
       <View style={styles.sheet} onLayout={(e) => setPanelH(Math.round(e.nativeEvent.layout.height))}>
-        <View style={styles.grip} />
+        {yolVar ? (
+          // Tutamaç: yukarı kaydır ya da ˄ ile büyüt (özet → yükselti → tırmanışlar), aşağı kaydır ya da ˅ ile küçült
+          <View
+            {...surukle.panHandlers}
+            style={styles.tutamac}
+            accessible
+            accessibilityRole="adjustable"
+            accessibilityLabel={$t('harita.bilgi_paneli')}
+            accessibilityValue={{ text: KADEME_ADI[kademe]() }}
+            accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+            onAccessibilityAction={(e) => (e.nativeEvent.actionName === 'increment' ? buyut() : kucult())}>
+            <View style={styles.tutamacYan}>
+              <Txt variant="small">{KADEME_ADI[kademe]()}</Txt>
+            </View>
+            <View style={styles.cizgi} />
+            <View style={[styles.tutamacYan, { flexDirection: 'row', justifyContent: 'flex-end', gap: 6 }]}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={$t('kayit_canli.paneli_kucult')}
+                disabled={kademe === 1}
+                onPress={kucult}
+                hitSlop={6}
+                style={[styles.boyDugmesi, kademe === 1 && { opacity: 0.3 }]}>
+                <View style={{ transform: [{ rotate: '90deg' }] }}>
+                  <Icon name="chevron" size={18} color={colors.ink} strokeWidth={2.4} />
+                </View>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={$t('kayit_canli.paneli_buyut')}
+                disabled={kademe === 3}
+                onPress={buyut}
+                hitSlop={6}
+                style={[styles.boyDugmesi, kademe === 3 && { opacity: 0.3 }]}>
+                <View style={{ transform: [{ rotate: '-90deg' }] }}>
+                  <Icon name="chevron" size={18} color={colors.ink} strokeWidth={2.4} />
+                </View>
+              </Pressable>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.grip} />
+        )}
         {!hedef ? (
           <>
             <Txt variant="heading">{$t('harita.nereye_gitmek_istiyorsun')}</Txt>
@@ -303,16 +368,18 @@ export default function HaritaScreen() {
                   <Stat label={$t('ortak.inis')} size={18} value={stats && rakimVar ? $t('rota_olustur.m_2', { meters: formatMeters(stats.lossM) }) : '–'} />
                   <Stat label={$t('rota_olustur.tahmini_sure')} size={18} value={stats ? sureMetni(estimateDuration(activity, stats.distanceM, rakimVar ? stats.gainM : 0)) : '–'} />
                 </View>
-                {/* Eğim, tırmanışlar ve rüzgâr: harita görünür kalsın diye en fazla ekranın üçte biri, içi kayar */}
-                {egim || points.length > 1 ? (
-                  <ScrollView style={{ maxHeight: height * 0.33, marginBottom: 10 }} showsVerticalScrollIndicator={false}>
+                {/* 2. kademe: yükselti (eğim profili); 3. kademe: tırmanışlar ve rüzgâr. Harita görünür kalsın diye içi kayar */}
+                {kademe >= 2 && (egim || kademe === 3) && points.length > 1 ? (
+                  <ScrollView style={{ maxHeight: height * (kademe === 3 ? 0.45 : 0.2), marginBottom: 10 }} showsVerticalScrollIndicator={false}>
                     {egim ? (
+                      <EgimProfili egim={egim} width={width - space.lg * 2} height={64} imlec={imlec} onImlec={(v) => setSecim(v == null ? null : { points, v })} />
+                    ) : null}
+                    {kademe === 3 ? (
                       <>
-                        <EgimProfili egim={egim} width={width - space.lg * 2} height={64} imlec={imlec} onImlec={(v) => setSecim(v == null ? null : { points, v })} />
-                        <TirmanisListesi egim={egim} onSec={(v) => setSecim({ points, v })} />
+                        {egim ? <TirmanisListesi egim={egim} onSec={(v) => setSecim({ points, v })} /> : null}
+                        <RotaRuzgari points={points} />
                       </>
                     ) : null}
-                    {points.length > 1 ? <RotaRuzgari points={points} /> : null}
                   </ScrollView>
                 ) : null}
               </>
@@ -357,5 +424,9 @@ const styles = temaliStil(() => StyleSheet.create({
   resultsNote: { color: colors.inkMuted, paddingHorizontal: 14, paddingTop: 4, paddingBottom: 6 },
   sheet: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, paddingHorizontal: space.lg, paddingTop: 10, paddingBottom: 16 },
   grip: { width: 40, height: 5, borderRadius: 3, backgroundColor: colors.lineStrong, alignSelf: 'center', marginBottom: 10 },
+  tutamac: { flexDirection: 'row', alignItems: 'center', minHeight: 36, marginTop: -4, marginBottom: 4 },
+  tutamacYan: { flex: 1 },
+  cizgi: { width: 40, height: 5, borderRadius: 3, backgroundColor: colors.lineStrong },
+  boyDugmesi: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.ground },
   hedefSatiri: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 }));

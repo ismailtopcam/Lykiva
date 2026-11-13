@@ -116,6 +116,11 @@ Kalan: telefonlarda deneme. Yeni yerel modüller (fotoğraf, bildirim, kilit ekr
 
 ### [ ] Telefonda ve gerçek sunucuda denenmemiş özellikler
 Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
+- Harita sekmesi bilgi paneli 3 kademe (13 Kas 2026, Gökhan, `harita-panel-kademe`): hedef seçilince panel küçük açılır
+  (1: hedef, etkinlik, tercih, mesafe / tırmanış / iniş / süre, Yola çık). Tutamacı yukarı kaydır ya da ˄ ile büyüt:
+  2: + yükselti (eğim profili), 3: + tırmanışlar ve rüzgâr; aşağı kaydır ya da ˅ ile küçült. Seçilen kademe hedef
+  değişince de kalır. Bakılacaklar: tutamaç kaydırması haritayı oynatmadan çalışıyor mu; 3. kademede harita yeterince
+  görünüyor mu (en fazla ekranın %45'i kayar); kademe değişince harita yolu panelin üstüne sığdırıyor mu?
 - Harita sekmesinde konum hızlı (13 Kas 2026, Gökhan, `harita-konum-hizli`): sekme açılınca harita önce telefonun son
   bilinen konumuna (en fazla 5 dk eski) hemen gelir, GPS'in ilk konumu gelince oradan sürer; izin zaten verildiyse her
   açılışta yeniden istenmez; yerinde dururken 1 m'den az GPS kıpırtısında ekran yeniden çizilmez (önceden saniyede bir
