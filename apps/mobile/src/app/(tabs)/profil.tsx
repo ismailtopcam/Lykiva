@@ -80,14 +80,14 @@ export default function ProfilScreen() {
   const takipListesi = (yon: 'takipci' | 'takip') => (uid ? () => router.push({ pathname: '/kisi/[id]/takip', params: { id: uid, yon } }) : undefined);
   const sayilar: [string, string, (() => void)?][] = gercek
     ? [
-        [String(satirlar.length), $t('profil.aktivite')],
-        [String(profil?.takipci ?? 0), $t('profil.takipci'), takipListesi('takipci')],
-        [String(profil?.takip ?? 0), $t('profil.takip'), takipListesi('takip')],
+        [String(satirlar.length), $t('profil.aktivite', { n: satirlar.length })],
+        [String(profil?.takipci ?? 0), $t('profil.takipci', { n: profil?.takipci ?? 0 }), takipListesi('takipci')],
+        [String(profil?.takip ?? 0), $t('profil.takip', { n: profil?.takip ?? 0 }), takipListesi('takip')],
       ]
     : [
-        ['128', $t('profil.aktivite')],
-        ['342', $t('profil.takipci')],
-        ['210', $t('profil.takip')],
+        ['128', $t('profil.aktivite', { n: 128 })],
+        ['342', $t('profil.takipci', { n: 342 })],
+        ['210', $t('profil.takip', { n: 210 })],
       ];
   const gunler = gercek ? hafta.gunler : weekKm;
   const maxKm = Math.max(0.001, ...gunler.map((d) => d.km));
