@@ -379,6 +379,33 @@ function onizlemeKonumu(l: Location.LocationObject) {
   degistir({ sonKonum: yeni }, false);
 }
 
+/** Bu kadar yeni bir konum varsa açılışta yeniden alınmaz */
+const ISITMA_TAZE_MS = 30_000;
+let isiniyor = false;
+
+/**
+ * Uygulama açılınca / öne gelince konumu önceden alır: Harita sekmesine (ya da Kayıt başlat ekranına) geçildiğinde
+ * harita beklemeden konuma gelsin. İzin istemez (izin yoksa hiçbir şey yapmaz); GPS'i sürekli açık tutmaz, tek konum alır.
+ */
+export async function konumuIsit(): Promise<void> {
+  if (isiniyor || kayit.durum !== 'bos') return;
+  if (kayit.sonKonum && Date.now() - kayit.sonKonum.t < ISITMA_TAZE_MS) return;
+  isiniyor = true;
+  try {
+    const izin = await Location.getForegroundPermissionsAsync();
+    if (!izin.granted) return;
+    // Son bilinen konum hemen gelir; ardından taze konum (Balanced: ağ / Wi-Fi destekli, GPS'ten hızlı)
+    const son = await Location.getLastKnownPositionAsync({ maxAge: SON_BILINEN_EN_ESKI_MS }).catch(() => null);
+    if (son) onizlemeKonumu(son);
+    const taze = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }).catch(() => null);
+    if (taze) onizlemeKonumu(taze);
+  } catch {
+    // konum alınamadı; Harita sekmesi kendi izlemesini başlatır
+  } finally {
+    isiniyor = false;
+  }
+}
+
 /** Başlat ekranı ve Harita sekmesi için: kayıt başlamadan GPS'i ısıtır ve konumu gösterir */
 export function konumOnizlemeBaslat(): () => void {
   let sub: Location.LocationSubscription | null = null;
