@@ -23,6 +23,12 @@ export const PATIKA = { acik: 'hsl(28,30%,46%)', koyu: 'hsl(30,28%,62%)' };
  */
 export const ROTA_RENGI = { acik: '#6A3FD0', koyu: '#A98BFF' };
 
+/**
+ * Kayıtta rotanın gidilen kısmı (açık / koyu harita): canlı mavi. Mor rotadan, deniz (camgöbeği) eğim renginden
+ * ve soluk su renginden ayrılsın diye doygun.
+ */
+export const GIDILEN_RENGI = { acik: '#1F6FEB', koyu: '#58A6FF' };
+
 /** Gece haritasının zemini */
 export const KOYU_ZEMIN = 'hsl(150,9%,10%)';
 

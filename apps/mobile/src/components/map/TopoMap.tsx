@@ -21,7 +21,7 @@ import { useKoyuHarita } from './gunduzGece';
 import { HaritaTuruDugmesi } from './HaritaTuruSecici';
 import { GECE_STIL_URL, MAP_STYLE_URL, useHaritaStili } from './haritaTurleri';
 import { ISI_RENKLERI, useIsiTuru, useIsiVerisi, type Gorunum } from './isiHaritasi';
-import { ROTA_RENGI } from './stilRenkleri';
+import { GIDILEN_RENGI, ROTA_RENGI } from './stilRenkleri';
 
 export { MAP_STYLE_URL };
 
@@ -39,11 +39,11 @@ export type MapMarker = {
 
 export type TopoMapProps = {
   route?: LngLat[];
-  /** 0..1 — canlı takipte tamamlanan kısım (geri kalanı kesikli) */
+  /** 0..1 — canlı takipte tamamlanan kısım (geri kalanı gri, düz çizgi) */
   progress?: number;
   /**
    * Rotanın parçalarını ayrı renklerle çizmek için (ör. eğime göre): route dizisindeki nokta aralığı
-   * [from, to] (ikisi dahil) ve rengi. progress ile birlikte verilirse yalnızca kalan kısım renklenir (kesikli).
+   * [from, to] (ikisi dahil) ve rengi. progress ile birlikte verilirse yalnızca kalan kısım renklenir.
    * Yalnızca gerçek haritada.
    */
   routeColors?: { from: number; to: number; color: string }[];
@@ -100,6 +100,7 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const ML = require('@maplibre/maplibre-react-native') as typeof import('@maplibre/maplibre-react-native');
   const { stil: mapStyle, koyuZemin } = useHaritaStili(props.koyu);
+  const rotaMoru = koyuZemin ? ROTA_RENGI.koyu : ROTA_RENGI.acik;
   const isiTuru = useIsiTuru();
   const [gorunum, setGorunum] = useState<Gorunum | null>(null);
   const isi = useIsiVerisi(isiTuru, gorunum);
@@ -266,22 +267,26 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
         </ML.GeoJSONSource>
       ) : null}
 
-      {done.length > 1 ? (
-        <ML.GeoJSONSource id="rota-tamam" data={lineOf(done)}>
+      {route.length > 1 ? (
+        // Kenar bütün rotanın altında: kayıtta gidilen ve kalan kısım tek parça bir çizgi gibi görünür
+        <ML.GeoJSONSource id="rota-kenar" data={lineOf(route)}>
           <ML.Layer
             id="rota-tamam-kenar"
             type="line"
             layout={{ 'line-cap': 'round', 'line-join': 'round' }}
             paint={{ 'line-color': koyuZemin ? '#0E1512' : '#FBF8F2', 'line-width': 8 }}
           />
-          {renkli && progress === undefined ? null : (
-            <ML.Layer
-              id="rota-tamam-cizgi"
-              type="line"
-              layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-              paint={{ 'line-color': koyuZemin ? ROTA_RENGI.koyu : ROTA_RENGI.acik, 'line-width': 4.5 }}
-            />
-          )}
+        </ML.GeoJSONSource>
+      ) : null}
+
+      {done.length > 1 && !(renkli && progress === undefined) ? (
+        <ML.GeoJSONSource id="rota-tamam" data={lineOf(done)}>
+          <ML.Layer
+            id="rota-tamam-cizgi"
+            type="line"
+            layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+            paint={{ 'line-color': (progress !== undefined ? GIDILEN_RENGI : ROTA_RENGI)[koyuZemin ? 'koyu' : 'acik'], 'line-width': 4.5 }}
+          />
         </ML.GeoJSONSource>
       ) : null}
 
@@ -291,11 +296,7 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
             id="rota-renkli-cizgi"
             type="line"
             layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-            paint={
-              progress === undefined
-                ? { 'line-color': ['get', 'c'], 'line-width': 4.5 }
-                : { 'line-color': ['get', 'c'], 'line-width': 4, 'line-dasharray': [1, 1.6] }
-            }
+            paint={{ 'line-color': ['get', 'c'], 'line-width': 4.5 }}
           />
         </ML.GeoJSONSource>
       ) : null}
@@ -306,7 +307,7 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
             id="rota-kalan-cizgi"
             type="line"
             layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-            paint={{ 'line-color': '#6E7A73', 'line-width': 3.5, 'line-dasharray': [0.5, 2.5] }}
+            paint={{ 'line-color': '#6E7A73', 'line-width': 4.5 }}
           />
         </ML.GeoJSONSource>
       ) : null}
@@ -329,9 +330,12 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
                 '#0B6A6A',
                 'me',
                 koyuZemin ? '#E07A4A' : '#0B6A6A',
+                // Bitiş: dolu mor (başlangıç mor halka); rota çizgisiyle aynı renk
+                'end',
+                rotaMoru,
                 '#16201B',
               ],
-              'circle-stroke-color': ['match', ['get', 'kind'], 'start', '#0B6A6A', 'cursor', '#16201B', '#FBF8F2'],
+              'circle-stroke-color': ['match', ['get', 'kind'], 'start', rotaMoru, 'cursor', '#16201B', '#FBF8F2'],
               'circle-stroke-width': ['match', ['get', 'kind'], 'start', 3, 'cursor', 3.5, 2.5],
             }}
           />

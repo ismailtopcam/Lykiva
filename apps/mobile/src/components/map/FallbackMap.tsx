@@ -7,11 +7,11 @@ import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import Svg, { Circle, Ellipse, G, Path, Rect, Text as SvgText } from 'react-native-svg';
 
 import type { LngLat } from '@/data/ornek';
-import { ROTA_RENGI } from './stilRenkleri';
+import { GIDILEN_RENGI, ROTA_RENGI } from './stilRenkleri';
 import type { TopoMapProps } from './TopoMap';
 
-const light = { land: '#E8E0CF', water: '#CBE1DC', contour: '#D3C7B0', casing: '#FBF8F2', line: ROTA_RENGI.acik, rest: '#9C9282' };
-const night = { land: '#121B17', water: '#12302E', contour: '#24302B', casing: '#0E1512', line: ROTA_RENGI.koyu, rest: '#6E7A73' };
+const light = { land: '#E8E0CF', water: '#CBE1DC', contour: '#D3C7B0', casing: '#FBF8F2', line: ROTA_RENGI.acik, gidilen: GIDILEN_RENGI.acik, rest: '#9C9282' };
+const night = { land: '#121B17', water: '#12302E', contour: '#24302B', casing: '#0E1512', line: ROTA_RENGI.koyu, gidilen: GIDILEN_RENGI.koyu, rest: '#6E7A73' };
 
 export function FallbackMap({ route = [], progress, markers = [], dark, padding }: TopoMapProps) {
   const [size, setSize] = useState({ w: 0, h: 0 });
@@ -44,21 +44,21 @@ export function FallbackMap({ route = [], progress, markers = [], dark, padding 
               <Ellipse key={'c' + k} cx={w * 0.4} cy={h * 0.62} rx={w * 0.1 * k} ry={h * 0.06 * k} />
             ))}
           </G>
+          {route.length > 1 ? (
+            <Path d={toPath(route)} fill="none" stroke={c.casing} strokeWidth={8} strokeLinecap="round" strokeLinejoin="round" />
+          ) : null}
           {done.length > 1 ? (
-            <>
-              <Path d={toPath(done)} fill="none" stroke={c.casing} strokeWidth={8} strokeLinecap="round" strokeLinejoin="round" />
-              <Path d={toPath(done)} fill="none" stroke={c.line} strokeWidth={4.5} strokeLinecap="round" strokeLinejoin="round" />
-            </>
+            <Path d={toPath(done)} fill="none" stroke={progress !== undefined ? c.gidilen : c.line} strokeWidth={4.5} strokeLinecap="round" strokeLinejoin="round" />
           ) : null}
           {progress !== undefined && rest.length > 1 ? (
-            <Path d={toPath(rest)} fill="none" stroke={c.rest} strokeWidth={3.5} strokeLinecap="round" strokeDasharray="2 8" />
+            <Path d={toPath(rest)} fill="none" stroke={c.rest} strokeWidth={4.5} strokeLinecap="round" strokeLinejoin="round" />
           ) : null}
           {markers
             .filter((m) => m.kind !== 'friend')
             .map((m) => {
               const [x, y] = project(m.coord);
-              if (m.kind === 'start') return <Circle key={m.id} cx={x} cy={y} r={7} fill={c.casing} stroke="#0B6A6A" strokeWidth={3} />;
-              if (m.kind === 'end') return <Circle key={m.id} cx={x} cy={y} r={7} fill="#16201B" stroke={c.casing} strokeWidth={2} />;
+              if (m.kind === 'start') return <Circle key={m.id} cx={x} cy={y} r={7} fill={c.casing} stroke={c.line} strokeWidth={3} />;
+              if (m.kind === 'end') return <Circle key={m.id} cx={x} cy={y} r={7} fill={c.line} stroke={c.casing} strokeWidth={2} />;
               if (m.kind === 'me')
                 return (
                   <G key={m.id}>

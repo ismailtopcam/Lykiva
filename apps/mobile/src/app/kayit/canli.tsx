@@ -149,7 +149,10 @@ export default function CanliTakipScreen() {
         ben={ben}
         markers={
           kayit.rota && kayit.rota.points.length > 1
-            ? [{ id: 'end', coord: [kayit.rota.points[kayit.rota.points.length - 1].lng, kayit.rota.points[kayit.rota.points.length - 1].lat], kind: 'end' }]
+            ? [
+                { id: 'start', coord: [kayit.rota.points[0].lng, kayit.rota.points[0].lat], kind: 'start' },
+                { id: 'end', coord: [kayit.rota.points[kayit.rota.points.length - 1].lng, kayit.rota.points[kayit.rota.points.length - 1].lat], kind: 'end' },
+              ]
             : []
         }
         onKonum={() => setTakip(true)}

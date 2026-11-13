@@ -10,7 +10,6 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
-| Gökhan | Rota çizgisi rengi: turuncu yerine mor (`components/map/`) | `gokhan/rota-rengi` |
 
 ## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
 
@@ -129,6 +128,10 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   yeniden yükleniyor mu (stil inince), sonraki açılışlarda yükleniyor mu? Çevrimdışında indirilmiş rota koyu temada da
   açılıyor mu? Yalnızca JS, yeni derleme gerekmez. Stiller tarayıcıda (maplibre-gl) karşılaştırıldı ve MapLibre stil
   doğrulayıcısından hatasız geçti; telefonda görülmedi.
+- Rota çizgisi rengi (13 Kas 2026, Gökhan, `rota-rengi`): rota çizgisi turuncu yerine mor; başlangıç mor halka, bitiş
+  dolu mor nokta. Kayıtta (canlı takip) gidilen kısım mavi, kalan kısım gri düz çizgi (önceden kesikliydi); kayıt
+  ekranında başlangıç işareti de çıkıyor. Bakılacaklar: mor, mavi ve gri açık / koyu haritada ayırt ediliyor mu, eğim
+  renkli rotada kalan kısım düz renkli mi? Yalnızca JS, yeni derleme gerekmez.
 - Kayıt ekranı (13 Kas 2026, Gökhan): ~~standart harita türünde siyah zeminli gece stili (OpenFreeMap Dark)~~ (yukarıda:
   harita artık temayı izliyor), sağda
   katman / 2D-3D / Konumum düğmeleri (haritayı elle kaydırınca takip bırakılır, Konumum yeniden takibe alır; 3D'de
