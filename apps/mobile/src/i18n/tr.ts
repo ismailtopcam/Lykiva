@@ -958,6 +958,8 @@ export const tr = {
   profil: {
     gruplar: 'Gruplar',
     takipci: 'takipçi',
+    aktivite: 'aktivite',
+    takip: 'takip',
     ayarlar: 'Ayarlar',
     dongu: ' · Döngü',
     topluluk: 'Topluluk',

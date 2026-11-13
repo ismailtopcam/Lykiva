@@ -957,6 +957,8 @@ export const ru: Sozluk = {
   profil: {
     gruplar: 'Группы',
     takipci: 'подписчиков',
+    aktivite: 'активностей',
+    takip: 'подписок',
     ayarlar: 'Настройки',
     dongu: ' · Кольцевой',
     topluluk: 'Сообщество',

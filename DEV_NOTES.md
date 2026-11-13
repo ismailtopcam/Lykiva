@@ -317,6 +317,8 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
   kurulmadı). "Kişiler" sekmesi takip ettiklerini ve takipçilerini gösteriyor; telefon rehberinden arkadaş bulma
   (`expo-contacts`, yeni derleme + sunucuda eşleştirme) yok.
 - Web profil sayfası (`/u/<kullanıcı>`) profil fotoğrafını göstermiyor, baş harfler görünüyor.
+- Geliştirme derlemesinde açılışta `The action 'ROUTE_NAMES_CHANGED' ... was not handled by any navigator` hatası
+  çıkıyor (sekme rotaları: index, kesfet, kaydet, gruplar, profil). Kullanıcı derlemesinde görünmüyor; kaynağı bulunmadı.
 - Engellenen kullanıcının açık oturumu erişim anahtarının süresi dolana kadar (varsayılan 1 saat) çalışır.
 - Hava yalnızca kayıt başında bir kez ölçülüyor; rota detayında tahmin yok (rotanın planlanan tarihi yok).
 - Rota eğimi köprü ve tünelde yanlış olabilir: BRouter çıktısında köprü / tünel etiketi yok (Galata Köprüsü örneğinde denendi), DEM
@@ -430,6 +432,8 @@ Türkçe, İngilizce, Almanca ve Rusça. Rusçada birimler Kiril (км, м, км
   Kalıcı çözüm: hata kodları + uygulamada çeviri.
 - [ ] E-posta şablonları (`apps/web/public/eposta/`) ve yasal sayfalar yalnızca Türkçe; yönetim paneli Türkçe kalacak.
 - [ ] Örnek veriler (`data/ornek.ts`, `components/Ornek*`; sunucu anahtarı yokken görünür) Türkçe bırakıldı.
+- [x] Profil sayaçlarında "aktivite" / "takip" sabit Türkçeydi (İngilizce arayüzde "0 aktivite · 0 followers · 0 takip");
+  `profil.aktivite` / `profil.takip` anahtarlarına çevrildi (13 Kas 2026, Android emülatör denemesinde görüldü).
 
 ### [x] Rota eğimi (28. aşama, `packages/shared/src/egim.ts`)
 Eğim her zaman 100 m'lik pencereyle ölçülür (DEM gürültülü; komşu iki nokta yanıltır). Sınıflar: iniş (≤ -%3), düz, %3–6, %6–10, %10+.

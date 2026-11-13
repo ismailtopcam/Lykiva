@@ -957,6 +957,8 @@ export const de: Sozluk = {
   profil: {
     gruplar: 'Gruppen',
     takipci: 'Follower',
+    aktivite: 'Aktivitäten',
+    takip: 'Gefolgt',
     ayarlar: 'Einstellungen',
     dongu: ' · Rundtour',
     topluluk: 'Community',
