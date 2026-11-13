@@ -707,6 +707,7 @@ export const en: Sozluk = {
     ayarlari_ac: 'Open settings',
   },
   kayit_canli: {
+    ana_sayfaya_don: 'Go to home, keep recording',
     kalan: 'Remaining',
     rakim: 'Altitude',
     varisa: 'To arrival',

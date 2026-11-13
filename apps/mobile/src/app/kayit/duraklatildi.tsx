@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Alert, Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AnaSayfaDugmesi } from '@/components/AnaSayfaDugmesi';
 import { Icon } from '@/components/Icon';
 import { Txt } from '@/components/Txt';
 import { Button, Stat } from '@/components/ui';
@@ -58,6 +59,10 @@ export default function DuraklatildiScreen() {
   return (
     <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }]}>
       <StatusBar style="light" />
+      {/* Ana sayfaya dön, kayıt duraklatılmış hâliyle sürer (iOS'ta geri hareketi kapalı) */}
+      <View style={[styles.solUst, { top: insets.top + 6 }]}>
+        <AnaSayfaDugmesi boy={40} />
+      </View>
       <View style={{ alignItems: 'center' }}>
         <View style={styles.badge}>
           <Icon name="pause" size={14} color={n.paused} strokeWidth={3} />
@@ -102,6 +107,7 @@ export default function DuraklatildiScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: n.ground, paddingHorizontal: 20 },
+  solUst: { position: 'absolute', left: 16, zIndex: 10 },
   badge: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 32, paddingHorizontal: 14, borderRadius: 16, backgroundColor: '#2A2418' },
   time: { fontFamily: fontFamily.displayHeavy, fontSize: 72, lineHeight: 80, color: n.text, letterSpacing: -3, marginTop: 18 },
   stats: { flexDirection: 'row', justifyContent: 'space-around', padding: 16, borderRadius: 18, backgroundColor: n.surface, marginVertical: 24 },
