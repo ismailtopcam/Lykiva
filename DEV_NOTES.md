@@ -87,16 +87,10 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
 14. **İsmail derleyecek — görünüm (karanlık mod):** `gorunum-ayari` PR'ı (sürüm 6'dan sonra main'e girdi, sürüm 7'de gelecek) `app.json`'da `userInterfaceStyle`'ı
     `automatic` yaptı (önce `light`). Yeni derlemeye kadar Aydınlık / Karanlık seçimi çalışır, "Telefonun ayarı" ise
     her zaman aydınlık görünür (eski derleme telefonun temasını uygulamaya bildirmiyor).
-14. **İsmail uygulayacak — gizlilik kontrolleri migration'ı:** `gizlilik-kontrolleri` PR'ı main'e girince
-    `20261115000000_gizlilik.sql` (`uygula.sh` ile; önce durum modu). Yeni derleme gerekmez (yalnızca JS).
-    Migration uygulanana kadar Ayarlar > Gizlilik kontrolleri "yüklenemedi" der; kayıtlar eskisi gibi takipçilere açılır.
-15. **İsmail uygulayacak — ek gizlilik kontrolleri ve engelleme migration'ı:** `ek-gizlilik-kontrolleri` PR'ı main'e
-    girince `20261116000000_ek_gizlilik.sql` (14. maddedeki `20261115000000_gizlilik.sql`'den sonra; `uygula.sh`).
-    Yeni derleme gerekmez (yalnızca JS).
-16. **İsmail uygulayacak — kulüpler migration'ı:** `gokhan/gruplar-kulupler` PR'ı main'e girince
-    `20261117000000_kulupler.sql` (15. maddeden sonra; `uygula.sh`, önce durum modu). İki yeni depolama kovası açar
-    (`grup` herkese açık, `grup_gonderi` gizli) — fotoğraflar kovasındaki gibi `postgres` rolüyle kurulup kurulmadığına bak.
-    Migration uygulanana kadar kulüpteki Gönderiler / Haftalık sekmeleri "yüklenemedi" der. Yeni derleme gerekmez (yalnızca JS).
+
+Gizlilik, ek gizlilik / engelleme ve kulüpler migration'ları (`20261115…`, `20261116…`, `20261117…`) 13 Kas 2026'da
+sunucuya uygulandı (`uygula.sh`, SSH ile). `grup` (herkese açık) ve `grup_gonderi` (gizli) kovaları ve altı depolama
+kuralı yerinde. Telefonda denenecekler aşağıda.
 
 ## Yapılacaklar
 
@@ -138,7 +132,7 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   yeni derleme gerekmez; telefonda geliştirme derlemesiyle denenecek (3D binalar ve yazı katmanı sırası özellikle).
   Aynı gün: kayıt sırasında Duraklat ve Bitir ayrı düğmeler (Bitir onay sorar; yeterli GPS noktası yoksa silmeyi
   önerir). Bilgi paneli küçük (tek satır) / normal / tam ekran: tutamacı yukarı-aşağı kaydır ya da sağdaki oklara bas.
-- Kulüpler (13 Kas 2026, Gökhan; migration uygulandıktan sonra): Gruplar sekmesinde Meydan okumalar / Kulüpler /
+- Kulüpler (13 Kas 2026, Gökhan; migration uygulandı): Gruplar sekmesinde Meydan okumalar / Kulüpler /
   Etkinlikler geçişi (Almanca, Rusça dar ekranda sığıyor mu?). Kulüp sayfasında yönetici fotoğrafa dokunup grup fotoğrafı
   ekliyor / değiştiriyor / kaldırıyor mu, listede ve keşfette görünüyor mu? Paylaş sekmesinden metin + 4 fotoğraf paylaş;
   ikinci telefondan (üye) Gönderiler'de görünüyor mu, üye olmayan göremiyor mu, yönetici başkasının gönderisini silebiliyor mu?
@@ -173,7 +167,7 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   Palandöken): pistler görünüyor mu? Tür değişince rota çizgisi ve işaretler kayboluyor mu (stil yeniden yüklenirken)?
   Yalnızca geliştirme / mağaza derlemesinde; Expo Go'da düğme çıkmaz. Türetilen stiller MapLibre stil doğrulayıcısından
   hatasız geçti; telefonda görülmedi.
-- Isı haritaları (migration uygulandıktan sonra): katman düğmesi > Isı haritası > Küresel / Haftalık / Gece / Kişisel.
+- Isı haritaları (migration uygulandı): katman düğmesi > Isı haritası > Küresel / Haftalık / Gece / Kişisel.
   Yakınlaştırınca (8. düzey, aşağı yukarı bir il) çıkıyor mu, kaydırınca yenileniyor mu, hızlı mı? Kişisel uzaktan da
   görünüyor mu? Yeni bir kayıttan sonra kişiselde çıkıyor mu? Ayarlar > Gizlilik > "Isı haritalarında görün" kapatılınca
   başka hesaptan bakınca o kişinin izleri kayboluyor mu? Uydu / hibrit üstünde renkler okunuyor mu?
@@ -194,14 +188,14 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
   kapanıp açılınca seçim kalıyor mu? Karanlıkta her ekranı gez: okunmayan yazı, açık renkli kalan kutu var mı? Uyarı
   pencereleri ve klavye de karanlık mı? "Telefonun ayarı"ndayken telefonun temasını değiştirip uygulamaya dön (yeni
   derlemeden sonra); kayıt sürerken değiştirince kayıt ekranı bozulmuyor mu (kayıt bitip uygulama öne gelince uygulanmalı)?
-- Gizlilik kontrolleri (migration uygulandıktan sonra; Ayarlar > Gizlilik > Gizlilik kontrolleri): iki hesapla dene.
+- Gizlilik kontrolleri (migration uygulandı 13 Kas 2026; Ayarlar > Gizlilik > Gizlilik kontrolleri): iki hesapla dene.
   Profil sayfası "Takipçiler" / "Hiç kimse": öbür hesaptan kişi sayfasında yalnızca ad ve fotoğraf, "Bu kişi profil
   ayrıntılarını gizliyor" yazısı; takip edince (Takipçiler'de) ayrıntılar açılıyor mu? Web profili (`/u/<kullanıcı>`)
   "Herkes" dışında bulunamadı diyor mu? Aktiviteler: seçince "Yalnızca yeni kayıtlar / Hepsine uygula" soruluyor mu,
   yeni kayıt seçilen görünürlükle mi açılıyor (internetsiz kaydedilip sonra gönderilen de)? Grup aktiviteleri
   "Hiç kimse": seni etiketleyen kişinin aktivitesinde başkaları adını görmüyor, akış kartında "X ile" yazmıyor mu?
   Bahsetmeler "Hiç kimse": seni eklemeye çalışınca "izin vermiyor" hatası çıkıyor mu? Isı haritası anahtarı da burada.
-- Ek kontroller ve engelleme (migration'dan sonra; Gizlilik kontrolleri > Ek kontroller): iki hesapla. Engelle (kişi
+- Ek kontroller ve engelleme (migration uygulandı 13 Kas 2026; Gizlilik kontrolleri > Ek kontroller): iki hesapla. Engelle (kişi
   sayfasının altında): öbür hesap seni aramada bulamıyor, profilin "bulunamadı", aktivitelerin akışta yok, takip
   edemiyor; Engellenen hesaplar listesinde görünüyor, engeli kaldırınca her şey geri geliyor mu (takipler gelmez)?
   Harita görünürlüğü kapalıyken yeni kayıt uçları açık mı, "Geçmiş aktivitelerime de uygula" hepsini değiştiriyor mu?
