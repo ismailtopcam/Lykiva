@@ -12,10 +12,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Keyboard, Pressable, ScrollView, StyleSheet, TextInput, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { EgimProfili, imlecKonumu, TirmanisListesi, useRotaEgim } from '@/components/EgimProfili';
 import { FloatingHeader } from '@/components/Header';
 import { Icon } from '@/components/Icon';
 import { IconButton } from '@/components/IconButton';
 import { gercekHarita, TopoMap, type MapMarker } from '@/components/map/TopoMap';
+import { RotaRuzgari } from '@/components/RotaRuzgari';
 import { Txt } from '@/components/Txt';
 import { Button, Chip, Stat } from '@/components/ui';
 import type { LngLat } from '@/data/ornek';
@@ -56,7 +58,7 @@ function cerceve(points: RoutePoint[], w: number, h: number): Odak | null {
 
 export default function HaritaScreen() {
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const kayit = useKayit();
   const [activity, setActivity] = useState<ActivityType>('walk');
   const [mod, setMod] = useState<Exclude<CizimModu, 'serbest'>>('yol');
@@ -74,6 +76,10 @@ export default function HaritaScreen() {
   const ilkOdak = useRef(false);
   const [panelH, setPanelH] = useState(220);
   const [haritaH, setHaritaH] = useState(700);
+  // Eğim profilinde seçilen nokta; yol değişince geçersiz olsun diye hangi yola ait olduğu da tutulur
+  const [secim, setSecim] = useState<{ points: RoutePoint[]; v: number } | null>(null);
+  // Kameranın en son hangi yol + panel yüksekliği için yola sığdırıldığı
+  const [cerceveli, setCerceveli] = useState<string | null>(null);
 
   // Sekme açıkken GPS'i çalıştır (kayıt sürmüyorsa konumu yalnızca gösterir); sekmeden çıkınca durur
   useFocusEffect(useCallback(() => konumOnizlemeBaslat(), []));
@@ -101,11 +107,7 @@ export default function HaritaScreen() {
       setHesapliyor(true);
       setHata(null);
       rotaHesapla([baslangic, hedef.c], mod, activity, ac.signal)
-        .then((r) => {
-          setYol({ points: r.points, icin: anahtar });
-          const f = cerceve(r.points, width - 80, haritaH - insets.top - 120 - panelH - 40);
-          if (f) setOdak(f);
-        })
+        .then((r) => setYol({ points: r.points, icin: anahtar }))
         .catch((e) => {
           if (e?.name !== 'AbortError') setHata(e instanceof Error ? e.message : $t('lib_yonlendirme.rota_hesaplanamadi'));
         })
@@ -140,12 +142,25 @@ export default function HaritaScreen() {
   const stats = useMemo(() => (points.length > 1 ? routeStats(points) : null), [points]);
   const rakimVar = points.some((p) => p.alt != null);
   const cizgi: LngLat[] = points.map((p) => [p.lng, p.lat]);
+  const egim = useRotaEgim(points);
+  const imlec = secim && secim.points === points ? secim.v : null;
+  const imlecYeri = imlecKonumu(points, egim, imlec);
+
+  // Yol gelince ya da panel (eğim, rüzgâr yüklendikçe) büyüyünce yolun tamamını panelin üstünde göster.
+  // Çizim sırasında, her yol ve panel yüksekliği için bir kez (React'in "önceki değere göre state ayarla" kalıbı)
+  const cerceveAnahtari = points.length > 1 ? `${anahtar}|${panelH}` : null;
+  if (cerceveAnahtari && cerceveAnahtari !== cerceveli) {
+    setCerceveli(cerceveAnahtari);
+    const f = cerceve(points, width - 80, haritaH - insets.top - 120 - panelH - 40);
+    if (f) setOdak(f);
+  }
   const gorunenHata = anahtar ? hata : null;
   const kayitta = kayit.durum !== 'bos';
 
   const markers: MapMarker[] = [];
   if (ben) markers.push({ id: 'me', coord: ben, kind: 'me' });
   if (hedef) markers.push({ id: 'hedef', coord: hedef.c, kind: 'end' });
+  if (imlecYeri) markers.push({ id: 'imlec', coord: imlecYeri, kind: 'cursor' });
 
   function hedefSec(h: Hedef) {
     setHedef(h);
@@ -191,6 +206,7 @@ export default function HaritaScreen() {
       <TopoMap
         style={StyleSheet.absoluteFill}
         route={cizgi.length > 1 ? cizgi : undefined}
+        routeColors={egim?.renkler}
         markers={markers}
         follow={odak?.c ?? null}
         followZoom={odak?.z}
@@ -295,11 +311,26 @@ export default function HaritaScreen() {
                 {$t('harita.konum_bekleniyor')}
               </Txt>
             ) : (
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', columnGap: 10, marginBottom: 10 }}>
-                <Stat label={$t('ortak.mesafe')} size={18} value={stats ? `${formatKm(stats.distanceM)} ${kmUnit()}` : '–'} />
-                <Stat label={$t('ortak.tirmanis')} size={18} value={stats && rakimVar ? $t('rota_olustur.m', { meters: formatMeters(stats.gainM) }) : '–'} />
-                <Stat label={$t('rota_olustur.tahmini_sure')} size={18} value={stats ? sureMetni(estimateDuration(activity, stats.distanceM, rakimVar ? stats.gainM : 0)) : '–'} />
-              </View>
+              <>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', columnGap: 10, marginBottom: 10 }}>
+                  <Stat label={$t('ortak.mesafe')} size={18} value={stats ? `${formatKm(stats.distanceM)} ${kmUnit()}` : '–'} />
+                  <Stat label={$t('ortak.tirmanis')} size={18} value={stats && rakimVar ? $t('rota_olustur.m', { meters: formatMeters(stats.gainM) }) : '–'} />
+                  <Stat label={$t('ortak.inis')} size={18} value={stats && rakimVar ? $t('rota_olustur.m_2', { meters: formatMeters(stats.lossM) }) : '–'} />
+                  <Stat label={$t('rota_olustur.tahmini_sure')} size={18} value={stats ? sureMetni(estimateDuration(activity, stats.distanceM, rakimVar ? stats.gainM : 0)) : '–'} />
+                </View>
+                {/* Eğim, tırmanışlar ve rüzgâr: harita görünür kalsın diye en fazla ekranın üçte biri, içi kayar */}
+                {egim || points.length > 1 ? (
+                  <ScrollView style={{ maxHeight: height * 0.33, marginBottom: 10 }} showsVerticalScrollIndicator={false}>
+                    {egim ? (
+                      <>
+                        <EgimProfili egim={egim} width={width - space.lg * 2} height={64} imlec={imlec} onImlec={(v) => setSecim(v == null ? null : { points, v })} />
+                        <TirmanisListesi egim={egim} onSec={(v) => setSecim({ points, v })} />
+                      </>
+                    ) : null}
+                    {points.length > 1 ? <RotaRuzgari points={points} /> : null}
+                  </ScrollView>
+                ) : null}
+              </>
             )}
 
             {gorunenHata ? (

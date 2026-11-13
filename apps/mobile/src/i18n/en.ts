@@ -369,7 +369,7 @@ export const en: Sozluk = {
     tirmanis_kilometrede_basliyor_kilometre: 'Climb {a}: starts at kilometre {km}, {km2} kilometres, {meters} metres of climbing, average {grade}, steepest {grade2}. Show on profile',
     km_m: '{km} km · {meters} m · ',
     en_dik_cikis_en: 'Steepest climb {grade} · steepest descent {grade2}',
-    m: '{meters}–{meters2} m',
+    m: 'Elevation {meters}–{meters2} m',
     tirmanislar: 'Climbs',
     km_m_ort: '{km} km · ↑ {meters} m · avg. {grade}',
     km_de_baslar_en: 'Starts at km {km} · steepest {grade}',
@@ -679,6 +679,14 @@ export const en: Sozluk = {
   },
   havaKarti: {
     kaynak_met_norway: 'Source: MET Norway',
+  },
+  rotaRuzgari: {
+    simdiki_ruzgar: 'Current wind',
+    karsidan: 'Headwind',
+    arkadan: 'Tailwind',
+    yandan: 'Crosswind',
+    yuzde: '{label} {pct} percent',
+    aciklama: 'Current forecast for the middle of the route · Source: MET Norway',
   },
   kayit: {
     baslat: 'Start',

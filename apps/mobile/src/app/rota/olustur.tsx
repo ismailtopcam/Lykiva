@@ -4,10 +4,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Keyboard, Pressable, ScrollView, StyleSheet, TextInput, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { EgimProfili, imlecKonumu, useRotaEgim } from '@/components/EgimProfili';
+import { EgimProfili, imlecKonumu, TirmanisListesi, useRotaEgim } from '@/components/EgimProfili';
 import { FloatingHeader } from '@/components/Header';
 import { Icon } from '@/components/Icon';
 import { IconButton } from '@/components/IconButton';
+import { RotaRuzgari } from '@/components/RotaRuzgari';
 import { gercekHarita, TopoMap, type MapMarker } from '@/components/map/TopoMap';
 import { Txt } from '@/components/Txt';
 import { Button, Chip, Stat } from '@/components/ui';
@@ -34,7 +35,7 @@ function sureMetni(s: number) {
 
 export default function RotaOlusturScreen() {
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const kayit = useKayit();
   const [mod, setMod] = useState<CizimModu>('patika');
   const [activity, setActivity] = useState<ActivityType>('hike');
@@ -218,76 +219,82 @@ export default function RotaOlusturScreen() {
 
       <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]} onLayout={(e) => setPanelH(Math.round(e.nativeEvent.layout.height))}>
         <View style={styles.grip} />
-        {!gercekHarita ? (
-          <Txt variant="small" style={styles.note}>
-            {$t('rota_olustur.haritaya_dokunarak_rota_cizmek')}</Txt>
-        ) : duraklar.length < 2 ? (
-          <>
+        {/* Tırmanış listesi ve rüzgâr paneli uzatır; harita görünür kalsın diye panel ekranın yarısını geçmez, içi kayar */}
+        <ScrollView style={{ maxHeight: height * 0.5 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          {!gercekHarita ? (
             <Txt variant="small" style={styles.note}>
-              {duraklar.length === 0 ? $t('rota_olustur.baslangic_noktasi_icin_haritaya') : $t('rota_olustur.sonraki_noktaya_dokun_patika')}
-            </Txt>
-            <Txt variant="small" style={[styles.note, { color: colors.inkMuted }]}>
-              {$t('rota_olustur.yalnizca_turkiye')}
-            </Txt>
-          </>
-        ) : null}
+              {$t('rota_olustur.haritaya_dokunarak_rota_cizmek')}</Txt>
+          ) : duraklar.length < 2 ? (
+            <>
+              <Txt variant="small" style={styles.note}>
+                {duraklar.length === 0 ? $t('rota_olustur.baslangic_noktasi_icin_haritaya') : $t('rota_olustur.sonraki_noktaya_dokun_patika')}
+              </Txt>
+              <Txt variant="small" style={[styles.note, { color: colors.inkMuted }]}>
+                {$t('rota_olustur.yalnizca_turkiye')}
+              </Txt>
+            </>
+          ) : null}
 
-        <TextInput value={ad} onChangeText={setAd} placeholder={$t('rota_olustur.rota_adi')} placeholderTextColor={colors.inkMuted} accessibilityLabel={$t('rota_olustur.rota_adi')} style={styles.nameInput} />
+          <TextInput value={ad} onChangeText={setAd} placeholder={$t('rota_olustur.rota_adi')} placeholderTextColor={colors.inkMuted} accessibilityLabel={$t('rota_olustur.rota_adi')} style={styles.nameInput} />
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingVertical: 10 }} accessibilityRole="radiogroup">
-          {ACTIVITY_TYPES.map((t) => (
-            <Chip key={t} label={ACTIVITY_LABELS[t]} role="radio" selected={t === activity} onPress={() => setActivity(t)} />
-          ))}
-        </ScrollView>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingVertical: 10 }} accessibilityRole="radiogroup">
+            {ACTIVITY_TYPES.map((t) => (
+              <Chip key={t} label={ACTIVITY_LABELS[t]} role="radio" selected={t === activity} onPress={() => setActivity(t)} />
+            ))}
+          </ScrollView>
 
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 8, columnGap: 10, marginBottom: 12 }}>
-          <Stat label={$t('ortak.mesafe')} size={18} value={stats ? `${formatKm(stats.distanceM)} ${kmUnit()}` : '–'} />
-          <Stat label={$t('ortak.tirmanis')} size={18} value={stats && rakimVar ? $t('rota_olustur.m', { meters: formatMeters(stats.gainM) }) : '–'} />
-          <Stat label={$t('ortak.inis')} size={18} value={stats && rakimVar ? $t('rota_olustur.m_2', { meters: formatMeters(stats.lossM) }) : '–'} />
-          <Stat label={$t('rota_olustur.tahmini_sure')} size={18} value={stats ? sureMetni(estimateDuration(activity, stats.distanceM, rakimVar ? stats.gainM : 0)) : '–'} />
-        </View>
-
-        {egim ? (
-          <View style={{ marginBottom: 12 }}>
-            <EgimProfili egim={egim} width={width - space.lg * 2} height={64} imlec={imlec} onImlec={(v) => setSecim(v == null ? null : { points, v })} />
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 8, columnGap: 10, marginBottom: 12 }}>
+            <Stat label={$t('ortak.mesafe')} size={18} value={stats ? `${formatKm(stats.distanceM)} ${kmUnit()}` : '–'} />
+            <Stat label={$t('ortak.tirmanis')} size={18} value={stats && rakimVar ? $t('rota_olustur.m', { meters: formatMeters(stats.gainM) }) : '–'} />
+            <Stat label={$t('ortak.inis')} size={18} value={stats && rakimVar ? $t('rota_olustur.m_2', { meters: formatMeters(stats.lossM) }) : '–'} />
+            <Stat label={$t('rota_olustur.tahmini_sure')} size={18} value={stats ? sureMetni(estimateDuration(activity, stats.distanceM, rakimVar ? stats.gainM : 0)) : '–'} />
           </View>
-        ) : stats && mod === 'serbest' ? (
-          <Txt variant="small" style={{ marginBottom: 12 }}>
-            {$t('rota_olustur.serbest_cizimde_yukseklik_ve')}</Txt>
-        ) : null}
 
-        {zeminler.length ? (
-          <>
-            <View style={styles.bar} accessible accessibilityLabel={zeminler.map((s) => $t('rota_olustur.yuzde', { label: s.label, pct: s.pct })).join(', ')}>
-              {zeminler.map((s) => (
-                <View key={s.label} style={{ flex: s.pct, backgroundColor: s.color }} />
-              ))}
+          {egim ? (
+            <View style={{ marginBottom: 12 }}>
+              <EgimProfili egim={egim} width={width - space.lg * 2} height={64} imlec={imlec} onImlec={(v) => setSecim(v == null ? null : { points, v })} />
+              <TirmanisListesi egim={egim} onSec={(v) => setSecim({ points, v })} />
             </View>
-            <View style={{ flexDirection: 'row', gap: 14, marginTop: 6, flexWrap: 'wrap' }}>
-              {zeminler.map((s) => (
-                <View key={s.label} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: s.color }} />
-                  <Txt variant="small">
-                    {s.label} %{s.pct}
-                  </Txt>
-                </View>
-              ))}
-              {zorluk ? <Txt variant="small">· {DIFFICULTY_LABELS[zorluk]}</Txt> : null}
-            </View>
-          </>
-        ) : null}
+          ) : stats && mod === 'serbest' ? (
+            <Txt variant="small" style={{ marginBottom: 12 }}>
+              {$t('rota_olustur.serbest_cizimde_yukseklik_ve')}</Txt>
+          ) : null}
 
-        <View style={{ flexDirection: 'row', gap: 6, marginTop: 12 }} accessibilityRole="radiogroup">
-          {GORUNURLUK().map((g) => (
-            <Chip key={g.id} label={g.label} role="radio" tone="sea" selected={g.id === gorunurluk} onPress={() => setGorunurluk(g.id)} />
-          ))}
-        </View>
+          {zeminler.length ? (
+            <>
+              <View style={styles.bar} accessible accessibilityLabel={zeminler.map((s) => $t('rota_olustur.yuzde', { label: s.label, pct: s.pct })).join(', ')}>
+                {zeminler.map((s) => (
+                  <View key={s.label} style={{ flex: s.pct, backgroundColor: s.color }} />
+                ))}
+              </View>
+              <View style={{ flexDirection: 'row', gap: 14, marginTop: 6, flexWrap: 'wrap' }}>
+                {zeminler.map((s) => (
+                  <View key={s.label} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: s.color }} />
+                    <Txt variant="small">
+                      {s.label} %{s.pct}
+                    </Txt>
+                  </View>
+                ))}
+                {zorluk ? <Txt variant="small">· {DIFFICULTY_LABELS[zorluk]}</Txt> : null}
+              </View>
+            </>
+          ) : null}
 
-        {gorunenHata ? (
-          <Txt accessibilityRole="alert" style={{ color: colors.terra, fontFamily: fontFamily.bodySemiBold, fontSize: 13, marginTop: 8 }}>
-            {gorunenHata}
-          </Txt>
-        ) : null}
+          {points.length > 1 ? <RotaRuzgari points={points} /> : null}
+
+          <View style={{ flexDirection: 'row', gap: 6, marginTop: 12 }} accessibilityRole="radiogroup">
+            {GORUNURLUK().map((g) => (
+              <Chip key={g.id} label={g.label} role="radio" tone="sea" selected={g.id === gorunurluk} onPress={() => setGorunurluk(g.id)} />
+            ))}
+          </View>
+
+          {gorunenHata ? (
+            <Txt accessibilityRole="alert" style={{ color: colors.terra, fontFamily: fontFamily.bodySemiBold, fontSize: 13, marginTop: 8 }}>
+              {gorunenHata}
+            </Txt>
+          ) : null}
+        </ScrollView>
 
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 12, alignItems: 'center' }}>
           {hesapliyor && yeterli ? <ActivityIndicator color={colors.terra} /> : null}

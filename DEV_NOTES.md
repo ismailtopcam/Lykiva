@@ -10,6 +10,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
+| Gökhan | Harita sekmesi (yol tarifi) ve rota çizme ekranına eğim profili, tırmanış listesi, şu anki rüzgâr (rotaya göre karşı/arka/yan) | `gokhan/rota-irtifa-ruzgar` |
 
 ## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
 
