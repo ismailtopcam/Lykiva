@@ -345,6 +345,9 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
   kaydedilmez, aktiviteye `route_id` gitmez (`kayit/paket.ts` artık yalnızca uuid gönderiyor). Eski Keşfet listesi
   `app/kesfet-liste.tsx`'e taşındı, haritanın sağ üstündeki pusula düğmesiyle açılır. Sesli / adım adım yönlendirme yok.
   Yalnızca JS, yeni yerel modül yok. Telefonda denenecek: dokunarak hedef seçme, kamera yolu tam gösteriyor mu, "Yola çık".
+- [x] Harita sekmesinde 3B/2B ve konum düğmesi sağda (13 Kas 2026, Gökhan, `harita-3b-konum`): Harita sekmesinde 3B/2B
+  düğmesi yoktu (yalnızca kayıt ekranında vardı); katman düğmesinin altına eklendi. "Konumuma git" düğmesi sol üstten
+  3B/2B'nin altına, sağ sütuna taşındı; arama kutusu sola kadar uzuyor. Yalnızca JS. Telefonda denenecek.
 - [x] Haritayı döndürme (13 Kas 2026, Gökhan, `harita-dondurme`): bütün haritalar iki parmakla döndürülebiliyor (önceden
   kapalıydı). Döndürünce katman düğmesinin solunda pusula çıkar, dokununca kuzey yukarı döner. Kayıt ekranında takip
   sürerken döndürme takibi bırakmaz: hareket bitince harita takip edilen noktayı yeniden ortalar (nokta etrafında döner);
