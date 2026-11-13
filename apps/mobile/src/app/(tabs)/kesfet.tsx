@@ -70,6 +70,7 @@ export default function HaritaScreen() {
   const [q, setQ] = useState('');
   const [sonuclar, setSonuclar] = useState<YerSonucu[]>([]);
   const [odak, setOdak] = useState<Odak | null>(null);
+  const [ucBoyut, setUcBoyut] = useState(false);
   const ilkOdak = useRef(false);
   const [panelH, setPanelH] = useState(220);
   const [haritaH, setHaritaH] = useState(700);
@@ -193,19 +194,30 @@ export default function HaritaScreen() {
         markers={markers}
         follow={odak?.c ?? null}
         followZoom={odak?.z}
+        ucBoyut={ucBoyut}
         onPress={(c) => hedefSec({ c, ad: null })}
         katmanDugmesi={{ top: insets.top + 58 }}
         padding={{ top: 120, bottom: panelH + 40 }}
         accessibilityLabel={hedef ? $t('harita.yol_haritasi', { ad: hedefAdi }) : $t('harita.harita')}
       />
+      {/* Sağ sütun, katman düğmesinin altında: 3B/2B (yalnızca gerçek haritada) ve konumuma git */}
+      <View style={[styles.sagDugmeler, { top: insets.top + 58 + 44 + 10 }]} pointerEvents="box-none">
+        {gercekHarita ? (
+          <Pressable
+            accessibilityRole="switch"
+            accessibilityState={{ checked: ucBoyut }}
+            accessibilityLabel={$t('kayit_canli.uc_boyutlu_gorunum')}
+            onPress={() => setUcBoyut((u) => !u)}
+            hitSlop={4}
+            style={({ pressed }) => [styles.yuvarlakDugme, pressed && { opacity: 0.6 }]}>
+            <Txt style={[styles.yuvarlakDugmeYazi, ucBoyut && { color: colors.sea }]}>{ucBoyut ? '3D' : '2D'}</Txt>
+          </Pressable>
+        ) : null}
+        {ben ? <IconButton floating icon="target" label={$t('harita.konumuma_git')} onPress={() => setOdak({ c: ben, z: 15 })} /> : null}
+      </View>
       <FloatingHeader
-        left={
-          ben ? (
-            <IconButton floating icon="target" label={$t('harita.konumuma_git')} onPress={() => setOdak({ c: ben, z: 15 })} />
-          ) : (
-            <View style={{ width: 44 }} />
-          )
-        }
+        // Konum düğmesi sağ sütunda; boş yer tutucu (verilmezse geri düğmesi çıkar)
+        left={<View />}
         middle={
           <View style={styles.search}>
             <Icon name="search" size={18} color={colors.inkMuted} strokeWidth={2} />
@@ -330,4 +342,20 @@ const styles = temaliStil(() => StyleSheet.create({
   sheet: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, paddingHorizontal: space.lg, paddingTop: 10, paddingBottom: 16 },
   grip: { width: 40, height: 5, borderRadius: 3, backgroundColor: colors.lineStrong, alignSelf: 'center', marginBottom: 10 },
   hedefSatiri: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  sagDugmeler: { position: 'absolute', right: 16, gap: 10 },
+  // IconButton'un floating görünümüyle aynı
+  yuvarlakDugme: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+    shadowColor: colors.ink,
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+  yuvarlakDugmeYazi: { fontFamily: fontFamily.bodyBold, fontSize: 14, color: colors.ink },
 }));
