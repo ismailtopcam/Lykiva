@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { type ColorValue, View } from 'react-native';
 
 import { Icon, type IconName } from '@/components/Icon';
-import { kayitDurumu } from '@/kayit/kaydedici';
+import { kayitDurumu, useKayitDurumu } from '@/kayit/kaydedici';
 import { useGirisGerekli } from '@/lib/giris';
 import { colors, fontFamily } from '@/theme';
 import { $t } from '@/i18n';
@@ -26,14 +26,16 @@ function tabIcon(name: IconName, sabitRenk?: string) {
 const GIRIS_BEKLEME_MS = 800;
 
 /**
- * Alt menü: Ana Sayfa · Harita · Egzersiz · Gruplar · Profil
- * Egzersiz bir ekran değil; basınca kayıt başlatma ekranını açar.
+ * Alt menü: Ana Sayfa · Harita · Gruplar · Profil
+ * Egzersiz başlatmak Harita sekmesinde ("Egzersiz yap"). Kayıt sürerken (ya da duraklatılmışken) araya Egzersiz
+ * sekmesi girer: bir ekran değil, basınca süren kaydı açar; kayıt bitince yine kaybolur.
  * Dosya adları (index, kesfet, kaydet) bağlantılar bozulmasın diye aynı kaldı.
  * Sekmeler arası geçiş ve kayıt ekranlarının açılışı aynı kısa solma (fade) ile; bkz. kök `_layout.tsx`.
  */
 export default function TabsLayout() {
   // İlk açılışta giriş ekranı. Durum kısa sürede belli olmazsa sekmeler gösterilir (internetsiz açılışı bekletmemek için).
   const girisGerekli = useGirisGerekli();
+  const kayitSuruyor = useKayitDurumu() !== 'bos';
   const [beklemeBitti, setBeklemeBitti] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setBeklemeBitti(true), GIRIS_BEKLEME_MS);
@@ -66,8 +68,10 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="kaydet"
         options={{
+          // Kayıt yokken menüde görünmez
+          ...(kayitSuruyor ? null : { href: null }),
           title: $t('sekmeler.egzersiz'),
-          tabBarAccessibilityLabel: $t('sekmeler.egzersiz_baslat'),
+          tabBarAccessibilityLabel: $t('harita.kayda_don'),
           tabBarIcon: tabIcon('record', colors.terra),
         }}
         listeners={{

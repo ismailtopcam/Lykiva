@@ -368,6 +368,28 @@ Kuruldu (11 Kas 2026): Firebase, `lykiva` Google Cloud projesine eklendi (Analyt
 FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (production profili), yerel kopya silindi.
 **Android sürüm 3 dahili testte yayında** (11 Kas 2026, FCM + Google girişi + anlık hız + rota eğimi). Kalan: telefonda bildirim gelip gelmediğini denemek.
 
+### [~] Harita + Egzersiz tek sekmede (15 Kas 2026)
+Tasarım: "Lykiva — Yolculuk ve Spor birleşik ekranı" (Claude Design canvas'ı). Harita sekmesinin panelinin başında
+ikili geçiş var: **Yolculuk yap** (yol tarifi) / **Egzersiz yap** (tür seç, kaydı başlat).
+- Yolculuk: arama hep yukarıda (hedef seçilince adını gösterir, çarpı hedefi kaldırır); hedef yokken panelde "Son
+  gittiklerin" (aramayla seçilen son yerler, yalnızca telefonda: `lib/sonHedefler.ts`). Hedef seçilince panel dört
+  kademe: kısa özet (süre + Yola çık; panel aşağı çekilince yalnızca bu kalır), ayrıntı (açılışta burada durur),
+  yükselti, tırmanışlar ve rüzgâr.
+- Egzersiz: `components/EgzersizPaneli.tsx` (tür şeridi, rota, canlı konum, "{tür} başlat"). Aynı panel rota
+  sayfasındaki "Bu rotayı başlat" ekranında da (`kayit/index.tsx`). Seçilen tür ve şeridin sırası telefonda saklanır
+  (`lib/egzersizTuru.ts`); en son başlatılan tür başa gelir. Şeridin sonundaki "Tümü" gruplu, aranabilir listeyi açar
+  (`app/egzersiz-turleri.tsx`).
+- Alt menü dört sekme: Ana Sayfa · Harita · Gruplar · Profil. Egzersiz sekmesi yalnızca kayıt sürerken görünür.
+
+Kalan:
+- [ ] **Telefonda denenmedi.** Bakılacaklar: panel kademeleri arasında sürükleme, tür şeridinin kayması, kayıt
+  başlayınca / bitince alt menüde Egzersiz sekmesinin çıkıp kaybolması (iOS ve Android), karanlık tema.
+- [ ] Tasarımdaki "Egzersiz olarak da kaydet" anahtarı yok: "Yola çık" eskisi gibi hep kayıt başlatır. Kayıtsız yol
+  tarifi için kaydediciye "bitince kaydetme" durumu gerekir.
+- [ ] Şerit kısayollarını elle düzenleme yok (sıra son kullanılana göre). Tür sayısı artınca gerekebilir.
+- [ ] Yeni tür (yüzme, kano, kayak…) eklenmedi; `activity_type` enum'u ve migration ister. Eklenince
+  `lib/egzersizTuru.ts`'teki simge ve grup tabloları doldurulmazsa TypeScript hata verir.
+
 ### [ ] Küçük eksikler
 - Profili paylaş > QR kodu yalnızca kodu gösteriyor: uygulama içinden QR okutma yok (`expo-camera`, yeni derleme
   gerekir) ve okutulan `/u/<kullanıcı>` adresi uygulamada değil web'de açılıyor (iOS universal link / Android App Links
@@ -570,6 +592,13 @@ Tırmanış bölümü: en az 20 m kazanç, 200 m uzunluk, ort. %3; tepeden 10 m 
 Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde; web paylaşım sayfasında da.
 
 ## Kararlar
+
+- **Egzersiz sekmesi yalnızca kayıt sürerken** (15 Kas 2026): egzersiz başlatma Harita sekmesine taşındı, alt menü dört
+  sekmeye indi. Kayıt sürerken (ya da duraklatılmışken) Egzersiz sekmesi araya girer ve süren kaydı açar; yoksa başka
+  sekmedeyken kayda dönmenin tek yolu Harita > "Süren kayda dön" olurdu. `useKayitDurumu` yalnızca durum değişince
+  yeniden çizer (alt menü her GPS güncellemesinde çizilmesin). Yol tarifinde "Yola çık" panelin en üst bölümünde:
+  panel tek sayfa olduğu ve kademeler aynı sayfanın bölümleri olduğu için, küçük kademede görünmesi gereken düğme
+  sayfanın başında durmak zorunda.
 
 - **Açılışta sekmeler giriş durumunu bekler** (13 Kas 2026): giriş durumu (oturum + "Şimdilik geç") 800 ms içinde belli olursa sekmeler hiç kurulmaz; doğrudan giriş
   ekranına ya da sekmelere gidilir. Önceden sekmeler kurulup hemen giriş ekranına geçiliyordu; expo-router 58'de sekme

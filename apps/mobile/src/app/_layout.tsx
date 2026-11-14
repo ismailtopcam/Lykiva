@@ -108,6 +108,7 @@ export default function RootLayout() {
         <Stack.Screen name="grup/olustur" options={{ presentation: 'modal' }} />
         <Stack.Screen name="etkinlik/olustur" options={{ presentation: 'modal' }} />
         <Stack.Screen name="hedef-ekle" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="egzersiz-turleri" options={{ presentation: 'modal' }} />
         <Stack.Screen name="meydan-okuma/olustur" options={{ presentation: 'modal' }} />
         <Stack.Screen name="profil-duzenle" options={{ presentation: 'modal' }} />
         <Stack.Screen name="aktivite/[id]/duzenle" options={{ presentation: 'modal' }} />
