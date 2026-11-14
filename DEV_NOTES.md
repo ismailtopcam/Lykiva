@@ -116,6 +116,11 @@ Kalan: telefonlarda deneme. Yeni yerel modüller (fotoğraf, bildirim, kilit ekr
 
 ### [ ] Telefonda ve gerçek sunucuda denenmemiş özellikler
 Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
+- Paylaşım temaları (15 Kas 2026, İsmail; yalnızca JS, yeni derleme gerekmez): aktivite > Paylaş > önizlemenin altındaki
+  tema şeridi. Her temayı seç; Hikâye ve Kart görseli düğmeleriyle paylaş: görsel tam mı (boş ya da kırpık değil mi),
+  yazılar taşıyor mu (uzun aktivite adı, Almanca / Rusça), "Başlangıç ve bitişi gizle" izi kısaltıyor mu? Fotoğraf
+  temasında galeri ve kamera; fotoğraf seçmeden paylaşınca galeri açılıyor mu? Rakımı olmayan kayıtta Zirve profili,
+  hızı gizli aktivitede Hız haritası şeritte görünmemeli. 2× ekranlı telefonda görsel bulanık mı?
 - Kaydırılan bilgi paneli: Harita sekmesi ve Egzersiz kaydı (13 Kas 2026, Gökhan; `harita-panel-kademe`,
   `harita-panel-surukle`, `panel-akici`; ortak kanca `components/panelKademesi.ts`). Panel tek uzun sayfa, kademeler
   o sayfanın bölümleri; panel ekranın altına yaslı, görünen boyu tek bir Animated değeri ve taşanı keser. Parmakla
@@ -472,6 +477,20 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
 - [~] Çok dilli arayüz: İngilizce, Almanca ve Rusça yapıldı (31. aşama); Arapça + sağdan sola düzen sıradaki PR.
 - [ ] Saat uygulaması (Apple Watch / Wear OS) — büyük iş, sonraya.
 - [ ] Karar: ücretli üyelik olacak mı, hangi özellikler (rakiplerde çevrimdışı harita ve yönlendirme ücretli katmanda).
+
+### [~] Paylaşım kartları — tasarım aktarımı (`tasarim/AKTARIM.md`)
+- [x] Paylaş ekranında tema seçimi (15 Kas 2026): Klasik (eski 4 renkli kart) + 8 tasarım teması, gerçek aktivite
+  verisiyle durağan PNG: 01 Gece haritası, 02 Zirve profili, 03 Kartpostal, 04 Biniş kartı, 05 Minimal, 06 Fotoğrafın
+  üstünde, 09 Hız haritası, 10 Günün akışı. Kod: `components/paylasim/` (`ortak.tsx`, `temalar.tsx`). Her tema kendi
+  biçiminde (hikâye 9:16 / gönderi 4:5 / kare); gönderi ve kare kartlar "Hikâye" ile 9:16 zemine oturur. Fotoğraf yalnızca
+  telefonda kalır, sunucuya yüklenmez (yakalanan görselde EXIF yok).
+- [ ] 01 ve 09'un harita zemini (şimdilik koyu zemin + rota). MapLibre anlık görüntüsü ya da kendi karo sunucusu;
+  OpenTopoMap / Esri lisansları için `AKTARIM.md` > Kaynaklar.
+- [ ] 07 Birlikte (grup aktivitesi, avatar halkaları) ve 08 Harita posteri.
+- [ ] Biniş kartında yer kodları: aktivite adı "A – B" biçimindeyse ilk üç harf, değilse saatler. Başlangıç / bitiş yerinin
+  adı (Photon ile ters arama) eklenirse kodlar ve Kartpostal başlığı ("Kaş'tan selamlar") gerçek yer adını kullanabilir.
+- [ ] Hareketli paylaşım (MP4) ve 3B kartlar (11–17): sunucu tarafı boru hattı gerekir; seçenekler `AKTARIM.md`'de, karar İsmail'in.
+- Hız haritasında kademeler sabit 13 / 25 km/sa değil, aktivitenin ortalamasına göre (×0,85 ve ×1,2): koşu ve yürüyüşte de anlamlı.
 
 ### [~] Kulüpler (13 Kas 2026, `20261117000000_kulupler.sql`)
 - [x] Gruplar sekmesi üç bölüm: Meydan okumalar (eski /meydan-okuma listesi, `MeydanOkumaListesi`), Kulüpler (gruplar,

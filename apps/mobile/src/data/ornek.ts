@@ -58,6 +58,8 @@ export type Activity = {
   type: ActivityType;
   place: string;
   when: string;
+  /** Başlangıç zamanı (ms); paylaşım kartlarında tarih için. Örnek aktivitede yok */
+  baslangic?: number;
   distanceKm: string;
   durationMoving: string;
   durationTotal: string;
@@ -108,6 +110,7 @@ export const kasKalkan: Activity = {
   type: 'bike',
   place: 'Kaş, Antalya',
   when: 'Cumartesi, 7 Kasım · 08:12',
+  baslangic: Date.parse('2026-11-07T05:12:00Z'),
   distanceKm: '27,4',
   durationMoving: '1:38:20',
   durationTotal: '1:56:05',

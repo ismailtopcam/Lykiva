@@ -1,17 +1,20 @@
 import * as Sharing from 'expo-sharing';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, View, type HostInstance } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, useWindowDimensions, View, type HostInstance } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Header } from '@/components/Header';
 import { Icon, type IconName } from '@/components/Icon';
-import { HikayeGorseli, KART_SABLONLARI, PaylasimKarti, type KartIstatistigi } from '@/components/PaylasimKarti';
+import { HikayeGorseli, KART_SABLONLARI, PaylasimKarti, uclariKirp, type KartIstatistigi } from '@/components/PaylasimKarti';
+import { BICIM_OLCU, Olcekli } from '@/components/paylasim/ortak';
+import { PAYLASIM_TEMALARI, TemaGorseli, type TemaKimligi } from '@/components/paylasim/temalar';
 import { Txt } from '@/components/Txt';
 import { Chip, Label, ToggleRow } from '@/components/ui';
 import { aktiviteAyarla, aktiviteNoktalari, useAktivite } from '@/data/aktivite';
 import type { Activity } from '@/data/ornek';
 import { baglantiAc, baglantiAdresi, baglantiDurumu, baglantiKapat, baglantiPaylas } from '@/lib/baglanti';
+import { fotoSec, type Kaynak } from '@/lib/foto';
 import { dosyaAdi, gpxPaylas } from '@/lib/gpx';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space, temaliStil } from '@/theme';
@@ -27,6 +30,9 @@ const statDefs = (): [KartIstatistigi, string][] => [
   ['hava', $t('ortak.hava')],
   ['kisiler', $t('aktivite_paylas.birlikte_yaptiklarim')],
 ];
+
+/** Tema şeridindeki küçük önizlemelerin yüksekliği (pt) */
+const KUCUK_YUKSEKLIK = 112;
 
 const GORUNURLUK = (): { id: NonNullable<Activity['visibility']>; label: string }[] => [
   { id: 'private', label: $t('ortak.sadece_ben') },
@@ -50,6 +56,11 @@ export default function PaylasimStudyosuScreen() {
   const { a, hata } = useAktivite(id);
   const insets = useSafeAreaInsets();
   const [look, setLook] = useState(0);
+  // Tasarım temaları (tasarim/ kartları); 'klasik' = renk şablonlu eski kart
+  const [tema, setTema] = useState<TemaKimligi | 'klasik'>('klasik');
+  // "Fotoğrafın üstünde" teması için seçilen fotoğraf: yalnızca telefonda, sunucuya gitmez
+  const [foto, setFoto] = useState<string | null>(null);
+  const { width: ekranGenisligi } = useWindowDimensions();
   const [hideYerel, setHide] = useState<boolean | null>(null);
   const [gorunurlukYerel, setGorunurluk] = useState<Activity['visibility'] | null>(null);
   const [on, setOn] = useState<Partial<Record<KartIstatistigi, boolean>>>({ mesafe: true, sure: true, tirmanis: true, maks: true, kisiler: true });
@@ -57,9 +68,13 @@ export default function PaylasimStudyosuScreen() {
   const [mesgul, setMesgul] = useState<Hedef['id'] | null>(null);
   const buyukKart = useRef<HostInstance>(null);
   const hikaye = useRef<HostInstance>(null);
+  const temaKart = useRef<HostInstance>(null);
+  const temaHikaye = useRef<HostInstance>(null);
   // Web paylaşım bağlantısı: undefined = bilinmiyor, null = kapalı, metin = açık (anahtar)
   const [baglanti, setBaglanti] = useState<string | null | undefined>(undefined);
   const sunucuId = a?.mine && supabaseHazir ? a.id : null;
+  const kirpik = hideYerel ?? a?.hideEndpoints ?? true;
+  const iz = useMemo(() => (!a ? [] : kirpik ? uclariKirp(a.route) : a.route), [a, kirpik]);
 
   useEffect(() => {
     if (!sunucuId) return;
@@ -86,14 +101,46 @@ export default function PaylasimStudyosuScreen() {
   const gorunurluk = gorunurlukYerel ?? a.visibility ?? 'followers';
   const sunucuda = !!a.mine;
 
+  const temalar = PAYLASIM_TEMALARI.filter((t) => t.uygun(a));
+  const secili = temalar.find((t) => t.id === tema) ?? null;
+  const temaOzellik = { a, route: iz, uclariGizle: hide, foto };
+
   async function gorselUret(tur: 'kart' | 'hikaye'): Promise<string> {
     // Görseller içeriğin arkasında (pencere içinde) çizili; büyük boyutta yakalanır.
     // Pencere dışındaki görünümler iOS'ta boş yakalanabildiği için ekran dışına itilmedi.
     const { captureRef } = await import('react-native-view-shot');
     // RN 0.88'de View bir ana bileşen örneği döndürür; view-shot türleri henüz bunu tanımıyor
-    const hedef = (tur === 'hikaye' ? hikaye : buyukKart) as unknown as Parameters<typeof captureRef>[0];
+    type YakalamaHedefi = Parameters<typeof captureRef>[0];
+    const ad = `${dosyaAdi(a!.title)}-${secili?.id ?? 'klasik'}-${tur}`;
+    if (secili) {
+      // Tema kendi biçiminde (hikâye / gönderi / kare); hikâye istenirse gönderi ve kare kartlar 9:16 zemine oturur
+      const o = BICIM_OLCU[secili.bicim];
+      const hikayeMi = tur === 'hikaye' || secili.bicim === 'hikaye';
+      const hedef = (hikayeMi && secili.bicim !== 'hikaye' ? temaHikaye : temaKart) as unknown as YakalamaHedefi;
+      const boyut = hikayeMi ? { width: 1080, height: 1920 } : { width: 1080, height: Math.round((1080 * o.h) / o.w) };
+      return captureRef(hedef, { format: 'png', quality: 1, ...boyut, result: 'tmpfile', fileName: ad });
+    }
+    const hedef = (tur === 'hikaye' ? hikaye : buyukKart) as unknown as YakalamaHedefi;
     const boyut = tur === 'hikaye' ? { width: 1080, height: 1920 } : { width: 1080, height: 1653 };
-    return captureRef(hedef, { format: 'png', quality: 1, ...boyut, result: 'tmpfile', fileName: `${dosyaAdi(a!.title)}-${tur}` });
+    return captureRef(hedef, { format: 'png', quality: 1, ...boyut, result: 'tmpfile', fileName: ad });
+  }
+
+  async function fotoAl(kaynak: Kaynak): Promise<string | null> {
+    setMesaj(null);
+    try {
+      const uri = await fotoSec(kaynak);
+      if (uri) setFoto(uri);
+      return uri;
+    } catch (e) {
+      setMesaj(e instanceof Error ? e.message : $t('aktivite_paylas.paylasilamadi'));
+      return null;
+    }
+  }
+
+  function temaSec(id: TemaKimligi | 'klasik') {
+    setTema(id);
+    // Fotoğraf teması ilk seçildiğinde galeriyi aç
+    if (id === 'foto' && !foto && Platform.OS !== 'web') void fotoAl('galeri');
   }
 
   async function hedefSec(h: Hedef) {
@@ -103,6 +150,11 @@ export default function PaylasimStudyosuScreen() {
       if (h.id === 'hikaye' || h.id === 'kart') {
         if (Platform.OS === 'web') throw new Error($t('aktivite_paylas.gorsel_paylasimi_telefonda_calisir'));
         if (!(await Sharing.isAvailableAsync())) throw new Error($t('aktivite_paylas.bu_cihazda_paylasim_menusu'));
+        if (secili?.id === 'foto' && !foto) {
+          if (!(await fotoAl('galeri'))) return;
+          // Seçilen fotoğrafın görünüme yüklenmesi için kısa bekleme
+          await new Promise((r) => setTimeout(r, 400));
+        }
         const uri = await gorselUret(h.id);
         await Sharing.shareAsync(uri, { mimeType: 'image/png', UTI: 'public.png', dialogTitle: $t('aktivite_paylas.karti_paylas') });
       } else if (h.id === 'gpx') {
@@ -160,12 +212,28 @@ export default function PaylasimStudyosuScreen() {
     if (sunucuda) await aktiviteAyarla(a!.id, { hide_endpoints: v }).catch(() => undefined);
   }
 
+  // Seçili temanın büyük önizlemesi: en fazla 400 pt yükseklik, ekran genişliğine sığar
+  function temaOnizleme() {
+    if (!secili) return null;
+    const o = BICIM_OLCU[secili.bicim];
+    const s = Math.min(400 / o.h, (ekranGenisligi - space.lg * 2) / o.w);
+    return (
+      <View style={{ borderRadius: 10, overflow: 'hidden' }}>
+        <Olcekli w={o.w} h={o.h} s={s}>
+          <secili.Bilesen {...temaOzellik} />
+        </Olcekli>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.root}>
       {/* Görseller için büyük kartlar: içeriğin arkasında çizilir (görünmez), yalnızca yakalanır */}
       <View style={styles.gizli} pointerEvents="none" importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
         <PaylasimKarti ref={buyukKart} a={a} sablon={look} goster={on} uclariGizle={hide} genislik={360} />
         <HikayeGorseli ref={hikaye} a={a} sablon={look} goster={on} uclariGizle={hide} />
+        {secili ? <TemaGorseli ref={temaKart} tema={secili} {...temaOzellik} /> : null}
+        {secili && secili.bicim !== 'hikaye' ? <TemaGorseli ref={temaHikaye} tema={secili} hikaye {...temaOzellik} /> : null}
       </View>
       <View style={styles.on}>
         <Header
@@ -180,26 +248,71 @@ export default function PaylasimStudyosuScreen() {
         <ScrollView contentContainerStyle={{ paddingBottom: 170 + insets.bottom }}>
           <View style={{ alignItems: 'center', paddingVertical: 10 }}>
             <View style={styles.shadow}>
-              <PaylasimKarti a={a} sablon={look} goster={on} uclariGizle={hide} />
+              {secili ? temaOnizleme() : <PaylasimKarti a={a} sablon={look} goster={on} uclariGizle={hide} />}
             </View>
           </View>
 
           <View style={{ paddingHorizontal: space.lg }}>
-            <Label>{$t('aktivite_paylas.sablon')}</Label>
-            <View accessibilityRole="radiogroup" style={styles.row}>
-              {KART_SABLONLARI().map((l, i) => (
-                <Chip key={l.name} label={l.name} role="radio" selected={i === look} onPress={() => setLook(i)} />
-              ))}
-            </View>
+            <Label>{$t('paylasimTemalari.tema')}</Label>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} accessibilityRole="radiogroup" contentContainerStyle={styles.temalar}>
+            {[{ id: 'klasik' as const, ad: $t('paylasimTemalari.klasik') }, ...temalar.map((t) => ({ id: t.id, ad: t.ad() }))].map((t) => {
+              const tm = temalar.find((x) => x.id === t.id);
+              const o = tm ? BICIM_OLCU[tm.bicim] : { w: 196, h: 300 };
+              const s = KUCUK_YUKSEKLIK / o.h;
+              const sec = t.id === (secili?.id ?? 'klasik');
+              return (
+                <Pressable
+                  key={t.id}
+                  accessibilityRole="radio"
+                  accessibilityLabel={t.ad}
+                  accessibilityState={{ selected: sec }}
+                  onPress={() => temaSec(t.id)}
+                  style={styles.temaKutu}>
+                  <View style={[styles.temaOnizleme, sec && styles.temaSecili]} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+                    {tm ? (
+                      <Olcekli w={o.w} h={o.h} s={s}>
+                        <tm.Bilesen {...temaOzellik} />
+                      </Olcekli>
+                    ) : (
+                      <PaylasimKarti a={a} sablon={look} goster={on} uclariGizle={hide} genislik={196 * s} />
+                    )}
+                  </View>
+                  <Txt numberOfLines={1} style={[styles.temaAd, sec && { color: colors.terra }]}>
+                    {t.ad}
+                  </Txt>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
 
-            <Label>{$t('aktivite_paylas.kartta_goster')}</Label>
-            <View style={[styles.row, { flexWrap: 'wrap' }]}>
-              {statDefs()
-                .filter(([k]) => (k !== 'kisiler' || a.with.length > 0) && (k !== 'hava' || !!a.hava))
-                .map(([k, label]) => (
-                  <Chip key={k} label={label} role="checkbox" tone="sea" icon={on[k] ? undefined : 'plus'} selected={!!on[k]} onPress={() => setOn({ ...on, [k]: !on[k] })} />
-                ))}
-            </View>
+          <View style={{ paddingHorizontal: space.lg }}>
+            {secili?.id === 'foto' && Platform.OS !== 'web' ? (
+              <View style={[styles.row, { flexWrap: 'wrap' }]}>
+                <Chip label={foto ? $t('paylasimTemalari.foto_degistir') : $t('paylasimTemalari.galeriden')} onPress={() => void fotoAl('galeri')} />
+                <Chip label={$t('paylasimTemalari.kamera')} onPress={() => void fotoAl('kamera')} />
+              </View>
+            ) : null}
+
+            {!secili ? (
+              <>
+                <Label>{$t('paylasimTemalari.renk')}</Label>
+                <View accessibilityRole="radiogroup" style={styles.row}>
+                  {KART_SABLONLARI().map((l, i) => (
+                    <Chip key={l.name} label={l.name} role="radio" selected={i === look} onPress={() => setLook(i)} />
+                  ))}
+                </View>
+
+                <Label>{$t('aktivite_paylas.kartta_goster')}</Label>
+                <View style={[styles.row, { flexWrap: 'wrap' }]}>
+                  {statDefs()
+                    .filter(([k]) => (k !== 'kisiler' || a.with.length > 0) && (k !== 'hava' || !!a.hava))
+                    .map(([k, label]) => (
+                      <Chip key={k} label={label} role="checkbox" tone="sea" icon={on[k] ? undefined : 'plus'} selected={!!on[k]} onPress={() => setOn({ ...on, [k]: !on[k] })} />
+                    ))}
+                </View>
+              </>
+            ) : null}
 
             <View style={{ borderTopWidth: 1, borderTopColor: colors.lineStrong, marginTop: 4 }}>
               <ToggleRow title={$t('aktivite_paylas.baslangic_ve_bitisi_gizle')} subtitle={$t('aktivite_paylas.evinin_konumu_haritada_gorunmez')} value={hide} onChange={gizlemeSec} />
@@ -278,5 +391,10 @@ const styles = temaliStil(() => StyleSheet.create({
   targets: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.line, paddingHorizontal: 8, paddingTop: 12 },
   mesaj: { textAlign: 'center', fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: colors.seaInk, marginBottom: 8 },
   target: { width: '20%', alignItems: 'center', gap: 6 },
+  temalar: { paddingHorizontal: space.lg, gap: 12, paddingBottom: 14 },
+  temaKutu: { alignItems: 'center', gap: 6 },
+  temaOnizleme: { borderRadius: 8, overflow: 'hidden', borderWidth: 2, borderColor: 'transparent' },
+  temaSecili: { borderColor: colors.terra },
+  temaAd: { maxWidth: 104, fontSize: 11, fontFamily: fontFamily.bodySemiBold, color: colors.inkMuted },
   targetIcon: { width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
 }));
