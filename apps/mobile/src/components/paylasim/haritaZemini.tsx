@@ -26,6 +26,17 @@ type KaroVerisi = { z: number; x: number; y: number; extent: number; ozellikler:
 export type HaritaPaleti = Record<Tur, string>;
 
 /** Gece teması (01, 09): koyu zeminde çok hafif seçilen yollar ve su */
+/** Açık tema (08 Harita posteri): krem kara, yeşil alanlar, açık mavi su, turuncu ana yollar */
+export const ACIK_HARITA: HaritaPaleti = {
+  yesil: '#DCE5C8',
+  su: '#B7D9E2',
+  akarsu: '#9CCAD6',
+  yolKucuk: '#DDD5C4',
+  yolOrta: '#CDC3AF',
+  yolAna: '#BCAF97',
+  otoyol: '#E0A27A',
+};
+
 export const GECE_HARITA: HaritaPaleti = {
   yesil: '#19261F',
   su: '#070C0D',
