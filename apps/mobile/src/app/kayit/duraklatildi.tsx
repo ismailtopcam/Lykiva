@@ -46,7 +46,8 @@ export default function DuraklatildiScreen() {
       await iptalEt();
       router.replace('/');
     };
-    if (Platform.OS === 'web') {
+    // Yalnızca yol tarifi: silinecek bir kayıt sözü verilmedi, sormadan bitir
+    if (Platform.OS === 'web' || kayit.kaydetme) {
       void sil();
       return;
     }
@@ -84,13 +85,25 @@ export default function DuraklatildiScreen() {
       </View>
 
       <Txt variant="small" color={n.textMuted} style={{ textAlign: 'center' }}>
-        {kayit.araba ? $t('kayit_canli.araba_kaydedilmez') : $t('kayit_duraklatildi.bu_mola_kaydin_hiz')}</Txt>
+        {$t('kayit_duraklatildi.bu_mola_kaydin_hiz')}</Txt>
 
       <View style={{ marginTop: 'auto', gap: 10 }}>
         <Button label={$t('kayit_duraklatildi.devam_et')} icon="play" variant="night" big onPress={onDevam} disabled={kaydediyor} />
-        {kayit.araba ? (
-          // Araba yolculuğu kaydedilmez: tek düğme, takibi kapatır (`bitir` arabada iptal eder)
-          <Button label={$t('kayit_canli.bitir')} icon="stop" variant="nightOutline" onPress={onBitir} disabled={kaydediyor} />
+        {kayit.kaydetme ? (
+          // Yalnızca yol tarifi: asıl düğme kaydetmeden bitirir; kaydetmek isteyene ikinci seçenek
+          <>
+            <Button label={$t('kayit_canli.yolculugu_bitir')} icon="stop" variant="nightOutline" onPress={onSil} disabled={kaydediyor} />
+            {/* Araba etkinlik türü değil: kaydetme seçeneği yok */}
+            {yetersiz || kayit.araba ? null : (
+              <Button
+                label={kaydediyor ? $t('ortak.kaydediliyor') : $t('kayit_canli.aktivite_olarak_kaydet')}
+                variant="nightOutline"
+                onPress={onBitir}
+                disabled={kaydediyor}
+                style={{ borderColor: 'transparent' }}
+              />
+            )}
+          </>
         ) : (
           <>
             <Button

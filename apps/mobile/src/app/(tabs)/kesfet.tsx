@@ -11,6 +11,7 @@
  * Dosya adı bağlantılar bozulmasın diye `kesfet` kaldı.
  */
 import { ACTIVITY_LABELS, ACTIVITY_TYPES, estimateDuration, formatKm, formatMeters, kmUnit, routeStats, type RoutePoint } from '@lykiva/shared';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Keyboard, Linking, Platform, Pressable, ScrollView, StyleSheet, TextInput, View, useWindowDimensions } from 'react-native';
@@ -27,7 +28,7 @@ import { gercekHarita, type MapMarker } from '@/components/map/TopoMap';
 import { YolHaritasi } from '@/components/map/YolHaritasi';
 import { RotaRuzgari } from '@/components/RotaRuzgari';
 import { Txt } from '@/components/Txt';
-import { Button, Chip, Stat } from '@/components/ui';
+import { Button, Chip, Stat, ToggleRow } from '@/components/ui';
 import type { LngLat } from '@/data/ornek';
 import type { Rota } from '@/data/rota';
 import { baslat, IzinHatasi, konumOnizlemeBaslat, useKayit } from '@/kayit/kaydedici';
@@ -44,6 +45,8 @@ const PANEL_ALT_BOSLUK = 16;
 /** Boş durumda panelde gösterilen son yer sayısı */
 const SON_HEDEF_SAYISI = 3;
 const BOS: RoutePoint[] = [];
+/** "Egzersiz olarak da kaydet" seçimi telefonda saklanır ('0' = kapalı) */
+const KAYDET_ANAHTARI = 'lykiva.yolculuk-kaydet.v1';
 
 const TERCIHLER = (): { id: Exclude<CizimModu, 'serbest'>; label: string }[] => [
   { id: 'yol', label: $t('harita.yol_oncelikli') },
@@ -83,6 +86,17 @@ export default function HaritaScreen() {
   const sonHedefler = useSonHedefler();
   const [activity, setActivity] = useState<YolTuru>('walk');
   const araba = activity === 'car';
+  // Yol tarifi aynı zamanda aktivite olarak kaydedilsin mi (kapalıysa bitince bir şey kaydedilmez)
+  const [kaydet, setKaydet] = useState(true);
+  useEffect(() => {
+    AsyncStorage.getItem(KAYDET_ANAHTARI)
+      .then((s) => s === '0' && setKaydet(false))
+      .catch(() => undefined);
+  }, []);
+  function kaydetSec(v: boolean) {
+    setKaydet(v);
+    void AsyncStorage.setItem(KAYDET_ANAHTARI, v ? '1' : '0').catch(() => undefined);
+  }
   const [mod, setMod] = useState<Exclude<CizimModu, 'serbest'>>('yol');
   const [hedef, setHedef] = useState<Hedef | null>(null);
   // Yolun başı: hedef seçildiği andaki konum (her GPS güncellemesinde yeniden hesaplanmasın diye sabit)
@@ -246,8 +260,8 @@ export default function HaritaScreen() {
     try {
       const ad = hedef.ad ? $t('harita.yol_tarifi_ad', { ad: hedef.ad }) : $t('harita.yol_tarifi');
       // Geçici id: sunucuda rota değil, aktiviteye route_id olarak gitmez (bkz. kayit/paket.ts).
-      // Araba ('car'): rota takibi açılır, bitince kaydedilmez
-      await baslat(activity, { id: `tarif-${Date.now()}`, name: ad, points }, null);
+      // Araba ('car') "Egzersiz olarak da kaydet" seçiminden bağımsız, hiç kaydedilmez (kaydedici zorlar)
+      await baslat(activity, { id: `tarif-${Date.now()}`, name: ad, points }, null, !kaydet);
       router.push('/kayit/canli');
     } catch (e) {
       setHata(e instanceof IzinHatasi || e instanceof Error ? e.message : $t('kayit.kayit_baslatilamadi'));
@@ -492,6 +506,17 @@ export default function HaritaScreen() {
                   <Button label={$t('harita.haritalarda_ac')} icon="map" variant="outline" onPress={() => void haritalardaAc()} style={{ marginTop: 12 }} />
                 </>
               ) : null}
+              {/* Araba yolculuğu hiç kaydedilmez; süren kayıt varken de seçim anlamsız */}
+              {araba || kayitta ? null : (
+                <View style={{ marginTop: 6 }}>
+                  <ToggleRow
+                    title={$t('harita.egzersiz_olarak_kaydet')}
+                    subtitle={kaydet ? $t('harita.egzersiz_olarak_kaydet_acik') : $t('harita.egzersiz_olarak_kaydet_kapali')}
+                    value={kaydet}
+                    onChange={kaydetSec}
+                  />
+                </View>
+              )}
             </View>
           ) : null}
 

@@ -102,20 +102,18 @@ export default function CanliTakipScreen() {
   }
 
   function onBitir() {
-    // Araba yolculuğu kaydedilmez: bitirmek takibi kapatır
-    if (kayit.araba) {
-      if (Platform.OS === 'web') {
-        void sil();
-        return;
-      }
-      Alert.alert($t('kayit_canli.yolculuk_bitirilsin_mi'), $t('kayit_canli.araba_kaydedilmez'), [
-        { text: $t('ortak.vazgec'), style: 'cancel' },
-        { text: $t('kayit_canli.bitir'), onPress: () => void sil() },
-      ]);
+    if (Platform.OS === 'web') {
+      void (yetersiz || kayit.kaydetme ? sil() : kaydet());
       return;
     }
-    if (Platform.OS === 'web') {
-      void (yetersiz ? sil() : kaydet());
+    // Yalnızca yol tarifi: bitince kaydedilmez; fikir değiştirene kaydetme seçeneği de sunulur
+    if (kayit.kaydetme) {
+      Alert.alert($t('kayit_canli.yolculuk_bitirilsin_mi'), $t('kayit_canli.yolculuk_kaydedilmeyecek'), [
+        { text: $t('ortak.vazgec'), style: 'cancel' },
+        // Araba etkinlik türü değil: kaydetme seçeneği yok
+        ...(yetersiz || kayit.araba ? [] : [{ text: $t('kayit_canli.aktivite_olarak_kaydet'), onPress: () => void kaydet() }]),
+        { text: $t('kayit_canli.yolculugu_bitir'), onPress: () => void sil() },
+      ]);
       return;
     }
     if (yetersiz) {
@@ -136,10 +134,8 @@ export default function CanliTakipScreen() {
     <View style={styles.solUst}>
       <AnaSayfaDugmesi />
       <View style={styles.pill}>
-        <View style={[styles.dot, { backgroundColor: n.recording }]} />
-        <Txt style={styles.pillText}>
-          {kayit.araba ? $t('kayit_canli.yolda', { a: $t('harita.araba') }) : $t('kayit_canli.kayitta', { a: ACTIVITY_LABELS[kayit.activity] })}
-        </Txt>
+        <View style={[styles.dot, { backgroundColor: kayit.kaydetme ? n.sea : n.recording }]} />
+        <Txt style={styles.pillText}>{$t(kayit.kaydetme ? 'kayit_canli.yolculukta' : 'kayit_canli.kayitta', { a: kayit.araba ? $t('harita.araba') : ACTIVITY_LABELS[kayit.activity] })}</Txt>
       </View>
     </View>
   );

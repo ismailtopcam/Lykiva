@@ -384,8 +384,11 @@ ikili geçiş var: **Yolculuk yap** (yol tarifi) / **Egzersiz yap** (tür seç, 
 Kalan:
 - [ ] **Telefonda denenmedi.** Bakılacaklar: panel kademeleri arasında sürükleme, tür şeridinin kayması, kayıt
   başlayınca / bitince alt menüde Egzersiz sekmesinin çıkıp kaybolması (iOS ve Android), karanlık tema.
-- [ ] Tasarımdaki "Egzersiz olarak da kaydet" anahtarı yok: "Yola çık" eskisi gibi hep kayıt başlatır. Kayıtsız yol
-  tarifi için kaydediciye "bitince kaydetme" durumu gerekir.
+- [x] "Egzersiz olarak da kaydet" anahtarı (15 Kas 2026): yol tarifinin ayrıntı bölümünde, varsayılan açık, seçim
+  telefonda saklanır. Kapalıyken "Yola çık" aynı canlı ekranı açar ama kayıt `kaydetme` işaretiyle başlar: rozet
+  "Yol tarifi · tür" yazar, Android bildirimi "kaydediyor" demez, Bitir aktivite oluşturmadan kapatır (`iptalEt`).
+  Bitirirken ve duraklatılmış ekranda "Aktivite olarak kaydet" seçeneği durur (fikir değiştirene).
+  **Telefonda denenmedi:** bitirme uyarısındaki üç düğme (iOS / Android), kaydedilmeyen yolculukta bildirim metni.
 - [ ] Şerit kısayollarını elle düzenleme yok (sıra son kullanılana göre). Tür sayısı artınca gerekebilir.
 - [ ] Yeni tür (yüzme, kano, kayak…) eklenmedi; `activity_type` enum'u ve migration ister. Eklenince
   `lib/egzersizTuru.ts`'teki simge ve grup tabloları doldurulmazsa TypeScript hata verir.
@@ -474,11 +477,12 @@ Kalan:
   **Araba etkinlik türü değil:** `ActivityType`'a, veritabanına ve Egzersiz'e eklenmedi (İsmail'in kararı). Rota çizme
   ekranına eklenmedi. Yalnızca JS, dört dilde.
   - **"Yola çık" arabada da var, kaydetmez** (15 Kas 2026, `claude/araba-yola-cik`, İsmail'in kararı): aynı rota takibi
-    ekranı açılır (`baslat('car', …)` → `Kayit.araba`), yolculuk bitince aktivite olarak kaydedilmez; `bitir()` arabada
-    `iptalEt()`'e düşer, yani hiçbir ekrandan kaydedilemez. Canlı ekranda rozet "Yolda · Araba", Bitir "Yolculuk
-    bitirilsin mi?" diye sorar; duraklatıldı ekranında tek "Bitir" düğmesi (kaydet / sil yok). Kilit ekranı başlığı
-    "Araba · Yol tarifi". Bilinen eksikler: kilit ekranı simgesi iOS'ta bisiklet kalıyor (`index.ios.tsx`'teki `SIMGELER`
-    derlemeyle gider), Android konum bildirimi "Lykiva kaydediyor" diyor.
+    ekranı açılır. "Egzersiz olarak da kaydet" anahtarının `kaydetme` mekanizmasını kullanır (yukarıda, Harita ve
+    Egzersiz): `baslat('car', …)` `kaydetme`'yi hep açar ve `Kayit.araba`'yı işaretler. Farkı: arabada "Aktivite olarak
+    kaydet" seçeneği hiç sunulmaz (canlı ekrandaki bitirme uyarısında ve duraklatıldı ekranında) ve `bitir()` arabada
+    `iptalEt()`'e düşer, yani hiçbir ekrandan kaydedilemez; anahtar arabada gizlidir. Rozet "Yol tarifi · Araba", kilit
+    ekranı başlığı "Araba · Yol tarifi". Bilinen eksik: kilit ekranı simgesi iOS'ta bisiklet kalıyor
+    (`index.ios.tsx`'teki `SIMGELER` derlemeyle gider).
   - **Yol / patika tercihi arabada da görünür:** araba patikaya giremez; "patika öncelikli" `car-fast`'e
     `profile:use_offroad=1` ekler, araca kapalı sayılan toprak yollar (`track`) açılır. Kendi sunucumuzda denendi (Kaş,
     toprak yol üstündeki hedef): yol öncelikli en yakın asfaltta bitiyor (11642 m), patika öncelikli 842 m toprak

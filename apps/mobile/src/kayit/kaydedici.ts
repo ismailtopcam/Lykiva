@@ -7,6 +7,8 @@
  * - Kayıt durumu her nokta grubunda telefona yazılır; uygulama kapanırsa kaldığı yerden sürer.
  * - Duraklatma yeni bir "parça" başlatır; parçalar arası yol mesafeye eklenmez.
  * - Kilit ekranında süre, mesafe ve ortalama hız gösterilir: Android bildirim, iOS Live Activity (kilitEkrani.ts).
+ * - Yol tarifi "Egzersiz olarak da kaydet" kapalıyken başlatıldıysa (`kaydetme`) her şey aynı işler, yalnızca
+ *   bitirince aktivite oluşmaz: ekranlar `bitir` yerine `iptalEt` çağırır (kullanıcı isterse yine kaydedebilir).
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { acceptPoint, haversine, LOCATION_DISTANCE_INTERVAL_M, prepareRoute, trackOnRoute, type ActivityType, type HavaDurumu, type PreparedRoute, type RouteProgress, type RoutePoint, type TrackPoint } from '@lykiva/shared';
@@ -34,8 +36,8 @@ export type Kayit = {
   clientId: string;
   activity: ActivityType;
   /**
-   * Araba yolculuğu (Harita > Yolculuk yap > Araba): yalnızca rota takibi. Araba etkinlik türü değildir; bitince
-   * aktivite olarak kaydedilmez (`bitir` iptal eder). `activity` bu durumda anlamsızdır, gösterilmez.
+   * Araba yolculuğu (Harita > Yolculuk yap > Araba). Araba etkinlik türü değildir: `kaydetme` hep açıktır ve
+   * "Aktivite olarak kaydet" seçeneği sunulmaz (`bitir` de iptal eder). `activity` bu durumda anlamsızdır, gösterilmez.
    */
   araba: boolean;
   /** Duraklatmalarla bölünmüş nokta listeleri */
@@ -56,6 +58,8 @@ export type Kayit = {
   paylasim: PaylasimGrubu | null;
   /** Kayıt başlarken alınan hava (internet yoksa null kalır) */
   hava: HavaDurumu | null;
+  /** Yalnızca yol tarifi: bitince aktivite olarak kaydedilmeyecek */
+  kaydetme: boolean;
 };
 
 export type KayitRotasi = { id: string; name: string; points: RoutePoint[] };
@@ -75,6 +79,7 @@ const BOS: Kayit = {
   rotaIlerleme: null,
   paylasim: null,
   hava: null,
+  kaydetme: false,
 };
 
 // Hazırlanmış rota (birikmiş mesafeler) — rota başına bir kez hesaplanır
@@ -208,8 +213,9 @@ const IZLEME = (): Location.LocationTaskOptions => ({
   pausesUpdatesAutomatically: false,
   showsBackgroundLocationIndicator: true,
   foregroundService: {
-    notificationTitle: $t('kayit_kaydedici.lykiva_kaydediyor'),
-    notificationBody: $t('kayit_kaydedici.rotan_hizin_ve_molalarin'),
+    // Kaydedilmeyen yolculukta bildirim "kaydediyor" demesin
+    notificationTitle: kayit.kaydetme ? $t('kayit_kaydedici.yol_tarifi_suruyor') : $t('kayit_kaydedici.lykiva_kaydediyor'),
+    notificationBody: kayit.kaydetme ? $t('kayit_kaydedici.yol_tarifi_konum') : $t('kayit_kaydedici.rotan_hizin_ve_molalarin'),
     notificationColor: '#B04E25',
     killServiceOnDestroy: false,
   },
@@ -279,8 +285,11 @@ async function izlemeyiDurdur() {
 
 export class IzinHatasi extends Error {}
 
-/** `activity` 'car' ise araba yolculuğu: rota takip edilir, bitince kaydedilmez (bkz. `Kayit.araba`) */
-export async function baslat(activity: ActivityType | 'car', rota: KayitRotasi | null = null, paylasim: PaylasimGrubu | null = null) {
+/**
+ * `kaydetme`: yalnızca yol tarifi; bitince aktivite olarak kaydedilmeyecek.
+ * `activity` 'car' ise araba yolculuğu: her zaman `kaydetme` ve sonradan da kaydedilemez (bkz. `Kayit.araba`).
+ */
+export async function baslat(activity: ActivityType | 'car', rota: KayitRotasi | null = null, paylasim: PaylasimGrubu | null = null, kaydetme = false) {
   const fg = await Location.requestForegroundPermissionsAsync();
   if (!fg.granted) throw new IzinHatasi($t('kayit_kaydedici.konum_izni_verilmedi_ayarlar'));
   degistir({
@@ -295,6 +304,7 @@ export async function baslat(activity: ActivityType | 'car', rota: KayitRotasi |
     rota,
     rotaIlerleme: rota && kayit.sonKonum ? trackOnRoute(hazir(rota), kayit.sonKonum) : null,
     paylasim,
+    kaydetme: kaydetme || activity === 'car',
   });
   if (paylasim) hemenYayinla(paylasimDurumu());
   havayiYakala();
