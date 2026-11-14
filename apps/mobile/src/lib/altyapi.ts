@@ -10,6 +10,8 @@ const KENDI_PHOTON = process.env.EXPO_PUBLIC_PHOTON_URL;
 const ANAHTAR = process.env.EXPO_PUBLIC_ALTYAPI_ANAHTARI;
 
 export const BROUTER_URL = KENDI_BROUTER || 'https://brouter.de/brouter';
+/** Kendi BRouter sunucumuz mu? Kendi profillerimiz (altyapi/brouter/profiller) yalnızca orada var */
+export const KENDI_BROUTER_VAR = !!KENDI_BROUTER;
 export const PHOTON_URL = KENDI_PHOTON || 'https://photon.komoot.io/api/';
 
 function basliklar(kendi: string | undefined): Record<string, string> {

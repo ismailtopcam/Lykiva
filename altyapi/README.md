@@ -6,11 +6,25 @@ kendi kopyasını Coolify'da çalıştırmak için.
 
 | Servis | Ne | Veri | Bellek |
 | --- | --- | --- | --- |
-| `brouter/` | BRouter 1.7.10 (Java 21). Uygulamanın profilleri: trekking, fastbike, hiking-mountain, mtb | brouter.de segmentleri, Türkiye ve çevresi 8 karo, ~210 MB (Kasım 2026); haftalık yenilenir | `BROUTER_BELLEK` (varsayılan 512M) |
+| `brouter/` | BRouter 1.7.10 (Java 21). Uygulamanın profilleri: trekking, fastbike, hiking-mountain, mtb ve kendi `lykiva-yaya-yol` (aşağıda) | brouter.de segmentleri, Türkiye ve çevresi 8 karo, ~210 MB (Kasım 2026); haftalık yenilenir | `BROUTER_BELLEK` (varsayılan 512M) |
 | `photon/` | Photon 1.3.0 (Java 21, gömülü OpenSearch) | GraphHopper'ın haftalık Türkiye dökümü (~143 MB sıkıştırılmış, Kasım 2026), Türkçe + İngilizce adlarla içe aktarılır | `PHOTON_BELLEK` (varsayılan 2g) |
 
 İkisi de ilk açılışta verisini kendisi indirir (BRouter birkaç dakika, Photon içe aktarmayla birlikte daha uzun);
 veriler kalıcı birimlerde durur, yeniden başlatmada tekrar indirilmez.
+
+## Kendi BRouter profillerimiz (`brouter/profiller/`)
+
+Klasördeki `.brf` dosyaları imaja, hazır profillerin yanına (`/brouter/profiles2`) kopyalanır; istekte dosya adıyla
+çağrılır (`profile=lykiva-yaya-yol`). brouter.de'de bu profiller yoktur; uygulama kendi sunucumuz tanımlı değilse ya da
+sunucu profili tanımıyorsa (boş gövdeli 500) hazır profile düşer (`apps/mobile/src/lib/yonlendirme.ts`).
+
+| Profil | Ne için | Neden |
+| --- | --- | --- |
+| `lykiva-yaya-yol` | "Yol öncelikli" yürüyüş / koşu | Hazır `trekking` bisiklet profili: tek yönlere uyar, `trunk` yolları 10 kat cezalandırır; Ankara'da 3,6 km'lik yürüyüş 6,1 km çıkıyordu |
+
+Profil değişince servis yeniden kurulmalı (Coolify > lykiva-altyapi > Redeploy). Sunucuya koymadan denemek için:
+profil metni `POST https://brouter.de/brouter/profile` ile yüklenir, dönen `custom_…` kimliği `profile=` olarak
+kullanılır (brouter-web de böyle yapar).
 
 ## Kapı: uygulama anahtarı ve istek sınırı (`kapi/`)
 

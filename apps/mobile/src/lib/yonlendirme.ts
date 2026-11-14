@@ -7,7 +7,7 @@ import type { ActivityType, RoutePoint } from '@lykiva/shared';
 
 import type { LngLat } from '@/data/ornek';
 import { $t } from '@/i18n';
-import { BROUTER_URL as BROUTER, brouterBasliklari } from '@/lib/altyapi';
+import { BROUTER_URL as BROUTER, brouterBasliklari, KENDI_BROUTER_VAR } from '@/lib/altyapi';
 
 export type CizimModu = 'patika' | 'yol' | 'serbest';
 
@@ -22,10 +22,23 @@ export type Zemin = { asphalt: number; gravel: number; trail: number };
 
 export type HesaplananRota = { points: RoutePoint[]; surface: Zemin | null };
 
+const bisikletMi = (activity: ActivityType) => activity === 'bike' || activity === 'mtb';
+
+/** BRouter'ın hazır profili (her sunucuda var) */
 function profil(mod: CizimModu, activity: ActivityType): string {
-  const bisiklet = activity === 'bike' || activity === 'mtb';
-  if (mod === 'patika') return activity === 'mtb' ? 'mtb' : bisiklet ? 'trekking' : 'hiking-mountain';
+  if (mod === 'patika') return activity === 'mtb' ? 'mtb' : bisikletMi(activity) ? 'trekking' : 'hiking-mountain';
   return activity === 'bike' ? 'fastbike' : 'trekking';
+}
+
+/**
+ * Kendi sunucumuzdaki profil (altyapi/brouter/profiller), varsa hazır profilin yerine denenir.
+ *
+ * Yol öncelikli yürüyüş / koşu: hazır `trekking` bisiklet profili; tek yönlere uyar ve `trunk` yolları 10 kat
+ * cezalandırır, yaya için yol dolanıyordu (Ankamall'a 3,6 km yerine 6,1 km). `lykiva-yaya-yol` en kısa yola yakın
+ * gider, tek yön saymaz, toprak yolu ve zor patikayı pahalı tutar.
+ */
+function kendiProfili(mod: CizimModu, activity: ActivityType): string | null {
+  return KENDI_BROUTER_VAR && mod === 'yol' && !bisikletMi(activity) ? 'lykiva-yaya-yol' : null;
 }
 
 /**
@@ -66,9 +79,12 @@ export async function rotaHesapla(duraklar: LngLat[], mod: CizimModu, activity: 
     return { points: duraklar.map(([lng, lat]) => ({ lng, lat, alt: null })), surface: null };
   }
   const lonlats = duraklar.map(([lng, lat]) => `${lng.toFixed(6)},${lat.toFixed(6)}`).join('|');
-  const p = profil(mod, activity);
-  const url = `${BROUTER}?lonlats=${encodeURIComponent(lonlats)}&profile=${p}${profilEkleri(p)}&alternativeidx=0&format=geojson`;
-  const res = await fetch(url, { signal, headers: brouterBasliklari() });
+  const iste = (p: string) =>
+    fetch(`${BROUTER}?lonlats=${encodeURIComponent(lonlats)}&profile=${p}${profilEkleri(p)}&alternativeidx=0&format=geojson`, { signal, headers: brouterBasliklari() });
+  const kendi = kendiProfili(mod, activity);
+  let res = await iste(kendi ?? profil(mod, activity));
+  // Sunucu profili tanımıyorsa boş gövdeli 500 döner (profil eklenmeden önce kurulmuş sunucu): hazır profille bir kez daha
+  if (kendi && res.status === 500) res = await iste(profil(mod, activity));
   if (!res.ok) {
     const t = await res.text().catch(() => '');
     // "datafile E0_N45.rd5 not found": nokta, sunucudaki harita karolarının dışında (kendi sunucumuz yalnızca Türkiye ve çevresi)
