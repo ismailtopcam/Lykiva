@@ -571,7 +571,17 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
   koordinatı 2 ondalıkla (~1 km), "Başlangıç ve bitişi gizle" açıksa kırpılmış izin uçlarından.
 - [ ] Biniş kartında yer kodları: aktivite adı "A – B" biçimindeyse ilk üç harf, değilse saatler. Başlangıç / bitiş yerinin
   adı (Photon ile ters arama) eklenirse kodlar ve Kartpostal başlığı ("Kaş'tan selamlar") gerçek yer adını kullanabilir.
-- [ ] Hareketli paylaşım (MP4) ve 3B kartlar (11–17): sunucu tarafı boru hattı gerekir; seçenekler `AKTARIM.md`'de, karar İsmail'in.
+- [~] 3B kartlar (11–17) sunucuda video (MP4) olarak — `altyapi/kart-video/` (15 Kas 2026, karar İsmail'in: sunucuda video).
+  Sahne MapLibre GL JS (OpenFreeMap harita + binalar, Terrarium arazi) başsız Chromium'da kare kare çizilir, ffmpeg MP4 yapar.
+  Telefon izi (uçları kırpılmış) ve kendi dilindeki metinleri gönderir; servis veritabanına bağlanmaz.
+  4 şablon: yörünge (11, 12, 16), şehir gecesi (13), şehir maketi (14; 15'in uydusu lisanslı olduğu için açık harita), takip (17).
+  - [x] 1. aşama: servis, sahne, 4 şablon, yerelde deneme. Ölçüm: 12 sn'lik hikâye videosu yazılım WebGL'iyle
+    (sunucudaki gibi, ekran kartsız) İsmail'in bilgisayarında ~3,7 dk (360 kare, ~0,6 sn/kare). Sunucuda tekrar ölçülecek;
+    yavaşsa `KV_FPS=24` ya da `KV_OLCEK` düşürülür.
+  - [ ] 2. aşama: kurulum — `altyapi/docker-compose.yml`'e `kart-video`, kapıya `video.` alan adı (uygulama anahtarı +
+    düşük istek sınırı, ör. IP başına saatte 6 video). İsmail: DNS kaydı ve Coolify API anahtarı.
+  - [ ] 3. aşama: telefonda 3B video temaları (iş gönder, ilerleme, MP4 indir, `expo-sharing` ile paylaş).
+  - Bilinen: haritada yer adları kapalı; şehir şablonları kısa rotalar için (uzun rotada uzaklaşınca binalar z14 altında kalır).
 - Hız haritasında kademeler sabit 13 / 25 km/sa değil, aktivitenin ortalamasına göre (×0,85 ve ×1,2): koşu ve yürüyüşte de anlamlı.
 
 ### [~] Kulüpler (13 Kas 2026, `20261117000000_kulupler.sql`)

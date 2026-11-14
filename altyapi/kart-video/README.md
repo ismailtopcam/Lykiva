@@ -1,0 +1,69 @@
+# 3B kart video servisi (`kart-video`)
+
+Paylaş ekranındaki 3B kartların (tasarım: `tasarim/` 11–17) hareketli hâlini MP4 olarak üretir. Sahne
+MapLibre GL JS ile başsız Chromium'da açılır, her kare için zaman ilerletilip ekran görüntüsü alınır, ffmpeg
+H.264 MP4'e çevirir (Instagram / WhatsApp oynatır).
+
+**Durum (15 Kas 2026):** 1. aşama — servis ve sahneler yazıldı, yerelde denendi. Sunucuya kurulmadı
+(`altyapi/docker-compose.yml` ve kapıya henüz eklenmedi), uygulama henüz çağırmıyor. Aşamalar: DEV_NOTES >
+"Paylaşım kartları — tasarım aktarımı".
+
+## Neden böyle
+
+- **Veri telefondan gelir:** telefon izi (gizlilik ayarına göre uçları kırpılmış, en fazla 5000 nokta) ve
+  kullanıcının dilindeki metinleri gönderir. Servis veritabanına bağlanmaz, anahtar tutmaz.
+- **Harita ve arazi açık kaynaklardan, her aktivite için hazırlık gerekmez:** harita ve binalar OpenFreeMap
+  (uygulamanın haritasıyla aynı, OpenMapTiles şeması), arazi Mapzen Terrarium (AWS Open Data). Tasarımdaki
+  three.js sayfaları her rota için önceden hazırlanmış harita dokusu ve yükseklik haritası istiyordu; doku için
+  kullanılan OpenTopoMap / Esri ticari kullanımda lisans gerektiriyor.
+- **Kart yazısı yok:** haritanın yer adları kapalı (dilden bağımsız, sade). Kaynak satırı her videoda.
+
+## Şablonlar
+
+| Tema | Tasarım | Biçim (varsayılan) | Süre | Ne olur |
+| --- | --- | --- | --- | --- |
+| `yorunge` | 11, 12, 16 | hikâye, gönderi | 12 sn | 0–4 düz haritada rota çizilir · 4–7 eğilir, arazi yükselir · 7–11 kamera döner · 11–12 bekler |
+| `sehir-gece` | 13 | hikâye, gönderi | 12 sn | Koyu harita; eğilirken binalar yükselir |
+| `sehir-maket` | 14 (15) | gönderi, hikâye | 12 sn | Beyaz maket şehir (15'in uydu görüntüsü lisans gerektirdiği için açık harita) |
+| `takip` | 17 | gönderi, hikâye | 16 sn | 0–2 üstten · 2–4 kamera rotanın arkasına iner · 4–13 izler · 13–15 geri çekilir |
+
+Harita kabı iki kat CSS boyutunda çizilip yarıya küçültülür (`sahne.css > #harita`): kart 360 pt genişlikte olduğu
+için aksi hâlde harita bir seviye uzak kalıyor, binalar (z14+) gelmiyordu.
+
+## API
+
+```
+POST /video          { tema, bicim?, rota: [[boylam, enlem], …], metin: { ust, baslik, kmSayi, kmBasamak, ondalik,
+                       kmBirim, degerler: [{ etiket, deger }] (en fazla 3), kaynak } }        → 202 { id }
+GET  /video/:id      → { durum: sirada | uretiliyor | hazir | hata, ilerleme: 0–1, sira?, hata? }
+GET  /video/:id/mp4  → video/mp4
+GET  /saglik         → { durum: "ok", sira, calisiyor }
+```
+
+İşler bellekte, tek tek üretilir; video `KV_SAKLA_DK` (60) dakika sonra silinir. Sıra `KV_EN_FAZLA_SIRA` (20)
+dolunca 503. Kimlik doğrulama ve istek sınırı önündeki kapıda olacak (BRouter / Photon gibi uygulama anahtarı).
+
+## Ayarlar (ortam)
+
+| Değişken | Varsayılan | Ne |
+| --- | --- | --- |
+| `PORT` | 8080 | |
+| `KV_FPS` | 30 | kare hızı |
+| `KV_OLCEK` | 2 | çizim ölçeği (hikâye 720×1280 çizilir, çıkışta 1080×1920'ye büyütülür) |
+| `KV_GL` | swiftshader | ekran kartı yoksa yazılımla WebGL; ekran kartlı makinede `gpu` |
+| `KV_CIKTI` | /tmp/kart-video | videoların yazıldığı klasör |
+| `KV_SAKLA_DK` | 60 | |
+| `KV_EN_FAZLA_SIRA` | 20 | |
+
+## Yerelde deneme
+
+```bash
+cd altyapi/kart-video
+npm install
+npx playwright install chromium
+node src/deneme.js kas-kalkan yorunge hikaye                 # → cikti/kas-kalkan-yorunge-hikaye.mp4
+node src/deneme.js izmir-kordon sehir-gece --kareler 2,6,11   # yalnız birkaç kare (JPEG), hızlı bakmak için
+```
+
+Örnek rotalar `ornek/` (BRouter ile hesaplandı): `kas-kalkan` (25,9 km), `izmir-kordon` (2,8 km), `istanbul` (3,1 km).
+ffmpeg PATH'te olmalı (`KV_FFMPEG` ile yolu verilebilir).
