@@ -1,8 +1,9 @@
 /**
- * Giriş ekranındaki e-posta formu: giriş yap / hesap aç / şifremi unuttum ve e-postadaki kodu doğrulama.
+ * Giriş ekranının formu: giriş yap / kayıt ol / şifremi unuttum ve e-postadaki kodu doğrulama.
+ * Giriş ve kayıt görünümlerinde formun altında "ya da" ile `sosyal` (Google / Apple düğmeleri) gösterilir.
  * Mantık: `lib/epostaGiris.ts`.
  */
-import { type ComponentRef, useEffect, useRef, useState } from 'react';
+import { type ComponentRef, type ReactNode, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { Txt } from '@/components/Txt';
@@ -32,7 +33,7 @@ type Gorunum = 'giris' | 'kayit' | 'unuttum' | 'kod';
 /** Kodu tekrar istemeden önce beklenen süre (sn) */
 const TEKRAR_BEKLEME = 60;
 
-export function EpostaGiris({ onBitti, onVazgec }: { onBitti: (sonuc: GirisSonucu) => void; onVazgec: () => void }) {
+export function EpostaGiris({ onBitti, sosyal }: { onBitti: (sonuc: GirisSonucu) => void; sosyal?: (kayit: boolean) => ReactNode }) {
   const [gorunum, setGorunum] = useState<Gorunum>('giris');
   const [oncekiGorunum, setOncekiGorunum] = useState<Gorunum>('giris');
   const [kodTuru, setKodTuru] = useState<KodTuru>('kayit');
@@ -177,31 +178,13 @@ export function EpostaGiris({ onBitti, onVazgec }: { onBitti: (sonuc: GirisSonuc
     });
   }
 
-  const baslik = { giris: $t('epostaGiris.e_postayla_giris'), kayit: $t('epostaGiris.hesap_ac'), unuttum: $t('epostaGiris.sifreni_sifirla'), kod: 'Kodu gir' }[gorunum];
+  const baslik = { giris: $t('epostaGiris.giris_yap'), kayit: $t('epostaGiris.hesap_ac'), unuttum: $t('epostaGiris.sifreni_sifirla'), kod: 'Kodu gir' }[gorunum];
 
   return (
     <View style={{ gap: space.md }}>
       <Txt variant="display" accessibilityRole="header" style={{ fontSize: 28, lineHeight: 34 }}>
         {baslik}
       </Txt>
-
-      {gorunum === 'giris' || gorunum === 'kayit' ? (
-        <View style={styles.sekmeler} accessibilityRole="tablist">
-          {(['giris', 'kayit'] as const).map((g) => (
-            <Pressable
-              key={g}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: gorunum === g }}
-              onPress={() => gec(g)}
-              disabled={bekliyor}
-              style={[styles.sekme, gorunum === g && styles.sekmeSecili]}>
-              <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14, color: gorunum === g ? colors.ink : colors.inkMuted }}>
-                {g === 'giris' ? $t('epostaGiris.giris_yap') : $t('epostaGiris.hesap_ac')}
-              </Txt>
-            </Pressable>
-          ))}
-        </View>
-      ) : null}
 
       {bilgi ? (
         <View accessibilityLiveRegion="polite" style={styles.bilgi}>
@@ -321,17 +304,51 @@ export function EpostaGiris({ onBitti, onVazgec }: { onBitti: (sonuc: GirisSonuc
         />
       )}
 
-      <View style={styles.baglantilar}>
-        {gorunum === 'giris' ? <Baglanti metin={$t('epostaGiris.sifremi_unuttum')} onPress={() => gec('unuttum')} disabled={bekliyor} /> : null}
-        {gorunum === 'kod' ? (
+      {gorunum === 'giris' ? (
+        <View style={styles.baglantilar}>
+          <Baglanti metin={$t('epostaGiris.sifremi_unuttum')} onPress={() => gec('unuttum')} disabled={bekliyor} />
+        </View>
+      ) : null}
+      {gorunum === 'kod' ? (
+        <View style={styles.baglantilar}>
           <Baglanti metin={bekleme > 0 ? $t('epostaGiris.kodu_tekrar_gonder_2', { bekleme }) : $t('epostaGiris.kodu_tekrar_gonder')} onPress={tekrarGonder} disabled={bekliyor || bekleme > 0} />
-        ) : null}
-        <Baglanti
-          metin={gorunum === 'giris' || gorunum === 'kayit' ? $t('epostaGiris.diger_giris_yollari') : $t('ortak.geri')}
-          onPress={() => (gorunum === 'kod' ? gec(oncekiGorunum) : gorunum === 'unuttum' ? gec('giris') : onVazgec())}
-          disabled={bekliyor}
-        />
-      </View>
+          <Baglanti metin={$t('ortak.geri')} onPress={() => gec(oncekiGorunum)} disabled={bekliyor} />
+        </View>
+      ) : null}
+      {gorunum === 'unuttum' ? (
+        <View style={styles.baglantilar}>
+          <Baglanti metin={$t('ortak.geri')} onPress={() => gec('giris')} disabled={bekliyor} />
+        </View>
+      ) : null}
+
+      {(gorunum === 'giris' || gorunum === 'kayit') && sosyal ? (
+        <>
+          <View style={styles.ayirac} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+            <View style={styles.cizgi} />
+            <Txt style={{ fontSize: 13, color: colors.inkMuted }}>{$t('epostaGiris.ya_da')}</Txt>
+            <View style={styles.cizgi} />
+          </View>
+          {sosyal(gorunum === 'kayit')}
+        </>
+      ) : null}
+
+      {gorunum === 'giris' || gorunum === 'kayit' ? (
+        <View style={styles.gecis}>
+          <Txt style={{ fontSize: 14, color: colors.inkMuted }}>
+            {gorunum === 'giris' ? $t('epostaGiris.hesabin_yok_mu') : $t('epostaGiris.hesabin_var_mi')}
+          </Txt>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => gec(gorunum === 'giris' ? 'kayit' : 'giris')}
+            disabled={bekliyor}
+            hitSlop={8}
+            style={styles.baglanti}>
+            <Txt style={{ fontFamily: fontFamily.bodyBold, fontSize: 14, color: colors.terraInk }}>
+              {gorunum === 'giris' ? $t('epostaGiris.hesap_ac') : $t('epostaGiris.giris_yap')}
+            </Txt>
+          </Pressable>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -349,9 +366,9 @@ const styles = temaliStil(() => StyleSheet.create({
   kod: { fontSize: 22, letterSpacing: 6, textAlign: 'center', fontFamily: fontFamily.bodySemiBold },
   sifreKutu: { flexDirection: 'row', alignItems: 'center', borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
   goster: { paddingHorizontal: 14, minHeight: 44, justifyContent: 'center' },
-  sekmeler: { flexDirection: 'row', backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1, borderColor: colors.line, padding: 3 },
-  sekme: { flex: 1, minHeight: 40, alignItems: 'center', justifyContent: 'center', borderRadius: radius.md - 2 },
-  sekmeSecili: { backgroundColor: colors.ground },
+  ayirac: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginVertical: space.xs },
+  cizgi: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: colors.line },
+  gecis: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', columnGap: 6, marginTop: space.sm },
   baglantilar: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', columnGap: space.lg },
   baglanti: { paddingVertical: space.sm, minHeight: 44, justifyContent: 'center' },
   bilgi: { backgroundColor: colors.seaSoft, borderRadius: radius.md, padding: space.md },
