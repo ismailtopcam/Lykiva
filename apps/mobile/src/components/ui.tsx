@@ -149,6 +149,7 @@ export function Button({
   href,
   variant = 'primary',
   icon,
+  leading,
   style,
   big,
   disabled,
@@ -158,6 +159,8 @@ export function Button({
   href?: Href;
   variant?: ButtonVariant;
   icon?: IconName;
+  /** `icon` yerine özel bir öğe (ör. marka logosu) */
+  leading?: ReactNode;
   style?: StyleProp<ViewStyle>;
   big?: boolean;
   disabled?: boolean;
@@ -179,7 +182,7 @@ export function Button({
         disabled && { opacity: 0.55 },
         style,
       ]}>
-      {icon ? <Icon name={icon} size={20} color={v.fg} strokeWidth={icon === 'play' || icon === 'stop' ? 1 : 1.8} /> : null}
+      {leading ?? (icon ? <Icon name={icon} size={20} color={v.fg} strokeWidth={icon === 'play' || icon === 'stop' ? 1 : 1.8} /> : null)}
       <Txt numberOfLines={1} adjustsFontSizeToFit style={{ flexShrink: 1, fontFamily: big ? fontFamily.display : fontFamily.bodyBold, fontSize: big ? 20 : 15, color: v.fg }}>
         {label}
       </Txt>
