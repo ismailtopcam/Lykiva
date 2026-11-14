@@ -355,6 +355,11 @@ export function useKayit(): Kayit {
   return useSyncExternalStore(abone, () => kayit, () => kayit);
 }
 
+/** Yalnızca durum değişince yeniden çizer (GPS güncellemelerinde değil); ör. alt menü */
+export function useKayitDurumu(): KayitDurumu {
+  return useSyncExternalStore(abone, kayitDurumu, kayitDurumu);
+}
+
 /** Kaydın şu anki durumu (bileşeni yeniden çizmeden okumak için; ör. sekme düğmesi) */
 export function kayitDurumu(): KayitDurumu {
   return kayit.durum;

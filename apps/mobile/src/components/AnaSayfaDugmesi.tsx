@@ -10,7 +10,7 @@ const n = colors.night;
 /**
  * Kayıt ekranlarından (canlı / duraklatıldı) ana sayfaya döner; kayıt arka planda sürer.
  * Android'de donanım geri tuşu aynı işi görüyor; iOS'ta bu ekranlarda geri kaydırma kapalı (haritada yanlışlıkla
- * çıkılmasın diye), o yüzden düğme şart. Kayda geri dönmek için alt menüdeki Egzersiz yeterli.
+ * çıkılmasın diye), o yüzden düğme şart. Kayda geri dönmek için alt menüde kayıt sürerken çıkan Egzersiz yeterli.
  */
 export function AnaSayfaDugmesi({ boy = 36 }: { boy?: number }) {
   function don() {

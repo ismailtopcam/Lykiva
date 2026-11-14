@@ -1,5 +1,6 @@
 /**
- * Harita sekmesi: bulunduğun yerden seçtiğin yere yol tarifi.
+ * Harita sekmesi: iki iş tek ekranda. Panelin başındaki geçişle "Yolculuk yap" (bulunduğun yerden seçtiğin yere
+ * yol tarifi) ya da "Egzersiz yap" (tür seç, kaydı başlat; bkz. `EgzersizPaneli`) seçilir.
  *
  * Hedef haritaya dokunarak ya da yer aramayla (Photon) seçilir; yol BRouter'la, seçilen etkinliğe göre hesaplanır
  * (patika ya da yol öncelikli). "Yola çık" kaydı bu yolla başlatır, kayıt ekranı kalan mesafeyi gösterir.
@@ -13,9 +14,11 @@ import { ActivityIndicator, Animated, Keyboard, Pressable, ScrollView, StyleShee
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EgimProfili, imlecKonumu, TirmanisListesi, useRotaEgim } from '@/components/EgimProfili';
+import { EgzersizPaneli, GpsRozeti } from '@/components/EgzersizPaneli';
 import { FloatingHeader } from '@/components/Header';
 import { Icon } from '@/components/Icon';
 import { IconButton } from '@/components/IconButton';
+import { ModGecisi, type HaritaModu } from '@/components/ModGecisi';
 import { usePanelKademesi } from '@/components/panelKademesi';
 import { gercekHarita, type MapMarker } from '@/components/map/TopoMap';
 import { YolHaritasi } from '@/components/map/YolHaritasi';
@@ -23,7 +26,9 @@ import { RotaRuzgari } from '@/components/RotaRuzgari';
 import { Txt } from '@/components/Txt';
 import { Button, Chip, Stat } from '@/components/ui';
 import type { LngLat } from '@/data/ornek';
+import type { Rota } from '@/data/rota';
 import { baslat, IzinHatasi, konumOnizlemeBaslat, useKayit } from '@/kayit/kaydedici';
+import { sonHedefEkle, useSonHedefler } from '@/lib/sonHedefler';
 import { yerAra, type YerSonucu } from '@/lib/yerArama';
 import { rotaHesapla, type CizimModu } from '@/lib/yonlendirme';
 import { colors, fontFamily, radius, space, temaliStil } from '@/theme';
@@ -33,6 +38,9 @@ type Hedef = { c: LngLat; ad: string | null };
 type Odak = { c: LngLat; z: number };
 /** Bilgi panelinin son bölümünün altındaki boşluk (styles.sheetIc paddingBottom) */
 const PANEL_ALT_BOSLUK = 16;
+/** Boş durumda panelde gösterilen son yer sayısı */
+const SON_HEDEF_SAYISI = 3;
+const BOS: RoutePoint[] = [];
 
 const TERCIHLER = (): { id: Exclude<CizimModu, 'serbest'>; label: string }[] => [
   { id: 'yol', label: $t('harita.yol_oncelikli') },
@@ -64,6 +72,12 @@ export default function HaritaScreen() {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const kayit = useKayit();
+  // Ne yapılıyor: yol tarifi mi, egzersiz mi (sekme açık kaldıkça korunur)
+  const [gorev, setGorev] = useState<HaritaModu>('yolculuk');
+  const yolculuk = gorev === 'yolculuk';
+  // Egzersiz için seçilen rota (haritada gösterilir)
+  const [rota, setRota] = useState<Rota | null>(null);
+  const sonHedefler = useSonHedefler();
   const [activity, setActivity] = useState<ActivityType>('walk');
   const [mod, setMod] = useState<Exclude<CizimModu, 'serbest'>>('yol');
   const [hedef, setHedef] = useState<Hedef | null>(null);
@@ -146,34 +160,39 @@ export default function HaritaScreen() {
   const egim = useRotaEgim(points);
   const imlec = secim && secim.points === points ? secim.v : null;
   const imlecYeri = imlecKonumu(points, egim, imlec);
-  // Kademe tutamacı ve alt bölümler yalnızca gösterilecek yol bilgisi varken
+  // Yükselti ve tırmanış bölümleri yalnızca gösterilecek yol bilgisi varken
   const yolVar = !!hedef && !!baslangic && points.length > 1;
 
-  // Bilgi paneli kademeleri (tek sayfanın bölümleri): özet, yükselti (rakım varsa), tırmanışlar ve rüzgâr.
-  // Panelin üstü parmakla sürüklenir; seçilen kademe hedef değişince de kalır
-  const kademeAdlari = !yolVar
+  // Bilgi paneli kademeleri (tek sayfanın bölümleri). Yol tarifinde: kısa özet (süre ve Yola çık; panel aşağı
+  // çekilince yalnızca bu kalır), ayrıntı (mesafe, etkinlik, tercih), yükselti (rakım varsa), tırmanışlar ve rüzgâr.
+  // Hedef yokken ve egzersizde tek bölüm. Panel ayrıntı kademesinde açılır; seçilen kademe hedef değişince de kalır
+  const kademeAdlari = !yolculuk || !hedef
     ? [$t('harita.panel_ozet')]
-    : egim
-      ? [$t('harita.panel_ozet'), $t('harita.panel_yukselti'), $t('egimProfili.tirmanislar')]
-      : [$t('harita.panel_ozet'), $t('rotaRuzgari.simdiki_ruzgar')];
-  const panel = usePanelKademesi({ ilk: 0, sayi: kademeAdlari.length, altBosluk: PANEL_ALT_BOSLUK });
+    : !yolVar
+      ? [$t('harita.panel_kisa'), $t('harita.panel_ozet')]
+      : egim
+        ? [$t('harita.panel_kisa'), $t('harita.panel_ozet'), $t('harita.panel_yukselti'), $t('egimProfili.tirmanislar')]
+        : [$t('harita.panel_kisa'), $t('harita.panel_ozet'), $t('rotaRuzgari.simdiki_ruzgar')];
+  const panel = usePanelKademesi({ ilk: 1, sayi: kademeAdlari.length, altBosluk: PANEL_ALT_BOSLUK });
   // Haritanın panelin üstünde kalan kısmı için panelin oturduğu yükseklik (sürüklerken değişmez)
   const panelH = panel.gorunenH || 220;
 
   // Yol gelince ya da panel (eğim, rüzgâr yüklendikçe) büyüyünce yolun tamamını panelin üstünde göster.
   // Çizim sırasında, her yol ve panel yüksekliği için bir kez (React'in "önceki değere göre state ayarla" kalıbı)
-  const cerceveAnahtari = points.length > 1 ? `${anahtar}|${panelH}` : null;
+  // Haritada çizilen: yol tarifi ya da egzersiz için seçilen rota
+  const cizilen = yolculuk ? points : (rota?.points ?? BOS);
+  const cerceveAnahtari = cizilen.length > 1 ? `${yolculuk ? anahtar : `rota:${rota?.id}`}|${panelH}` : null;
   if (cerceveAnahtari && cerceveAnahtari !== cerceveli) {
     setCerceveli(cerceveAnahtari);
-    const f = cerceve(points, width - 80, haritaH - insets.top - 120 - panelH - 40);
+    const f = cerceve(cizilen, width - 80, haritaH - insets.top - 120 - panelH - 40);
     if (f) setOdak(f);
   }
   const gorunenHata = anahtar ? hata : null;
   const kayitta = kayit.durum !== 'bos';
 
   const markers: MapMarker[] = [];
-  if (hedef) markers.push({ id: 'hedef', coord: hedef.c, kind: 'end' });
-  if (imlecYeri) markers.push({ id: 'imlec', coord: imlecYeri, kind: 'cursor' });
+  if (yolculuk && hedef) markers.push({ id: 'hedef', coord: hedef.c, kind: 'end' });
+  if (yolculuk && imlecYeri) markers.push({ id: 'imlec', coord: imlecYeri, kind: 'cursor' });
 
   function hedefSec(h: Hedef) {
     setHedef(h);
@@ -185,6 +204,7 @@ export default function HaritaScreen() {
     Keyboard.dismiss();
     setQ('');
     setSonuclar([]);
+    sonHedefEkle({ ad: y.ad, ayrinti: y.ayrinti, c: y.coord });
     hedefSec({ c: y.coord, ad: y.ad });
     setOdak({ c: y.coord, z: 14 });
   }
@@ -214,45 +234,60 @@ export default function HaritaScreen() {
 
   const hedefAdi = hedef?.ad ?? (hedef ? $t('harita.secilen_nokta', { lat: hedef.c[1].toFixed(4), lng: hedef.c[0].toFixed(4) }) : '');
 
+  const tahminiSure = stats ? sureMetni(estimateDuration(activity, stats.distanceM, rakimVar ? stats.gainM : 0)) : '–';
+  const kisaOlcu = stats
+    ? `${formatKm(stats.distanceM)} ${kmUnit()}${rakimVar ? ` · ${$t('rota_olustur.m', { meters: formatMeters(stats.gainM) })}` : ''}`
+    : $t('rota_olustur.tahmini_sure');
+
   return (
     <View style={styles.root} onLayout={(e) => setHaritaH(Math.round(e.nativeEvent.layout.height))}>
       {/* Kayıt ekranıyla ortak harita: eğim renkli yol, 3B/2B ve konum düğmeleri */}
       <YolHaritasi
         style={StyleSheet.absoluteFill}
-        points={points}
-        egim={egim}
+        points={cizilen}
+        egim={yolculuk ? egim : undefined}
         ben={ben}
         markers={markers}
         onKonum={() => ben && setOdak({ c: ben, z: 15 })}
         ustBosluk={insets.top + 58}
         follow={odak?.c ?? null}
         followZoom={odak?.z}
-        onPress={(c) => hedefSec({ c, ad: null })}
+        onPress={yolculuk ? (c) => hedefSec({ c, ad: null }) : undefined}
         padding={{ top: 120, bottom: panelH + 40 }}
-        accessibilityLabel={hedef ? $t('harita.yol_haritasi', { ad: hedefAdi }) : $t('harita.harita')}
+        accessibilityLabel={yolculuk && hedef ? $t('harita.yol_haritasi', { ad: hedefAdi }) : $t('harita.harita')}
       />
       <FloatingHeader
         // Konum düğmesi haritanın sağ sütununda; boş yer tutucu (verilmezse geri düğmesi çıkar)
         left={<View />}
         middle={
-          <View style={styles.search}>
-            <Icon name="search" size={18} color={colors.inkMuted} strokeWidth={2} />
-            <TextInput
-              value={q}
-              onChangeText={setQ}
-              placeholder={$t('harita.nereye_gidiyorsun')}
-              placeholderTextColor={colors.inkMuted}
-              accessibilityLabel={$t('harita.hedef_ara')}
-              autoCorrect={false}
-              returnKeyType="search"
-              style={styles.searchInput}
-            />
-          </View>
+          yolculuk ? (
+            // Arama hep yukarıda; hedef seçiliyken adını gösterir, çarpı hedefi kaldırır
+            <View style={styles.search}>
+              <Icon name="search" size={18} color={colors.inkMuted} strokeWidth={2} />
+              <TextInput
+                value={q}
+                onChangeText={setQ}
+                placeholder={hedef ? hedefAdi : $t('harita.nereye_gidiyorsun')}
+                placeholderTextColor={hedef ? colors.ink : colors.inkMuted}
+                accessibilityLabel={$t('harita.hedef_ara')}
+                autoCorrect={false}
+                returnKeyType="search"
+                style={styles.searchInput}
+              />
+              {hedef && !q ? (
+                <Pressable accessibilityRole="button" accessibilityLabel={$t('harita.hedefi_kaldir')} onPress={temizle} hitSlop={10} style={styles.searchKapat}>
+                  <Icon name="close" size={18} color={colors.inkMuted} strokeWidth={2} />
+                </Pressable>
+              ) : null}
+            </View>
+          ) : (
+            <GpsRozeti acc={sk?.acc} />
+          )
         }
         right={<IconButton floating icon="compass" label={$t('kesfet.kesfet')} onPress={() => router.push('/kesfet-liste')} />}
       />
 
-      {gorunenSonuclar.length ? (
+      {yolculuk && gorunenSonuclar.length ? (
         <View style={[styles.results, { top: insets.top + 64 }]}>
           {gorunenSonuclar.map((y) => (
             <Pressable key={y.id} accessibilityRole="button" onPress={() => yerSec(y)} style={styles.result}>
@@ -271,13 +306,14 @@ export default function HaritaScreen() {
         </View>
       ) : null}
 
-      {/* Bilgi paneli: tek uzun sayfa, kademeler bölümleri (bkz. panelKademesi.ts). 1: özet ve Yola çık,
-          2: yükselti, 3: tırmanışlar ve rüzgâr. Panel büyüdükçe aynı sayfanın aşağısı görünür; içerik değişmez */}
+      {/* Bilgi paneli: tek uzun sayfa, kademeler bölümleri (bkz. panelKademesi.ts). Başta hep Yolculuk / Egzersiz
+          geçişi. Yol tarifinde 1: süre ve Yola çık, 2: ayrıntı, 3: yükselti, 4: tırmanışlar ve rüzgâr. Panel
+          büyüdükçe aynı sayfanın aşağısı görünür; içerik değişmez */}
       <Animated.View style={[styles.sheet, panel.stil]}>
         <View style={styles.sheetIc}>
-          {/* 1. bölüm: özet. Hedef seçiliyken sürükleme alanı */}
-          <View onLayout={panel.bolum[0]} {...(hedef ? panel.surukle.panHandlers : null)}>
-            {yolVar ? (
+          {/* 1. bölüm. Yol tarifinde hedef seçiliyken sürükleme alanı */}
+          <View onLayout={panel.bolum[0]} {...(yolculuk && hedef ? panel.surukle.panHandlers : null)}>
+            {yolculuk && hedef ? (
               <View
                 style={styles.tutamac}
                 accessible
@@ -296,12 +332,52 @@ export default function HaritaScreen() {
             ) : (
               <View style={styles.grip} />
             )}
-            {!hedef ? (
+
+            <ModGecisi mod={gorev} onMod={setGorev} />
+
+            {!yolculuk ? (
+              <EgzersizPaneli rota={rota} onRota={setRota} kayitDurumu={kayit.durum} onBasladi={() => router.push('/kayit/canli')} />
+            ) : !hedef ? (
               <>
-                <Txt variant="heading">{$t('harita.nereye_gitmek_istiyorsun')}</Txt>
-                <Txt variant="small" style={{ marginTop: 4 }}>
-                  {gercekHarita ? $t('harita.haritaya_dokun_ya_da_ara') : $t('harita.yukaridan_ara')}
-                </Txt>
+                {sonHedefler.length ? (
+                  <>
+                    <Txt variant="caption" accessibilityRole="header" style={{ marginLeft: 4, marginBottom: 2 }}>
+                      {$t('harita.son_gittiklerin')}
+                    </Txt>
+                    {sonHedefler.slice(0, SON_HEDEF_SAYISI).map((h, i) => (
+                      <Pressable
+                        key={`${h.ad}|${h.c.join(',')}`}
+                        accessibilityRole="button"
+                        onPress={() => {
+                          hedefSec({ c: h.c, ad: h.ad });
+                          setOdak({ c: h.c, z: 14 });
+                        }}
+                        style={({ pressed }) => [styles.sonSatir, i > 0 && styles.sonSatirCizgi, pressed && { opacity: 0.7 }]}>
+                        <View style={styles.sonIkon}>
+                          <Icon name="clock" size={20} color={colors.seaInk} />
+                        </View>
+                        <View style={{ flex: 1, minWidth: 0 }}>
+                          <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }} numberOfLines={1}>
+                            {h.ad}
+                          </Txt>
+                          {h.ayrinti ? (
+                            <Txt variant="small" numberOfLines={1}>
+                              {h.ayrinti}
+                            </Txt>
+                          ) : null}
+                        </View>
+                        <Icon name="chevron" size={18} color={colors.inkMuted} strokeWidth={2} />
+                      </Pressable>
+                    ))}
+                    {gercekHarita ? (
+                      <Txt variant="small" style={{ marginTop: 8, textAlign: 'center' }}>
+                        {$t('harita.ya_da_haritaya_dokun')}
+                      </Txt>
+                    ) : null}
+                  </>
+                ) : (
+                  <Txt variant="small">{gercekHarita ? $t('harita.haritaya_dokun_ya_da_ara') : $t('harita.yukaridan_ara')}</Txt>
+                )}
                 {!ben ? (
                   <Txt variant="small" style={{ marginTop: 4, color: colors.inkMuted }}>
                     {$t('harita.konum_bekleniyor')}
@@ -310,73 +386,87 @@ export default function HaritaScreen() {
               </>
             ) : (
               <>
-                <View style={styles.hedefSatiri}>
-                  <Icon name="flag" size={20} color={colors.terra} />
-                  <Txt style={{ flex: 1, fontFamily: fontFamily.bodyBold, fontSize: 16 }} numberOfLines={1}>
-                    {hedefAdi}
-                  </Txt>
-                  <IconButton icon="close" label={$t('harita.hedefi_kaldir')} onPress={temizle} />
-                </View>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingVertical: 8 }} accessibilityRole="radiogroup">
-                  {ACTIVITY_TYPES.map((t) => (
-                    <Chip key={t} label={ACTIVITY_LABELS[t]} role="radio" selected={t === activity} onPress={() => setActivity(t)} />
-                  ))}
-                </ScrollView>
-                <View style={{ flexDirection: 'row', gap: 6, marginBottom: 10 }} accessibilityRole="radiogroup">
-                  {TERCIHLER().map((m) => (
-                    <Chip key={m.id} label={m.label} role="radio" tone="sea" selected={m.id === mod} onPress={() => setMod(m.id)} />
-                  ))}
-                </View>
-
-                {!baslangic ? (
-                  <Txt variant="small" style={{ marginBottom: 8 }}>
-                    {$t('harita.konum_bekleniyor')}
-                  </Txt>
-                ) : (
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', columnGap: 10, marginBottom: 10 }}>
-                    <Stat label={$t('ortak.mesafe')} size={18} value={stats ? `${formatKm(stats.distanceM)} ${kmUnit()}` : '–'} />
-                    <Stat label={$t('ortak.tirmanis')} size={18} value={stats && rakimVar ? $t('rota_olustur.m', { meters: formatMeters(stats.gainM) }) : '–'} />
-                    <Stat label={$t('ortak.inis')} size={18} value={stats && rakimVar ? $t('rota_olustur.m_2', { meters: formatMeters(stats.lossM) }) : '–'} />
-                    <Stat label={$t('rota_olustur.tahmini_sure')} size={18} value={stats ? sureMetni(estimateDuration(activity, stats.distanceM, rakimVar ? stats.gainM : 0)) : '–'} />
+                {/* Kısa özet: panel aşağı çekilince geçişle birlikte yalnızca bu satır kalır */}
+                <View style={styles.ozetSatiri}>
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Txt style={styles.sure} numberOfLines={1} adjustsFontSizeToFit>
+                      {tahminiSure}
+                    </Txt>
+                    <Txt variant="small" numberOfLines={1}>
+                      {kisaOlcu}
+                    </Txt>
                   </View>
-                )}
-
-                {gorunenHata ? (
-                  <Txt accessibilityRole="alert" style={{ color: colors.terra, fontFamily: fontFamily.bodySemiBold, fontSize: 13, marginBottom: 8 }}>
-                    {gorunenHata}
-                  </Txt>
-                ) : null}
-
-                <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-                  {hesapliyor && anahtar ? <ActivityIndicator color={colors.terra} /> : null}
+                  {hesapliyor && anahtar ? <ActivityIndicator color={colors.sea} /> : null}
                   {ben && baslangic && (ben[0] !== baslangic[0] || ben[1] !== baslangic[1]) ? (
                     <IconButton icon="rotate" label={$t('harita.konumumdan_yeniden_hesapla')} onPress={() => setBaslangic(ben)} />
                   ) : null}
                   {kayitta ? (
-                    <Button label={$t('harita.kayda_don')} icon="record" variant="dark" onPress={() => router.push('/kayit')} style={{ flex: 1 }} />
+                    <Button label={$t('harita.kayda_don')} icon="record" variant="dark" onPress={() => router.push('/kayit')} style={styles.ozetDugme} />
                   ) : (
                     <Button
                       label={basliyor ? $t('harita.basliyor') : $t('harita.yola_cik')}
-                      icon="play"
+                      icon="navigation"
+                      variant="sea"
                       onPress={() => void yolaCik()}
                       disabled={!stats || hesapliyor || basliyor}
-                      style={{ flex: 1 }}
+                      style={styles.ozetDugme}
                     />
                   )}
                 </View>
+                {!baslangic ? (
+                  <Txt variant="small" style={{ marginTop: 8 }}>
+                    {$t('harita.konum_bekleniyor')}
+                  </Txt>
+                ) : null}
+                {gorunenHata ? (
+                  <Txt accessibilityRole="alert" style={{ color: colors.terra, fontFamily: fontFamily.bodySemiBold, fontSize: 13, marginTop: 8 }}>
+                    {gorunenHata}
+                  </Txt>
+                ) : null}
               </>
             )}
           </View>
 
-          {/* 2. bölüm: yükselti (eğim profili; rakım yoksa bu bölüm yok) */}
-          {yolVar && egim ? (
+          {/* 2. bölüm: ayrıntı. Hedef, mesafe ve iniş çıkış, etkinlik ve yol tercihi */}
+          {yolculuk && hedef ? (
             <View onLayout={panel.bolum[1]} style={styles.bolum}>
+              <View style={styles.hedefSatiri}>
+                <View style={styles.hedefIkon}>
+                  <Icon name="pin" size={20} color={colors.seaInk} />
+                </View>
+                <Txt accessibilityRole="header" style={{ flex: 1, fontFamily: fontFamily.display, fontSize: 18 }} numberOfLines={1}>
+                  {hedefAdi}
+                </Txt>
+              </View>
+              {baslangic ? (
+                <View style={styles.olculer}>
+                  <Stat label={$t('ortak.mesafe')} size={18} value={stats ? `${formatKm(stats.distanceM)} ${kmUnit()}` : '–'} />
+                  <Stat label={$t('ortak.tirmanis')} size={18} value={stats && rakimVar ? $t('rota_olustur.m', { meters: formatMeters(stats.gainM) }) : '–'} />
+                  <Stat label={$t('ortak.inis')} size={18} value={stats && rakimVar ? $t('rota_olustur.m_2', { meters: formatMeters(stats.lossM) }) : '–'} />
+                </View>
+              ) : null}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingVertical: 8 }} accessibilityRole="radiogroup">
+                {ACTIVITY_TYPES.map((t) => (
+                  <Chip key={t} label={ACTIVITY_LABELS[t]} role="radio" selected={t === activity} onPress={() => setActivity(t)} />
+                ))}
+              </ScrollView>
+              <View style={{ flexDirection: 'row', gap: 6 }} accessibilityRole="radiogroup">
+                {TERCIHLER().map((m) => (
+                  <Chip key={m.id} label={m.label} role="radio" tone="sea" selected={m.id === mod} onPress={() => setMod(m.id)} />
+                ))}
+              </View>
+            </View>
+          ) : null}
+
+          {/* 3. bölüm: yükselti (eğim profili; rakım yoksa bu bölüm yok) */}
+          {yolculuk && yolVar && egim ? (
+            <View onLayout={panel.bolum[2]} style={styles.bolum}>
               <EgimProfili egim={egim} width={width - space.lg * 2} height={64} imlec={imlec} onImlec={(v) => setSecim(v == null ? null : { points, v })} />
             </View>
           ) : null}
 
           {/* Son bölüm: tırmanışlar ve rüzgâr; uzunsa içi kayar, harita görünür kalır */}
-          {yolVar ? (
+          {yolculuk && yolVar ? (
             <View onLayout={panel.bolum[kademeAdlari.length - 1]} style={styles.bolum}>
               <ScrollView style={{ maxHeight: height * 0.4 }} showsVerticalScrollIndicator={false}>
                 {egim ? <TirmanisListesi egim={egim} onSec={(v) => setSecim({ points, v })} /> : null}
@@ -394,6 +484,7 @@ const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.land },
   search: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, alignSelf: 'stretch', paddingHorizontal: 14, borderRadius: 22, backgroundColor: colors.surface },
   searchInput: { flex: 1, fontFamily: fontFamily.body, fontSize: 14, color: colors.ink },
+  searchKapat: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginRight: -6 },
   results: { position: 'absolute', left: space.md, right: space.md, borderRadius: 16, backgroundColor: colors.surface, paddingVertical: 4, borderWidth: 1, borderColor: colors.line },
   result: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 48, paddingHorizontal: 14, paddingVertical: 6 },
   resultsNote: { color: colors.inkMuted, paddingHorizontal: 14, paddingTop: 4, paddingBottom: 6 },
@@ -410,5 +501,14 @@ const styles = temaliStil(() => StyleSheet.create({
   kademeNoktalari: { flexDirection: 'row', gap: 4 },
   kademeNoktasi: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.line },
   kademeNoktasiDolu: { backgroundColor: colors.inkMuted },
-  hedefSatiri: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  hedefSatiri: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
+  hedefIkon: { width: 40, height: 40, borderRadius: 13, backgroundColor: colors.seaSoft, alignItems: 'center', justifyContent: 'center' },
+  olculer: { flexDirection: 'row', justifyContent: 'space-between', columnGap: 10, padding: 14, borderRadius: 18, backgroundColor: colors.ground, marginBottom: 4 },
+  // Kısa özet satırı: solda süre ve mesafe, sağda Yola çık
+  ozetSatiri: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  sure: { fontFamily: fontFamily.display, fontSize: 26, lineHeight: 30, color: colors.ink, letterSpacing: -0.3 },
+  ozetDugme: { maxWidth: '62%', paddingHorizontal: 22 },
+  sonSatir: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, paddingHorizontal: 4 },
+  sonSatirCizgi: { borderTopWidth: 1, borderTopColor: colors.line },
+  sonIkon: { width: 36, height: 36, borderRadius: 11, backgroundColor: colors.seaSoft, alignItems: 'center', justifyContent: 'center' },
 }));

@@ -141,7 +141,7 @@ export function Chip({
 }
 
 /* ---------- Butonlar ---------- */
-type ButtonVariant = 'primary' | 'outline' | 'dark' | 'night' | 'nightOutline';
+type ButtonVariant = 'primary' | 'sea' | 'outline' | 'dark' | 'night' | 'nightOutline';
 
 export function Button({
   label,
@@ -192,6 +192,8 @@ export function Button({
 
 const buttonVariants = temaliStil((): Record<ButtonVariant, { bg: string; fg: string; border?: string }> => ({
   primary: { bg: colors.terra, fg: '#FFFFFF' },
+  // Yolculuk (yol tarifi) düğmeleri. Karanlık temada deniz rengi açık, üstünde koyu yazı okunur
+  sea: { bg: colors.sea, fg: aktifSema() === 'koyu' ? colors.ground : '#FFFFFF' },
   outline: { bg: 'transparent', fg: colors.ink, border: colors.ink },
   dark: { bg: colors.ink, fg: colors.ground },
   night: { bg: colors.night.accent, fg: colors.night.ground },

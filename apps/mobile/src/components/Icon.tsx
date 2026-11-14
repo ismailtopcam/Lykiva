@@ -54,7 +54,10 @@ export type IconName =
   | 'medal'
   | 'flame'
   | 'sunrise'
-  | 'star';
+  | 'star'
+  | 'navigation'
+  | 'pulse'
+  | 'grid';
 
 type Props = { name: IconName; size?: number; color?: string; strokeWidth?: number };
 
@@ -124,6 +127,12 @@ function render(name: IconName, p: Record<string, unknown>, color: string) {
       );
     case 'star':
       return <Path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" {...p} />;
+    case 'navigation':
+      return <Path d="M12 3l7 17-7-4-7 4z" {...p} />;
+    case 'pulse':
+      return <Path d="M3 12h4l3-7 4 14 3-7h4" {...p} />;
+    case 'grid':
+      return <Path d="M5 5h4v4H5zM15 5h4v4h-4zM5 15h4v4H5zM15 15h4v4h-4z" {...p} />;
     case 'trophy':
       return <Path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3.3 3M17 6h3v1a3 3 0 0 1-3.3 3M12 14v4M8 20h8" {...p} />;
     case 'users':
