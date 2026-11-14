@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Lykiva — Etkinlik oluştur</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#B04E25}a:hover{color:#8A3C1C}
+button{font:inherit;color:inherit;cursor:pointer}
+input{font:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #F2EDE3; color: #16201B; font-family: Inter, system-ui, sans-serif; box-sizing: border-box">
+
+  <header style="padding: 50px 8px 4px; display: flex; align-items: center; justify-content: space-between">
+    <a href="Grup.dc.html" aria-label="Vazgeç" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #16201B"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></a>
+    <h1 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 19px; font-weight: 700">Yeni etkinlik</h1>
+    <span style="width: 44px"></span>
+  </header>
+
+  <div style="padding: 4px 16px 0; display: flex; flex-direction: column; gap: 12px">
+    <div>
+      <label for="eoName" style="font-size: 12px; color: #4F5751">Etkinlik adı</label>
+      <input id="eoName" value="Gün doğumu sürüşü" style="display: block; width: 100%; box-sizing: border-box; border: 0; border-bottom: 1.5px solid #DCD3C3; background: transparent; padding: 4px 0 8px; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 24px; font-weight: 700; color: #16201B; outline: none">
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+      <button style="height: 60px; border-radius: 14px; border: 1px solid #E3DACB; background: #FBF8F2; display: flex; align-items: center; gap: 10px; padding: 0 12px; text-align: left"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F5751" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span><span style="display: block; font-size: 11px; color: #4F5751">Tarih</span><span style="display: block; font-size: 14px; font-weight: 600">Cmt, 14 Kasım</span></span></button>
+      <button style="height: 60px; border-radius: 14px; border: 1px solid #E3DACB; background: #FBF8F2; display: flex; align-items: center; gap: 10px; padding: 0 12px; text-align: left"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F5751" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span><span style="display: block; font-size: 11px; color: #4F5751">Başlangıç</span><span style="display: block; font-size: 14px; font-weight: 600">06:45</span></span></button>
+    </div>
+
+    <button style="height: 60px; border-radius: 14px; border: 1px solid #E3DACB; background: #FBF8F2; display: flex; align-items: center; gap: 10px; padding: 0 12px; text-align: left"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F5751" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><span style="flex: 1"><span style="display: block; font-size: 11px; color: #4F5751">Buluşma noktası</span><span style="display: block; font-size: 14px; font-weight: 600">Kaş Cumhuriyet Meydanı</span></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F5751" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+    <a href="RotaDetay.dc.html" style="height: 60px; border-radius: 14px; border: 1px solid #E3DACB; background: #FBF8F2; display: flex; align-items: center; gap: 10px; padding: 0 12px; text-decoration: none; color: #16201B; box-sizing: border-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F5751" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/></svg><span style="flex: 1"><span style="display: block; font-size: 11px; color: #4F5751">Rota</span><span style="display: block; font-size: 14px; font-weight: 600">Kaş – Kalkan sahil yolu · 32 km</span></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F5751" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></a>
+
+    <div>
+      <div style="font-size: 12px; color: #4F5751; margin-bottom: 6px">Seviye</div>
+      <div role="radiogroup" aria-label="Seviye" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 4px; border-radius: 14px; background: #E8E0CF">
+        <sc-for list="{{levels}}" as="l" hint-placeholder-count="3">
+          <button role="radio" aria-checked="{{l.checked}}" onClick="{{l.pick}}" style="height: 40px; border-radius: 10px; border: 0; background: {{l.bg}}; color: {{l.fg}}; font-size: 14px; font-weight: 600">{{l.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <div><div style="font-size: 14px; font-weight: 600">Kontenjan</div><div style="font-size: 12px; color: #4F5751">Dolunca bekleme listesi açılır</div></div>
+      <div style="display: flex; align-items: center; gap: 4px">
+        <button aria-label="Azalt" onClick="{{dec}}" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid #D3C9B7; background: #FBF8F2; font-size: 20px; font-weight: 600">−</button>
+        <span style="width: 44px; text-align: center; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 22px; font-weight: 700">{{cap}}</span>
+        <button aria-label="Artır" onClick="{{inc}}" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid #D3C9B7; background: #FBF8F2; font-size: 20px; font-weight: 600">+</button>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size: 12px; color: #4F5751; margin-bottom: 6px">Kimler görebilir ve katılabilir?</div>
+      <div role="radiogroup" aria-label="Görünürlük" style="display: flex; flex-direction: column; gap: 6px">
+        <sc-for list="{{vis}}" as="v" hint-placeholder-count="3">
+          <button role="radio" aria-checked="{{v.checked}}" onClick="{{v.pick}}" style="height: 48px; border-radius: 12px; border: {{v.border}}; background: #FBF8F2; display: flex; align-items: center; gap: 10px; padding: 0 12px; text-align: left">
+            <span style="width: 20px; height: 20px; border-radius: 10px; border: {{v.ring}}; box-sizing: border-box"></span>
+            <span style="flex: 1; font-size: 14px; font-weight: 600">{{v.label}}</span>
+            <span style="font-size: 12px; color: #4F5751">{{v.meta}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 16px; right: 16px; bottom: 30px">
+    <a href="EtkinlikDetay.dc.html" style="height: 56px; border-radius: 28px; background: #B04E25; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; text-decoration: none">Etkinliği yayınla</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { level: 1, cap: 15, vis: 0 };
+  }
+  renderVals() {
+    const levels = ['Kolay', 'Orta', 'Zor'].map((label, i) => {
+      const s = i === this.state.level;
+      return { label, checked: s ? 'true' : 'false', bg: s ? '#16201B' : 'transparent', fg: s ? '#F2EDE3' : '#16201B', pick: () => this.setState({ level: i }) };
+    });
+    const visDefs = [['Pedal Kaş grubu', '12 üye'], ['Bağlı topluluklar', 'Antalya Gravel'], ['Herkese açık', 'Keşfet’te görünür']];
+    const vis = visDefs.map(([label, meta], i) => {
+      const s = i === this.state.vis;
+      return { label, meta, checked: s ? 'true' : 'false', border: s ? '1.5px solid #0B6A6A' : '1px solid #E3DACB', ring: s ? '6px solid #0B6A6A' : '1.5px solid #9C9282', pick: () => this.setState({ vis: i }) };
+    });
+    return {
+      levels, vis,
+      cap: this.state.cap,
+      inc: () => this.setState({ cap: Math.min(99, this.state.cap + 1) }),
+      dec: () => this.setState({ cap: Math.max(2, this.state.cap - 1) })
+    };
+  }
+}
+</script>
+</body>
+</html>

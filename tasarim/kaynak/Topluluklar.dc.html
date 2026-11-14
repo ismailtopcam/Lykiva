@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Lykiva — Keşfet ve topluluklar</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#B04E25}a:hover{color:#8A3C1C}
+button{font:inherit;color:inherit;cursor:pointer}
+input{font:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #F2EDE3; color: #16201B; font-family: Inter, system-ui, sans-serif; box-sizing: border-box">
+
+  <header style="padding: 54px 16px 10px">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px">
+      <h1 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -0.02em">Keşfet</h1>
+      <button style="height: 40px; padding: 0 14px; border-radius: 20px; border: 1.5px solid #16201B; background: transparent; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Topluluk kur</button>
+    </div>
+    <label style="height: 46px; border-radius: 23px; background: #FBF8F2; border: 1px solid #E3DACB; display: flex; align-items: center; gap: 8px; padding: 0 16px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F5751" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Ara</span>
+      <input type="search" placeholder="Rota, topluluk, etkinlik, kişi" style="flex: 1; border: 0; background: transparent; font-size: 14px; outline: none; color: #16201B; min-width: 0">
+    </label>
+  </header>
+
+  <div role="tablist" aria-label="Keşfet bölümleri" style="display: flex; gap: 8px; padding: 0 16px 14px">
+    <sc-for list="{{tabs}}" as="t" hint-placeholder-count="4">
+      <button role="tab" aria-selected="{{t.selected}}" onClick="{{t.pick}}" style="height: 36px; padding: 0 14px; border-radius: 18px; font-size: 13px; font-weight: 600; border: {{t.border}}; background: {{t.bg}}; color: {{t.fg}}">{{t.label}}</button>
+    </sc-for>
+  </div>
+
+  <section aria-label="Yaklaşan etkinlikler" style="padding: 0 0 16px 16px">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; padding-right: 16px; margin-bottom: 8px">
+      <h2 style="margin: 0; font-size: 16px; font-weight: 700">Yakınında bu hafta</h2>
+      <a href="EtkinlikDetay.dc.html" style="font-size: 13px; font-weight: 600; text-decoration: none">Tümü</a>
+    </div>
+    <div style="display: flex; gap: 10px">
+      <a href="EtkinlikDetay.dc.html" style="width: 250px; flex-shrink: 0; padding: 14px; border-radius: 18px; background: #16201B; color: #F2EDE3; text-decoration: none; box-sizing: border-box">
+        <div style="display: flex; gap: 12px; align-items: center">
+          <span style="width: 48px; height: 52px; border-radius: 12px; background: #E07A4A; color: #16201B; display: flex; flex-direction: column; align-items: center; justify-content: center"><span style="font-size: 10px; font-weight: 700">KAS</span><span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 22px; font-weight: 800; line-height: 1">14</span></span>
+          <div style="min-width: 0">
+            <div style="font-size: 15px; font-weight: 700">Gün doğumu sürüşü</div>
+            <div style="font-size: 12px; color: #B9C2BA">Cmt 06:45 · Pedal Kaş</div>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 12px; font-size: 12px; color: #B9C2BA"><span>32 km · ↑ 450 m</span><span style="color: #F2EDE3; font-weight: 600">9 / 15 kişi</span></div>
+      </a>
+      <a href="EtkinlikDetay.dc.html" style="width: 250px; flex-shrink: 0; padding: 14px; border-radius: 18px; background: #FBF8F2; border: 1px solid #E3DACB; color: #16201B; text-decoration: none; box-sizing: border-box">
+        <div style="display: flex; gap: 12px; align-items: center">
+          <span style="width: 48px; height: 52px; border-radius: 12px; background: #D3E8E4; color: #0B4F4F; display: flex; flex-direction: column; align-items: center; justify-content: center"><span style="font-size: 10px; font-weight: 700">KAS</span><span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 22px; font-weight: 800; line-height: 1">15</span></span>
+          <div style="min-width: 0">
+            <div style="font-size: 15px; font-weight: 700">Kabak patikası yürüyüşü</div>
+            <div style="font-size: 12px; color: #4F5751">Paz 08:00 · Likya Yolu</div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <section aria-label="Topluluklar" style="padding: 0 16px">
+    <h2 style="margin: 0 0 8px; font-size: 16px; font-weight: 700">Sana uygun topluluklar</h2>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #E0D7C7">
+      <span style="width: 48px; height: 48px; border-radius: 14px; background: #16201B; color: #F2EDE3; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px">LY</span>
+      <div style="flex: 1; min-width: 0"><div style="font-size: 15px; font-weight: 600">Likya Yolu Yürüyüşçüleri</div><div style="font-size: 12px; color: #4F5751">Doğa yürüyüşü · 2,4 B üye · Herkese açık</div></div>
+      <a href="Grup.dc.html" style="height: 36px; padding: 0 14px; border-radius: 18px; border: 1px solid #D3C9B7; color: #16201B; display: flex; align-items: center; font-size: 13px; font-weight: 600; text-decoration: none">Üyesin</a>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #E0D7C7">
+      <span style="width: 48px; height: 48px; border-radius: 14px; background: #F1DCCD; color: #7A3416; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px">AG</span>
+      <div style="flex: 1; min-width: 0"><div style="font-size: 15px; font-weight: 600">Antalya Gravel</div><div style="font-size: 12px; color: #4F5751">Bisiklet · 860 üye · Herkese açık</div></div>
+      <button style="height: 36px; padding: 0 16px; border-radius: 18px; border: 0; background: #B04E25; color: #FFFFFF; font-size: 13px; font-weight: 700">Katıl</button>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #E0D7C7">
+      <span style="width: 48px; height: 48px; border-radius: 14px; background: #D3E8E4; color: #0B4F4F; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px">SK</span>
+      <div style="flex: 1; min-width: 0"><div style="font-size: 15px; font-weight: 600">Sahil Koşu Kulübü</div><div style="font-size: 12px; color: #4F5751">Koşu · 312 üye · Onaylı katılım</div></div>
+      <button style="height: 36px; padding: 0 14px; border-radius: 18px; border: 1.5px solid #16201B; background: transparent; font-size: 13px; font-weight: 700">İstek gönder</button>
+    </div>
+  </section>
+
+  <nav aria-label="Ana menü" style="position: absolute; left: 0; right: 0; bottom: 0; height: 86px; background: #FBF8F2; border-top: 1px solid #E3DACB; display: flex; justify-content: space-around; align-items: flex-start; padding-top: 6px; box-sizing: border-box">
+    <a href="Main.dc.html" style="width: 64px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #4F5751; font-size: 11px; font-weight: 600"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>Akış</a>
+    <a href="Topluluklar.dc.html" aria-current="page" style="width: 64px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #16201B; font-size: 11px; font-weight: 700"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Keşfet</a>
+    <a href="KayitBaslat.dc.html" aria-label="Kayıt başlat" style="width: 58px; height: 58px; margin-top: -14px; border-radius: 29px; background: #B04E25; color: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(176, 78, 37, 0.35)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></a>
+    <a href="Grup.dc.html" style="width: 64px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #4F5751; font-size: 11px; font-weight: 600"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>Gruplar</a>
+    <a href="Profil.dc.html" style="width: 64px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #4F5751; font-size: 11px; font-weight: 600"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Profil</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tab: 0 };
+  }
+  renderVals() {
+    const labels = ['Tümü', 'Rotalar', 'Topluluklar', 'Etkinlikler'];
+    const tabs = labels.map((label, i) => {
+      const s = i === this.state.tab;
+      return { label, selected: s ? 'true' : 'false', bg: s ? '#16201B' : 'transparent', fg: s ? '#F2EDE3' : '#16201B', border: s ? '1px solid #16201B' : '1px solid #D3C9B7', pick: () => this.setState({ tab: i }) };
+    });
+    return { tabs };
+  }
+}
+</script>
+</body>
+</html>

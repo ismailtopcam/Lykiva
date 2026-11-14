@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Antalya uydu 3B</title>
+<script src="./support.js"></script>
+<script src="../paylasim-kartlari/varliklar/three.min.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#B04E25}a:hover{color:#8A3C1C}
+</style>
+</helmet>
+<div style="width: 1080px; height: 1080px; position: relative; overflow: hidden; background: #0B1B2B; font-family: Inter, system-ui, sans-serif">
+<canvas ref="{{ tuval }}" width="1080" height="1080" role="img" aria-label="Kaleiçi’nden Konyaaltı’na sahil bisiklet rotası uydu görüntüsü üzerinde: harita eğilir, falezler ve binalar yükselir" style="position: absolute; left: 0; top: 0; width: 1080px; height: 1080px; display: block"></canvas>
+<div style="position: absolute; left: 0; top: 0; width: 432px; height: 432px; transform: scale(2.5); transform-origin: 0 0; pointer-events: none">
+
+<div style="position: absolute; left: 24px; right: 24px; top: 22px; display: flex; justify-content: space-between; align-items: center">
+  <div style="height: 30px; padding: 0 12px; border-radius: 15px; background: rgba(11,27,43,0.78); display: flex; align-items: center; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; color: #F2EDE3">BİSİKLET · ANTALYA</div>
+  <div style="height: 30px; padding: 0 12px; border-radius: 15px; background: rgba(11,27,43,0.78); display: flex; align-items: center"><span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 15px; letter-spacing: -0.02em; color: #F2EDE3">lykiva</span></div>
+</div>
+<div style="position: absolute; left: 22px; bottom: 22px; right: 22px; display: flex; justify-content: space-between; align-items: flex-end; gap: 12px">
+  <div style="border-radius: 18px; background: rgba(11,27,43,0.86); padding: 14px 18px; color: #F2EDE3">
+    <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 19px">Kaleiçi → Konyaaltı</div>
+    <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 44px; line-height: 1; letter-spacing: -0.04em; margin-top: 4px"><span ref="{{ sayac }}" style="font-variant-numeric: tabular-nums">0,00</span><span style="font-size: 17px; letter-spacing: 0; color: #E07A4A"> km</span></div>
+  </div>
+  <div style="border-radius: 18px; background: rgba(11,27,43,0.86); padding: 12px 16px; display: grid; grid-template-columns: repeat(3, auto); gap: 14px">
+    <div><div style="font-size: 11px; color: #9DB0C2; font-weight: 500">Süre</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 16px; color: #F2EDE3; line-height: 1.15">0:24</div></div><div><div style="font-size: 11px; color: #9DB0C2; font-weight: 500">Ort.</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 16px; color: #F2EDE3; line-height: 1.15">16,0</div></div><div><div style="font-size: 11px; color: #9DB0C2; font-weight: 500">Tırmanış</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 16px; color: #F2EDE3; line-height: 1.15">30 m</div></div>
+  </div>
+</div>
+<div style="position: absolute; right: 24px; bottom: 112px; font-size: 5px; color: #C9D3DC; background: rgba(11,27,43,0.7); padding: 1px 4px">Uydu görüntüsü © Esri, Maxar, Earthstar Geographics · bina verisi © OpenStreetMap katkıcıları · yükseklik: Mapzen Terrarium</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"abarti": {"editor": "range", "min": 1, "max": 4, "step": 0.1, "default": 4, "unit": "×"}, "$preview": {"width": 1080, "height": 1080}}'>
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.tuval = (el) => { this.el = el; };
+    this.sayac = (el) => { this.sayacEl = el; };
+  }
+  componentDidMount() {
+    this.iptal = false;
+    const bekle = () => {
+      if (this.iptal) return;
+      if (!(window.THREE && this.el)) { setTimeout(bekle, 100); return; }
+      if (!('IntersectionObserver' in window)) { this.kur(); return; }
+      // Yalnız ekrandayken çiz: aynı sayfada çok sayıda 3B kart tarayıcının WebGL sınırını aşmasın
+      this.gozcu = new IntersectionObserver((e) => {
+        const gor = e.some((x) => x.isIntersecting);
+        if (gor && !this.renderer) this.kur();
+        else if (!gor && this.renderer) this.sok();
+      }, { rootMargin: '200px' });
+      this.gozcu.observe(this.el);
+    };
+    bekle();
+  }
+  componentWillUnmount() {
+    this.iptal = true;
+    if (this.gozcu) this.gozcu.disconnect();
+    this.sok();
+  }
+  sok() {
+    this.nesil = (this.nesil || 0) + 1;
+    if (this.raf) cancelAnimationFrame(this.raf);
+    this.raf = null;
+    if (this.renderer) {
+      this.sahne && this.sahne.traverse((o) => { o.geometry && o.geometry.dispose(); o.material && (o.material.map && o.material.map.dispose(), o.material.dispose()); });
+      this.renderer.dispose();
+      this.renderer.forceContextLoss();
+    }
+    this.renderer = null;
+    this.sahne = null;
+  }
+  kur() {
+    const nesil = this.nesil = (this.nesil || 0) + 1;
+    const T = window.THREE, el = this.el, cfg = {"w":1080,"h":1080,"harita":"../paylasim-kartlari/varliklar/antalya-doku.jpg","yukseklik":"../paylasim-kartlari/varliklar/antalya-yukseklik.png","mw":1200,"mh":1200,"gx":600,"gy":600,"maxH":150,"mpp":3.821,"rota":[[1161,590],[1161,584],[1161,574],[1162,561],[1160,556],[1157,554],[1154,549],[1153,547],[1154,540],[1155,538],[1156,537],[1151,534],[1148,533],[1143,532],[1141,531],[1138,532],[1124,535],[1121,536],[1119,539],[1117,540],[1112,540],[1110,541],[1107,541],[1105,542],[1095,544],[1087,549],[1084,549],[1079,551],[1072,552],[1066,552],[1060,551],[1058,550],[1057,549],[1057,548],[1058,547],[1062,547],[1065,546],[1070,544],[1071,543],[1073,541],[1074,539],[1076,536],[1080,533],[1092,528],[1093,526],[1094,525],[1094,524],[1092,518],[1091,517],[1091,515],[1106,509],[1099,499],[1094,488],[1094,487],[1099,484],[1096,479],[1093,471],[1090,464],[1082,462],[1059,463],[1053,464],[1052,465],[1042,472],[1040,473],[1036,477],[1025,484],[1001,497],[999,498],[1010,519],[1012,523],[1011,527],[1011,529],[1011,532],[1009,534],[1003,535],[998,537],[995,537],[976,540],[970,541],[967,531],[961,532],[942,533],[945,542],[933,543],[931,543],[927,543],[923,544],[913,544],[900,545],[885,546],[866,548],[853,549],[823,551],[813,552],[773,554],[726,558],[687,560],[680,560],[672,560],[619,559],[615,559],[612,558],[610,558],[591,554],[590,556],[589,557],[588,558],[587,560],[586,561],[584,562],[583,563],[574,562],[539,550],[535,549],[534,549],[532,550],[531,550],[530,551],[530,553],[529,554],[530,555],[530,557],[531,558],[532,559],[533,559],[540,559],[545,559],[549,560],[556,565],[559,567],[560,568],[561,570],[561,572],[560,573],[560,574],[559,575],[558,576],[557,576],[556,576],[555,576],[552,575],[548,571],[544,569],[541,568],[536,568],[535,569],[527,574],[519,580],[513,584],[505,587],[485,593],[481,594],[474,596],[430,608],[423,609],[421,609],[419,607],[418,606],[417,605],[416,605],[415,605],[415,606],[414,606],[413,607],[413,608],[412,611],[384,618],[380,619],[378,621],[375,622],[371,623],[362,623],[357,624],[353,626],[345,628],[338,630],[333,633],[327,635],[323,634],[320,636],[317,640],[315,648],[303,659],[296,663],[281,670],[278,674],[278,678],[276,680],[270,681],[266,680],[255,688],[252,694],[247,699],[243,702],[239,705],[235,709],[234,714],[236,721],[242,736],[242,740],[241,744],[239,746],[229,753],[229,753],[211,766],[201,773],[191,779],[187,780],[181,781],[176,781],[172,780],[169,779],[169,779],[168,778],[165,777],[165,775],[164,774],[162,773],[161,772],[159,772],[157,772],[155,773],[152,775],[151,776],[151,777],[149,781],[143,790],[138,798],[112,833],[109,836],[106,837],[104,839],[104,839],[103,839],[102,840],[101,840],[101,841],[101,842],[101,843],[101,843],[100,845],[98,848],[78,865],[77,867],[68,874],[65,877],[62,879],[44,857]],"isik":[1.0,1.7],"gunes":[-600,-900,1000],"aci":[64,0,10,14],"tup":[5.5,3.3,4],"abarti":4,"mod":"tur","hedef":[600,650],"uzaklik":2050,"yaklas":0.32,"zemin":"#0B1B2B","yer":2241348,"gunesRenk":16773596,"deniz":"#0A1F2C","cizgi":"#E07A4A","kenar":"#FFFFFF","km":6.37,"sis":[2357.5,5740.0]};
+    const W = cfg.w, H = cfg.h, MW = cfg.mw, MH = cfg.mh, GX = cfg.gx, GY = cfg.gy;
+    const renderer = new T.WebGLRenderer({ canvas: el, antialias: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(1);
+    renderer.setSize(W, H, false);
+    this.renderer = renderer;
+    const scene = new T.Scene();
+    this.sahne = scene;
+    scene.background = new T.Color(cfg.zemin);
+    scene.fog = new T.Fog(cfg.zemin, cfg.sis[0], cfg.sis[1]);
+    const camera = new T.PerspectiveCamera(cfg.fov || 34, W / H, cfg.near || 10, 30000);
+    scene.add(new T.HemisphereLight(0xffffff, cfg.yer || 0x445544, cfg.isik[0]));
+    const gunes = new T.DirectionalLight(cfg.gunesRenk || 0xffffff, cfg.isik[1]);
+    gunes.position.set(cfg.gunes[0], cfg.gunes[1], cfg.gunes[2]);
+    scene.add(gunes);
+
+    const grup = new T.Group();
+    scene.add(grup);
+    const img = new Image();
+    img.onload = () => {
+      if (this.iptal || nesil !== this.nesil) return;
+      const c = document.createElement('canvas');
+      c.width = GX; c.height = GY;
+      const g = c.getContext('2d');
+      g.drawImage(img, 0, 0, GX, GY);
+      const px = g.getImageData(0, 0, GX, GY).data;
+      // gri 0..255 = 0..maxH metre; birim = harita pikseli (mpp metre)
+      const h = new Float32Array(GX * GY);
+      for (let i = 0; i < GX * GY; i++) h[i] = (px[i * 4] / 255) * cfg.maxH / cfg.mpp;
+      const yukseklik = (x, y) => {
+        const fx = Math.max(0, Math.min(GX - 1.001, x / MW * (GX - 1)));
+        const fy = Math.max(0, Math.min(GY - 1.001, y / MH * (GY - 1)));
+        const x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0;
+        const a = h[y0 * GX + x0], b = h[y0 * GX + x0 + 1], c2 = h[(y0 + 1) * GX + x0], d = h[(y0 + 1) * GX + x0 + 1];
+        return a * (1 - tx) * (1 - ty) + b * tx * (1 - ty) + c2 * (1 - tx) * ty + d * tx * ty;
+      };
+      const geo = new T.PlaneGeometry(MW, MH, GX - 1, GY - 1);
+      const pos = geo.attributes.position;
+      for (let i = 0; i < pos.count; i++) pos.setZ(i, h[i]);
+      geo.computeVertexNormals();
+      const doku = new T.TextureLoader().load(cfg.harita);
+      doku.colorSpace = T.SRGBColorSpace;
+      doku.anisotropy = 8;
+      const mesh = new T.Mesh(geo, new T.MeshStandardMaterial({ map: doku, roughness: 1, metalness: 0 }));
+      grup.add(mesh);
+      if (cfg.deniz) {
+        const deniz = new T.Mesh(new T.PlaneGeometry(MW * 10, MH * 10, 40, 40), new T.MeshBasicMaterial({ color: cfg.deniz }));
+        deniz.position.z = -0.3;
+        scene.add(deniz);
+      }
+
+      const [r1, r2, ust] = cfg.tup;
+      // Rota düz bir eğri olarak kurulur; yükseklik gölgelendiricide eklenir (tüp kesiti dikeyde gerilmesin)
+      const pts = cfg.rota.map(([x, y]) => new T.Vector3(x - MW / 2, MH / 2 - y, 0));
+      const egri = new T.CatmullRomCurve3(pts, false, 'centripetal');
+      const zH = (p) => yukseklik(p.x + MW / 2, MH / 2 - p.y);
+      const U = { value: 0.02 };
+      const SEG = 1600;
+      const merkezH = new Float32Array(SEG + 1);
+      for (let i = 0; i <= SEG; i++) merkezH[i] = zH(egri.getPointAt(i / SEG));
+      const tupGeo = (r, rs) => {
+        const g = new T.TubeGeometry(egri, SEG, r, rs, false);
+        const n = g.attributes.position.count, a = new Float32Array(n);
+        for (let v = 0; v < n; v++) a[v] = merkezH[Math.min(SEG, Math.floor(v / (rs + 1)))];
+        g.setAttribute('aH', new T.BufferAttribute(a, 1));
+        return g;
+      };
+      const yamala = (m) => {
+        m.onBeforeCompile = (sh) => {
+          sh.uniforms.uSz = U;
+          sh.vertexShader = 'attribute float aH;\nuniform float uSz;\n' + sh.vertexShader.replace('#include <begin_vertex>',
+            '#include <begin_vertex>\ntransformed.z += aH * uSz + ' + ust.toFixed(2) + ';');
+        };
+        m.customProgramCacheKey = () => 'rota-yukseklik';
+        return m;
+      };
+      const kenar = new T.Mesh(tupGeo(r1, 8), yamala(new T.MeshBasicMaterial({ color: cfg.kenar, side: T.BackSide })));
+      const cizgi = new T.Mesh(tupGeo(r2, 8), yamala(new T.MeshBasicMaterial({ color: cfg.cizgi })));
+      const uc = new T.Mesh(new T.SphereGeometry(r1 * (cfg.ucBoy || 1.6), 24, 16), new T.MeshBasicMaterial({ color: cfg.kenar, side: T.BackSide }));
+      const ucIc = new T.Mesh(new T.SphereGeometry(r1 * (cfg.ucBoy || 1.6) * 0.66, 24, 16), new T.MeshBasicMaterial({ color: cfg.cizgi }));
+      uc.add(ucIc);
+      scene.add(kenar, cizgi, uc);
+      if (cfg.mod === 'takip') {
+        const iz = new T.Mesh(tupGeo(r2 * 0.75, 6),
+          yamala(new T.MeshBasicMaterial({ color: cfg.kenar, transparent: true, opacity: 0.45 })));
+        scene.add(iz);
+      }
+      const noktaAl = (u, sz) => { const p = egri.getPointAt(Math.max(0, Math.min(1, u))); p.z = zH(p) * sz + ust; return p; };
+      const n1 = kenar.geometry.index.count, n2 = cizgi.geometry.index.count;
+
+      const hedef = new T.Vector3(cfg.hedef[0] - MW / 2, MH / 2 - cfg.hedef[1], 0);
+      const yumusak = (t) => t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
+      const yorunge = (phiD, thetaD, R) => {
+        const phi = phiD * Math.PI / 180, theta = thetaD * Math.PI / 180;
+        const o = new T.Vector3(Math.sin(phi) * Math.sin(theta), -Math.sin(phi) * Math.cos(theta), Math.cos(phi)).multiplyScalar(R);
+        return {
+          pos: hedef.clone().add(o),
+          bak: hedef.clone(),
+          up: new T.Vector3(-Math.cos(phi) * Math.sin(theta), Math.cos(phi) * Math.cos(theta), Math.sin(phi)),
+        };
+      };
+      const sayacYaz = (f) => {
+        if (this.sayacEl && cfg.km) this.sayacEl.textContent = (f * cfg.km).toFixed(cfg.km < 10 ? 2 : 1).replace('.', ',');
+      };
+      const rotaCiz = (f, sz) => {
+        U.value = sz;
+        kenar.geometry.setDrawRange(0, Math.floor(n1 * f / 3) * 3);
+        cizgi.geometry.setDrawRange(0, Math.floor(n2 * f / 3) * 3);
+        uc.position.copy(noktaAl(Math.min(0.9999, f), sz));
+        uc.visible = f > 0.001;
+        sayacYaz(f);
+      };
+      const A = cfg.aci;
+      const t0 = performance.now();
+      const ciz = () => {
+        if (this.iptal || nesil !== this.nesil) return;
+        const abarti = (this.props.abarti ?? cfg.abarti);
+        let poz;
+        if (cfg.mod === 'takip') {
+          // 0–2 sn düz harita · 2–4 sn yükselir, kamera rotanın arkasına iner · 4–13 sn rotayı izler · 13–15 sn geri çekilir · 15–16 sn bekler
+          const DONGU = 16;
+          const t = ((performance.now() - t0) / 1000) % DONGU;
+          const kalk = yumusak((t - 2) / 2);
+          const f = yumusak((t - 4) / 9);
+          const geri = yumusak((t - 13) / 2);
+          const w = kalk * (1 - geri);
+          // Üstten bakarken sis uzakta, rotayı izlerken yakında
+          scene.fog.near = cfg.uzaklik * 1.15 + (cfg.sis[0] - cfg.uzaklik * 1.15) * w;
+          scene.fog.far = cfg.uzaklik * 2.8 + (cfg.sis[1] - cfg.uzaklik * 2.8) * w;
+          const sz = Math.max(0.02, kalk * abarti);
+          grup.scale.z = sz;
+          rotaCiz(f, sz);
+          const ust = yorunge(1 + geri * (A[0] - 1), A[1] + geri * A[2], cfg.uzaklik * (1 - cfg.yaklas * geri));
+          const kp = (u) => noktaAl(u, sz);
+          const P = kp(f);
+          const yon = kp(f + 0.035).sub(kp(f - 0.015)); yon.z = 0; yon.normalize();
+          const [geriM, yukM, ileriM] = cfg.takip;
+          const kpos = P.clone().addScaledVector(yon, -geriM);
+          const zemin = yukseklik(kpos.x + MW / 2, MH / 2 - kpos.y) * sz;
+          kpos.z = Math.max(P.z + yukM, zemin + yukM * 0.55);
+          const kbak = P.clone().addScaledVector(yon, ileriM);
+          poz = {
+            pos: ust.pos.clone().lerp(kpos, w),
+            bak: ust.bak.clone().lerp(kbak, w),
+            up: ust.up.clone().lerp(new T.Vector3(0, 0, 1), w).normalize(),
+          };
+        } else {
+          // 0–4 sn düz harita, rota çizilir · 4–7 sn eğilir, binalar / dağlar yükselir · 7–11 sn yavaş tur · 11–12 sn bekler
+          const DONGU = 12;
+          const t = ((performance.now() - t0) / 1000) % DONGU;
+          const f = yumusak(t / 4);
+          const kalk = yumusak((t - 4) / 3);
+          const tur = yumusak((t - 7) / 4);
+          const sz = Math.max(0.02, kalk * abarti);
+          grup.scale.z = sz;
+          rotaCiz(f, sz);
+          poz = yorunge(1 + kalk * (A[0] - 1), A[1] + kalk * A[2] + tur * A[3], cfg.uzaklik * (1 - cfg.yaklas * kalk));
+        }
+        camera.position.copy(poz.pos);
+        camera.up.copy(poz.up);
+        camera.lookAt(poz.bak);
+        renderer.render(scene, camera);
+        this.raf = requestAnimationFrame(ciz);
+      };
+      ciz();
+    };
+    img.src = cfg.yukseklik;
+  }
+  renderVals() {
+    return { tuval: this.tuval, sayac: this.sayac };
+  }
+}
+
+</script>
+</body>
+</html>

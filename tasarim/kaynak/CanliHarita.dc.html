@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Lykiva — Canlı arkadaş haritası</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#B04E25}a:hover{color:#8A3C1C}
+button{font:inherit;color:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #E8E0CF; color: #16201B; font-family: Inter, system-ui, sans-serif; box-sizing: border-box">
+
+  <svg viewBox="0 0 390 520" width="390" height="520" role="img" aria-label="Arkadaşların canlı konumlarını gösteren harita" style="position: absolute; top: 0; left: 0; display: block">
+    <rect width="390" height="520" fill="#E8E0CF"/>
+    <path d="M0 360 C 50 340, 90 380, 140 420 S 230 470, 280 500 S 360 480, 390 470 L390 520 L0 520Z" fill="#CBE1DC"/>
+    <g fill="none" stroke="#D3C7B0" stroke-width="1">
+      <path d="M180 140 C 220 90, 320 90, 350 140 S 340 240, 280 240 S 160 210, 180 140Z"/>
+      <path d="M210 150 C 236 118, 304 118, 322 150 S 314 214, 276 214 S 196 196, 210 150Z"/>
+      <path d="M240 158 C 254 140, 290 140, 298 158 S 292 190, 272 190 S 232 178, 240 158Z"/>
+      <path d="M20 160 C 50 110, 120 120, 130 170 S 100 250, 60 240 S 0 210, 20 160Z"/>
+      <path d="M44 166 C 64 136, 106 142, 110 172 S 88 222, 64 218 S 30 196, 44 166Z"/>
+      <path d="M100 300 C 130 280, 180 286, 190 310 S 170 350, 140 346 S 84 326, 100 300Z"/>
+    </g>
+    <path d="M30 330 C 70 300, 110 270, 150 260 S 220 270, 250 300 S 300 360, 350 380" fill="none" stroke="#FBF8F2" stroke-width="6" stroke-linecap="round"/>
+    <path d="M30 330 C 70 300, 110 270, 150 260 S 220 270, 250 300 S 300 360, 350 380" fill="none" stroke="#B04E25" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 0"/>
+    <path d="M60 120 C 90 160, 120 200, 170 220" fill="none" stroke="#0B6A6A" stroke-width="3" stroke-linecap="round" stroke-dasharray="6 5"/>
+    <text x="300" y="470" font-size="11" font-weight="600" fill="#2C5752" font-family="Inter, sans-serif">Akdeniz</text>
+  </svg>
+
+  <header style="position: absolute; top: 50px; left: 12px; right: 12px; display: flex; align-items: center; gap: 8px">
+    <a href="Main.dc.html" aria-label="Geri" style="width: 44px; height: 44px; border-radius: 22px; background: #FBF8F2; display: flex; align-items: center; justify-content: center; color: #16201B; box-shadow: 0 2px 8px rgba(22, 32, 27, 0.12)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div role="tablist" aria-label="Kimleri göster" style="flex: 1; height: 44px; border-radius: 22px; background: #FBF8F2; display: flex; padding: 4px; box-sizing: border-box; box-shadow: 0 2px 8px rgba(22, 32, 27, 0.12)">
+      <button role="tab" aria-selected="true" style="flex: 1; border: 0; border-radius: 18px; background: #16201B; color: #F2EDE3; font-size: 13px; font-weight: 600">Arkadaşlar</button>
+      <button role="tab" aria-selected="false" style="flex: 1; border: 0; border-radius: 18px; background: transparent; font-size: 13px; font-weight: 600">Pedal Kaş grubu</button>
+    </div>
+    <button aria-label="Konumuma git" style="width: 44px; height: 44px; border-radius: 22px; border: 0; background: #FBF8F2; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(22, 32, 27, 0.12)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
+  </header>
+
+  <div style="position: absolute; left: 228px; top: 270px; display: flex; flex-direction: column; align-items: center; gap: 4px">
+    <span style="padding: 4px 8px; border-radius: 10px; background: #16201B; color: #F2EDE3; font-size: 11px; font-weight: 600; white-space: nowrap">Mert · 22 km/sa</span>
+    <span style="width: 34px; height: 34px; border-radius: 17px; background: #D3E8E4; color: #0B4F4F; border: 3px solid #B04E25; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700">MK</span>
+  </div>
+  <div style="position: absolute; left: 150px; top: 180px; display: flex; flex-direction: column; align-items: center; gap: 4px">
+    <span style="padding: 4px 8px; border-radius: 10px; background: #16201B; color: #F2EDE3; font-size: 11px; font-weight: 600; white-space: nowrap">Deniz · 5:12 /km</span>
+    <span style="width: 34px; height: 34px; border-radius: 17px; background: #F1DCCD; color: #7A3416; border: 3px solid #0B6A6A; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700">DE</span>
+  </div>
+  <div style="position: absolute; left: 70px; top: 360px; display: flex; flex-direction: column; align-items: center; gap: 4px">
+    <span style="padding: 4px 8px; border-radius: 10px; background: #FBF8F2; color: #16201B; font-size: 11px; font-weight: 600; white-space: nowrap; border: 1px solid #D3C9B7">Zeynep · molada</span>
+    <span style="width: 34px; height: 34px; border-radius: 17px; background: #E4D9C3; color: #4A3F2A; border: 3px solid #9C9282; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700">ZÖ</span>
+  </div>
+
+  <section aria-label="Şu an aktif olanlar" style="position: absolute; left: 0; right: 0; bottom: 0; height: 360px; background: #FBF8F2; border-radius: 26px 26px 0 0; padding: 10px 16px 0; box-sizing: border-box; box-shadow: 0 -8px 24px rgba(22, 32, 27, 0.10)">
+    <div style="width: 40px; height: 5px; border-radius: 3px; background: #D3C9B7; margin: 0 auto 12px"></div>
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px">
+      <h2 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 20px; font-weight: 700">Şu an yolda</h2>
+      <span style="font-size: 12px; color: #4F5751">3 kişi canlı paylaşıyor</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #ECE4D6">
+      <span style="width: 44px; height: 44px; border-radius: 22px; background: #D3E8E4; color: #0B4F4F; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px">MK</span>
+      <div style="flex: 1; min-width: 0">
+        <div style="font-size: 14px; font-weight: 600">Mert Kaya</div>
+        <div style="font-size: 12px; color: #4F5751">Bisiklet · Kaş → Patara · 14,2 km · 0:41</div>
+      </div>
+      <a href="CanliTakip.dc.html" style="height: 36px; padding: 0 14px; border-radius: 18px; background: #16201B; color: #F2EDE3; display: flex; align-items: center; font-size: 13px; font-weight: 600; text-decoration: none">İzle</a>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #ECE4D6">
+      <span style="width: 44px; height: 44px; border-radius: 22px; background: #F1DCCD; color: #7A3416; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px">DE</span>
+      <div style="flex: 1; min-width: 0">
+        <div style="font-size: 14px; font-weight: 600">Deniz Erdem</div>
+        <div style="font-size: 12px; color: #4F5751">Koşu · Sahil parkuru · 6,8 km · 0:35</div>
+      </div>
+      <a href="CanliTakip.dc.html" style="height: 36px; padding: 0 14px; border-radius: 18px; background: #16201B; color: #F2EDE3; display: flex; align-items: center; font-size: 13px; font-weight: 600; text-decoration: none">İzle</a>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #ECE4D6">
+      <span style="width: 44px; height: 44px; border-radius: 22px; background: #E4D9C3; color: #4A3F2A; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px">ZÖ</span>
+      <div style="flex: 1; min-width: 0">
+        <div style="font-size: 14px; font-weight: 600">Zeynep Öztürk</div>
+        <div style="font-size: 12px; color: #4F5751">Doğa yürüyüşü · 12 dk'dır molada</div>
+      </div>
+      <a href="GrupSohbet.dc.html" style="height: 36px; padding: 0 14px; border-radius: 18px; border: 1px solid #D3C9B7; color: #16201B; display: flex; align-items: center; font-size: 13px; font-weight: 600; text-decoration: none">Mesaj</a>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; padding: 12px; border-radius: 14px; background: #F2EDE3">
+      <div style="display: flex; gap: 10px; align-items: center">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0B6A6A" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>
+        <div>
+          <div style="font-size: 13px; font-weight: 600">Canlı konumumu paylaş</div>
+          <div style="font-size: 12px; color: #4F5751">Sadece yakın arkadaşlar ve Pedal Kaş</div>
+        </div>
+      </div>
+      <button role="switch" aria-checked="true" aria-label="Canlı konumumu paylaş" style="width: 52px; height: 32px; border-radius: 16px; border: 0; padding: 3px; background: #0B6A6A; display: flex; justify-content: flex-end; flex-shrink: 0"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF; display: block"></span></button>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

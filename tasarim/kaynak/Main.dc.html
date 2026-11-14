@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Lykiva — Akış</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#B04E25}a:hover{color:#8A3C1C}
+button{font:inherit;color:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #F2EDE3; color: #16201B; font-family: Inter, system-ui, sans-serif; box-sizing: border-box">
+
+  <header style="padding: 54px 12px 8px 16px; display: flex; align-items: center; justify-content: space-between">
+    <div style="display: flex; align-items: center; gap: 8px">
+      <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M6 28V14C6 8 11 4 16 3c5 1 10 5 10 11v14" fill="none" stroke="#B04E25" stroke-width="2.8" stroke-linecap="round"/><path d="M11 28c0-6 3-9 5-13 2 4 5 7 5 13" fill="none" stroke="#0B6A6A" stroke-width="2.8" stroke-linecap="round"/></svg>
+      <span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 27px; letter-spacing: -0.03em">lykiva</span>
+    </div>
+    <div style="display: flex; gap: 2px">
+      <button aria-label="Ara" style="width: 44px; height: 44px; border: 0; background: none; display: flex; align-items: center; justify-content: center; border-radius: 22px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
+      <a href="GrupSohbet.dc.html" aria-label="Mesajlar" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #16201B; position: relative"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg><span style="position: absolute; top: 9px; right: 8px; min-width: 16px; height: 16px; border-radius: 8px; background: #B04E25; color: #FFFFFF; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center">3</span></a>
+      <button aria-label="Bildirimler" style="width: 44px; height: 44px; border: 0; background: none; display: flex; align-items: center; justify-content: center; position: relative"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span style="position: absolute; top: 11px; right: 12px; width: 8px; height: 8px; border-radius: 4px; background: #B04E25"></span></button>
+    </div>
+  </header>
+
+  <section aria-label="Şu an yolda olan arkadaşlar" style="padding: 4px 16px 14px">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px">
+      <span style="font-size: 13px; font-weight: 600; color: #4F5751">Şu an yolda · 3 arkadaş</span>
+      <a href="CanliHarita.dc.html" style="font-size: 13px; font-weight: 600; text-decoration: none">Haritada izle</a>
+    </div>
+    <div style="display: flex; gap: 14px">
+      <a href="CanliHarita.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: #16201B; width: 60px">
+        <span style="width: 56px; height: 56px; border-radius: 28px; border: 2.5px solid #B04E25; padding: 2px; box-sizing: border-box; display: flex"><span style="flex: 1; border-radius: 50%; background: #D3E8E4; color: #0B4F4F; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px">MK</span></span>
+        <span style="font-size: 11px; font-weight: 600">Mert</span>
+      </a>
+      <a href="CanliHarita.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: #16201B; width: 60px">
+        <span style="width: 56px; height: 56px; border-radius: 28px; border: 2.5px solid #B04E25; padding: 2px; box-sizing: border-box; display: flex"><span style="flex: 1; border-radius: 50%; background: #F1DCCD; color: #7A3416; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px">DE</span></span>
+        <span style="font-size: 11px; font-weight: 600">Deniz</span>
+      </a>
+      <a href="CanliHarita.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: #16201B; width: 60px">
+        <span style="width: 56px; height: 56px; border-radius: 28px; border: 2.5px solid #B04E25; padding: 2px; box-sizing: border-box; display: flex"><span style="flex: 1; border-radius: 50%; background: #E4D9C3; color: #4A3F2A; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px">ZÖ</span></span>
+        <span style="font-size: 11px; font-weight: 600">Zeynep</span>
+      </a>
+      <a href="EtkinlikDetay.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: #16201B; width: 60px">
+        <span style="width: 56px; height: 56px; border-radius: 28px; border: 1.5px dashed #9C9282; box-sizing: border-box; display: flex; align-items: center; justify-content: center; color: #4F5751"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span>
+        <span style="font-size: 11px; font-weight: 600">Cumartesi</span>
+      </a>
+    </div>
+  </section>
+
+  <div role="tablist" aria-label="Akış filtresi" style="display: flex; gap: 8px; padding: 0 16px 12px">
+    <button role="tab" aria-selected="true" style="height: 36px; padding: 0 14px; border-radius: 18px; border: 0; background: #16201B; color: #F2EDE3; font-size: 13px; font-weight: 600">Takip ettiklerim</button>
+    <button role="tab" aria-selected="false" style="height: 36px; padding: 0 14px; border-radius: 18px; border: 1px solid #D3C9B7; background: transparent; font-size: 13px; font-weight: 600">Gruplarım</button>
+    <button role="tab" aria-selected="false" style="height: 36px; padding: 0 14px; border-radius: 18px; border: 1px solid #D3C9B7; background: transparent; font-size: 13px; font-weight: 600">Yakınımda</button>
+  </div>
+
+  <article style="margin: 0 12px 12px; background: #FBF8F2; border-radius: 20px; overflow: hidden; border: 1px solid #E3DACB">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 14px 14px 10px">
+      <span style="width: 40px; height: 40px; border-radius: 20px; background: #CFE0D0; color: #2E4A33; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px">AY</span>
+      <div style="flex: 1; min-width: 0">
+        <div style="font-size: 14px; font-weight: 600">Ayşe Yılmaz <span style="font-weight: 400; color: #4F5751">· Mert ve 2 kişiyle</span></div>
+        <div style="font-size: 12px; color: #4F5751">Bugün 08:12 · Kaş, Antalya</div>
+      </div>
+      <span style="display: flex; align-items: center; gap: 4px; height: 26px; padding: 0 10px; border-radius: 13px; background: #D3E8E4; color: #0B4F4F; font-size: 12px; font-weight: 600"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="16" r="3.5"/><circle cx="18" cy="16" r="3.5"/><path d="M6 16l4-7h5l3 7M10 9l3 7"/></svg>Bisiklet</span>
+    </div>
+    <a href="AktiviteOzeti.dc.html" style="display: block; text-decoration: none; color: #16201B">
+      <h2 style="margin: 0; padding: 0 14px 10px; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 21px; font-weight: 700; letter-spacing: -0.01em">Kaş – Kalkan sahil yolu</h2>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding: 0 14px 12px">
+        <div><div style="font-size: 11px; color: #4F5751">Mesafe</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 18px; font-weight: 700">27,4<span style="font-size: 12px; font-weight: 500"> km</span></div></div>
+        <div><div style="font-size: 11px; color: #4F5751">Tırmanış</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 18px; font-weight: 700">412<span style="font-size: 12px; font-weight: 500"> m</span></div></div>
+        <div><div style="font-size: 11px; color: #4F5751">Süre</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 18px; font-weight: 700">1:38</div></div>
+        <div><div style="font-size: 11px; color: #4F5751">Ort. hız</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 18px; font-weight: 700">16,7<span style="font-size: 12px; font-weight: 500"> km/sa</span></div></div>
+      </div>
+      <svg viewBox="0 0 366 176" width="366" height="176" role="img" aria-label="Kaş – Kalkan rotasının haritası, yüksekliğe göre renklendirilmiş" style="display: block">
+        <defs><linearGradient id="mElev" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0B6A6A"/><stop offset="0.45" stop-color="#C08A2E"/><stop offset="0.68" stop-color="#B04E25"/><stop offset="1" stop-color="#0B6A6A"/></linearGradient></defs>
+        <rect width="366" height="176" fill="#E8E0CF"/>
+        <path d="M0 122 C 40 114, 70 134, 110 150 S 170 170, 210 176 L0 176Z" fill="#CBE1DC"/>
+        <path d="M214 176 C 254 164, 306 170, 366 148 L366 176Z" fill="#CBE1DC"/>
+        <g fill="none" stroke="#D3C7B0" stroke-width="1">
+          <path d="M150 66 C 180 36, 250 32, 282 56 S 292 108, 242 110 S 140 98, 150 66Z"/>
+          <path d="M176 70 C 196 52, 240 50, 260 64 S 264 94, 234 96 S 168 88, 176 70Z"/>
+          <path d="M202 72 C 214 64, 234 64, 242 72 S 240 84, 226 84 S 198 80, 202 72Z"/>
+          <path d="M20 58 C 50 28, 100 32, 112 58 S 82 94, 52 90 S 0 82, 20 58Z"/>
+          <path d="M42 60 C 60 44, 90 46, 94 60 S 74 80, 56 78 S 32 72, 42 60Z"/>
+          <path d="M300 30 C 320 18, 352 22, 360 40 S 340 70, 318 64 S 286 44, 300 30Z"/>
+        </g>
+        <path d="M30 128 C 62 118, 82 100, 120 104 S 172 120, 198 96 S 238 70, 264 88 S 302 120, 334 112" fill="none" stroke="#FBF8F2" stroke-width="7" stroke-linecap="round"/>
+        <path d="M30 128 C 62 118, 82 100, 120 104 S 172 120, 198 96 S 238 70, 264 88 S 302 120, 334 112" fill="none" stroke="url(#mElev)" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="198" cy="96" r="5" fill="#FBF8F2" stroke="#16201B" stroke-width="1.5"/>
+        <circle cx="30" cy="128" r="6" fill="#FBF8F2" stroke="#0B6A6A" stroke-width="3"/>
+        <circle cx="334" cy="112" r="6" fill="#16201B" stroke="#FBF8F2" stroke-width="2"/>
+        <text x="20" y="152" font-size="11" font-weight="600" fill="#2C5752" font-family="Inter, sans-serif">Kaş</text>
+        <text x="318" y="138" font-size="11" font-weight="600" fill="#2C5752" font-family="Inter, sans-serif">Kalkan</text>
+      </svg>
+    </a>
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px 4px">
+      <div style="display: flex; align-items: center">
+        <span style="width: 26px; height: 26px; border-radius: 13px; background: #D3E8E4; color: #0B4F4F; border: 2px solid #FBF8F2; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">MK</span>
+        <span style="width: 26px; height: 26px; border-radius: 13px; background: #F1DCCD; color: #7A3416; border: 2px solid #FBF8F2; margin-left: -8px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">DE</span>
+        <span style="width: 26px; height: 26px; border-radius: 13px; background: #E4D9C3; color: #4A3F2A; border: 2px solid #FBF8F2; margin-left: -8px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">CA</span>
+        <span style="font-size: 12px; color: #4F5751; margin-left: 8px">Birlikte sürdüler · 2 mola</span>
+      </div>
+    </div>
+    <div style="display: flex; justify-content: space-between; padding: 2px 6px 6px">
+      <button style="height: 44px; padding: 0 10px; border: 0; background: none; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #B04E25"><svg width="21" height="21" viewBox="0 0 24 24" fill="#B04E25" stroke="#B04E25" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>24</button>
+      <button style="height: 44px; padding: 0 10px; border: 0; background: none; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>6</button>
+      <a href="RotaDetay.dc.html" style="height: 44px; padding: 0 10px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #16201B; text-decoration: none"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>Rotayı kaydet</a>
+      <a href="PaylasimStudyosu.dc.html" aria-label="Paylaş" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #16201B"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v7h14v-7"/></svg></a>
+    </div>
+  </article>
+
+  <article style="margin: 0 12px; background: #FBF8F2; border-radius: 20px; overflow: hidden; border: 1px solid #E3DACB">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 14px 14px 10px">
+      <span style="width: 40px; height: 40px; border-radius: 20px; background: #16201B; color: #F2EDE3; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px">LY</span>
+      <div style="flex: 1">
+        <div style="font-size: 14px; font-weight: 600">Likya Yolu Yürüyüşçüleri <span style="font-weight: 400; color: #4F5751">· yeni rota</span></div>
+        <div style="font-size: 12px; color: #4F5751">Topluluk · 2 saat önce</div>
+      </div>
+    </div>
+    <h2 style="margin: 0; padding: 0 14px; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 21px; font-weight: 700">Faralya – Kabak patikası</h2>
+  </article>
+
+  <nav aria-label="Ana menü" style="position: absolute; left: 0; right: 0; bottom: 0; height: 86px; background: #FBF8F2; border-top: 1px solid #E3DACB; display: flex; justify-content: space-around; align-items: flex-start; padding-top: 6px; box-sizing: border-box">
+    <a href="Main.dc.html" aria-current="page" style="width: 64px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #16201B; font-size: 11px; font-weight: 700"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>Akış</a>
+    <a href="Topluluklar.dc.html" style="width: 64px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #4F5751; font-size: 11px; font-weight: 600"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Keşfet</a>
+    <a href="KayitBaslat.dc.html" aria-label="Kayıt başlat" style="width: 58px; height: 58px; margin-top: -14px; border-radius: 29px; background: #B04E25; color: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(176, 78, 37, 0.35)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></a>
+    <a href="Grup.dc.html" style="width: 64px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #4F5751; font-size: 11px; font-weight: 600"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>Gruplar</a>
+    <a href="Profil.dc.html" style="width: 64px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #4F5751; font-size: 11px; font-weight: 600"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Profil</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

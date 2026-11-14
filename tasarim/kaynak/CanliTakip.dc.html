@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Lykiva — Canlı takip</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#E07A4A}a:hover{color:#F09A6E}
+button{font:inherit;color:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #0E1512; color: #EDE7DB; font-family: Inter, system-ui, sans-serif; box-sizing: border-box">
+
+  <svg viewBox="0 0 390 380" width="390" height="380" role="img" aria-label="Canlı rota haritası: tamamlanan kısım ve kalan kısım" style="position: absolute; top: 0; left: 0; display: block">
+    <rect width="390" height="380" fill="#121B17"/>
+    <path d="M0 300 C 60 280, 130 320, 200 340 S 320 360, 390 330 L390 380 L0 380Z" fill="#12302E"/>
+    <g fill="none" stroke="#24302B" stroke-width="1">
+      <path d="M180 100 C 220 60, 320 60, 350 110 S 330 200, 270 196 S 160 160, 180 100Z"/>
+      <path d="M210 110 C 236 82, 304 84, 322 116 S 306 176, 272 174 S 196 148, 210 110Z"/>
+      <path d="M238 118 C 252 102, 290 104, 298 122 S 290 152, 272 152 S 230 138, 238 118Z"/>
+      <path d="M20 130 C 50 90, 120 100, 128 140 S 96 200, 60 196 S 0 170, 20 130Z"/>
+      <path d="M44 136 C 64 112, 104 118, 108 144 S 86 182, 62 178 S 30 160, 44 136Z"/>
+    </g>
+    <path d="M30 280 C 70 270, 90 240, 130 236 S 180 250, 200 220" fill="none" stroke="#E07A4A" stroke-width="5" stroke-linecap="round"/>
+    <path d="M200 220 C 220 190, 250 170, 280 180 S 330 220, 360 200" fill="none" stroke="#6E7A73" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="2 8"/>
+    <circle cx="360" cy="200" r="7" fill="none" stroke="#EDE7DB" stroke-width="2.5"/>
+    <circle cx="170" cy="242" r="7" fill="#4FB3AC" stroke="#0E1512" stroke-width="2.5"/>
+    <circle cx="186" cy="234" r="7" fill="#D9C08A" stroke="#0E1512" stroke-width="2.5"/>
+    <circle cx="200" cy="220" r="22" fill="#E07A4A" fill-opacity="0.2"/>
+    <circle cx="200" cy="220" r="10" fill="#E07A4A" stroke="#0E1512" stroke-width="3"/>
+  </svg>
+
+  <header style="position: absolute; top: 50px; left: 12px; right: 12px; display: flex; align-items: center; justify-content: space-between">
+    <span style="height: 36px; padding: 0 14px; border-radius: 18px; background: rgba(14, 21, 18, 0.85); display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600"><span style="width: 9px; height: 9px; border-radius: 5px; background: #E5484D"></span>Kayıtta · Bisiklet</span>
+    <a href="CanliHarita.dc.html" style="height: 36px; padding: 0 14px; border-radius: 18px; background: rgba(14, 21, 18, 0.85); display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #EDE7DB; text-decoration: none"><span style="display: flex"><span style="width: 14px; height: 14px; border-radius: 7px; background: #4FB3AC; border: 2px solid #0E1512"></span><span style="width: 14px; height: 14px; border-radius: 7px; background: #D9C08A; border: 2px solid #0E1512; margin-left: -6px"></span></span>Grup yanında</a>
+  </header>
+
+  <section style="position: absolute; left: 0; right: 0; bottom: 0; height: 494px; background: #0E1512; border-radius: 26px 26px 0 0; padding: 22px 20px 0; box-sizing: border-box">
+    <div style="text-align: center">
+      <div style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #A3ACA5">Anlık hız</div>
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 84px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; margin-top: 2px">24,6<span style="font-size: 22px; font-weight: 600; letter-spacing: 0; color: #A3ACA5"> km/sa</span></div>
+    </div>
+
+    <div style="margin: 18px 0 16px">
+      <div style="height: 8px; border-radius: 4px; background: #24302B; overflow: hidden"><div style="width: 41%; height: 100%; background: #E07A4A; border-radius: 4px"></div></div>
+      <div style="display: flex; justify-content: space-between; font-size: 12px; color: #A3ACA5; margin-top: 6px"><span>Kaş</span><span>%41</span><span>Kalkan</span></div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 16px; column-gap: 8px">
+      <div><div style="font-size: 12px; color: #A3ACA5">Yapılan</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 28px; font-weight: 700">11,2<span style="font-size: 13px; font-weight: 500; color: #A3ACA5"> km</span></div></div>
+      <div><div style="font-size: 12px; color: #A3ACA5">Kalan</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 28px; font-weight: 700">16,2<span style="font-size: 13px; font-weight: 500; color: #A3ACA5"> km</span></div></div>
+      <div><div style="font-size: 12px; color: #A3ACA5">Varışa</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 28px; font-weight: 700; color: #F09A6E">58<span style="font-size: 13px; font-weight: 500; color: #A3ACA5"> dk</span></div></div>
+      <div><div style="font-size: 12px; color: #A3ACA5">Süre</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 28px; font-weight: 700">0:41:18</div></div>
+      <div><div style="font-size: 12px; color: #A3ACA5">Ort. hız</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 28px; font-weight: 700">16,7</div></div>
+      <div><div style="font-size: 12px; color: #A3ACA5">Tırmanış</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 28px; font-weight: 700">186<span style="font-size: 13px; font-weight: 500; color: #A3ACA5"> m</span></div></div>
+    </div>
+    <div style="font-size: 12px; color: #A3ACA5; margin-top: 10px">Varış süresi şu ana kadarki ortalama hızına göre hesaplanır · Tahmini varış 13:52</div>
+
+    <div style="position: absolute; left: 20px; right: 20px; bottom: 36px; display: flex; align-items: center; justify-content: space-between">
+      <button aria-label="Ekranı kilitle" style="width: 56px; height: 56px; border-radius: 28px; border: 1px solid #2E3B35; background: #18221E; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></button>
+      <a href="Duraklatildi.dc.html" aria-label="Duraklat" style="width: 88px; height: 88px; border-radius: 44px; background: #E07A4A; color: #0E1512; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 8px rgba(224, 122, 74, 0.18)"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg></a>
+      <a href="GrupSohbet.dc.html" aria-label="Gruba sesli mesaj" style="width: 56px; height: 56px; border-radius: 28px; border: 1px solid #2E3B35; background: #18221E; display: flex; align-items: center; justify-content: center; color: #EDE7DB"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></a>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

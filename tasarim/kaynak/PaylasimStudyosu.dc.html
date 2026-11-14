@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Lykiva — Paylaşım stüdyosu</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#B04E25}a:hover{color:#8A3C1C}
+button{font:inherit;color:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #F2EDE3; color: #16201B; font-family: Inter, system-ui, sans-serif; box-sizing: border-box">
+
+  <header style="padding: 50px 8px 4px; display: flex; align-items: center; justify-content: space-between">
+    <a href="AktiviteOzeti.dc.html" aria-label="Geri" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #16201B"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <h1 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 19px; font-weight: 700">Paylaş</h1>
+    <a href="Main.dc.html" style="height: 44px; padding: 0 12px; display: flex; align-items: center; font-weight: 700; font-size: 15px; text-decoration: none">Bitti</a>
+  </header>
+
+  <div style="display: flex; justify-content: center; padding: 6px 0 12px">
+    <div style="width: 196px; height: 300px; border-radius: 18px; background: {{cardBg}}; color: {{cardFg}}; padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 10px 28px rgba(22, 32, 27, 0.18); position: relative; overflow: hidden">
+      <svg viewBox="0 0 164 120" width="164" height="120" role="img" aria-label="Paylaşım kartındaki rota çizimi" style="display: block">
+        <g fill="none" stroke="{{contour}}" stroke-width="0.8">
+          <path d="M60 30 C 80 12, 130 10, 150 30 S 150 70, 120 70 S 50 60, 60 30Z"/>
+          <path d="M80 34 C 94 24, 124 24, 134 34 S 132 56, 114 56 S 74 50, 80 34Z"/>
+          <path d="M10 70 C 26 50, 56 52, 60 72 S 40 100, 22 96 S 0 86, 10 70Z"/>
+        </g>
+        <path d="M8 100 C 26 92, 36 78, 56 80 S 82 92, 96 74 S 118 50, 132 62 S 148 84, 158 78" fill="none" stroke="{{route}}" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="8" cy="100" r="4" fill="{{route}}"/>
+        <circle cx="158" cy="78" r="4" fill="none" stroke="{{route}}" stroke-width="2"/>
+      </svg>
+      <div>
+        <div style="font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85">Bisiklet · Kaş – Kalkan</div>
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 40px; font-weight: 800; line-height: 1; letter-spacing: -0.03em; margin: 4px 0 8px">27,4 km</div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; font-size: 10px">
+          <div><div style="opacity: 0.85">Süre</div><div style="font-weight: 700; font-size: 13px">1:38</div></div>
+          <div><div style="opacity: 0.85">Tırmanış</div><div style="font-weight: 700; font-size: 13px">412 m</div></div>
+          <div><div style="opacity: 0.85">Maks.</div><div style="font-weight: 700; font-size: 13px">48,2</div></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 10px">
+          <span style="font-weight: 600">@mert · @deniz · @can</span>
+          <span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 13px">lykiva</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding: 0 16px">
+    <div style="font-size: 12px; font-weight: 700; color: #4F5751; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px">Şablon</div>
+    <div role="radiogroup" aria-label="Kart şablonu" style="display: flex; gap: 8px; margin-bottom: 14px">
+      <sc-for list="{{templates}}" as="t" hint-placeholder-count="4">
+        <button role="radio" aria-checked="{{t.checked}}" onClick="{{t.pick}}" style="height: 36px; padding: 0 12px; border-radius: 18px; font-size: 13px; font-weight: 600; border: {{t.border}}; background: {{t.bg}}; color: {{t.fg}}">{{t.label}}</button>
+      </sc-for>
+    </div>
+
+    <div style="font-size: 12px; font-weight: 700; color: #4F5751; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px">Kartta göster</div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px">
+      <sc-for list="{{stats}}" as="s" hint-placeholder-count="7">
+        <button aria-pressed="{{s.on}}" onClick="{{s.toggle}}" style="height: 34px; padding: 0 12px; border-radius: 10px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; border: {{s.border}}; background: {{s.bg}}; color: {{s.fg}}">{{s.mark}} {{s.label}}</button>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 1px solid #E0D7C7">
+      <div>
+        <div style="font-size: 14px; font-weight: 600">Başlangıç ve bitişi gizle</div>
+        <div style="font-size: 12px; color: #4F5751">Evinin konumu haritada görünmez</div>
+      </div>
+      <button role="switch" aria-checked="{{hide}}" aria-label="Başlangıç ve bitişi gizle" onClick="{{toggleHide}}" style="width: 52px; height: 32px; border-radius: 16px; border: 0; padding: 3px; background: {{switchBg}}; display: flex; justify-content: {{switchJustify}}"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF; display: block"></span></button>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 8px 30px; background: #FBF8F2; border-top: 1px solid #E3DACB">
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px">
+      <button style="border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; padding: 4px 0"><span style="width: 48px; height: 48px; border-radius: 16px; background: #16201B; color: #F2EDE3; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="4"/><circle cx="12" cy="12" r="3.5"/></svg></span>Hikâye</button>
+      <button style="border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; padding: 4px 0"><span style="width: 48px; height: 48px; border-radius: 16px; background: #0B6A6A; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg></span>WhatsApp</button>
+      <button style="border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; padding: 4px 0"><span style="width: 48px; height: 48px; border-radius: 16px; background: #B04E25; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg></span>Lykiva akışı</button>
+      <button style="border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; padding: 4px 0"><span style="width: 48px; height: 48px; border-radius: 16px; background: #E4D9C3; color: #16201B; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 6 0l3-3a4 4 0 0 0-6-6l-1 1M14 10a4 4 0 0 0-6 0l-3 3a4 4 0 0 0 6 6l1-1"/></svg></span>Bağlantı</button>
+      <button style="border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; padding: 4px 0"><span style="width: 48px; height: 48px; border-radius: 16px; background: #E4D9C3; color: #16201B; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></span>GPX / Görsel</button>
+    </div>
+    <div style="font-size: 11px; color: #4F5751; text-align: center; margin-top: 8px">Diğer: Instagram gönderisi, X, Facebook, TikTok, Telegram…</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tpl: 0, hide: true, on: { mesafe: true, sure: true, tirmanis: true, maks: true, ort: false, kisiler: true, mola: false } };
+  }
+  renderVals() {
+    const looks = [
+      { bg: '#16201B', fg: '#F2EDE3', route: '#E07A4A', contour: '#33413A' },
+      { bg: '#F2EDE3', fg: '#16201B', route: '#B04E25', contour: '#D3C7B0' },
+      { bg: '#0B6A6A', fg: '#FFFFFF', route: '#F6D9A8', contour: '#2A8282' },
+      { bg: '#B04E25', fg: '#FFFFFF', route: '#FBF8F2', contour: '#C26A44' }
+    ];
+    const names = ['Gece', 'Kireçtaşı', 'Deniz', 'Kaya'];
+    const look = looks[this.state.tpl];
+    const templates = names.map((label, i) => {
+      const sel = i === this.state.tpl;
+      return { label, checked: sel ? 'true' : 'false', bg: sel ? '#16201B' : 'transparent', fg: sel ? '#F2EDE3' : '#16201B', border: sel ? '1px solid #16201B' : '1px solid #D3C9B7', pick: () => this.setState({ tpl: i }) };
+    });
+    const statDefs = [['mesafe', 'Mesafe'], ['sure', 'Süre'], ['tirmanis', 'Tırmanış'], ['maks', 'Maks. hız'], ['ort', 'Ort. hız'], ['mola', 'Molalar'], ['kisiler', 'Birlikte yaptıklarım']];
+    const stats = statDefs.map(([k, label]) => {
+      const on = !!this.state.on[k];
+      return { label, on: on ? 'true' : 'false', mark: on ? '✓' : '+', bg: on ? '#D3E8E4' : 'transparent', fg: on ? '#0B4F4F' : '#16201B', border: on ? '1px solid #9CC9C2' : '1px solid #D3C9B7', toggle: () => this.setState({ on: { ...this.state.on, [k]: !on } }) };
+    });
+    return {
+      cardBg: look.bg, cardFg: look.fg, route: look.route, contour: look.contour,
+      templates, stats,
+      hide: this.state.hide ? 'true' : 'false',
+      switchBg: this.state.hide ? '#0B6A6A' : '#C9BFAE',
+      switchJustify: this.state.hide ? 'flex-end' : 'flex-start',
+      toggleHide: () => this.setState({ hide: !this.state.hide })
+    };
+  }
+}
+</script>
+</body>
+</html>
