@@ -968,6 +968,7 @@ export const de: Sozluk = {
     sn: '{number} s',
   },
   paylasimTemalari: {
+    harita_kaynak: 'Karte © OpenStreetMap-Mitwirkende · OpenMapTiles',
     klasik: 'Klassisch',
     gece: 'Nachtkarte',
     foto: 'Auf deinem Foto',

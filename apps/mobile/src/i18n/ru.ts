@@ -968,6 +968,7 @@ export const ru: Sozluk = {
     sn: '{number} с',
   },
   paylasimTemalari: {
+    harita_kaynak: 'Карта © участники OpenStreetMap · OpenMapTiles',
     klasik: 'Классика',
     gece: 'Ночная карта',
     foto: 'На твоём фото',
