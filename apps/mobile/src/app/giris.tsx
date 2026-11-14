@@ -5,6 +5,7 @@ import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, Sc
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EpostaGiris } from '@/components/EpostaGiris';
+import { GoogleLogo } from '@/components/GoogleLogo';
 import { Icon, type IconName } from '@/components/Icon';
 import { Logo } from '@/components/Logo';
 import { Txt } from '@/components/Txt';
@@ -122,6 +123,7 @@ export default function GirisScreen() {
         <Button
           variant="outline"
           label={bekleyen === 'google' ? $t('giris.google_aciliyor') : $t('giris.google_ile_devam_et')}
+          leading={<GoogleLogo />}
           onPress={() => void giris('google')}
           disabled={!!bekleyen}
           style={{ borderRadius: radius.lg }}

@@ -324,6 +324,10 @@ girildi → **sürüm 5'ten itibaren** kendi sunucularımız; o zamana kadar tel
   `ENABLE_GOOGLE_SIGNIN=true`. Kontrol: `/auth/v1/settings` → `google: true`.
 - **Apple:** sunucuda açık; App ID'de Sign in with Apple yetkisi açıldı. Kalan: TestFlight sürümünde iPhone'da denemek.
 - Telefonda henüz uçtan uca denenmedi (Google ve Apple).
+- "Google ile devam et" düğmesinde Google'ın renkli "G" logosu var (15 Kas 2026; `components/GoogleLogo.tsx`, yalnızca JS).
+- Google girişi uygulama içi tarayıcıda açılıyor (Android'de Chrome Custom Tab, iOS'ta sistem penceresi). Gömülü WebView
+  kullanılamaz: Google kendi giriş sayfasını WebView'da açtırmıyor (`disallowed_useragent`). Tarayıcısız seçenek telefonun
+  kendi Google hesap seçicisi (yerel modül, yeni derleme ve Google Cloud'da Android / iOS istemcileri gerekir).
 
 ### [~] Giriş: e-posta + şifre
 Kod hazır (`apps/mobile/src/lib/epostaGiris.ts`, `src/components/EpostaGiris.tsx`): giriş, kayıt, şifremi unuttum;
