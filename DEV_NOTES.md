@@ -384,8 +384,11 @@ ikili geçiş var: **Yolculuk yap** (yol tarifi) / **Egzersiz yap** (tür seç, 
 Kalan:
 - [ ] **Telefonda denenmedi.** Bakılacaklar: panel kademeleri arasında sürükleme, tür şeridinin kayması, kayıt
   başlayınca / bitince alt menüde Egzersiz sekmesinin çıkıp kaybolması (iOS ve Android), karanlık tema.
-- [ ] Tasarımdaki "Egzersiz olarak da kaydet" anahtarı yok: "Yola çık" eskisi gibi hep kayıt başlatır. Kayıtsız yol
-  tarifi için kaydediciye "bitince kaydetme" durumu gerekir.
+- [x] "Egzersiz olarak da kaydet" anahtarı (15 Kas 2026): yol tarifinin ayrıntı bölümünde, varsayılan açık, seçim
+  telefonda saklanır. Kapalıyken "Yola çık" aynı canlı ekranı açar ama kayıt `kaydetme` işaretiyle başlar: rozet
+  "Yol tarifi · tür" yazar, Android bildirimi "kaydediyor" demez, Bitir aktivite oluşturmadan kapatır (`iptalEt`).
+  Bitirirken ve duraklatılmış ekranda "Aktivite olarak kaydet" seçeneği durur (fikir değiştirene).
+  **Telefonda denenmedi:** bitirme uyarısındaki üç düğme (iOS / Android), kaydedilmeyen yolculukta bildirim metni.
 - [ ] Şerit kısayollarını elle düzenleme yok (sıra son kullanılana göre). Tür sayısı artınca gerekebilir.
 - [ ] Yeni tür (yüzme, kano, kayak…) eklenmedi; `activity_type` enum'u ve migration ister. Eklenince
   `lib/egzersizTuru.ts`'teki simge ve grup tabloları doldurulmazsa TypeScript hata verir.
