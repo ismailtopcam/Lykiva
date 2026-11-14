@@ -1,18 +1,19 @@
 /**
- * Paylaşım temaları — tasarim/ klasöründeki 2B kartların (01–06, 09, 10) aktivitenin gerçek verisiyle çizilen hâli.
- * Durağan görseldir (animasyon ve video sonraki aşama). Harita zemini gereken kartlar (01, 09) şimdilik haritasız:
- * koyu zemin üstünde rota. 07 Birlikte, 08 Harita posteri ve 3B kartlar (11–17) henüz yok (bkz. DEV_NOTES).
+ * Paylaşım temaları — tasarim/ klasöründeki 2B kartların (01–10) aktivitenin gerçek verisiyle çizilen hâli.
+ * Durağan görseldir (animasyon ve video sonraki aşama). Harita zemini (01, 08, 09) vektör karodan: haritaZemini.tsx.
+ * 3B kartlar (11–17) henüz yok (bkz. DEV_NOTES).
  *
  * Her tema kendi biçiminde (hikâye / gönderi / kare) tasarım pikseliyle çizilir; `TemaGorseli` yakalanacak kökü verir.
  */
-import { kmUnit, mUnit } from '@lykiva/shared';
+import { formatDecimal, kmUnit, mUnit } from '@lykiva/shared';
 import type { ReactElement, Ref } from 'react';
 import { Image, View, type HostInstance } from 'react-native';
 import Svg, { Circle, Defs, Line, LinearGradient, Path, Pattern, RadialGradient, Rect, Stop } from 'react-native-svg';
 
-import type { Activity, LngLat } from '@/data/ornek';
+import { adListesi, birlikteKisiler } from '@/data/aktivite';
+import { people, type Activity, type LngLat } from '@/data/ornek';
 import { $t } from '@/i18n';
-import { GECE_HARITA, HaritaZemini } from './haritaZemini';
+import { ACIK_HARITA, GECE_HARITA, HaritaZemini } from './haritaZemini';
 import {
   BICIM_OLCU,
   birlikteAdlar,
@@ -48,7 +49,7 @@ export type TemaProps = {
   foto?: string | null;
 };
 
-export type TemaKimligi = 'gece' | 'foto' | 'zirve' | 'minimal' | 'binis' | 'kartpostal' | 'akis' | 'hiz';
+export type TemaKimligi = 'gece' | 'poster' | 'foto' | 'zirve' | 'minimal' | 'binis' | 'kartpostal' | 'birlikte' | 'akis' | 'hiz';
 
 export type Tema = {
   id: TemaKimligi;
@@ -695,6 +696,154 @@ function GununAkisi({ a }: TemaProps) {
 }
 
 /* ------------------------------------------------------------------ */
+/* 07 Birlikte (kare)                                                  */
+/* ------------------------------------------------------------------ */
+
+const AVATAR_RENK: [string, string][] = [
+  [R.sea, '#FFFFFF'],
+  [R.ink, '#FFFFFF'],
+  [R.orange, '#FFFFFF'],
+  ['#E4D9C3', R.ink],
+];
+
+const basHarfler = (ad: string) =>
+  buyuk(
+    ad
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((w) => w[0])
+      .slice(0, 2)
+      .join(''),
+  );
+
+/** Aktivite sahibi + birlikte yapılanlar (tam ad) */
+function ekip(a: Activity): string[] {
+  const sahip = a.ownerName ?? people[a.owner]?.name ?? a.owner;
+  return [sahip, ...birlikteKisiler(a).map((k) => k.ad)];
+}
+
+function Birlikte({ a, route, uclariGizle }: TemaProps) {
+  // Rota başlığın (2 satır, ~240 pt'ye kadar) altında, alt yazının üstünde kalsın
+  const { pts } = izNoktalari(route, { x: 32, y: 52, w: 416, h: 122 });
+  const son = pts[pts.length - 1];
+  const kisiler = ekip(a);
+  const n = Math.max(kisiler.length, a.with.length + 1);
+  const gorunen = kisiler.slice(0, n > 5 ? 4 : 5);
+  const fazla = n - gorunen.length;
+  const ozet = [`${a.distanceKm} ${kmUnit()}`, kisaSure(a.durationMoving), ...(yukseklikVar(a) ? [`↑ ${a.climbM} ${mUnit()}`] : [])].join(' · ');
+  const adlar = adListesi(kisiler.map((k) => k.split(' ')[0]));
+  const avatar = { width: 64, height: 64, borderRadius: 32, borderWidth: 4, borderColor: R.terra, alignItems: 'center', justifyContent: 'center' } as const;
+  return (
+    <View style={{ width: 480, height: 480, backgroundColor: R.terra, overflow: 'hidden' }}>
+      <View style={{ position: 'absolute', left: 32, top: 32, right: 32, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row' }}>
+          {gorunen.map((ad, i) => (
+            <View key={i} style={[avatar, { backgroundColor: AVATAR_RENK[i % 4][0], marginLeft: i ? -16 : 0 }]}>
+              <T style={{ fontFamily: F.baslik, fontSize: 20, color: AVATAR_RENK[i % 4][1] }}>{basHarfler(ad)}</T>
+            </View>
+          ))}
+          {fazla > 0 ? (
+            <View style={[avatar, { backgroundColor: R.surf, marginLeft: -16 }]}>
+              <T style={{ fontFamily: F.baslik, fontSize: 18, color: R.terra }}>+{fazla}</T>
+            </View>
+          ) : null}
+        </View>
+        <Logo boyut={16} renk="#FFFFFF" />
+      </View>
+      <T style={{ position: 'absolute', left: 32, right: 32, top: 122, fontFamily: F.baslikAgir, fontSize: 56, lineHeight: 56, letterSpacing: -2.2, color: '#FFFFFF' }}>
+        {$t('paylasimTemalari.birlikte_baslik', { n })}
+      </T>
+      <Svg width={480} height={200} style={{ position: 'absolute', left: 0, top: 196 }}>
+        <Path d={yolD(pts)} {...yuvarlak} stroke={R.surf} strokeWidth={5} />
+        {!uclariGizle && son ? <Circle cx={son[0]} cy={son[1]} r={7} fill={R.terra} stroke={R.surf} strokeWidth={3.1} /> : null}
+      </Svg>
+      <View style={{ position: 'absolute', left: 32, right: 32, bottom: 32 }}>
+        <T numberOfLines={1} style={{ fontFamily: F.govdeYari, fontSize: 15, color: '#FFFFFF' }}>
+          {a.title}
+        </T>
+        <T numberOfLines={1} style={{ fontFamily: F.baslik, fontSize: 24, lineHeight: 30, color: '#FFFFFF', marginTop: 4 }}>
+          {ozet}
+        </T>
+        <T numberOfLines={1} style={{ fontFamily: F.govde, fontSize: 13, color: '#FBE3D6', marginTop: 8 }}>
+          {$t('paylasimTemalari.birlikte_kimlerle', { adlar })} · {gun(a)}
+        </T>
+      </View>
+    </View>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* 08 Harita posteri (gönderi)                                         */
+/* ------------------------------------------------------------------ */
+
+/** "36,20° K · 29,64° D" (iki ondalık ≈ 1 km; uçlar gizliyse kırpılmış izin uçlarından) */
+function koordinat([lng, lat]: LngLat) {
+  const en = `${formatDecimal(Math.abs(lat), 2)}° ${lat >= 0 ? $t('paylasimTemalari.yon_k') : $t('paylasimTemalari.yon_g')}`;
+  const boy = `${formatDecimal(Math.abs(lng), 2)}° ${lng >= 0 ? $t('paylasimTemalari.yon_d') : $t('paylasimTemalari.yon_b')}`;
+  return `${en} · ${boy}`;
+}
+
+function HaritaPosteri({ a, route, uclariGizle }: TemaProps) {
+  const [MW, MH] = [393, 240];
+  const { pts, cerceve } = izNoktalari(route, { x: 30, y: 26, w: MW - 60, h: MH - 52 });
+  const d = yolD(pts);
+  const [bas, son] = [pts[0], pts[pts.length - 1]];
+  const baslik = buyuk(a.title);
+  const fs = baslik.length <= 14 ? 34 : baslik.length <= 20 ? 26 : 20;
+  return (
+    <View style={{ width: 432, height: 540, backgroundColor: R.surf, overflow: 'hidden' }}>
+      <View style={{ position: 'absolute', left: 18, top: 18, right: 18, bottom: 18, borderWidth: 1.5, borderColor: R.ink }}>
+        <View style={{ width: MW, height: MH, overflow: 'hidden', backgroundColor: '#EFE9DB' }}>
+          <Svg width={MW} height={MH}>
+            <HaritaZemini alan={{ x: 0, y: 0, w: MW, h: MH }} cerceve={cerceve} palet={ACIK_HARITA} />
+            {d ? (
+              <>
+                <Path d={d} {...yuvarlak} stroke="#FFFFFF" strokeWidth={7} />
+                <Path d={d} {...yuvarlak} stroke={R.terra} strokeWidth={3.6} />
+              </>
+            ) : null}
+            {!uclariGizle && bas ? <Circle cx={bas[0]} cy={bas[1]} r={4.5} fill="#FFFFFF" stroke={R.terra} strokeWidth={2.2} /> : null}
+            {!uclariGizle && son ? <Circle cx={son[0]} cy={son[1]} r={3} fill={R.terra} /> : null}
+          </Svg>
+          {cerceve ? (
+            <T numberOfLines={1} style={{ position: 'absolute', right: 4, bottom: 2, fontFamily: F.govde, fontSize: 5, color: R.muted, backgroundColor: 'rgba(251,248,242,0.8)', paddingHorizontal: 3, paddingVertical: 1 }}>
+              {$t('paylasimTemalari.harita_kaynak')}
+            </T>
+          ) : null}
+        </View>
+        <View style={{ flex: 1, paddingVertical: 22, paddingHorizontal: 24 }}>
+          <T numberOfLines={2} style={{ fontFamily: F.baslikAgir, fontSize: fs, lineHeight: fs * 1.1, letterSpacing: 0.06 * fs, color: R.ink, textAlign: 'center' }}>
+            {baslik}
+          </T>
+          {route.length > 1 ? (
+            <T numberOfLines={1} style={{ fontFamily: F.govde, fontSize: 11, letterSpacing: 0.9, color: R.muted, textAlign: 'center', marginTop: 6 }}>
+              {koordinat(route[0])} → {koordinat(route[route.length - 1])}
+            </T>
+          ) : null}
+          <View style={{ height: 1, backgroundColor: R.ink, marginVertical: 18, marginHorizontal: 40 }} />
+          <View style={{ flexDirection: 'row' }}>
+            {degerler(a, ['mesafe', 'tirmanis', 'sure', 'ort'], 3).map((h) => (
+              <View key={h.etiket} style={{ flex: 1, alignItems: 'center' }}>
+                <T style={{ fontFamily: F.govdeOrta, fontSize: 11, color: R.muted }}>{h.etiket}</T>
+                <T numberOfLines={1} style={{ fontFamily: F.baslik, fontSize: 19, lineHeight: 24, color: R.ink }}>
+                  {h.deger}
+                </T>
+              </View>
+            ))}
+          </View>
+          <View style={{ marginTop: 'auto', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <T numberOfLines={1} style={{ flex: 1, marginRight: 12, fontFamily: F.govde, fontSize: 11, letterSpacing: 1.1, color: R.muted }}>
+              {buyuk(tamTarih(a))} · {buyuk(tur(a))}
+            </T>
+            <Logo boyut={14} renk={R.ink} />
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Katalog                                                             */
 /* ------------------------------------------------------------------ */
 
@@ -702,6 +851,7 @@ const izVar = (a: Activity) => a.route.length > 1;
 
 export const PAYLASIM_TEMALARI: Tema[] = [
   { id: 'gece', ad: () => $t('paylasimTemalari.gece'), bicim: 'hikaye', zemin: R.night, uygun: izVar, Bilesen: GeceHaritasi },
+  { id: 'poster', ad: () => $t('paylasimTemalari.poster'), bicim: 'gonderi', zemin: R.surf, uygun: izVar, Bilesen: HaritaPosteri },
   { id: 'foto', ad: () => $t('paylasimTemalari.foto'), bicim: 'hikaye', zemin: R.night, uygun: () => true, Bilesen: FotografUstu },
   {
     id: 'zirve',
@@ -714,6 +864,7 @@ export const PAYLASIM_TEMALARI: Tema[] = [
   { id: 'minimal', ad: () => $t('paylasimTemalari.minimal'), bicim: 'gonderi', zemin: R.surf, uygun: () => true, Bilesen: MinimalTipografi },
   { id: 'binis', ad: () => $t('paylasimTemalari.binis'), bicim: 'hikaye', zemin: '#E8E0CF', uygun: () => true, Bilesen: BinisKarti },
   { id: 'kartpostal', ad: () => $t('paylasimTemalari.kartpostal'), bicim: 'kare', zemin: R.sea, uygun: () => true, Bilesen: Kartpostal },
+  { id: 'birlikte', ad: () => $t('paylasimTemalari.birlikte'), bicim: 'kare', zemin: R.terra, uygun: (a) => a.with.length > 0, Bilesen: Birlikte },
   { id: 'akis', ad: () => $t('paylasimTemalari.akis'), bicim: 'hikaye', zemin: R.cream, uygun: () => true, Bilesen: GununAkisi },
   { id: 'hiz', ad: () => $t('paylasimTemalari.hiz'), bicim: 'hikaye', zemin: R.night, uygun: (a) => izVar(a) && hizVar(a) && (a.speed.some((v) => v > 0) || !!a.hizProfili?.length), Bilesen: HizHaritasi },
 ];

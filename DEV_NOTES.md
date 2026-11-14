@@ -120,6 +120,8 @@ Kalan: telefonlarda deneme. Yeni yerel modüller (fotoğraf, bildirim, kilit ekr
 
 ### [ ] Telefonda ve gerçek sunucuda denenmemiş özellikler
 Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
+- Birlikte ve Harita posteri temaları (15 Kas 2026, İsmail; yalnızca JS): birlikte yapılmış gerçek bir aktivitede
+  avatarlar ve adlar doğru mu (sahip dahil, kişi sayısı)? Posterde koordinatlar uçlar gizliyken evden uzak mı?
 - Paylaşım kartlarında harita zemini (15 Kas 2026, İsmail; yalnızca JS): Gece haritası ve Hız haritası temalarında
   koyu harita (kıyı, yollar) rotanın altına oturuyor mu, paylaşılan görselde de var mı (karolar inmeden yakalanmamalı)?
   Uzun rotada (100+ km) ve şehir içinde ne kadar hızlı açılıyor, telefon takılıyor mu? Uçak modunda kart zeminsiz çıkmalı.
@@ -564,7 +566,9 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
   alan, akarsu ve yollar kartın içinde SVG olarak koyu renkte çiziliyor (`components/paylasim/haritaZemini.tsx`).
   Yalnızca JS paketleri eklendi (`@mapbox/vector-tile`, `pbf`), yeni derleme gerekmez. İnternet yoksa kart zeminsiz çıkar.
   Rotanın izdüşümü Web Mercator'a geçti (harita ile aynı). Eş yükselti / tepe gölgesi yok (OpenFreeMap'te yükseklik katmanı yok).
-- [ ] 07 Birlikte (grup aktivitesi, avatar halkaları) ve 08 Harita posteri.
+- [x] 07 Birlikte ve 08 Harita posteri (15 Kas 2026). Birlikte yalnızca birlikte yapılan aktivitede şeritte çıkar
+  (sahip + katılanlar, baş harfli avatarlar, 5'ten fazlası "+N"). Harita posteri açık renkli vektör zemin; başlangıç → bitiş
+  koordinatı 2 ondalıkla (~1 km), "Başlangıç ve bitişi gizle" açıksa kırpılmış izin uçlarından.
 - [ ] Biniş kartında yer kodları: aktivite adı "A – B" biçimindeyse ilk üç harf, değilse saatler. Başlangıç / bitiş yerinin
   adı (Photon ile ters arama) eklenirse kodlar ve Kartpostal başlığı ("Kaş'tan selamlar") gerçek yer adını kullanabilir.
 - [ ] Hareketli paylaşım (MP4) ve 3B kartlar (11–17): sunucu tarafı boru hattı gerekir; seçenekler `AKTARIM.md`'de, karar İsmail'in.
