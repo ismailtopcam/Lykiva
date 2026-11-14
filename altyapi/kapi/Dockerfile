@@ -1,4 +1,4 @@
-# Lykiva — BRouter ve Photon'un önündeki kapı (uygulama anahtarı + IP başına istek sınırı). Ayrıntı: altyapi/README.md
+# Lykiva — BRouter, Photon ve kart-video önündeki kapı (uygulama anahtarı + IP başına istek sınırı). Ayrıntı: altyapi/README.md
 FROM nginx:1.27-alpine
 
 # Şablon /etc/nginx/conf.d/default.conf olarak doldurulur (imajın varsayılanının yerine)

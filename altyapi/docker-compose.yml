@@ -1,7 +1,8 @@
-# Lykiva — kendi rota (BRouter) ve yer arama (Photon) sunucularımız.
+# Lykiva — kendi rota (BRouter), yer arama (Photon) ve 3B kart video (kart-video) sunucularımız.
 # Coolify > yeni kaynak > Docker Compose (Git deposu: bu repo, dosya: altyapi/docker-compose.yml).
-# Dışarıya yalnızca "kapi" açılır: Coolify'da iki alan adı da kapi servisine verilir
-# (https://brouter.ismailtopcam.dev,https://photon.ismailtopcam.dev). brouter ve photon'a alan adı VERİLMEZ.
+# Dışarıya yalnızca "kapi" açılır: Coolify'da bütün alan adları kapi servisine verilir
+# (https://brouter.ismailtopcam.dev,https://photon.ismailtopcam.dev,https://video.ismailtopcam.dev).
+# brouter, photon ve kart-video'ya alan adı VERİLMEZ.
 # Kapı uygulama anahtarını (X-Lykiva-Anahtar) ve IP başına istek sınırını denetler. Ayrıntı: altyapi/README.md
 services:
   kapi:
@@ -15,6 +16,9 @@ services:
       - LYKIVA_ROTA_YIGIN=${LYKIVA_ROTA_YIGIN:-30}
       - LYKIVA_ARAMA_SINIRI=${LYKIVA_ARAMA_SINIRI:-120r/m}
       - LYKIVA_ARAMA_YIGIN=${LYKIVA_ARAMA_YIGIN:-40}
+      # Video: yeni iş dakikada 1 (anlık 4 fazlası); durum sorgusu ve indirme dakikada 60 (anlık 30)
+      - LYKIVA_VIDEO_SINIRI=${LYKIVA_VIDEO_SINIRI:-1r/m}
+      - LYKIVA_VIDEO_YIGIN=${LYKIVA_VIDEO_YIGIN:-4}
       # Şablonda yalnızca LYKIVA_ ile başlayan değişkenler doldurulsun
       - NGINX_ENVSUBST_FILTER=^LYKIVA_
     expose:
@@ -43,6 +47,22 @@ services:
       - photon-veri:/veri
     expose:
       - '2322'
+
+  # 3B paylaşım kartı videoları (altyapi/kart-video/README.md). Sunucu diğer uygulamalarla ortak: işlemci ve bellek sınırlı.
+  kart-video:
+    build: ./kart-video
+    restart: unless-stopped
+    environment:
+      - KV_FPS=${KV_FPS:-30}
+      - KV_OLCEK=${KV_OLCEK:-2}
+      - KV_SAKLA_DK=${KV_SAKLA_DK:-60}
+      - KV_EN_FAZLA_SIRA=${KV_EN_FAZLA_SIRA:-20}
+    cpus: ${KV_ISLEMCI:-3}
+    mem_limit: ${KV_BELLEK:-3g}
+    # Chromium paylaşılan belleği kullanır; Docker'ın 64 MB varsayılanı yetmez
+    shm_size: '1gb'
+    expose:
+      - '8080'
 
 volumes:
   brouter-segmentler:

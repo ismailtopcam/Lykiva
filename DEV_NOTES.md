@@ -578,8 +578,9 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
   - [x] 1. aşama: servis, sahne, 4 şablon, yerelde deneme. Ölçüm: 12 sn'lik hikâye videosu yazılım WebGL'iyle
     (sunucudaki gibi, ekran kartsız) İsmail'in bilgisayarında ~3,7 dk (360 kare, ~0,6 sn/kare). Sunucuda tekrar ölçülecek;
     yavaşsa `KV_FPS=24` ya da `KV_OLCEK` düşürülür.
-  - [ ] 2. aşama: kurulum — `altyapi/docker-compose.yml`'e `kart-video`, kapıya `video.` alan adı (uygulama anahtarı +
-    düşük istek sınırı, ör. IP başına saatte 6 video). İsmail: DNS kaydı ve Coolify API anahtarı.
+  - [~] 2. aşama: kurulum. Compose'a `kart-video` (3 çekirdek, 3 GB, shm 1 GB), kapıya `video.ismailtopcam.dev`
+    (uygulama anahtarı; yeni iş IP başına dakikada 1 + 4 anlık, durum/indirme dakikada 60) eklendi, nginx -t sunucuda geçti.
+    Kalan: DNS A kaydı, Coolify'da kapı alan adı + redeploy, sunucuda süre ölçümü.
   - [ ] 3. aşama: telefonda 3B video temaları (iş gönder, ilerleme, MP4 indir, `expo-sharing` ile paylaş).
   - Bilinen: haritada yer adları kapalı; şehir şablonları kısa rotalar için (uzun rotada uzaklaşınca binalar z14 altında kalır).
 - Hız haritasında kademeler sabit 13 / 25 km/sa değil, aktivitenin ortalamasına göre (×0,85 ve ×1,2): koşu ve yürüyüşte de anlamlı.
