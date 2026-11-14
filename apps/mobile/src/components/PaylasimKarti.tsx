@@ -10,6 +10,7 @@ import Svg, { Circle, G, Path } from 'react-native-svg';
 import type { Activity, LngLat } from '@/data/ornek';
 import { fontFamily } from '@/theme';
 import { Txt } from './Txt';
+import { kisaSure } from './paylasim/ortak';
 import { $t, yerel } from '@/i18n';
 
 export const KART_SABLONLARI = () => [
@@ -56,13 +57,6 @@ function izYolu(route: LngLat[], w: number, h: number, pad: number) {
   if (idx[idx.length - 1] !== route.length - 1) idx.push(route.length - 1);
   const d = 'M' + idx.map((i) => P(i).map((v) => v.toFixed(1)).join(' ')).join(' L');
   return { d, a: P(0), b: P(route.length - 1) };
-}
-
-/** "1:38:20" → "1:38", "41:18" → "41 dk", "0:55" → "55 sn" */
-function kisaSure(s: string) {
-  const p = s.split(':');
-  if (p.length === 3) return `${p[0]}:${p[1]}`;
-  return Number(p[0]) > 0 ? $t('paylasimKarti.dk', { number: Number(p[0]) }) : $t('paylasimKarti.sn', { number: Number(p[1]) });
 }
 
 type Props = {

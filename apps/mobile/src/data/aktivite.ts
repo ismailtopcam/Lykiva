@@ -102,6 +102,7 @@ function goruntuyeCevir(h: Ham): Activity {
     type: h.activity,
     place: '',
     when: ne(h.started),
+    baslangic: h.started,
     distanceKm: formatKm(h.distanceM),
     durationMoving: formatDuration(h.movingS),
     durationTotal: formatDuration(h.elapsedS),
