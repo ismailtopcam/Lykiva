@@ -1402,6 +1402,7 @@ export const en: Sozluk = {
     araba: 'Car',
     haritalarda_ac: 'Open in Maps',
     haritalar_acilamadi: 'Could not open the maps app.',
+    araba_patika_notu: 'Cars cannot use trails; with this option dirt tracks are used too.',
     yolculuk_yap: 'Go somewhere',
     egzersiz_yap: 'Work out',
     son_gittiklerin: 'Recent places',

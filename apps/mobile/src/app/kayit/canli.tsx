@@ -110,7 +110,8 @@ export default function CanliTakipScreen() {
     if (kayit.kaydetme) {
       Alert.alert($t('kayit_canli.yolculuk_bitirilsin_mi'), $t('kayit_canli.yolculuk_kaydedilmeyecek'), [
         { text: $t('ortak.vazgec'), style: 'cancel' },
-        ...(yetersiz ? [] : [{ text: $t('kayit_canli.aktivite_olarak_kaydet'), onPress: () => void kaydet() }]),
+        // Araba etkinlik türü değil: kaydetme seçeneği yok
+        ...(yetersiz || kayit.araba ? [] : [{ text: $t('kayit_canli.aktivite_olarak_kaydet'), onPress: () => void kaydet() }]),
         { text: $t('kayit_canli.yolculugu_bitir'), onPress: () => void sil() },
       ]);
       return;
@@ -134,7 +135,7 @@ export default function CanliTakipScreen() {
       <AnaSayfaDugmesi />
       <View style={styles.pill}>
         <View style={[styles.dot, { backgroundColor: kayit.kaydetme ? n.sea : n.recording }]} />
-        <Txt style={styles.pillText}>{$t(kayit.kaydetme ? 'kayit_canli.yolculukta' : 'kayit_canli.kayitta', { a: ACTIVITY_LABELS[kayit.activity] })}</Txt>
+        <Txt style={styles.pillText}>{$t(kayit.kaydetme ? 'kayit_canli.yolculukta' : 'kayit_canli.kayitta', { a: kayit.araba ? $t('harita.araba') : ACTIVITY_LABELS[kayit.activity] })}</Txt>
       </View>
     </View>
   );

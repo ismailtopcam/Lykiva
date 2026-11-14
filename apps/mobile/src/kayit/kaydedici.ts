@@ -35,6 +35,11 @@ export type Kayit = {
   durum: KayitDurumu;
   clientId: string;
   activity: ActivityType;
+  /**
+   * Araba yolculuğu (Harita > Yolculuk yap > Araba). Araba etkinlik türü değildir: `kaydetme` hep açıktır ve
+   * "Aktivite olarak kaydet" seçeneği sunulmaz (`bitir` de iptal eder). `activity` bu durumda anlamsızdır, gösterilmez.
+   */
+  araba: boolean;
   /** Duraklatmalarla bölünmüş nokta listeleri */
   segments: TrackPoint[][];
   baslangic: number;
@@ -63,6 +68,7 @@ const BOS: Kayit = {
   durum: 'bos',
   clientId: '',
   activity: 'bike',
+  araba: false,
   segments: [],
   baslangic: 0,
   duraklatmaBaslangic: null,
@@ -279,22 +285,26 @@ async function izlemeyiDurdur() {
 
 export class IzinHatasi extends Error {}
 
-/** `kaydetme`: yalnızca yol tarifi; bitince aktivite olarak kaydedilmeyecek */
-export async function baslat(activity: ActivityType, rota: KayitRotasi | null = null, paylasim: PaylasimGrubu | null = null, kaydetme = false) {
+/**
+ * `kaydetme`: yalnızca yol tarifi; bitince aktivite olarak kaydedilmeyecek.
+ * `activity` 'car' ise araba yolculuğu: her zaman `kaydetme` ve sonradan da kaydedilemez (bkz. `Kayit.araba`).
+ */
+export async function baslat(activity: ActivityType | 'car', rota: KayitRotasi | null = null, paylasim: PaylasimGrubu | null = null, kaydetme = false) {
   const fg = await Location.requestForegroundPermissionsAsync();
   if (!fg.granted) throw new IzinHatasi($t('kayit_kaydedici.konum_izni_verilmedi_ayarlar'));
   degistir({
     ...BOS,
     durum: 'kayitta',
     clientId: randomUUID(),
-    activity,
+    activity: activity === 'car' ? BOS.activity : activity,
+    araba: activity === 'car',
     segments: [[]],
     baslangic: Date.now(),
     sonKonum: kayit.sonKonum,
     rota,
     rotaIlerleme: rota && kayit.sonKonum ? trackOnRoute(hazir(rota), kayit.sonKonum) : null,
     paylasim,
-    kaydetme,
+    kaydetme: kaydetme || activity === 'car',
   });
   if (paylasim) hemenYayinla(paylasimDurumu());
   havayiYakala();
@@ -329,6 +339,11 @@ export async function devamEt() {
  * Dönen değer gösterilecek aktivitenin adresi: sunucu id'si ya da "yerel-<client_id>".
  */
 export async function bitir(title?: string): Promise<string | null> {
+  // Araba yolculuğu aktivite değildir: hangi ekrandan bitirilirse bitirilsin kaydedilmez
+  if (kayit.araba) {
+    await iptalEt();
+    return null;
+  }
   await izlemeyiDurdur();
   const paket = paketOlustur({ clientId: kayit.clientId, activity: kayit.activity, segments: kayit.segments, title, routeId: kayit.rota?.id, hava: kayit.hava });
   const clientId = kayit.clientId;

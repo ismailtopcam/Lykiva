@@ -1402,6 +1402,7 @@ export const de: Sozluk = {
     araba: 'Auto',
     haritalarda_ac: 'In Karten öffnen',
     haritalar_acilamadi: 'Die Karten-App konnte nicht geöffnet werden.',
+    araba_patika_notu: 'Autos können keine Pfade befahren; mit dieser Option werden auch unbefestigte Wege genutzt.',
     yolculuk_yap: 'Unterwegs',
     egzersiz_yap: 'Training',
     son_gittiklerin: 'Zuletzt besucht',

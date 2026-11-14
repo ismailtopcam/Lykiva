@@ -93,7 +93,8 @@ export default function DuraklatildiScreen() {
           // Yalnızca yol tarifi: asıl düğme kaydetmeden bitirir; kaydetmek isteyene ikinci seçenek
           <>
             <Button label={$t('kayit_canli.yolculugu_bitir')} icon="stop" variant="nightOutline" onPress={onSil} disabled={kaydediyor} />
-            {yetersiz ? null : (
+            {/* Araba etkinlik türü değil: kaydetme seçeneği yok */}
+            {yetersiz || kayit.araba ? null : (
               <Button
                 label={kaydediyor ? $t('ortak.kaydediliyor') : $t('kayit_canli.aktivite_olarak_kaydet')}
                 variant="nightOutline"

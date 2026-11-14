@@ -1403,6 +1403,7 @@ export const tr = {
     araba: 'Araba',
     haritalarda_ac: 'Haritalar\'da aç',
     haritalar_acilamadi: 'Harita uygulaması açılamadı.',
+    araba_patika_notu: 'Araba patikaya giremez; bu tercihle toprak yollar da kullanılır.',
     yolculuk_yap: 'Yolculuk yap',
     egzersiz_yap: 'Egzersiz yap',
     son_gittiklerin: 'Son gittiklerin',

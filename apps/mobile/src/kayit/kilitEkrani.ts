@@ -94,7 +94,10 @@ function gonder() {
   kilitEkraniGuncelle({
     kanalAdi: $t('kayit_kaydedici.kilit_kanal'),
     etkinlik: k.activity,
-    baslik: `${activityLabel(k.activity)} · ${sayiyor ? $t('kayit_kaydedici.kilit_kaydediyor') : $t('kayit_duraklatildi.duraklatildi')}`,
+    // Araba yolculuğu kaydedilmez: "Kaydediyor" yerine "Yol tarifi" (simge iOS'ta etkinliğinki kalır, pencere kodu derlemeyle gider)
+    baslik: k.araba
+      ? `${$t('harita.araba')} · ${sayiyor ? $t('harita.yol_tarifi') : $t('kayit_duraklatildi.duraklatildi')}`
+      : `${activityLabel(k.activity)} · ${sayiyor ? $t('kayit_kaydedici.kilit_kaydediyor') : $t('kayit_duraklatildi.duraklatildi')}`,
     gecenMs: istek.gecenMs(),
     sayiyor,
     mesafe,

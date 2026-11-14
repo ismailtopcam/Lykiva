@@ -473,11 +473,24 @@ Kalan:
   Yalnızca JS + sunucu imajı; telefonlara bir sonraki derlemeyle gider.
 - [x] Harita > yol tarifinde "Araba" (15 Kas 2026, İsmail, `claude/yol-tarifi-araba`): etkinlik çiplerinin sonunda
   "Araba" çipi. Yol BRouter'ın hazır `car-fast` profiliyle (kendi sunucumuzda ve brouter.de'de var; tek yönlere ve araç
-  yasaklarına uyar), yol / patika tercihi gizlenir, süre BRouter'ın hesabından (`total-time`; trafik verisi yok).
-  Ankamall örneğinde 3574 m, 7 dk. **Araba etkinlik türü değil:** `ActivityType`'a ve Egzersiz'e eklenmedi (İsmail'in
-  kararı), kayıt başlatmaz; düğmesi "Haritalar'da aç" hedefi telefonun harita uygulamasında araba yol tarifiyle açar
-  (iOS Apple Haritalar, Android Google Haritalar bağlantısı), çünkü bizde adım adım yönlendirme yok. Rota çizme
-  ekranına eklenmedi. Yalnızca JS, dört dilde. Telefonda denenecek: çip, süre, "Haritalar'da aç" iki platformda.
+  yasaklarına uyar), süre BRouter'ın hesabından (`total-time`; trafik verisi yok). Ankamall örneğinde 3574 m, 7 dk.
+  **Araba etkinlik türü değil:** `ActivityType`'a, veritabanına ve Egzersiz'e eklenmedi (İsmail'in kararı). Rota çizme
+  ekranına eklenmedi. Yalnızca JS, dört dilde.
+  - **"Yola çık" arabada da var, kaydetmez** (15 Kas 2026, `claude/araba-yola-cik`, İsmail'in kararı): aynı rota takibi
+    ekranı açılır. "Egzersiz olarak da kaydet" anahtarının `kaydetme` mekanizmasını kullanır (yukarıda, Harita ve
+    Egzersiz): `baslat('car', …)` `kaydetme`'yi hep açar ve `Kayit.araba`'yı işaretler. Farkı: arabada "Aktivite olarak
+    kaydet" seçeneği hiç sunulmaz (canlı ekrandaki bitirme uyarısında ve duraklatıldı ekranında) ve `bitir()` arabada
+    `iptalEt()`'e düşer, yani hiçbir ekrandan kaydedilemez; anahtar arabada gizlidir. Rozet "Yol tarifi · Araba", kilit
+    ekranı başlığı "Araba · Yol tarifi". Bilinen eksik: kilit ekranı simgesi iOS'ta bisiklet kalıyor
+    (`index.ios.tsx`'teki `SIMGELER` derlemeyle gider).
+  - **Yol / patika tercihi arabada da görünür:** araba patikaya giremez; "patika öncelikli" `car-fast`'e
+    `profile:use_offroad=1` ekler, araca kapalı sayılan toprak yollar (`track`) açılır. Kendi sunucumuzda denendi (Kaş,
+    toprak yol üstündeki hedef): yol öncelikli en yakın asfaltta bitiyor (11642 m), patika öncelikli 842 m toprak
+    yoldan hedefe varıyor (12433 m). Hedef asfalttaysa iki tercih aynı yolu verir. Panelde kısa not çıkar.
+  - **"Haritalar'da aç"** arabada ayrıntı bölümünde ikinci düğme: hedefi telefonun harita uygulamasında araba yol
+    tarifiyle açar (iOS Apple Haritalar, Android Google Haritalar bağlantısı), çünkü bizde adım adım yönlendirme yok.
+  - Telefonda denenecek: arabada "Yola çık" → canlı ekran → Bitir (aktivite oluşmamalı, akışta görünmemeli),
+    duraklat → Bitir, uygulama kapanıp açılınca yolculuk sürüyor mu; "Haritalar'da aç" iki platformda.
 - [ ] "Yol öncelikli" dağ bisikleti ve "patika öncelikli" bisiklet hâlâ `trekking` kullanıyor (`trunk` 10 kat).
   Patikada isteneni bu olabilir; dağ bisikletinde şikâyet gelirse `lykiva-yaya-yol` gibi kendi profilimiz yazılır.
 - Serbest çizilen rotada yükseklik yok (BRouter'a sorulmuyor); ayrı bir yükseklik servisi gerekir.

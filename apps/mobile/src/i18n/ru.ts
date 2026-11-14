@@ -1402,6 +1402,7 @@ export const ru: Sozluk = {
     araba: 'Автомобиль',
     haritalarda_ac: 'Открыть в Картах',
     haritalar_acilamadi: 'Не удалось открыть приложение карт.',
+    araba_patika_notu: 'Автомобиль не может ехать по тропам; с этой настройкой используются и грунтовые дороги.',
     yolculuk_yap: 'В путь',
     egzersiz_yap: 'Тренировка',
     son_gittiklerin: 'Недавние места',
