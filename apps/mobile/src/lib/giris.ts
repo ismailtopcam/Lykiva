@@ -9,7 +9,6 @@
  * bağlıysa (ör. başka telefonda giriş yapılmış) asıl hesaba girilir ve geçici hesaptaki kayıtlar
  * oraya taşınır (`hesabi_devral`).
  */
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { AuthError, Session, User } from '@supabase/supabase-js';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Crypto from 'expo-crypto';
@@ -23,8 +22,6 @@ import { $t } from '@/i18n';
 
 /** Tarayıcıdan dönüş adresi. Supabase'de izinli yönlendirmeler listesinde olmalı. */
 export const GIRIS_DONUS = 'lykiva://giris-donus';
-
-const ATLANDI = 'lykiva.giris.atlandi.v1';
 
 export type Saglayici = 'google' | 'apple' | 'email';
 
@@ -82,26 +79,12 @@ export function useHesap(): Hesap | null | undefined {
   return hesap;
 }
 
-/**
- * Açılışta giriş ekranı gösterilsin mi? Sunucu anahtarı yoksa (örnek veri modu) hayır.
- * Kullanıcı "Şimdilik geç" dediyse bir daha kendiliğinden açılmaz; profilden açılabilir.
- */
+/** Açılışta giriş ekranı gösterilsin mi? Giriş zorunlu; sunucu anahtarı yoksa (örnek veri modu) gösterilmez. */
 export function useGirisGerekli(): boolean | undefined {
   const hesap = useHesap();
-  const [atlandi, setAtlandi] = useState<boolean | undefined>(undefined);
-  useEffect(() => {
-    AsyncStorage.getItem(ATLANDI)
-      .then((v) => setAtlandi(v === '1'))
-      .catch(() => setAtlandi(false));
-  }, []);
   if (!supabaseHazir) return false;
-  if (hesap === undefined || atlandi === undefined) return undefined;
-  if (hesap && !hesap.gecici) return false;
-  return !atlandi;
-}
-
-export async function girisiAtla() {
-  await AsyncStorage.setItem(ATLANDI, '1').catch(() => undefined);
+  if (hesap === undefined) return undefined;
+  return !hesap || hesap.gecici;
 }
 
 export async function appleKullanilabilir(): Promise<boolean> {
@@ -198,8 +181,10 @@ async function tarayicidaGiris(tur: 'bagla' | 'gir'): Promise<'tamam' | 'baskaHe
   if (sonuc.type !== 'success') throw new GirisIptal();
 
   const p = adrestenParametreler(sonuc.url);
-  if (p.error_code === 'identity_already_exists' || /already linked/i.test(p.error_description ?? '')) {
-    if (tur === 'bagla') return 'baskaHesapta';
+  // Bu Google hesabı ya da e-postası başka bir Lykiva hesabında (ör. aynı Gmail ile e-posta + şifre hesabı açılmış):
+  // geçici hesaba bağlanamaz, asıl hesaba girilir. Sunucu Google kimliğini e-postası doğrulanmış hesaba kendisi bağlar.
+  if (tur === 'bagla' && (BASKA_HESAPTA_KODLARI.includes(p.error_code ?? '') || BASKA_HESAPTA_METNI.test(p.error_description ?? ''))) {
+    return 'baskaHesapta';
   }
   if (p.error || p.error_code) throw new Error(p.error_description || p.error || $t('lib_giris.google_girisi_tamamlanamadi'));
   if (!p.code) throw new Error($t('lib_giris.google_girisi_tamamlanamadi_kod'));
@@ -235,8 +220,12 @@ export function adrestenParametreler(adres: string): Record<string, string> {
 /* Yardımcılar                                                         */
 /* ------------------------------------------------------------------ */
 
+/** Bağlanmak istenen kimlik başka hesapta: sunucunun hata kodları ve (kod gelmezse) metni */
+const BASKA_HESAPTA_KODLARI = ['identity_already_exists', 'email_exists'];
+const BASKA_HESAPTA_METNI = /already linked|already been registered/i;
+
 export function baskaHesaptaMi(e: AuthError): boolean {
-  return e.code === 'identity_already_exists' || /already linked/i.test(e.message);
+  return BASKA_HESAPTA_KODLARI.includes(e.code ?? '') || BASKA_HESAPTA_METNI.test(e.message);
 }
 
 export async function devirKoduAl(): Promise<string> {
@@ -291,15 +280,13 @@ export async function profiliTamamla({ ad }: { ad?: string | null }) {
 }
 
 /** Çıkış. Telefonda gönderilmemiş kayıt varken çağrılmamalı (bkz. ayarlar ekranı). */
-/** Hesap silindikten sonra: sunucuda oturum zaten yok; yalnızca bu telefondaki oturumu ve giriş tercihini siler */
+/** Hesap silindikten sonra: sunucuda oturum zaten yok; yalnızca bu telefondaki oturumu siler */
 export async function yerelOturumuKapat() {
   await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
-  await AsyncStorage.removeItem(ATLANDI).catch(() => undefined);
 }
 
 export async function cikisYap() {
   // Telefon bildirimleri önceki hesaba gitmesin (kalıcı kapatma değil; yeni hesapta yeniden açılır)
   await pushKapat(false).catch(() => undefined);
   await supabase.auth.signOut();
-  await AsyncStorage.removeItem(ATLANDI).catch(() => undefined);
 }

@@ -325,6 +325,13 @@ girildi → **sürüm 5'ten itibaren** kendi sunucularımız; o zamana kadar tel
 - **Apple:** sunucuda açık; App ID'de Sign in with Apple yetkisi açıldı. Kalan: TestFlight sürümünde iPhone'da denemek.
 - Telefonda henüz uçtan uca denenmedi (Google ve Apple).
 - "Google ile devam et" düğmesinde Google'ın renkli "G" logosu var (15 Kas 2026; `components/GoogleLogo.tsx`, yalnızca JS).
+- **Giriş zorunlu, ekran sadeleşti (15 Kas 2026, yalnızca JS):** "Şimdilik geç" kaldırıldı; giriş yapmamış (geçici hesaplı)
+  herkes açılışta giriş ekranını görür. Ekran tek sayfa: e-posta + şifre ile "Giriş yap", "Şifremi unuttum", "ya da" altında
+  Google (iOS'ta Apple), en altta "Hesabın yok mu? Kayıt ol". Eski "Diğer giriş yolları" / sekmeli e-posta ekranı yok.
+- **Google girişi düzeltmesi (15 Kas 2026):** aynı Gmail ile e-posta + şifre hesabı varken Google'a basınca sunucu geçici
+  hesaba bağlamayı `email_exists` ile reddediyordu, uygulama yalnızca `identity_already_exists`'i tanıdığı için giriş
+  yarıda kalıyordu. Artık iki durumda da asıl hesaba Google ile girilir (sunucu Google kimliğini e-postası doğrulanmış
+  hesaba bağlar), geçici hesaptaki kayıtlar taşınır. Telefonda denenecek.
 - Google girişi uygulama içi tarayıcıda açılıyor (Android'de Chrome Custom Tab, iOS'ta sistem penceresi). Gömülü WebView
   kullanılamaz: Google kendi giriş sayfasını WebView'da açtırmıyor (`disallowed_useragent`). Tarayıcısız seçenek telefonun
   kendi Google hesap seçicisi (yerel modül, yeni derleme ve Google Cloud'da Android / iOS istemcileri gerekir).
