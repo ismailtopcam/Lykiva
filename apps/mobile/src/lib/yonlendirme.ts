@@ -33,7 +33,7 @@ const bisikletMi = (activity: YolTuru) => activity === 'bike' || activity === 'm
 
 /** BRouter'ın hazır profili (her sunucuda var) */
 function profil(mod: CizimModu, activity: YolTuru): string {
-  // Araba hep yoldan gider (tek yönlere ve araç yasaklarına uyar); yol / patika tercihi ona uygulanmaz
+  // Araba: tek yönlere ve araç yasaklarına uyar. Patika tercihi profil ekiyle (aşağıda, `profilEkleri`)
   if (activity === 'car') return 'car-fast';
   if (mod === 'patika') return activity === 'mtb' ? 'mtb' : bisikletMi(activity) ? 'trekking' : 'hiking-mountain';
   return activity === 'bike' ? 'fastbike' : 'trekking';
@@ -58,9 +58,14 @@ function kendiProfili(mod: CizimModu, activity: YolTuru): string | null {
  * (Ankamall'a en kısa yol 3,5 km iken 5,4 km; bu ayarla 3,7 km). Profilin kendi `allow_motorways` ayarı `trunk`'ı
  * ana yoldan biraz pahalı (1,5) yapar. Adına rağmen otoyolu açmaz: otoyol ve `motorroad=yes` erişim kuralından
  * yasak kalır (Ankara çevre yolunda denendi).
+ *
+ * Araba + patika öncelikli: araba patikaya (path / footway) giremez; `use_offroad` araca kapalı sayılan toprak yolları
+ * (`track`) açar. Hedef toprak yolun üstündeyse oraya kadar gider, yoksa yol çoğunlukla değişmez.
  */
-function profilEkleri(brouterProfili: string): string {
-  return brouterProfili === 'fastbike' ? '&profile:allow_motorways=1' : '';
+function profilEkleri(brouterProfili: string, mod: CizimModu): string {
+  if (brouterProfili === 'fastbike') return '&profile:allow_motorways=1';
+  if (brouterProfili === 'car-fast' && mod === 'patika') return '&profile:use_offroad=1';
+  return '';
 }
 
 /** OSM etiketlerinden zemin sınıfı */
@@ -89,7 +94,7 @@ export async function rotaHesapla(duraklar: LngLat[], mod: CizimModu, activity: 
   }
   const lonlats = duraklar.map(([lng, lat]) => `${lng.toFixed(6)},${lat.toFixed(6)}`).join('|');
   const iste = (p: string) =>
-    fetch(`${BROUTER}?lonlats=${encodeURIComponent(lonlats)}&profile=${p}${profilEkleri(p)}&alternativeidx=0&format=geojson`, { signal, headers: brouterBasliklari() });
+    fetch(`${BROUTER}?lonlats=${encodeURIComponent(lonlats)}&profile=${p}${profilEkleri(p, mod)}&alternativeidx=0&format=geojson`, { signal, headers: brouterBasliklari() });
   const kendi = kendiProfili(mod, activity);
   let res = await iste(kendi ?? profil(mod, activity));
   // Sunucu profili tanımıyorsa boş gövdeli 500 döner (profil eklenmeden önce kurulmuş sunucu): hazır profille bir kez daha

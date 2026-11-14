@@ -84,22 +84,29 @@ export default function DuraklatildiScreen() {
       </View>
 
       <Txt variant="small" color={n.textMuted} style={{ textAlign: 'center' }}>
-        {$t('kayit_duraklatildi.bu_mola_kaydin_hiz')}</Txt>
+        {kayit.araba ? $t('kayit_canli.araba_kaydedilmez') : $t('kayit_duraklatildi.bu_mola_kaydin_hiz')}</Txt>
 
       <View style={{ marginTop: 'auto', gap: 10 }}>
         <Button label={$t('kayit_duraklatildi.devam_et')} icon="play" variant="night" big onPress={onDevam} disabled={kaydediyor} />
-        <Button
-          label={kaydediyor ? $t('ortak.kaydediliyor') : $t('kayit_duraklatildi.bitir_ve_kaydet')}
-          icon="stop"
-          variant="nightOutline"
-          onPress={onBitir}
-          disabled={kaydediyor || yetersiz}
-        />
-        {yetersiz ? (
-          <Txt variant="small" color={n.textMuted} style={{ textAlign: 'center' }}>
-            {$t('kayit_duraklatildi.kaydetmek_icin_henuz_yeterli')}</Txt>
-        ) : null}
-        <Button label={$t('kayit_duraklatildi.kaydi_sil')} variant="nightOutline" onPress={onSil} disabled={kaydediyor} style={{ borderColor: 'transparent' }} />
+        {kayit.araba ? (
+          // Araba yolculuğu kaydedilmez: tek düğme, takibi kapatır (`bitir` arabada iptal eder)
+          <Button label={$t('kayit_canli.bitir')} icon="stop" variant="nightOutline" onPress={onBitir} disabled={kaydediyor} />
+        ) : (
+          <>
+            <Button
+              label={kaydediyor ? $t('ortak.kaydediliyor') : $t('kayit_duraklatildi.bitir_ve_kaydet')}
+              icon="stop"
+              variant="nightOutline"
+              onPress={onBitir}
+              disabled={kaydediyor || yetersiz}
+            />
+            {yetersiz ? (
+              <Txt variant="small" color={n.textMuted} style={{ textAlign: 'center' }}>
+                {$t('kayit_duraklatildi.kaydetmek_icin_henuz_yeterli')}</Txt>
+            ) : null}
+            <Button label={$t('kayit_duraklatildi.kaydi_sil')} variant="nightOutline" onPress={onSil} disabled={kaydediyor} style={{ borderColor: 'transparent' }} />
+          </>
+        )}
       </View>
     </View>
   );

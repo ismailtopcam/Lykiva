@@ -102,6 +102,18 @@ export default function CanliTakipScreen() {
   }
 
   function onBitir() {
+    // Araba yolculuğu kaydedilmez: bitirmek takibi kapatır
+    if (kayit.araba) {
+      if (Platform.OS === 'web') {
+        void sil();
+        return;
+      }
+      Alert.alert($t('kayit_canli.yolculuk_bitirilsin_mi'), $t('kayit_canli.araba_kaydedilmez'), [
+        { text: $t('ortak.vazgec'), style: 'cancel' },
+        { text: $t('kayit_canli.bitir'), onPress: () => void sil() },
+      ]);
+      return;
+    }
     if (Platform.OS === 'web') {
       void (yetersiz ? sil() : kaydet());
       return;
@@ -125,7 +137,9 @@ export default function CanliTakipScreen() {
       <AnaSayfaDugmesi />
       <View style={styles.pill}>
         <View style={[styles.dot, { backgroundColor: n.recording }]} />
-        <Txt style={styles.pillText}>{$t('kayit_canli.kayitta', { a: ACTIVITY_LABELS[kayit.activity] })}</Txt>
+        <Txt style={styles.pillText}>
+          {kayit.araba ? $t('kayit_canli.yolda', { a: $t('harita.araba') }) : $t('kayit_canli.kayitta', { a: ACTIVITY_LABELS[kayit.activity] })}
+        </Txt>
       </View>
     </View>
   );

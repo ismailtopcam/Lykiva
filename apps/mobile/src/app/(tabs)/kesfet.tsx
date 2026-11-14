@@ -4,8 +4,9 @@
  *
  * Hedef haritaya dokunarak ya da yer aramayla (Photon) seçilir; yol BRouter'la, seçilen etkinliğe göre hesaplanır
  * (patika ya da yol öncelikli). "Yola çık" kaydı bu yolla başlatır, kayıt ekranı kalan mesafeyi gösterir.
- * Etkinliklerin yanında "Araba" da seçilebilir: yalnızca yol tarifi (kayıt başlatmaz, Egzersiz'de yoktur);
- * düğmesi hedefi telefonun harita uygulamasında açar, çünkü bizde adım adım yönlendirme yok.
+ * Etkinliklerin yanında "Araba" da seçilebilir (Egzersiz'de yoktur, etkinlik türü değildir): "Yola çık" aynı rota
+ * takibini açar ama yolculuk bitince aktivite olarak kaydedilmez (bkz. `Kayit.araba`). Bizde adım adım yönlendirme
+ * olmadığı için ayrıntı bölümündeki "Haritalar'da aç" hedefi telefonun harita uygulamasında açar.
  * Eski Keşfet içeriği (rotalar, topluluklar, etkinlikler, kişiler) sağ üstteki düğmeyle açılır: `kesfet-liste.tsx`.
  * Dosya adı bağlantılar bozulmasın diye `kesfet` kaldı.
  */
@@ -239,12 +240,13 @@ export default function HaritaScreen() {
   }
 
   async function yolaCik() {
-    if (!hedef || points.length < 2 || activity === 'car') return;
+    if (!hedef || points.length < 2) return;
     setBasliyor(true);
     setHata(null);
     try {
       const ad = hedef.ad ? $t('harita.yol_tarifi_ad', { ad: hedef.ad }) : $t('harita.yol_tarifi');
-      // Geçici id: sunucuda rota değil, aktiviteye route_id olarak gitmez (bkz. kayit/paket.ts)
+      // Geçici id: sunucuda rota değil, aktiviteye route_id olarak gitmez (bkz. kayit/paket.ts).
+      // Araba ('car'): rota takibi açılır, bitince kaydedilmez
       await baslat(activity, { id: `tarif-${Date.now()}`, name: ad, points }, null);
       router.push('/kayit/canli');
     } catch (e) {
@@ -422,9 +424,7 @@ export default function HaritaScreen() {
                   {ben && baslangic && (ben[0] !== baslangic[0] || ben[1] !== baslangic[1]) ? (
                     <IconButton icon="rotate" label={$t('harita.konumumdan_yeniden_hesapla')} onPress={() => setBaslangic(ben)} />
                   ) : null}
-                  {araba ? (
-                    <Button label={$t('harita.haritalarda_ac')} icon="map" variant="sea" onPress={() => void haritalardaAc()} style={styles.ozetDugme} />
-                  ) : kayitta ? (
+                  {kayitta ? (
                     <Button label={$t('harita.kayda_don')} icon="record" variant="dark" onPress={() => router.push('/kayit')} style={styles.ozetDugme} />
                   ) : (
                     <Button
@@ -475,14 +475,23 @@ export default function HaritaScreen() {
                 ))}
                 <Chip label={$t('harita.araba')} role="radio" selected={araba} onPress={() => setActivity('car')} />
               </ScrollView>
-              {/* Araba hep yoldan gider: yol / patika tercihi yok */}
-              {araba ? null : (
-                <View style={{ flexDirection: 'row', gap: 6 }} accessibilityRole="radiogroup">
-                  {TERCIHLER().map((m) => (
-                    <Chip key={m.id} label={m.label} role="radio" tone="sea" selected={m.id === mod} onPress={() => setMod(m.id)} />
-                  ))}
-                </View>
-              )}
+              <View style={{ flexDirection: 'row', gap: 6 }} accessibilityRole="radiogroup">
+                {TERCIHLER().map((m) => (
+                  <Chip key={m.id} label={m.label} role="radio" tone="sea" selected={m.id === mod} onPress={() => setMod(m.id)} />
+                ))}
+              </View>
+              {araba ? (
+                <>
+                  {/* Araba patikaya giremez: tercih yalnızca toprak yolları açar (bkz. yonlendirme.ts > profilEkleri) */}
+                  {mod === 'patika' ? (
+                    <Txt variant="small" style={{ marginTop: 8 }}>
+                      {$t('harita.araba_patika_notu')}
+                    </Txt>
+                  ) : null}
+                  {/* Bizde adım adım yönlendirme yok: hedef telefonun harita uygulamasında da açılabilir */}
+                  <Button label={$t('harita.haritalarda_ac')} icon="map" variant="outline" onPress={() => void haritalardaAc()} style={{ marginTop: 12 }} />
+                </>
+              ) : null}
             </View>
           ) : null}
 
