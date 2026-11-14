@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <title>Lykiva kart sahnesi</title>
+    <link rel="stylesheet" href="/kutuphane/maplibre/maplibre-gl.css" />
+    <link rel="stylesheet" href="/yazi/inter/400.css" />
+    <link rel="stylesheet" href="/yazi/inter/500.css" />
+    <link rel="stylesheet" href="/yazi/inter/600.css" />
+    <link rel="stylesheet" href="/yazi/inter/700.css" />
+    <link rel="stylesheet" href="/yazi/bricolage/700.css" />
+    <link rel="stylesheet" href="/yazi/bricolage/800.css" />
+    <link rel="stylesheet" href="sahne.css" />
+    <script src="/kutuphane/maplibre/maplibre-gl.js"></script>
+  </head>
+  <body>
+    <div id="harita"></div>
+    <div id="katman">
+      <div id="ustSatir">
+        <div id="ust" class="kutu"><span id="ustYazi"></span><span id="baslikUst"></span></div>
+        <div id="logo" class="kutu">lykiva</div>
+      </div>
+      <div id="altSatir">
+        <div id="panel" class="kutu">
+          <div id="baslik"></div>
+          <div id="km"><span id="kmSayi"></span><span id="kmBirim"></span></div>
+          <div id="degerler" class="degerler"></div>
+          <div id="kaynak"></div>
+        </div>
+        <div id="yan" class="kutu degerler"></div>
+      </div>
+    </div>
+    <script src="sahne.js"></script>
+  </body>
+</html>
