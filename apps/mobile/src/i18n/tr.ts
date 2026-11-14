@@ -1380,6 +1380,9 @@ export const tr = {
     yola_cik: 'Yola çık',
     basliyor: 'Başlıyor…',
     kayda_don: 'Süren kayda dön',
+    araba: 'Araba',
+    haritalarda_ac: 'Haritalar\'da aç',
+    haritalar_acilamadi: 'Harita uygulaması açılamadı.',
   },
   sikayetPenceresi: {
     diger: 'Diğer',

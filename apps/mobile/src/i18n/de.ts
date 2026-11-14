@@ -1379,6 +1379,9 @@ export const de: Sozluk = {
     yola_cik: 'Losgehen',
     basliyor: 'Startet…',
     kayda_don: 'Zurück zur Aufzeichnung',
+    araba: 'Auto',
+    haritalarda_ac: 'In Karten öffnen',
+    haritalar_acilamadi: 'Die Karten-App konnte nicht geöffnet werden.',
   },
   sikayetPenceresi: {
     diger: 'Sonstiges',
