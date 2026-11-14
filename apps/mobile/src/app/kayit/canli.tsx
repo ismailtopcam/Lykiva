@@ -103,7 +103,16 @@ export default function CanliTakipScreen() {
 
   function onBitir() {
     if (Platform.OS === 'web') {
-      void (yetersiz ? sil() : kaydet());
+      void (yetersiz || kayit.kaydetme ? sil() : kaydet());
+      return;
+    }
+    // Yalnızca yol tarifi: bitince kaydedilmez; fikir değiştirene kaydetme seçeneği de sunulur
+    if (kayit.kaydetme) {
+      Alert.alert($t('kayit_canli.yolculuk_bitirilsin_mi'), $t('kayit_canli.yolculuk_kaydedilmeyecek'), [
+        { text: $t('ortak.vazgec'), style: 'cancel' },
+        ...(yetersiz ? [] : [{ text: $t('kayit_canli.aktivite_olarak_kaydet'), onPress: () => void kaydet() }]),
+        { text: $t('kayit_canli.yolculugu_bitir'), onPress: () => void sil() },
+      ]);
       return;
     }
     if (yetersiz) {
@@ -124,8 +133,8 @@ export default function CanliTakipScreen() {
     <View style={styles.solUst}>
       <AnaSayfaDugmesi />
       <View style={styles.pill}>
-        <View style={[styles.dot, { backgroundColor: n.recording }]} />
-        <Txt style={styles.pillText}>{$t('kayit_canli.kayitta', { a: ACTIVITY_LABELS[kayit.activity] })}</Txt>
+        <View style={[styles.dot, { backgroundColor: kayit.kaydetme ? n.sea : n.recording }]} />
+        <Txt style={styles.pillText}>{$t(kayit.kaydetme ? 'kayit_canli.yolculukta' : 'kayit_canli.kayitta', { a: ACTIVITY_LABELS[kayit.activity] })}</Txt>
       </View>
     </View>
   );
