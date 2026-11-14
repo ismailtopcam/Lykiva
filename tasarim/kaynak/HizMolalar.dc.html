@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Lykiva — Hız ve molalar</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#B04E25}a:hover{color:#8A3C1C}
+button{font:inherit;color:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #F2EDE3; color: #16201B; font-family: Inter, system-ui, sans-serif; box-sizing: border-box">
+
+  <header style="padding: 50px 8px 4px; display: flex; align-items: center; gap: 4px">
+    <a href="AktiviteOzeti.dc.html" aria-label="Geri" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #16201B"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <h1 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 22px; font-weight: 700">Hız &amp; molalar</h1>
+  </header>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 6px 16px 14px">
+    <div style="padding: 12px; border-radius: 16px; background: #B04E25; color: #FFFFFF"><div style="font-size: 11px; opacity: 0.9">Maks.</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 24px; font-weight: 800">48,2</div><div style="font-size: 11px; opacity: 0.9">Sarıbelen inişi</div></div>
+    <div style="padding: 12px; border-radius: 16px; background: #FBF8F2; border: 1px solid #E3DACB"><div style="font-size: 11px; color: #4F5751">Ortalama</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 24px; font-weight: 800">16,7</div><div style="font-size: 11px; color: #4F5751">hareketteyken</div></div>
+    <div style="padding: 12px; border-radius: 16px; background: #FBF8F2; border: 1px solid #E3DACB"><div style="font-size: 11px; color: #4F5751">Min.</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 24px; font-weight: 800">6,1</div><div style="font-size: 11px; color: #4F5751">dik yokuşta</div></div>
+  </div>
+
+  <section aria-label="Zamana göre hız grafiği" style="margin: 0 16px 14px; padding: 14px 12px 10px; border-radius: 18px; background: #FBF8F2; border: 1px solid #E3DACB">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px">
+      <span style="font-size: 14px; font-weight: 700">Hız (km/sa)</span>
+      <span style="display: flex; gap: 10px; font-size: 11px; color: #4F5751"><span style="display: flex; align-items: center; gap: 4px"><span style="width: 10px; height: 10px; border-radius: 2px; background: #EADFC9"></span>Mola</span><span style="display: flex; align-items: center; gap: 4px"><span style="width: 12px; border-top: 1.5px dashed #0B6A6A"></span>Ortalama</span></span>
+    </div>
+    <svg viewBox="0 0 334 140" width="334" height="140" role="img" aria-label="Hız grafiği: iki mola aralığında hız sıfıra düşüyor, en yüksek hız 48,2 km/sa" style="display: block">
+      <rect x="86" y="0" width="22" height="120" fill="#EADFC9"/>
+      <rect x="198" y="0" width="12" height="120" fill="#EADFC9"/>
+      <line x1="0" y1="120" x2="334" y2="120" stroke="#DCD3C3"/>
+      <line x1="0" y1="78" x2="334" y2="78" stroke="#0B6A6A" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <path d="M0 96 L10 80 L20 70 L30 76 L40 62 L50 72 L60 66 L70 74 L80 88 L86 120 L108 120 L114 92 L124 84 L134 96 L144 104 L154 108 L164 100 L174 90 L184 82 L192 92 L198 120 L210 120 L216 70 L224 40 L232 18 L240 30 L250 58 L260 70 L270 76 L280 66 L290 72 L300 80 L310 74 L320 86 L334 90" fill="none" stroke="#16201B" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="232" cy="18" r="5" fill="#B04E25" stroke="#FBF8F2" stroke-width="2"/>
+      <circle cx="154" cy="108" r="4" fill="#FBF8F2" stroke="#16201B" stroke-width="2"/>
+      <text x="97" y="136" text-anchor="middle" font-size="10" font-weight="700" fill="#4F5751" font-family="Inter, sans-serif">1</text>
+      <text x="204" y="136" text-anchor="middle" font-size="10" font-weight="700" fill="#4F5751" font-family="Inter, sans-serif">2</text>
+      <text x="0" y="136" font-size="10" fill="#4F5751" font-family="Inter, sans-serif">08:12</text>
+      <text x="334" y="136" text-anchor="end" font-size="10" fill="#4F5751" font-family="Inter, sans-serif">10:08</text>
+    </svg>
+  </section>
+
+  <section aria-label="Molalar" style="padding: 0 16px">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px">
+      <h2 style="margin: 0; font-size: 16px; font-weight: 700">Nerede durdun?</h2>
+      <span style="font-size: 12px; color: #4F5751">Toplam mola 17:45</span>
+    </div>
+
+    <div style="display: flex; gap: 12px">
+      <div style="display: flex; flex-direction: column; align-items: center">
+        <span style="width: 28px; height: 28px; border-radius: 14px; background: #16201B; color: #FBF8F2; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">1</span>
+        <span style="flex: 1; width: 2px; background: #DCD3C3; margin: 4px 0"></span>
+      </div>
+      <div style="flex: 1; padding-bottom: 14px">
+        <div style="display: flex; justify-content: space-between"><span style="font-size: 15px; font-weight: 600">Kaputaş üstü seyir noktası</span><span style="font-size: 14px; font-weight: 700">12:30 dk</span></div>
+        <div style="font-size: 12px; color: #4F5751">09:02 · 8,4. km · fotoğraf molası</div>
+        <div style="display: flex; gap: 6px; margin-top: 8px">
+          <span style="width: 56px; height: 42px; border-radius: 8px; background: #CBE1DC; display: flex; align-items: center; justify-content: center; color: #2C5752"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg></span>
+          <span style="width: 56px; height: 42px; border-radius: 8px; background: #E4D9C3; display: flex; align-items: center; justify-content: center; color: #4A3F2A"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg></span>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; gap: 12px">
+      <div style="display: flex; flex-direction: column; align-items: center">
+        <span style="width: 28px; height: 28px; border-radius: 14px; background: #16201B; color: #FBF8F2; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">2</span>
+        <span style="flex: 1; width: 2px; background: #DCD3C3; margin: 4px 0"></span>
+      </div>
+      <div style="flex: 1; padding-bottom: 14px">
+        <div style="display: flex; justify-content: space-between"><span style="font-size: 15px; font-weight: 600">Yokuş başı çeşme</span><span style="font-size: 14px; font-weight: 700">4:50 dk</span></div>
+        <div style="font-size: 12px; color: #4F5751">09:48 · 18,1. km · su molası</div>
+      </div>
+    </div>
+    <div style="display: flex; gap: 12px">
+      <div style="display: flex; flex-direction: column; align-items: center">
+        <span style="width: 28px; height: 28px; border-radius: 14px; border: 2px dashed #9C9282; box-sizing: border-box"></span>
+      </div>
+      <div style="flex: 1">
+        <div style="display: flex; justify-content: space-between"><span style="font-size: 15px; font-weight: 600">Kısa duraklamalar</span><span style="font-size: 14px; font-weight: 700">0:25 dk</span></div>
+        <div style="font-size: 12px; color: #4F5751">4 kez, her biri 1 dakikadan kısa</div>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

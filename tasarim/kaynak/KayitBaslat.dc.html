@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Lykiva — Kayıt başlat</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#B04E25}a:hover{color:#8A3C1C}
+button{font:inherit;color:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #E8E0CF; color: #16201B; font-family: Inter, system-ui, sans-serif; box-sizing: border-box">
+
+  <svg viewBox="0 0 390 360" width="390" height="360" role="img" aria-label="Bulunduğun konumun haritası" style="position: absolute; top: 0; left: 0; display: block">
+    <rect width="390" height="360" fill="#E8E0CF"/>
+    <path d="M0 250 C 60 230, 120 270, 180 300 S 300 330, 390 300 L390 360 L0 360Z" fill="#CBE1DC"/>
+    <g fill="none" stroke="#D3C7B0" stroke-width="1">
+      <path d="M200 90 C 240 50, 330 54, 350 100 S 320 180, 270 176 S 180 140, 200 90Z"/>
+      <path d="M228 100 C 252 76, 310 78, 322 106 S 304 156, 272 154 S 214 130, 228 100Z"/>
+      <path d="M30 110 C 60 70, 130 80, 136 120 S 100 180, 64 176 S 10 150, 30 110Z"/>
+    </g>
+    <path d="M170 230 C 196 214, 210 190, 240 186 S 300 170, 330 130" fill="none" stroke="#B04E25" stroke-width="3" stroke-linecap="round" stroke-dasharray="7 6"/>
+    <circle cx="170" cy="230" r="26" fill="#0B6A6A" fill-opacity="0.15"/>
+    <circle cx="170" cy="230" r="9" fill="#0B6A6A" stroke="#FBF8F2" stroke-width="3"/>
+  </svg>
+
+  <header style="position: absolute; top: 50px; left: 12px; right: 12px; display: flex; align-items: center; justify-content: space-between">
+    <a href="Main.dc.html" aria-label="Kapat" style="width: 44px; height: 44px; border-radius: 22px; background: #FBF8F2; display: flex; align-items: center; justify-content: center; color: #16201B; box-shadow: 0 2px 8px rgba(22, 32, 27, 0.12)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></a>
+    <span style="height: 32px; padding: 0 12px; border-radius: 16px; background: #FBF8F2; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; box-shadow: 0 2px 8px rgba(22, 32, 27, 0.12)"><span style="width: 8px; height: 8px; border-radius: 4px; background: #0B6A6A"></span>GPS hazır</span>
+    <button aria-label="Harita katmanları" style="width: 44px; height: 44px; border-radius: 22px; border: 0; background: #FBF8F2; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(22, 32, 27, 0.12)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg></button>
+  </header>
+
+  <section style="position: absolute; left: 0; right: 0; bottom: 0; height: 530px; background: #FBF8F2; border-radius: 26px 26px 0 0; padding: 18px 16px 0; box-sizing: border-box">
+    <h1 style="margin: 0 0 12px; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 22px; font-weight: 700">Ne yapıyorsun?</h1>
+    <div role="radiogroup" aria-label="Aktivite türü" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 16px">
+      <sc-for list="{{types}}" as="t" hint-placeholder-count="6">
+        <button role="radio" aria-checked="{{t.checked}}" onClick="{{t.pick}}" style="height: 72px; border-radius: 16px; border: {{t.border}}; background: {{t.bg}}; color: {{t.fg}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 12px; font-weight: 600">
+          <sc-if value="{{t.isBike}}" hint-placeholder-val="{{ true }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="16" r="3.5"/><circle cx="18" cy="16" r="3.5"/><path d="M6 16l4-7h5l3 7M10 9l3 7M13 6h3"/></svg></sc-if>
+          <sc-if value="{{t.isMtb}}" hint-placeholder-val="{{ false }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M6 17l3-6h5l4 6M9 11l3 6"/><path d="M2 8l4-4 3 3 3-3 4 4"/></svg></sc-if>
+          <sc-if value="{{t.isRun}}" hint-placeholder-val="{{ false }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="15" cy="4.5" r="1.8"/><path d="M8 21l3-6 3 2v5M6 12l3-4 5 1 2 4 3 1"/></svg></sc-if>
+          <sc-if value="{{t.isWalk}}" hint-placeholder-val="{{ false }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4.5" r="1.8"/><path d="M12 8v6l-3 7M12 14l3 7M8 12l4-4 4 4"/></svg></sc-if>
+          <sc-if value="{{t.isHike}}" hint-placeholder-val="{{ false }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 20l6-10 4 6 3-4 5 8z"/></svg></sc-if>
+          <sc-if value="{{t.isTrail}}" hint-placeholder-val="{{ false }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20l5-8 3 4 3-5 7 9z"/><circle cx="17" cy="5" r="2"/></svg></sc-if>
+          {{t.label}}
+        </button>
+      </sc-for>
+    </div>
+
+    <a href="RotaDetay.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 16px; background: #F2EDE3; text-decoration: none; color: #16201B; margin-bottom: 8px">
+      <span style="width: 40px; height: 40px; border-radius: 12px; background: #F1DCCD; color: #7A3416; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/></svg></span>
+      <div style="flex: 1; min-width: 0">
+        <div style="font-size: 12px; color: #4F5751">Rota</div>
+        <div style="font-size: 15px; font-weight: 600">Kaş – Kalkan sahil yolu · 27,4 km</div>
+      </div>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F5751" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+    </a>
+    <a href="Grup.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 16px; background: #F2EDE3; text-decoration: none; color: #16201B; margin-bottom: 8px">
+      <span style="width: 40px; height: 40px; border-radius: 12px; background: #D3E8E4; color: #0B4F4F; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg></span>
+      <div style="flex: 1; min-width: 0">
+        <div style="font-size: 12px; color: #4F5751">Kiminle</div>
+        <div style="font-size: 15px; font-weight: 600">Pedal Kaş · Mert, Deniz, Can</div>
+      </div>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F5751" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+    </a>
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 4px 0">
+      <span style="font-size: 13px; color: #4F5751">Grupla canlı konum paylaş</span>
+      <button role="switch" aria-checked="true" aria-label="Grupla canlı konum paylaş" style="width: 52px; height: 32px; border-radius: 16px; border: 0; padding: 3px; background: #0B6A6A; display: flex; justify-content: flex-end"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF; display: block"></span></button>
+    </div>
+
+    <a href="CanliTakip.dc.html" style="position: absolute; left: 16px; right: 16px; bottom: 34px; height: 60px; border-radius: 30px; background: #B04E25; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 20px; font-weight: 700; text-decoration: none; box-shadow: 0 8px 20px rgba(176, 78, 37, 0.35)"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" fill="#FFFFFF"/></svg>Başlat</a>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { sel: 0 };
+  }
+  renderVals() {
+    const defs = [['bike', 'Bisiklet'], ['mtb', 'Dağ bisikleti'], ['run', 'Koşu'], ['walk', 'Yürüyüş'], ['hike', 'Doğa yürüyüşü'], ['trail', 'Patika koşusu']];
+    const types = defs.map(([k, label], i) => {
+      const s = i === this.state.sel;
+      return {
+        label,
+        checked: s ? 'true' : 'false',
+        bg: s ? '#16201B' : '#F2EDE3',
+        fg: s ? '#F2EDE3' : '#16201B',
+        border: s ? '1.5px solid #16201B' : '1.5px solid transparent',
+        isBike: k === 'bike', isMtb: k === 'mtb', isRun: k === 'run', isWalk: k === 'walk', isHike: k === 'hike', isTrail: k === 'trail',
+        pick: () => this.setState({ sel: i })
+      };
+    });
+    return { types };
+  }
+}
+</script>
+</body>
+</html>

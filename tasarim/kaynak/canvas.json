@@ -1,0 +1,686 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "AktiviteOzeti.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "ekranlar",
+      "title": "Aktivite özeti",
+      "w": 390,
+      "x": 1410,
+      "y": 1244
+    },
+    "CanliHarita.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "ekranlar",
+      "title": "Canlı arkadaş haritası",
+      "w": 390,
+      "x": 940,
+      "y": 0
+    },
+    "CanliTakip.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "ekranlar",
+      "title": "Canlı takip",
+      "w": 390,
+      "x": 470,
+      "y": 1244
+    },
+    "Duraklatildi.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "ekranlar",
+      "title": "Duraklatıldı",
+      "w": 390,
+      "x": 940,
+      "y": 1244
+    },
+    "EtkinlikDetay.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "ekranlar",
+      "title": "Etkinlik detayı",
+      "w": 390,
+      "x": 1880,
+      "y": 3732
+    },
+    "EtkinlikOlustur.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "ekranlar",
+      "title": "Etkinlik oluştur",
+      "w": 390,
+      "x": 1410,
+      "y": 3732
+    },
+    "Grup.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "ekranlar",
+      "title": "Grup sayfası",
+      "w": 390,
+      "x": 470,
+      "y": 3732
+    },
+    "GrupSohbet.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "ekranlar",
+      "title": "Grup sohbeti",
+      "w": 390,
+      "x": 940,
+      "y": 3732
+    },
+    "HizMolalar.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "ekranlar",
+      "title": "Hız & molalar",
+      "w": 390,
+      "x": 1880,
+      "y": 1244
+    },
+    "Kart01-GeceTopografya.dc.html": {
+      "guides": [
+        {
+          "align": "start",
+          "color": "rgba(229,72,77,0.22)",
+          "count": 1,
+          "kind": "rows",
+          "offset": 0,
+          "size": 250
+        },
+        {
+          "align": "end",
+          "color": "rgba(229,72,77,0.22)",
+          "count": 1,
+          "kind": "rows",
+          "offset": 0,
+          "size": 250
+        }
+      ],
+      "h": 1920,
+      "page": "paylasim-kartlari",
+      "title": "01 · Gece haritası — Hikâye 1080×1920",
+      "w": 1080,
+      "x": 0,
+      "y": 0
+    },
+    "Kart02-ZirveProfili.dc.html": {
+      "guides": [
+        {
+          "align": "start",
+          "color": "rgba(11,106,106,0.25)",
+          "count": 1,
+          "kind": "columns",
+          "offset": 0,
+          "size": 34
+        },
+        {
+          "align": "end",
+          "color": "rgba(11,106,106,0.25)",
+          "count": 1,
+          "kind": "columns",
+          "offset": 0,
+          "size": 34
+        }
+      ],
+      "h": 1350,
+      "page": "paylasim-kartlari",
+      "title": "02 · Zirve profili — Gönderi 1080×1350",
+      "w": 1080,
+      "x": 1160,
+      "y": 0
+    },
+    "Kart03-Kartpostal.dc.html": {
+      "h": 1080,
+      "page": "paylasim-kartlari",
+      "title": "03 · Kartpostal — Kare 1080×1080",
+      "w": 1080,
+      "x": 2320,
+      "y": 0
+    },
+    "Kart04-BinisKarti.dc.html": {
+      "guides": [
+        {
+          "align": "start",
+          "color": "rgba(229,72,77,0.22)",
+          "count": 1,
+          "kind": "rows",
+          "offset": 0,
+          "size": 250
+        },
+        {
+          "align": "end",
+          "color": "rgba(229,72,77,0.22)",
+          "count": 1,
+          "kind": "rows",
+          "offset": 0,
+          "size": 250
+        }
+      ],
+      "h": 1920,
+      "page": "paylasim-kartlari",
+      "title": "04 · Biniş kartı — Hikâye 1080×1920",
+      "w": 1080,
+      "x": 3480,
+      "y": 0
+    },
+    "Kart05-MinimalTipografi.dc.html": {
+      "guides": [
+        {
+          "align": "start",
+          "color": "rgba(11,106,106,0.25)",
+          "count": 1,
+          "kind": "columns",
+          "offset": 0,
+          "size": 34
+        },
+        {
+          "align": "end",
+          "color": "rgba(11,106,106,0.25)",
+          "count": 1,
+          "kind": "columns",
+          "offset": 0,
+          "size": 34
+        }
+      ],
+      "h": 1350,
+      "page": "paylasim-kartlari",
+      "title": "05 · Minimal tipografi — Gönderi 1080×1350",
+      "w": 1080,
+      "x": 4640,
+      "y": 0
+    },
+    "Kart06-FotografUstu.dc.html": {
+      "guides": [
+        {
+          "align": "start",
+          "color": "rgba(229,72,77,0.22)",
+          "count": 1,
+          "kind": "rows",
+          "offset": 0,
+          "size": 250
+        },
+        {
+          "align": "end",
+          "color": "rgba(229,72,77,0.22)",
+          "count": 1,
+          "kind": "rows",
+          "offset": 0,
+          "size": 250
+        }
+      ],
+      "h": 1920,
+      "page": "paylasim-kartlari",
+      "title": "06 · Fotoğrafın üstünde — Hikâye 1080×1920",
+      "w": 1080,
+      "x": 0,
+      "y": 2040
+    },
+    "Kart07-Birlikte.dc.html": {
+      "h": 1080,
+      "page": "paylasim-kartlari",
+      "title": "07 · Birlikte — Kare 1080×1080",
+      "w": 1080,
+      "x": 1160,
+      "y": 2040
+    },
+    "Kart08-HaritaPosteri.dc.html": {
+      "guides": [
+        {
+          "align": "start",
+          "color": "rgba(11,106,106,0.25)",
+          "count": 1,
+          "kind": "columns",
+          "offset": 0,
+          "size": 34
+        },
+        {
+          "align": "end",
+          "color": "rgba(11,106,106,0.25)",
+          "count": 1,
+          "kind": "columns",
+          "offset": 0,
+          "size": 34
+        }
+      ],
+      "h": 1350,
+      "page": "paylasim-kartlari",
+      "title": "08 · Harita posteri — Gönderi 1080×1350",
+      "w": 1080,
+      "x": 2320,
+      "y": 2040
+    },
+    "Kart09-HizHaritasi.dc.html": {
+      "guides": [
+        {
+          "align": "start",
+          "color": "rgba(229,72,77,0.22)",
+          "count": 1,
+          "kind": "rows",
+          "offset": 0,
+          "size": 250
+        },
+        {
+          "align": "end",
+          "color": "rgba(229,72,77,0.22)",
+          "count": 1,
+          "kind": "rows",
+          "offset": 0,
+          "size": 250
+        }
+      ],
+      "h": 1920,
+      "page": "paylasim-kartlari",
+      "title": "09 · Hız haritası — Hikâye 1080×1920",
+      "w": 1080,
+      "x": 3480,
+      "y": 2040
+    },
+    "Kart10-GununAkisi.dc.html": {
+      "guides": [
+        {
+          "align": "start",
+          "color": "rgba(229,72,77,0.22)",
+          "count": 1,
+          "kind": "rows",
+          "offset": 0,
+          "size": 250
+        },
+        {
+          "align": "end",
+          "color": "rgba(229,72,77,0.22)",
+          "count": 1,
+          "kind": "rows",
+          "offset": 0,
+          "size": 250
+        }
+      ],
+      "h": 1920,
+      "page": "paylasim-kartlari",
+      "title": "10 · Günün akışı — Hikâye 1080×1920",
+      "w": 1080,
+      "x": 4640,
+      "y": 2040
+    },
+    "Kart11-UcBoyutHikaye.dc.html": {
+      "guides": [
+        {
+          "align": "start",
+          "color": "rgba(229,72,77,0.22)",
+          "count": 1,
+          "kind": "rows",
+          "offset": 0,
+          "size": 250
+        },
+        {
+          "align": "end",
+          "color": "rgba(229,72,77,0.22)",
+          "count": 1,
+          "kind": "rows",
+          "offset": 0,
+          "size": 250
+        }
+      ],
+      "h": 1920,
+      "page": "paylasim-kartlari",
+      "title": "11 · 2B → 3B harita — Hikâye 1080×1920",
+      "w": 1080,
+      "x": 0,
+      "y": 4400
+    },
+    "Kart12-UcBoyutGonderi.dc.html": {
+      "guides": [
+        {
+          "align": "start",
+          "color": "rgba(11,106,106,0.25)",
+          "count": 1,
+          "kind": "columns",
+          "offset": 0,
+          "size": 34
+        },
+        {
+          "align": "end",
+          "color": "rgba(11,106,106,0.25)",
+          "count": 1,
+          "kind": "columns",
+          "offset": 0,
+          "size": 34
+        }
+      ],
+      "h": 1350,
+      "page": "paylasim-kartlari",
+      "title": "12 · 2B → 3B harita — Gönderi 1080×1350",
+      "w": 1080,
+      "x": 1160,
+      "y": 4400
+    },
+    "KayitBaslat.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "ekranlar",
+      "title": "Kayıt başlat",
+      "w": 390,
+      "x": 0,
+      "y": 1244
+    },
+    "Main.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "ekranlar",
+      "title": "Akış",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "PaylasimStudyosu.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "ekranlar",
+      "title": "Paylaşım stüdyosu",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "Profil.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "ekranlar",
+      "title": "Profil",
+      "w": 390,
+      "x": 1410,
+      "y": 0
+    },
+    "RotaDetay.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "ekranlar",
+      "title": "Rota detayı",
+      "w": 390,
+      "x": 940,
+      "y": 2488
+    },
+    "RotaOlustur.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "ekranlar",
+      "title": "Rota oluştur",
+      "w": 390,
+      "x": 0,
+      "y": 2488
+    },
+    "RotaPaylas.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "ekranlar",
+      "title": "Rotayı paylaş",
+      "w": 390,
+      "x": 470,
+      "y": 2488
+    },
+    "Topluluklar.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "ekranlar",
+      "title": "Keşfet & topluluklar",
+      "w": 390,
+      "x": 0,
+      "y": 3732
+    },
+    "Yukseklik3B.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "ekranlar",
+      "title": "İnişli çıkışlı harita (3B)",
+      "w": 390,
+      "x": 2350,
+      "y": 1244
+    },
+    "Kart13-IzmirGece.dc.html": {
+      "h": 1920,
+      "page": "paylasim-kartlari",
+      "title": "13 · İzmir Kordon — gece şehir 3B · Hikâye 1080×1920",
+      "w": 1080,
+      "x": 0,
+      "y": 6640,
+      "guides": [
+        {
+          "align": "start",
+          "color": "rgba(229,72,77,0.22)",
+          "count": 1,
+          "kind": "rows",
+          "offset": 0,
+          "size": 250
+        },
+        {
+          "align": "end",
+          "color": "rgba(229,72,77,0.22)",
+          "count": 1,
+          "kind": "rows",
+          "offset": 0,
+          "size": 250
+        }
+      ]
+    },
+    "Kart14-IstanbulMaket.dc.html": {
+      "h": 1350,
+      "page": "paylasim-kartlari",
+      "title": "14 · İstanbul — beyaz maket şehir 3B · Gönderi 1080×1350",
+      "w": 1080,
+      "x": 1160,
+      "y": 6640,
+      "guides": [
+        {
+          "align": "start",
+          "color": "rgba(11,106,106,0.25)",
+          "count": 1,
+          "kind": "columns",
+          "offset": 0,
+          "size": 34
+        },
+        {
+          "align": "end",
+          "color": "rgba(11,106,106,0.25)",
+          "count": 1,
+          "kind": "columns",
+          "offset": 0,
+          "size": 34
+        }
+      ]
+    },
+    "Kart15-AntalyaUydu.dc.html": {
+      "h": 1080,
+      "page": "paylasim-kartlari",
+      "title": "15 · Antalya — uydu görüntülü şehir 3B · Kare 1080×1080",
+      "w": 1080,
+      "x": 2320,
+      "y": 6640
+    },
+    "Kart16-BabadagHikaye.dc.html": {
+      "h": 1920,
+      "page": "paylasim-kartlari",
+      "title": "16 · Faralya → Kabak, Babadağ — dağ 3B · Hikâye 1080×1920",
+      "w": 1080,
+      "x": 3480,
+      "y": 6640,
+      "guides": [
+        {
+          "align": "start",
+          "color": "rgba(229,72,77,0.22)",
+          "count": 1,
+          "kind": "rows",
+          "offset": 0,
+          "size": 250
+        },
+        {
+          "align": "end",
+          "color": "rgba(229,72,77,0.22)",
+          "count": 1,
+          "kind": "rows",
+          "offset": 0,
+          "size": 250
+        }
+      ]
+    },
+    "Kart17-KasTakipKamera.dc.html": {
+      "h": 1350,
+      "page": "paylasim-kartlari",
+      "title": "17 · Kaş – Kalkan — rotayı izleyen kamera 3B · Gönderi 1080×1350",
+      "w": 1080,
+      "x": 4640,
+      "y": 6640,
+      "guides": [
+        {
+          "align": "start",
+          "color": "rgba(11,106,106,0.25)",
+          "count": 1,
+          "kind": "columns",
+          "offset": 0,
+          "size": 34
+        },
+        {
+          "align": "end",
+          "color": "rgba(11,106,106,0.25)",
+          "count": 1,
+          "kind": "columns",
+          "offset": 0,
+          "size": 34
+        }
+      ]
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-11-07T18:55:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "k1": {
+      "kind": "title1",
+      "maxW": 5720,
+      "page": "paylasim-kartlari",
+      "text": "Paylaşım kartları — 10 öneri",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    },
+    "k2": {
+      "fill": "orange",
+      "page": "paylasim-kartlari",
+      "size": 40,
+      "text": "Ölçüler Instagram'a göre: hikâye 1080×1920 (9:16), gönderi 1080×1350 (4:5), kare 1080×1080.\nKırmızı bantlar (hikâye): üstte profil, altta yanıt çubuğu bu alanı kapatır — yazı ve logo içeride.\nYeşil şeritler (4:5 gönderi): profil ızgarası kareleri 3:4 gösterir, kenarlardan ~34 px kırpılır.\nRota çizgisi baştan sona çizilir (8 sn döngü). Harita: OpenTopoMap, rota: BRouter (Kaş → Kalkan, D400 sahil yolu). Hikâye kartları uygulamada video olarak dışa aktarılacak.\n11–12: 12 sn döngü — rota düz haritada çizilir, harita eğilir, dağlar yükselir (gerçek yükseklik verisi, Tweaks'te abartı ayarı), kamera döner.\n13–15: şehir merkezleri — İzmir gece, İstanbul beyaz maket, Antalya uydu; binalar OpenStreetMap'ten (kat bilgisi olmayanlar 12 m varsayıldı). 16: Babadağ ve Kelebekler Vadisi. 17: kamera rotanın arkasından izler (16 sn döngü). Alttaki km sayacı rota çizildikçe artar.",
+      "w": 760,
+      "x": 0,
+      "y": 8680
+    },
+    "k3": {
+      "kind": "title1",
+      "maxW": 2240,
+      "page": "paylasim-kartlari",
+      "text": "2B → 3B harita (hareketli)",
+      "w": 240,
+      "x": 0,
+      "y": 4140
+    },
+    "t1": {
+      "kind": "title1",
+      "maxW": 1800,
+      "page": "ekranlar",
+      "text": "Sosyal akış & paylaşım",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    },
+    "t2": {
+      "kind": "title1",
+      "maxW": 2740,
+      "page": "ekranlar",
+      "text": "Kayıt & takip",
+      "w": 240,
+      "x": 0,
+      "y": 984
+    },
+    "t3": {
+      "kind": "title1",
+      "maxW": 1330,
+      "page": "ekranlar",
+      "text": "Rotalar",
+      "w": 240,
+      "x": 0,
+      "y": 2228
+    },
+    "t4": {
+      "kind": "title1",
+      "maxW": 2270,
+      "page": "ekranlar",
+      "text": "Gruplar, topluluklar & etkinlikler",
+      "w": 240,
+      "x": 0,
+      "y": 3472
+    },
+    "k4": {
+      "kind": "title1",
+      "maxW": 5720,
+      "page": "paylasim-kartlari",
+      "text": "3B şehir merkezleri & dağ (hareketli)",
+      "w": 240,
+      "x": 0,
+      "y": 6380
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "PaylasimStudyosu.dc.html",
+    "CanliHarita.dc.html",
+    "Profil.dc.html",
+    "KayitBaslat.dc.html",
+    "CanliTakip.dc.html",
+    "Duraklatildi.dc.html",
+    "AktiviteOzeti.dc.html",
+    "HizMolalar.dc.html",
+    "Yukseklik3B.dc.html",
+    "RotaOlustur.dc.html",
+    "RotaPaylas.dc.html",
+    "RotaDetay.dc.html",
+    "Topluluklar.dc.html",
+    "Grup.dc.html",
+    "GrupSohbet.dc.html",
+    "EtkinlikOlustur.dc.html",
+    "EtkinlikDetay.dc.html",
+    "Kart01-GeceTopografya.dc.html",
+    "Kart02-ZirveProfili.dc.html",
+    "Kart03-Kartpostal.dc.html",
+    "Kart04-BinisKarti.dc.html",
+    "Kart05-MinimalTipografi.dc.html",
+    "Kart06-FotografUstu.dc.html",
+    "Kart07-Birlikte.dc.html",
+    "Kart08-HaritaPosteri.dc.html",
+    "Kart09-HizHaritasi.dc.html",
+    "Kart10-GununAkisi.dc.html",
+    "Kart11-UcBoyutHikaye.dc.html",
+    "Kart12-UcBoyutGonderi.dc.html",
+    "Kart13-IzmirGece.dc.html",
+    "Kart14-IstanbulMaket.dc.html",
+    "Kart15-AntalyaUydu.dc.html",
+    "Kart16-BabadagHikaye.dc.html",
+    "Kart17-KasTakipKamera.dc.html"
+  ],
+  "pages": [
+    {
+      "id": "ekranlar",
+      "name": "Uygulama ekranları"
+    },
+    {
+      "id": "paylasim-kartlari",
+      "name": "Paylaşım kartları"
+    }
+  ],
+  "title": "Lykiva — Mobil Uygulama"
+}

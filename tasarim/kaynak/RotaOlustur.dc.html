@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Lykiva — Rota oluştur</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#B04E25}a:hover{color:#8A3C1C}
+button{font:inherit;color:inherit;cursor:pointer}
+input{font:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #E8E0CF; color: #16201B; font-family: Inter, system-ui, sans-serif; box-sizing: border-box">
+
+  <svg viewBox="0 0 390 520" width="390" height="520" role="img" aria-label="Rota çizim haritası: dört ara noktayla çizilmiş patika rotası" style="position: absolute; top: 0; left: 0; display: block">
+    <rect width="390" height="520" fill="#E8E0CF"/>
+    <path d="M0 420 C 70 400, 140 440, 210 470 S 330 500, 390 480 L390 520 L0 520Z" fill="#CBE1DC"/>
+    <g fill="none" stroke="#D3C7B0" stroke-width="1">
+      <path d="M170 170 C 210 120, 310 120, 340 170 S 320 260, 260 256 S 150 230, 170 170Z"/>
+      <path d="M200 178 C 226 146, 294 148, 312 180 S 300 236, 262 234 S 186 212, 200 178Z"/>
+      <path d="M228 186 C 242 168, 280 170, 288 188 S 280 216, 262 216 S 220 204, 228 186Z"/>
+      <path d="M20 200 C 50 150, 120 160, 130 210 S 100 290, 60 280 S 0 250, 20 200Z"/>
+      <path d="M44 206 C 64 176, 106 182, 110 212 S 88 262, 64 258 S 30 236, 44 206Z"/>
+    </g>
+    <g fill="none" stroke="#B8AC94" stroke-width="1.5" stroke-dasharray="2 4">
+      <path d="M60 420 C 80 360, 120 330, 160 300 S 220 220, 260 200"/>
+      <path d="M260 200 C 300 230, 330 290, 350 350"/>
+      <path d="M30 140 C 90 180, 140 250, 160 300"/>
+    </g>
+    <path d="M60 420 C 80 360, 120 330, 160 300 S 220 220, 260 200 C 300 230, 330 290, 350 350" fill="none" stroke="#FBF8F2" stroke-width="8" stroke-linecap="round"/>
+    <path d="M60 420 C 80 360, 120 330, 160 300 S 220 220, 260 200 C 300 230, 330 290, 350 350" fill="none" stroke="#B04E25" stroke-width="4.5" stroke-linecap="round"/>
+    <circle cx="60" cy="420" r="11" fill="#0B6A6A" stroke="#FBF8F2" stroke-width="3"/><text x="60" y="424" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF" font-family="Inter, sans-serif">A</text>
+    <circle cx="160" cy="300" r="9" fill="#FBF8F2" stroke="#16201B" stroke-width="2.5"/><text x="160" y="304" text-anchor="middle" font-size="10" font-weight="700" fill="#16201B" font-family="Inter, sans-serif">1</text>
+    <circle cx="260" cy="200" r="9" fill="#FBF8F2" stroke="#16201B" stroke-width="2.5"/><text x="260" y="204" text-anchor="middle" font-size="10" font-weight="700" fill="#16201B" font-family="Inter, sans-serif">2</text>
+    <circle cx="350" cy="350" r="11" fill="#16201B" stroke="#FBF8F2" stroke-width="3"/><text x="350" y="354" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF" font-family="Inter, sans-serif">B</text>
+    <circle cx="258" cy="238" r="8" fill="none" stroke="#16201B" stroke-width="1.5" stroke-dasharray="3 3"/>
+  </svg>
+
+  <header style="position: absolute; top: 50px; left: 12px; right: 12px; display: flex; gap: 8px">
+    <a href="Main.dc.html" aria-label="Kapat" style="width: 48px; height: 48px; border-radius: 24px; background: #FBF8F2; display: flex; align-items: center; justify-content: center; color: #16201B; box-shadow: 0 2px 8px rgba(22, 32, 27, 0.12); flex-shrink: 0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></a>
+    <label style="flex: 1; height: 48px; border-radius: 24px; background: #FBF8F2; display: flex; align-items: center; gap: 8px; padding: 0 16px; box-shadow: 0 2px 8px rgba(22, 32, 27, 0.12)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F5751" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Yer ara</span>
+      <input type="search" placeholder="Yer, patika veya zirve ara" style="flex: 1; border: 0; background: transparent; font-size: 14px; outline: none; color: #16201B; min-width: 0">
+    </label>
+  </header>
+
+  <div style="position: absolute; right: 12px; top: 116px; display: flex; flex-direction: column; gap: 8px">
+    <button aria-label="Son noktayı geri al" style="width: 48px; height: 48px; border-radius: 24px; border: 0; background: #FBF8F2; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(22, 32, 27, 0.12)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l-5 5 5 5"/><path d="M4 11h10a5 5 0 0 1 0 10h-4"/></svg></button>
+    <button aria-label="Harita katmanları" style="width: 48px; height: 48px; border-radius: 24px; border: 0; background: #FBF8F2; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(22, 32, 27, 0.12)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg></button>
+  </div>
+
+  <div role="radiogroup" aria-label="Çizim modu" style="position: absolute; left: 12px; top: 410px; display: flex; gap: 8px">
+    <sc-for list="{{modes}}" as="m" hint-placeholder-count="3">
+      <button role="radio" aria-checked="{{m.checked}}" onClick="{{m.pick}}" style="height: 38px; padding: 0 14px; border-radius: 19px; border: 0; background: {{m.bg}}; color: {{m.fg}}; font-size: 13px; font-weight: 600; box-shadow: 0 2px 8px rgba(22, 32, 27, 0.12)">{{m.label}}</button>
+    </sc-for>
+  </div>
+
+  <section style="position: absolute; left: 0; right: 0; bottom: 0; height: 374px; background: #FBF8F2; border-radius: 26px 26px 0 0; padding: 10px 16px 0; box-sizing: border-box">
+    <div style="width: 40px; height: 5px; border-radius: 3px; background: #D3C9B7; margin: 0 auto 12px"></div>
+    <label for="roName" style="font-size: 12px; color: #4F5751">Rota adı</label>
+    <input id="roName" value="Faralya – Kabak – Alınca" style="display: block; width: 100%; box-sizing: border-box; border: 0; border-bottom: 1.5px solid #DCD3C3; background: transparent; padding: 4px 0 8px; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 22px; font-weight: 700; color: #16201B; outline: none">
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 14px 0 12px">
+      <div><div style="font-size: 11px; color: #4F5751">Mesafe</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 22px; font-weight: 700">18,6 km</div></div>
+      <div><div style="font-size: 11px; color: #4F5751">Tırmanış</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 22px; font-weight: 700">↑ 540 m</div></div>
+      <div><div style="font-size: 11px; color: #4F5751">Tahmini (yürüyüş)</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 22px; font-weight: 700">5 sa 10 dk</div></div>
+    </div>
+
+    <div style="font-size: 12px; color: #4F5751; margin-bottom: 6px">Zemin</div>
+    <div style="display: flex; height: 10px; border-radius: 5px; overflow: hidden; gap: 2px; margin-bottom: 6px">
+      <span style="width: 18%; background: #16201B"></span>
+      <span style="width: 34%; background: #C08A2E"></span>
+      <span style="width: 48%; background: #0B6A6A"></span>
+    </div>
+    <div style="display: flex; gap: 14px; font-size: 12px; color: #4F5751; margin-bottom: 16px">
+      <span style="display: flex; align-items: center; gap: 5px"><span style="width: 8px; height: 8px; border-radius: 4px; background: #16201B"></span>Asfalt %18</span>
+      <span style="display: flex; align-items: center; gap: 5px"><span style="width: 8px; height: 8px; border-radius: 4px; background: #C08A2E"></span>Toprak yol %34</span>
+      <span style="display: flex; align-items: center; gap: 5px"><span style="width: 8px; height: 8px; border-radius: 4px; background: #0B6A6A"></span>Patika %48</span>
+    </div>
+
+    <div style="position: absolute; left: 16px; right: 16px; bottom: 34px; display: flex; gap: 10px">
+      <button style="flex: 1; height: 54px; border-radius: 27px; border: 1.5px solid #16201B; background: transparent; font-size: 15px; font-weight: 700">Kaydet</button>
+      <a href="RotaPaylas.dc.html" style="flex: 1.4; height: 54px; border-radius: 27px; background: #B04E25; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 700; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v7h14v-7"/></svg>Kaydet ve paylaş</a>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { mode: 0 };
+  }
+  renderVals() {
+    const labels = ['Patikaya yapış', 'Yola yapış', 'Serbest çiz'];
+    const modes = labels.map((label, i) => {
+      const s = i === this.state.mode;
+      return { label, checked: s ? 'true' : 'false', bg: s ? '#16201B' : '#FBF8F2', fg: s ? '#F2EDE3' : '#16201B', pick: () => this.setState({ mode: i }) };
+    });
+    return { modes };
+  }
+}
+</script>
+</body>
+</html>

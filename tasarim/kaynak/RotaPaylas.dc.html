@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Lykiva — Rotayı paylaş</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#B04E25}a:hover{color:#8A3C1C}
+button{font:inherit;color:inherit;cursor:pointer}
+input{font:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #F2EDE3; color: #16201B; font-family: Inter, system-ui, sans-serif; box-sizing: border-box">
+
+  <header style="padding: 50px 8px 4px; display: flex; align-items: center; gap: 4px">
+    <a href="RotaOlustur.dc.html" aria-label="Geri" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #16201B"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <h1 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 22px; font-weight: 700">Rotayı paylaş</h1>
+  </header>
+
+  <div style="margin: 4px 16px 14px; display: flex; gap: 12px; align-items: center; padding: 10px; border-radius: 16px; background: #FBF8F2; border: 1px solid #E3DACB">
+    <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true" style="border-radius: 12px; flex-shrink: 0"><rect width="56" height="56" fill="#E8E0CF"/><path d="M0 44 C 14 40, 26 48, 56 52 L56 56 L0 56Z" fill="#CBE1DC"/><path d="M8 46 C 14 36, 20 32, 28 28 S 40 16, 48 30" fill="none" stroke="#B04E25" stroke-width="3" stroke-linecap="round"/></svg>
+    <div>
+      <div style="font-size: 15px; font-weight: 600">Faralya – Kabak – Alınca</div>
+      <div style="font-size: 12px; color: #4F5751">18,6 km · ↑ 540 m · Doğa yürüyüşü</div>
+    </div>
+  </div>
+
+  <div style="padding: 0 16px">
+    <div style="font-size: 12px; font-weight: 700; color: #4F5751; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px">Gruplar ve topluluklar</div>
+    <div style="background: #FBF8F2; border-radius: 16px; border: 1px solid #E3DACB; overflow: hidden; margin-bottom: 14px">
+      <sc-for list="{{groups}}" as="g" hint-placeholder-count="4">
+        <button role="checkbox" aria-checked="{{g.checked}}" onClick="{{g.toggle}}" style="width: 100%; min-height: 60px; border: 0; border-bottom: 1px solid #ECE4D6; background: transparent; display: flex; align-items: center; gap: 12px; padding: 8px 12px; text-align: left">
+          <span style="width: 40px; height: 40px; border-radius: 12px; background: {{g.tint}}; color: {{g.ink}}; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0">{{g.short}}</span>
+          <span style="flex: 1; min-width: 0"><span style="display: block; font-size: 14px; font-weight: 600">{{g.name}}</span><span style="display: block; font-size: 12px; color: #4F5751">{{g.meta}}</span></span>
+          <span style="width: 24px; height: 24px; border-radius: 7px; border: {{g.boxBorder}}; background: {{g.boxBg}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; box-sizing: border-box">{{g.mark}}</span>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="font-size: 12px; font-weight: 700; color: #4F5751; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px">Kişiler</div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px">
+      <span style="height: 36px; padding: 0 6px 0 4px; border-radius: 18px; background: #D3E8E4; color: #0B4F4F; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600"><span style="width: 28px; height: 28px; border-radius: 14px; background: #FBF8F2; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">MK</span>Mert<button aria-label="Mert'i kaldır" style="width: 28px; height: 28px; border: 0; background: none; color: #0B4F4F; font-size: 16px">×</button></span>
+      <span style="height: 36px; padding: 0 6px 0 4px; border-radius: 18px; background: #D3E8E4; color: #0B4F4F; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600"><span style="width: 28px; height: 28px; border-radius: 14px; background: #FBF8F2; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">ZÖ</span>Zeynep<button aria-label="Zeynep'i kaldır" style="width: 28px; height: 28px; border: 0; background: none; color: #0B4F4F; font-size: 16px">×</button></span>
+      <button style="height: 36px; padding: 0 12px; border-radius: 18px; border: 1.5px dashed #9C9282; background: transparent; font-size: 13px; font-weight: 600">+ Kişi ekle</button>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 1px solid #E0D7C7">
+      <div><div style="font-size: 14px; font-weight: 600">Düzenlemeye izin ver</div><div style="font-size: 12px; color: #4F5751">Paylaştıkların rotayı değiştirebilir</div></div>
+      <button role="switch" aria-checked="false" aria-label="Düzenlemeye izin ver" style="width: 52px; height: 32px; border-radius: 16px; border: 0; padding: 3px; background: #C9BFAE; display: flex; justify-content: flex-start"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF; display: block"></span></button>
+    </div>
+    <a href="EtkinlikOlustur.dc.html" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-top: 1px solid #E0D7C7; text-decoration: none; color: #16201B">
+      <span><span style="display: block; font-size: 14px; font-weight: 600">Bu rotayla etkinlik oluştur</span><span style="display: block; font-size: 12px; color: #4F5751">Tarih belirle, katılımcı topla</span></span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F5751" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+
+  <div style="position: absolute; left: 16px; right: 16px; bottom: 34px">
+    <a href="GrupSohbet.dc.html" style="height: 56px; border-radius: 28px; background: #B04E25; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; font-weight: 700; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l16-8-6 16-3-6z"/></svg>{{sendLabel}}</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { sel: { pk: true, ly: true, ck: false, ai: false } };
+  }
+  renderVals() {
+    const defs = [
+      { k: 'pk', name: 'Pedal Kaş', meta: 'Grup · 12 üye', short: 'PK', tint: '#D3E8E4', ink: '#0B4F4F' },
+      { k: 'ly', name: 'Likya Yolu Yürüyüşçüleri', meta: 'Topluluk · 2,4 B üye', short: 'LY', tint: '#16201B', ink: '#F2EDE3' },
+      { k: 'ck', name: 'Cumartesi Koşucuları', meta: 'Grup · 8 üye', short: 'CK', tint: '#F1DCCD', ink: '#7A3416' },
+      { k: 'ai', name: 'Aile', meta: 'Grup · 4 üye', short: 'Aİ', tint: '#E4D9C3', ink: '#4A3F2A' }
+    ];
+    const groups = defs.map((d) => {
+      const on = !!this.state.sel[d.k];
+      return { ...d, checked: on ? 'true' : 'false', mark: on ? '✓' : '', boxBg: on ? '#0B6A6A' : 'transparent', boxBorder: on ? '0' : '1.5px solid #9C9282', toggle: () => this.setState({ sel: { ...this.state.sel, [d.k]: !on } }) };
+    });
+    const n = Object.values(this.state.sel).filter(Boolean).length + 2;
+    return { groups, sendLabel: n + ' yere gönder' };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Lykiva — İnişli çıkışlı harita</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#B04E25}a:hover{color:#8A3C1C}
+button{font:inherit;color:inherit;cursor:pointer}
+input[type=range]{width:100%;accent-color:#B04E25;height:44px;margin:0}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #EFE8DB; color: #16201B; font-family: Inter, system-ui, sans-serif; box-sizing: border-box">
+
+  <svg viewBox="0 0 390 460" width="390" height="460" role="img" aria-label="Rotanın üç boyutlu arazi görünümü: sahilden başlayıp sırtlara tırmanan ve tekrar denize inen yol" style="position: absolute; top: 0; left: 0; display: block">
+    <rect width="390" height="460" fill="#EFE8DB"/>
+    <path d="M0 170 L40 140 L80 152 L130 108 L170 128 L220 86 L260 118 L300 98 L350 128 L390 112 L390 460 L0 460Z" fill="#E2D8C5"/>
+    <path d="M0 232 C 50 192, 90 212, 140 182 S 230 146, 270 188 S 340 200, 390 180 L390 460 L0 460Z" fill="#D5C8B0"/>
+    <g fill="none" stroke="#C6B89D" stroke-width="1">
+      <path d="M20 250 C 70 214, 110 230, 150 206 S 230 176, 262 208 S 330 218, 380 202"/>
+      <path d="M10 272 C 60 240, 110 254, 160 232 S 240 208, 270 232 S 330 240, 390 226"/>
+    </g>
+    <path d="M0 304 C 60 272, 120 302, 180 282 S 300 252, 390 292 L390 460 L0 460Z" fill="#C7B899"/>
+    <path d="M0 384 C 80 362, 200 392, 390 372 L390 460 L0 460Z" fill="#CBE1DC"/>
+    <g stroke="#B04E25" stroke-opacity="0.35" stroke-width="1">
+      <line x1="80" y1="322" x2="80" y2="360"/>
+      <line x1="130" y1="300" x2="130" y2="348"/>
+      <line x1="170" y1="258" x2="170" y2="340"/>
+      <line x1="210" y1="214" x2="210" y2="334"/>
+      <line x1="240" y1="184" x2="240" y2="330"/>
+      <line x1="275" y1="198" x2="275" y2="334"/>
+      <line x1="320" y1="240" x2="320" y2="344"/>
+    </g>
+    <path d="M30 372 L80 360 L130 348 L170 340 L210 334 L240 330 L275 334 L320 344 L360 356" fill="none" stroke="#16201B" stroke-opacity="0.25" stroke-width="2" stroke-dasharray="3 4"/>
+    <path d="M30 352 L80 322 L130 300 L170 258 L210 214 L240 184 L275 198 L320 240 L360 270" fill="none" stroke="#FBF8F2" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M30 352 L80 322 L130 300 L170 258 L210 214 L240 184 L275 198 L320 240 L360 270" fill="none" stroke="#B04E25" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="30" cy="352" r="6" fill="#FBF8F2" stroke="#0B6A6A" stroke-width="3"/>
+    <circle cx="360" cy="270" r="6" fill="#16201B" stroke="#FBF8F2" stroke-width="2"/>
+    <text x="240" y="170" text-anchor="middle" font-size="11" font-weight="700" fill="#16201B" font-family="Inter, sans-serif">236 m</text>
+  </svg>
+
+  <div style="position: absolute; left: {{mx}}px; top: {{my}}px; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 10px; background: #16201B; border: 3px solid #FBF8F2; box-sizing: border-box; box-shadow: 0 2px 6px rgba(22, 32, 27, 0.35)"></div>
+
+  <header style="position: absolute; top: 50px; left: 12px; right: 12px; display: flex; justify-content: space-between; align-items: center">
+    <a href="AktiviteOzeti.dc.html" aria-label="Geri" style="width: 44px; height: 44px; border-radius: 22px; background: #FBF8F2; display: flex; align-items: center; justify-content: center; color: #16201B; box-shadow: 0 2px 8px rgba(22, 32, 27, 0.12)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div role="radiogroup" aria-label="Yükseklik abartısı" style="height: 44px; border-radius: 22px; background: #FBF8F2; display: flex; padding: 4px; box-sizing: border-box; box-shadow: 0 2px 8px rgba(22, 32, 27, 0.12)">
+      <sc-for list="{{scales}}" as="s" hint-placeholder-count="3">
+        <button role="radio" aria-checked="{{s.checked}}" onClick="{{s.pick}}" style="min-width: 44px; border: 0; border-radius: 18px; background: {{s.bg}}; color: {{s.fg}}; font-size: 13px; font-weight: 700">{{s.label}}</button>
+      </sc-for>
+    </div>
+    <button aria-label="Kamerayı döndür" style="width: 44px; height: 44px; border-radius: 22px; border: 0; background: #FBF8F2; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(22, 32, 27, 0.12)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v4h-4"/></svg></button>
+  </header>
+
+  <section style="position: absolute; left: 0; right: 0; bottom: 0; height: 400px; background: #FBF8F2; border-radius: 26px 26px 0 0; padding: 18px 16px 0; box-sizing: border-box">
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-bottom: 10px">
+      <div><div style="font-size: 11px; color: #4F5751">Konum</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 22px; font-weight: 700">{{km}}<span style="font-size: 12px; font-weight: 500"> km</span></div></div>
+      <div><div style="font-size: 11px; color: #4F5751">Yükseklik</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 22px; font-weight: 700">{{alt}}<span style="font-size: 12px; font-weight: 500"> m</span></div></div>
+      <div><div style="font-size: 11px; color: #4F5751">Eğim</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 22px; font-weight: 700; color: {{slopeColor}}">{{slope}}</div></div>
+      <div><div style="font-size: 11px; color: #4F5751">Hız</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 22px; font-weight: 700">{{speed}}</div></div>
+    </div>
+
+    <svg viewBox="0 0 358 100" width="358" height="100" role="img" aria-label="Yükseklik profili ve seçili nokta" style="display: block">
+      <defs><linearGradient id="y3Fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B04E25" stop-opacity="0.32"/><stop offset="1" stop-color="#B04E25" stop-opacity="0.03"/></linearGradient></defs>
+      <path d="{{areaD}}" fill="url(#y3Fill)"/>
+      <path d="{{lineD}}" fill="none" stroke="#B04E25" stroke-width="2" stroke-linejoin="round"/>
+      <line x1="{{px}}" y1="0" x2="{{px}}" y2="100" stroke="#16201B" stroke-width="1.5"/>
+      <circle cx="{{px}}" cy="{{py}}" r="5" fill="#16201B" stroke="#FBF8F2" stroke-width="2"/>
+    </svg>
+    <label for="y3Scrub" style="display: block; font-size: 12px; color: #4F5751; margin-top: 4px">Rota boyunca kaydır</label>
+    <input id="y3Scrub" type="range" min="0" max="100" value="{{pos}}" onInput="{{onScrub}}" onChange="{{onScrub}}">
+
+    <div style="display: flex; gap: 10px; margin-top: 10px">
+      <button style="flex: 1; height: 54px; border-radius: 27px; border: 0; background: #16201B; color: #F2EDE3; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 700"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/></svg>Uçuş videosu oluştur</button>
+    </div>
+    <div style="font-size: 12px; color: #4F5751; text-align: center; margin-top: 8px">Rotanın üzerinden uçan 15 sn'lik video · hikâyede paylaşılabilir</div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { pos: 62, scale: 1 };
+  }
+  lerpArr(arr, t) {
+    const f = t * (arr.length - 1);
+    const i = Math.min(Math.floor(f), arr.length - 2);
+    const r = f - i;
+    return arr[i] + (arr[i + 1] - arr[i]) * r;
+  }
+  renderVals() {
+    const elev = [4, 40, 95, 88, 120, 180, 236, 170, 110, 60, 22];
+    const spd = [18, 22, 14, 26, 12, 8, 10, 44, 30, 20, 16];
+    const route = [[30, 352], [80, 322], [130, 300], [170, 258], [210, 214], [240, 184], [275, 198], [320, 240], [360, 270]];
+    const t = this.state.pos / 100;
+    const ys = elev.map((e) => 92 - e * 0.34);
+    const pts = ys.map((y, i) => (i * 35.8).toFixed(1) + ' ' + y.toFixed(1));
+    const lineD = 'M' + pts.join(' L');
+    const areaD = lineD + ' L358 100 L0 100Z';
+    const alt = this.lerpArr(elev, t);
+    const ahead = this.lerpArr(elev, Math.min(1, t + 0.02));
+    const slopePct = ((ahead - alt) / (27400 * 0.02)) * 100;
+    const f = t * (route.length - 1);
+    const i = Math.min(Math.floor(f), route.length - 2);
+    const r = f - i;
+    const mx = route[i][0] + (route[i + 1][0] - route[i][0]) * r;
+    const my = route[i][1] + (route[i + 1][1] - route[i][1]) * r;
+    const scales = [1, 2, 3].map((s) => ({ label: s + 'x', checked: s === this.state.scale ? 'true' : 'false', bg: s === this.state.scale ? '#16201B' : 'transparent', fg: s === this.state.scale ? '#F2EDE3' : '#16201B', pick: () => this.setState({ scale: s }) }));
+    return {
+      pos: this.state.pos,
+      onScrub: (e) => this.setState({ pos: Number(e.target.value) }),
+      km: (t * 27.4).toFixed(1).replace('.', ','),
+      alt: Math.round(alt),
+      slope: (slopePct >= 0 ? '+' : '') + slopePct.toFixed(1).replace('.', ',') + '%',
+      slopeColor: slopePct > 4 ? '#B04E25' : (slopePct < -4 ? '#0B6A6A' : '#16201B'),
+      speed: this.lerpArr(spd, t).toFixed(1).replace('.', ','),
+      lineD, areaD,
+      px: (t * 358).toFixed(1),
+      py: (92 - alt * 0.34).toFixed(1),
+      mx: mx.toFixed(1), my: my.toFixed(1),
+      scales
+    };
+  }
+}
+</script>
+</body>
+</html>
