@@ -1379,6 +1379,9 @@ export const en: Sozluk = {
     yola_cik: 'Start',
     basliyor: 'Starting…',
     kayda_don: 'Back to recording',
+    araba: 'Car',
+    haritalarda_ac: 'Open in Maps',
+    haritalar_acilamadi: 'Could not open the maps app.',
   },
   sikayetPenceresi: {
     diger: 'Other',

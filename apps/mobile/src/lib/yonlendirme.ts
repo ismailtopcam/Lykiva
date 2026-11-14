@@ -20,12 +20,21 @@ export const CIZIM_MODLARI = (): { id: CizimModu; label: string }[] => [
 /** Zemin payları (0..1) */
 export type Zemin = { asphalt: number; gravel: number; trail: number };
 
-export type HesaplananRota = { points: RoutePoint[]; surface: Zemin | null };
+/** `sureSn`: BRouter'ın kendi süre tahmini (saniye; trafik verisi yok). Arabada gösterilir, etkinliklerde süre `estimateDuration`'dan */
+export type HesaplananRota = { points: RoutePoint[]; surface: Zemin | null; sureSn: number | null };
 
-const bisikletMi = (activity: ActivityType) => activity === 'bike' || activity === 'mtb';
+/**
+ * Yol kimin için hesaplanıyor: bir etkinlik ya da araba. Araba etkinlik türü değildir (kaydı, Egzersiz'de seçeneği
+ * yoktur); yalnızca Harita'daki yol tarifinde seçilir.
+ */
+export type YolTuru = ActivityType | 'car';
+
+const bisikletMi = (activity: YolTuru) => activity === 'bike' || activity === 'mtb';
 
 /** BRouter'ın hazır profili (her sunucuda var) */
-function profil(mod: CizimModu, activity: ActivityType): string {
+function profil(mod: CizimModu, activity: YolTuru): string {
+  // Araba hep yoldan gider (tek yönlere ve araç yasaklarına uyar); yol / patika tercihi ona uygulanmaz
+  if (activity === 'car') return 'car-fast';
   if (mod === 'patika') return activity === 'mtb' ? 'mtb' : bisikletMi(activity) ? 'trekking' : 'hiking-mountain';
   return activity === 'bike' ? 'fastbike' : 'trekking';
 }
@@ -37,8 +46,8 @@ function profil(mod: CizimModu, activity: ActivityType): string {
  * cezalandırır, yaya için yol dolanıyordu (Ankamall'a 3,6 km yerine 6,1 km). `lykiva-yaya-yol` en kısa yola yakın
  * gider, tek yön saymaz, toprak yolu ve zor patikayı pahalı tutar.
  */
-function kendiProfili(mod: CizimModu, activity: ActivityType): string | null {
-  return KENDI_BROUTER_VAR && mod === 'yol' && !bisikletMi(activity) ? 'lykiva-yaya-yol' : null;
+function kendiProfili(mod: CizimModu, activity: YolTuru): string | null {
+  return KENDI_BROUTER_VAR && mod === 'yol' && activity !== 'car' && !bisikletMi(activity) ? 'lykiva-yaya-yol' : null;
 }
 
 /**
@@ -74,9 +83,9 @@ function zeminSinifi(wayTags: string): keyof Zemin {
  * Durak noktalarından rota hesaplar.
  * "serbest" modda noktalar düz çizgiyle birleşir (rakım yok).
  */
-export async function rotaHesapla(duraklar: LngLat[], mod: CizimModu, activity: ActivityType, signal?: AbortSignal): Promise<HesaplananRota> {
+export async function rotaHesapla(duraklar: LngLat[], mod: CizimModu, activity: YolTuru, signal?: AbortSignal): Promise<HesaplananRota> {
   if (duraklar.length < 2 || mod === 'serbest') {
-    return { points: duraklar.map(([lng, lat]) => ({ lng, lat, alt: null })), surface: null };
+    return { points: duraklar.map(([lng, lat]) => ({ lng, lat, alt: null })), surface: null, sureSn: null };
   }
   const lonlats = duraklar.map(([lng, lat]) => `${lng.toFixed(6)},${lat.toFixed(6)}`).join('|');
   const iste = (p: string) =>
@@ -110,5 +119,6 @@ export async function rotaHesapla(duraklar: LngLat[], mod: CizimModu, activity: 
       if (t > 0) surface = { asphalt: toplam.asphalt / t, gravel: toplam.gravel / t, trail: toplam.trail / t };
     }
   }
-  return { points, surface };
+  const sure = Number(f?.properties?.['total-time']);
+  return { points, surface, sureSn: Number.isFinite(sure) && sure > 0 ? sure : null };
 }

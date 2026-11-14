@@ -1379,6 +1379,9 @@ export const ru: Sozluk = {
     yola_cik: 'В путь',
     basliyor: 'Запуск…',
     kayda_don: 'Вернуться к записи',
+    araba: 'Автомобиль',
+    haritalarda_ac: 'Открыть в Картах',
+    haritalar_acilamadi: 'Не удалось открыть приложение карт.',
   },
   sikayetPenceresi: {
     diger: 'Другое',
