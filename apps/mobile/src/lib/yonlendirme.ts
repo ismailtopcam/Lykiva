@@ -28,6 +28,19 @@ function profil(mod: CizimModu, activity: ActivityType): string {
   return activity === 'bike' ? 'fastbike' : 'trekking';
 }
 
+/**
+ * Profile verilen ek parametreler (`&profile:ad=değer`; değer sayı olmalı, "true" yazılırsa sunucu 500 döner).
+ *
+ * fastbike Avrupa'ya göre ayarlı: `trunk` yolları bisiklete kapalı sayıp 10 kat cezalandırır. Türkiye'de şehir içi ana
+ * bulvarlar ve bölünmüş devlet yolları `trunk` etiketli ve bisiklete açık; ceza yüzünden yol kilometrelerce dolanıyordu
+ * (Ankamall'a en kısa yol 3,5 km iken 5,4 km; bu ayarla 3,7 km). Profilin kendi `allow_motorways` ayarı `trunk`'ı
+ * ana yoldan biraz pahalı (1,5) yapar. Adına rağmen otoyolu açmaz: otoyol ve `motorroad=yes` erişim kuralından
+ * yasak kalır (Ankara çevre yolunda denendi).
+ */
+function profilEkleri(brouterProfili: string): string {
+  return brouterProfili === 'fastbike' ? '&profile:allow_motorways=1' : '';
+}
+
 /** OSM etiketlerinden zemin sınıfı */
 function zeminSinifi(wayTags: string): keyof Zemin {
   const tags = Object.fromEntries(
@@ -53,7 +66,8 @@ export async function rotaHesapla(duraklar: LngLat[], mod: CizimModu, activity: 
     return { points: duraklar.map(([lng, lat]) => ({ lng, lat, alt: null })), surface: null };
   }
   const lonlats = duraklar.map(([lng, lat]) => `${lng.toFixed(6)},${lat.toFixed(6)}`).join('|');
-  const url = `${BROUTER}?lonlats=${encodeURIComponent(lonlats)}&profile=${profil(mod, activity)}&alternativeidx=0&format=geojson`;
+  const p = profil(mod, activity);
+  const url = `${BROUTER}?lonlats=${encodeURIComponent(lonlats)}&profile=${p}${profilEkleri(p)}&alternativeidx=0&format=geojson`;
   const res = await fetch(url, { signal, headers: brouterBasliklari() });
   if (!res.ok) {
     const t = await res.text().catch(() => '');
