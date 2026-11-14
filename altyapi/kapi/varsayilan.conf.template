@@ -1,5 +1,5 @@
-# Lykiva — BRouter ve Photon'un önündeki kapı.
-# Dışarıdan yalnızca bu konteynere gelinir (Coolify / Traefik → :80); brouter ve photon dışarıya kapalı.
+# Lykiva — BRouter, Photon ve kart-video'nun önündeki kapı.
+# Dışarıdan yalnızca bu konteynere gelinir (Coolify / Traefik → :80); brouter, photon ve kart-video dışarıya kapalı.
 # - Uygulama anahtarı: X-Lykiva-Anahtar başlığı LYKIVA_UYGULAMA_ANAHTARI ile aynı değilse 403
 # - IP başına istek sınırı (aşılırsa 429). Türkiye'de mobil hatlar çoğunlukla ortak IP (CGNAT) kullandığı için sınırlar geniş.
 # Dosya nginx imajının şablon adımında doldurulur (yalnızca ${LYKIVA_...} değişkenleri; nginx'in $değişkenlerine dokunulmaz).
@@ -13,6 +13,8 @@ real_ip_recursive on;
 
 limit_req_zone $binary_remote_addr zone=rota:10m rate=${LYKIVA_ROTA_SINIRI};
 limit_req_zone $binary_remote_addr zone=arama:10m rate=${LYKIVA_ARAMA_SINIRI};
+limit_req_zone $binary_remote_addr zone=video:10m rate=${LYKIVA_VIDEO_SINIRI};
+limit_req_zone $binary_remote_addr zone=videodurum:10m rate=60r/m;
 limit_req_status 429;
 
 map $http_x_lykiva_anahtar $anahtar_dogru {
@@ -57,6 +59,32 @@ server {
     set $hedef http://photon:2322;
     proxy_pass $hedef;
     proxy_read_timeout 30s;
+  }
+  location / { return 404; }
+}
+
+# 3B kart videoları: iş gönder (POST /video), durumu sor ve MP4'ü indir (GET /video/<id>[/mp4]).
+# Sahne dosyaları (/sahne, /kutuphane, /yazi) servisin kendisi için; buradan geçmez.
+server {
+  listen 80;
+  server_name video.ismailtopcam.dev;
+  client_max_body_size 1m;
+
+  location = /video {
+    if ($anahtar_dogru = 0) { return 403; }
+    limit_except POST { deny all; }
+    limit_req zone=video burst=${LYKIVA_VIDEO_YIGIN} nodelay;
+    set $hedef http://kart-video:8080;
+    proxy_pass $hedef;
+    proxy_read_timeout 30s;
+  }
+  location ~ "^/video/[0-9a-f-]{36}(/mp4)?$" {
+    if ($anahtar_dogru = 0) { return 403; }
+    limit_except GET { deny all; }
+    limit_req zone=videodurum burst=30 nodelay;
+    set $hedef http://kart-video:8080;
+    proxy_pass $hedef;
+    proxy_read_timeout 120s;
   }
   location / { return 404; }
 }

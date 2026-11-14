@@ -8,6 +8,7 @@ kendi kopyasını Coolify'da çalıştırmak için.
 | --- | --- | --- | --- |
 | `brouter/` | BRouter 1.7.10 (Java 21). Uygulamanın profilleri: trekking, fastbike, hiking-mountain, mtb ve kendi `lykiva-yaya-yol` (aşağıda) | brouter.de segmentleri, Türkiye ve çevresi 8 karo, ~210 MB (Kasım 2026); haftalık yenilenir | `BROUTER_BELLEK` (varsayılan 512M) |
 | `photon/` | Photon 1.3.0 (Java 21, gömülü OpenSearch) | GraphHopper'ın haftalık Türkiye dökümü (~143 MB sıkıştırılmış, Kasım 2026), Türkçe + İngilizce adlarla içe aktarılır | `PHOTON_BELLEK` (varsayılan 2g) |
+| `kart-video/` | 3B paylaşım kartı videoları: MapLibre sahnesi başsız Chromium'da kare kare, ffmpeg ile MP4 (ayrıntı `kart-video/README.md`) | Yok (harita OpenFreeMap, arazi Terrarium; istek anında indirilir) | `KV_BELLEK` (varsayılan 3g), `KV_ISLEMCI` (3 çekirdek) |
 
 İkisi de ilk açılışta verisini kendisi indirir (BRouter birkaç dakika, Photon içe aktarmayla birlikte daha uzun);
 veriler kalıcı birimlerde durur, yeniden başlatmada tekrar indirilmez.
@@ -39,7 +40,10 @@ Telefonlar sunuculara doğrudan bağlandığı için IP ile kapatmak mümkün de
   `LYKIVA_ROTA_SINIRI` / `_YIGIN`, `LYKIVA_ARAMA_SINIRI` / `_YIGIN` ile değişir. Gerçek IP Traefik'in
   `X-Forwarded-For`'undan alınır. Türkiye'de mobil hatlar çoğunlukla ortak IP (CGNAT) kullandığı için sınırlar geniş;
   aynı IP'deki çok kullanıcı 429 alırsa artırılır.
-- Yalnızca `/brouter` ve `/api` geçer; başka yol 404, tanınmayan alan adı bağlantıyı kapatır. `/saglik` sağlık kontrolü.
+- **Video (`video.ismailtopcam.dev`):** yeni iş (`POST /video`) IP başına dakikada 1 (+4 anlık; `LYKIVA_VIDEO_SINIRI` /
+  `_YIGIN`), durum sorgusu ve indirme (`GET /video/<id>[/mp4]`) dakikada 60 (+30). Gövde en fazla 1 MB. Ayrıca servis
+  kendi sırasını 20 işle sınırlar (dolunca 503).
+- Yalnızca `/brouter`, `/api` ve `/video` geçer; başka yol 404, tanınmayan alan adı bağlantıyı kapatır. `/saglik` sağlık kontrolü.
 - Anahtar değişirse: Coolify'da yeni değeri gir ve yeniden kur, EAS'ta `EXPO_PUBLIC_ALTYAPI_ANAHTARI`'yı güncelle,
   yeni derleme al. Eski sürümler o andan itibaren 403 alır.
 
@@ -59,6 +63,18 @@ ve `https://photon.ismailtopcam.dev` olarak verildi (Coolify portu kendisi ekled
 Haftalık güncelleme (Scheduled Tasks): pazartesi 05:00 `brouter` → `/brouter/segment-guncelle.sh`;
 05:30 `photon` → `/photon/veri-guncelle.sh && kill 1` (Photon'un 1 numaralı süreci Java; `kill 1` düzgün kapatır,
 `restart: unless-stopped` yeni veriyle açar, ~13 sn).
+
+## 3B kart video (`kart-video`) kurulumu
+
+Mevcut `lykiva-altyapi` uygulamasına eklenir (ayrı uygulama değil):
+
+1. **DNS:** `video.ismailtopcam.dev` için A kaydı → 91.90.81.195. `*.ismailtopcam.dev` başka sunucuya gittiği için
+   ayrı kayıt şart.
+2. Coolify > lykiva-altyapi > `kapi` servisinin alan adlarına `https://video.ismailtopcam.dev` eklenir (virgülle).
+   `kart-video` servisine alan adı verilmez.
+3. Redeploy. İlk kurulumda Playwright imajı (~2 GB) iner, birkaç dakika sürer.
+4. Dene (anahtar `$A`): `curl -H "X-Lykiva-Anahtar: $A" https://video.ismailtopcam.dev/video/00000000-0000-0000-0000-000000000000`
+   → 404 `iş yok` (anahtarsız 403).
 
 ## Kurulum (Coolify)
 
