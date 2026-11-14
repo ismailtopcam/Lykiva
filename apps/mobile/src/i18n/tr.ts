@@ -517,6 +517,7 @@ export const tr = {
     sunucu_anahtari_girilmemis_etkinlik: 'Sunucu anahtarı girilmemiş; etkinlik oluşturulamaz.',
   },
   giris: {
+    google_ile_kayit_ol: 'Google ile kayıt ol',
     google_aciliyor: 'Google açılıyor…',
     google_ile_devam_et: 'Google ile devam et',
     hesabina_giris_yapildi: 'Hesabına giriş yapıldı',

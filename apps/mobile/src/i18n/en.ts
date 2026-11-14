@@ -516,6 +516,7 @@ export const en: Sozluk = {
     sunucu_anahtari_girilmemis_etkinlik: 'No server key set; events can\'t be created.',
   },
   giris: {
+    google_ile_kayit_ol: 'Sign up with Google',
     google_aciliyor: 'Opening Google…',
     google_ile_devam_et: 'Continue with Google',
     hesabina_giris_yapildi: 'Signed in to your account',

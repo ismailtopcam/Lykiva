@@ -516,6 +516,7 @@ export const ru: Sozluk = {
     sunucu_anahtari_girilmemis_etkinlik: 'Ключ сервера не задан; мероприятия создавать нельзя.',
   },
   giris: {
+    google_ile_kayit_ol: 'Регистрация через Google',
     google_aciliyor: 'Открываем Google…',
     google_ile_devam_et: 'Продолжить с Google',
     hesabina_giris_yapildi: 'Вход выполнен',

@@ -47,7 +47,7 @@ export default function GirisScreen() {
     }
   }
 
-  const sosyal = (
+  const sosyal = (kayit: boolean) => (
     <View style={{ gap: space.md }}>
       {hata ? (
         <View accessibilityLiveRegion="polite" style={styles.hata}>
@@ -57,7 +57,7 @@ export default function GirisScreen() {
 
       <Button
         variant="outline"
-        label={bekleyen === 'google' ? $t('giris.google_aciliyor') : $t('giris.google_ile_devam_et')}
+        label={bekleyen === 'google' ? $t('giris.google_aciliyor') : kayit ? $t('giris.google_ile_kayit_ol') : $t('giris.google_ile_devam_et')}
         leading={<GoogleLogo />}
         onPress={() => void giris('google')}
         disabled={!!bekleyen}

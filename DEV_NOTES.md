@@ -327,7 +327,7 @@ girildi → **sürüm 5'ten itibaren** kendi sunucularımız; o zamana kadar tel
 - "Google ile devam et" düğmesinde Google'ın renkli "G" logosu var (15 Kas 2026; `components/GoogleLogo.tsx`, yalnızca JS).
 - **Giriş zorunlu, ekran sadeleşti (15 Kas 2026, yalnızca JS):** "Şimdilik geç" kaldırıldı; giriş yapmamış (geçici hesaplı)
   herkes açılışta giriş ekranını görür. Ekran tek sayfa: e-posta + şifre ile "Giriş yap", "Şifremi unuttum", "ya da" altında
-  Google (iOS'ta Apple), en altta "Hesabın yok mu? Kayıt ol". Eski "Diğer giriş yolları" / sekmeli e-posta ekranı yok.
+  Google (iOS'ta Apple; kayıt görünümünde "Google ile kayıt ol"), en altta "Hesabın yok mu? Kayıt ol". Eski "Diğer giriş yolları" / sekmeli e-posta ekranı yok.
 - **Google girişi düzeltmesi (15 Kas 2026):** aynı Gmail ile e-posta + şifre hesabı varken Google'a basınca sunucu geçici
   hesaba bağlamayı `email_exists` ile reddediyordu, uygulama yalnızca `identity_already_exists`'i tanıdığı için giriş
   yarıda kalıyordu. Artık iki durumda da asıl hesaba Google ile girilir (sunucu Google kimliğini e-postası doğrulanmış

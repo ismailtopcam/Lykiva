@@ -33,7 +33,7 @@ type Gorunum = 'giris' | 'kayit' | 'unuttum' | 'kod';
 /** Kodu tekrar istemeden önce beklenen süre (sn) */
 const TEKRAR_BEKLEME = 60;
 
-export function EpostaGiris({ onBitti, sosyal }: { onBitti: (sonuc: GirisSonucu) => void; sosyal?: ReactNode }) {
+export function EpostaGiris({ onBitti, sosyal }: { onBitti: (sonuc: GirisSonucu) => void; sosyal?: (kayit: boolean) => ReactNode }) {
   const [gorunum, setGorunum] = useState<Gorunum>('giris');
   const [oncekiGorunum, setOncekiGorunum] = useState<Gorunum>('giris');
   const [kodTuru, setKodTuru] = useState<KodTuru>('kayit');
@@ -328,7 +328,7 @@ export function EpostaGiris({ onBitti, sosyal }: { onBitti: (sonuc: GirisSonucu)
             <Txt style={{ fontSize: 13, color: colors.inkMuted }}>{$t('epostaGiris.ya_da')}</Txt>
             <View style={styles.cizgi} />
           </View>
-          {sosyal}
+          {sosyal(gorunum === 'kayit')}
         </>
       ) : null}
 

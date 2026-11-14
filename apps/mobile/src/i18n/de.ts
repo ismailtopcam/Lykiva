@@ -516,6 +516,7 @@ export const de: Sozluk = {
     sunucu_anahtari_girilmemis_etkinlik: 'Kein Serverschlüssel eingetragen; Events können nicht erstellt werden.',
   },
   giris: {
+    google_ile_kayit_ol: 'Mit Google registrieren',
     google_aciliyor: 'Google wird geöffnet…',
     google_ile_devam_et: 'Weiter mit Google',
     hesabina_giris_yapildi: 'Bei deinem Konto angemeldet',
