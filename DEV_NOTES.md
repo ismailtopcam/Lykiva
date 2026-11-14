@@ -10,7 +10,6 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
-| İsmail | Paylaş ekranına tasarım temaları (`tasarim/` kartları) | `ismail/paylasim-temalari` |
 
 ## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
 
