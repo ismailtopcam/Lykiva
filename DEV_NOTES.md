@@ -468,6 +468,13 @@ Kalan:
   4 km patikadan giderken (7671 m) profil asfaltta kalıyor (9415 m). Ankara çevre yolunda otoyola girmiyor.
   **Kalan:** sunucu yeniden kurulmadan profil yok (Bekleyen elle yapılacaklar 15); kendi sunucumuzda henüz denenmedi.
   Yalnızca JS + sunucu imajı; telefonlara bir sonraki derlemeyle gider.
+- [x] Harita > yol tarifinde "Araba" (15 Kas 2026, İsmail, `claude/yol-tarifi-araba`): etkinlik çiplerinin sonunda
+  "Araba" çipi. Yol BRouter'ın hazır `car-fast` profiliyle (kendi sunucumuzda ve brouter.de'de var; tek yönlere ve araç
+  yasaklarına uyar), yol / patika tercihi gizlenir, süre BRouter'ın hesabından (`total-time`; trafik verisi yok).
+  Ankamall örneğinde 3574 m, 7 dk. **Araba etkinlik türü değil:** `ActivityType`'a ve Egzersiz'e eklenmedi (İsmail'in
+  kararı), kayıt başlatmaz; düğmesi "Haritalar'da aç" hedefi telefonun harita uygulamasında araba yol tarifiyle açar
+  (iOS Apple Haritalar, Android Google Haritalar bağlantısı), çünkü bizde adım adım yönlendirme yok. Rota çizme
+  ekranına eklenmedi. Yalnızca JS, dört dilde. Telefonda denenecek: çip, süre, "Haritalar'da aç" iki platformda.
 - [ ] "Yol öncelikli" dağ bisikleti ve "patika öncelikli" bisiklet hâlâ `trekking` kullanıyor (`trunk` 10 kat).
   Patikada isteneni bu olabilir; dağ bisikletinde şikâyet gelirse `lykiva-yaya-yol` gibi kendi profilimiz yazılır.
 - Serbest çizilen rotada yükseklik yok (BRouter'a sorulmuyor); ayrı bir yükseklik servisi gerekir.

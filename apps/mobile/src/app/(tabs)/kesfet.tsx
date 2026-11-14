@@ -4,13 +4,15 @@
  *
  * Hedef haritaya dokunarak ya da yer aramayla (Photon) seçilir; yol BRouter'la, seçilen etkinliğe göre hesaplanır
  * (patika ya da yol öncelikli). "Yola çık" kaydı bu yolla başlatır, kayıt ekranı kalan mesafeyi gösterir.
+ * Etkinliklerin yanında "Araba" da seçilebilir: yalnızca yol tarifi (kayıt başlatmaz, Egzersiz'de yoktur);
+ * düğmesi hedefi telefonun harita uygulamasında açar, çünkü bizde adım adım yönlendirme yok.
  * Eski Keşfet içeriği (rotalar, topluluklar, etkinlikler, kişiler) sağ üstteki düğmeyle açılır: `kesfet-liste.tsx`.
  * Dosya adı bağlantılar bozulmasın diye `kesfet` kaldı.
  */
-import { ACTIVITY_LABELS, ACTIVITY_TYPES, estimateDuration, formatKm, formatMeters, kmUnit, routeStats, type ActivityType, type RoutePoint } from '@lykiva/shared';
+import { ACTIVITY_LABELS, ACTIVITY_TYPES, estimateDuration, formatKm, formatMeters, kmUnit, routeStats, type RoutePoint } from '@lykiva/shared';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Keyboard, Pressable, ScrollView, StyleSheet, TextInput, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Animated, Keyboard, Linking, Platform, Pressable, ScrollView, StyleSheet, TextInput, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EgimProfili, imlecKonumu, TirmanisListesi, useRotaEgim } from '@/components/EgimProfili';
@@ -30,7 +32,7 @@ import type { Rota } from '@/data/rota';
 import { baslat, IzinHatasi, konumOnizlemeBaslat, useKayit } from '@/kayit/kaydedici';
 import { sonHedefEkle, useSonHedefler } from '@/lib/sonHedefler';
 import { yerAra, type YerSonucu } from '@/lib/yerArama';
-import { rotaHesapla, type CizimModu } from '@/lib/yonlendirme';
+import { rotaHesapla, type CizimModu, type YolTuru } from '@/lib/yonlendirme';
 import { colors, fontFamily, radius, space, temaliStil } from '@/theme';
 import { $t } from '@/i18n';
 
@@ -78,12 +80,13 @@ export default function HaritaScreen() {
   // Egzersiz için seçilen rota (haritada gösterilir)
   const [rota, setRota] = useState<Rota | null>(null);
   const sonHedefler = useSonHedefler();
-  const [activity, setActivity] = useState<ActivityType>('walk');
+  const [activity, setActivity] = useState<YolTuru>('walk');
+  const araba = activity === 'car';
   const [mod, setMod] = useState<Exclude<CizimModu, 'serbest'>>('yol');
   const [hedef, setHedef] = useState<Hedef | null>(null);
   // Yolun başı: hedef seçildiği andaki konum (her GPS güncellemesinde yeniden hesaplanmasın diye sabit)
   const [baslangic, setBaslangic] = useState<LngLat | null>(null);
-  const [yol, setYol] = useState<{ points: RoutePoint[]; icin: string } | null>(null);
+  const [yol, setYol] = useState<{ points: RoutePoint[]; icin: string; sureSn: number | null } | null>(null);
   const [hesapliyor, setHesapliyor] = useState(false);
   const [hata, setHata] = useState<string | null>(null);
   const [basliyor, setBasliyor] = useState(false);
@@ -123,7 +126,7 @@ export default function HaritaScreen() {
       setHesapliyor(true);
       setHata(null);
       rotaHesapla([baslangic, hedef.c], mod, activity, ac.signal)
-        .then((r) => setYol({ points: r.points, icin: anahtar }))
+        .then((r) => setYol({ points: r.points, icin: anahtar, sureSn: r.sureSn }))
         .catch((e) => {
           if (e?.name !== 'AbortError') setHata(e instanceof Error ? e.message : $t('lib_yonlendirme.rota_hesaplanamadi'));
         })
@@ -157,6 +160,12 @@ export default function HaritaScreen() {
   const points = useMemo(() => (yol && yol.icin === anahtar ? yol.points : []), [yol, anahtar]);
   const stats = useMemo(() => (points.length > 1 ? routeStats(points) : null), [points]);
   const rakimVar = points.some((p) => p.alt != null);
+  // Tahmini süre: etkinlikte kendi hesabımız (hız + tırmanış), arabada BRouter'ın hesabı (trafik verisi yok)
+  const sureSn = !stats
+    ? null
+    : activity === 'car'
+      ? (yol && yol.icin === anahtar ? yol.sureSn : null)
+      : estimateDuration(activity, stats.distanceM, rakimVar ? stats.gainM : 0);
   const egim = useRotaEgim(points);
   const imlec = secim && secim.points === points ? secim.v : null;
   const imlecYeri = imlecKonumu(points, egim, imlec);
@@ -216,8 +225,21 @@ export default function HaritaScreen() {
     setHata(null);
   }
 
+  /** Araba: hedefi telefonun harita uygulamasında araba yol tarifiyle açar (iOS Apple Haritalar, Android Google Haritalar) */
+  async function haritalardaAc() {
+    if (!hedef) return;
+    const h = encodeURIComponent(`${hedef.c[1].toFixed(6)},${hedef.c[0].toFixed(6)}`);
+    const url = Platform.OS === 'ios' ? `https://maps.apple.com/?daddr=${h}&dirflg=d` : `https://www.google.com/maps/dir/?api=1&destination=${h}&travelmode=driving`;
+    setHata(null);
+    try {
+      await Linking.openURL(url);
+    } catch {
+      setHata($t('harita.haritalar_acilamadi'));
+    }
+  }
+
   async function yolaCik() {
-    if (!hedef || points.length < 2) return;
+    if (!hedef || points.length < 2 || activity === 'car') return;
     setBasliyor(true);
     setHata(null);
     try {
@@ -234,7 +256,7 @@ export default function HaritaScreen() {
 
   const hedefAdi = hedef?.ad ?? (hedef ? $t('harita.secilen_nokta', { lat: hedef.c[1].toFixed(4), lng: hedef.c[0].toFixed(4) }) : '');
 
-  const tahminiSure = stats ? sureMetni(estimateDuration(activity, stats.distanceM, rakimVar ? stats.gainM : 0)) : '–';
+  const tahminiSure = sureSn != null ? sureMetni(sureSn) : '–';
   const kisaOlcu = stats
     ? `${formatKm(stats.distanceM)} ${kmUnit()}${rakimVar ? ` · ${$t('rota_olustur.m', { meters: formatMeters(stats.gainM) })}` : ''}`
     : $t('rota_olustur.tahmini_sure');
@@ -400,7 +422,9 @@ export default function HaritaScreen() {
                   {ben && baslangic && (ben[0] !== baslangic[0] || ben[1] !== baslangic[1]) ? (
                     <IconButton icon="rotate" label={$t('harita.konumumdan_yeniden_hesapla')} onPress={() => setBaslangic(ben)} />
                   ) : null}
-                  {kayitta ? (
+                  {araba ? (
+                    <Button label={$t('harita.haritalarda_ac')} icon="map" variant="sea" onPress={() => void haritalardaAc()} style={styles.ozetDugme} />
+                  ) : kayitta ? (
                     <Button label={$t('harita.kayda_don')} icon="record" variant="dark" onPress={() => router.push('/kayit')} style={styles.ozetDugme} />
                   ) : (
                     <Button
@@ -449,12 +473,16 @@ export default function HaritaScreen() {
                 {ACTIVITY_TYPES.map((t) => (
                   <Chip key={t} label={ACTIVITY_LABELS[t]} role="radio" selected={t === activity} onPress={() => setActivity(t)} />
                 ))}
+                <Chip label={$t('harita.araba')} role="radio" selected={araba} onPress={() => setActivity('car')} />
               </ScrollView>
-              <View style={{ flexDirection: 'row', gap: 6 }} accessibilityRole="radiogroup">
-                {TERCIHLER().map((m) => (
-                  <Chip key={m.id} label={m.label} role="radio" tone="sea" selected={m.id === mod} onPress={() => setMod(m.id)} />
-                ))}
-              </View>
+              {/* Araba hep yoldan gider: yol / patika tercihi yok */}
+              {araba ? null : (
+                <View style={{ flexDirection: 'row', gap: 6 }} accessibilityRole="radiogroup">
+                  {TERCIHLER().map((m) => (
+                    <Chip key={m.id} label={m.label} role="radio" tone="sea" selected={m.id === mod} onPress={() => setMod(m.id)} />
+                  ))}
+                </View>
+              )}
             </View>
           ) : null}
 
