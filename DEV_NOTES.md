@@ -421,7 +421,8 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
   bisiklete kapalı sayıp 10 kat cezalandırıyor. İsteğe profilin kendi ayarı eklendi: `&profile:allow_motorways=1`
   (`lib/yonlendirme.ts`; `trunk` ana yoldan biraz pahalı, otoyol yasak kalıyor). Ölçüm (Ankamall'a 2,6 km kuş uçuşu
   sekiz yönden, brouter.de ve kendi sunucumuz aynı): 5418 → 3744 m, 6209 → 4436 m, 5182 → 4197 m, 5070 → 4307 m.
-  İki yönde yol uzadı (3682 → 4406 m, 3574 → 3814 m): eski yol tek yönlü bağlantı yolunda ters yönde gidiyordu.
+  İki yönde yol uzadı (3682 → 4406 m, 3574 → 3814 m): ilkinde eski yol tek yönlü bağlantı yolunda ters yönde
+  gidiyordu, ikincisi incelenmedi.
   Rota çizme ekranındaki "yola yapış" + bisiklet de aynı isteği kullanır. Sunucuda değişiklik yok (BRouter 1.7.10
   parametreyi tanıyor). Yalnızca JS; telefonlara **bir sonraki derlemeyle** gider (OTA yok).
 - [ ] "Yol öncelikli" yürüyüş / koşu / dağ bisikleti ve "patika öncelikli" bisiklet `trekking` profilini kullanıyor;
