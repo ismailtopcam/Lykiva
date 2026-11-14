@@ -415,6 +415,19 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
 - [x] Kilit ekranı / bildirim sayacı sıfırlanıyordu (13 Kas 2026, Gökhan, `kilit-ekrani-sure`): `kaydedici.ts` süreyi
   saniye veriyordu, kilit ekranı modülü milisaniye bekliyor; her güncellemede (en sık saniyede bir, en geç 15 sn'de bir)
   sayaç ~0'dan yeniden başlıyordu. Android ve iOS ikisi de etkileniyordu. Yalnızca JS, yeni derleme gerekmez.
+- [x] Bisiklet + "yol öncelikli" yol tarifi dolanıyordu (15 Kas 2026, İsmail, `claude/bike-route-distance-mismatch-333012`):
+  Ankamall'a Google 3,5 km derken bizde 5,5 km. Sebep: BRouter'ın `fastbike` profili Avrupa'ya göre ayarlı, `trunk`
+  yolları (Ankara'da İstanbul Yolu, Konya Yolu, FSM Bulvarı gibi bulvarlar; şehirler arası bölünmüş devlet yolları)
+  bisiklete kapalı sayıp 10 kat cezalandırıyor. İsteğe profilin kendi ayarı eklendi: `&profile:allow_motorways=1`
+  (`lib/yonlendirme.ts`; `trunk` ana yoldan biraz pahalı, otoyol yasak kalıyor). Ölçüm (Ankamall'a 2,6 km kuş uçuşu
+  sekiz yönden, brouter.de ve kendi sunucumuz aynı): 5418 → 3744 m, 6209 → 4436 m, 5182 → 4197 m, 5070 → 4307 m.
+  İki yönde yol uzadı (3682 → 4406 m, 3574 → 3814 m): eski yol tek yönlü bağlantı yolunda ters yönde gidiyordu.
+  Rota çizme ekranındaki "yola yapış" + bisiklet de aynı isteği kullanır. Sunucuda değişiklik yok (BRouter 1.7.10
+  parametreyi tanıyor). Yalnızca JS; telefonlara **bir sonraki derlemeyle** gider (OTA yok).
+- [ ] "Yol öncelikli" yürüyüş / koşu / dağ bisikleti ve "patika öncelikli" bisiklet `trekking` profilini kullanıyor;
+  o da `trunk`'ı 10 kat cezalandırır ve `allow_motorways` ayarı yoktur (aynı ölçümde 6110 m, en kısa yol 3627 m).
+  Patikada isteneni bu olabilir; "yol öncelikli" yürüyüşte dolanma şikâyeti gelirse kendi sunucumuza özel profil
+  (`profiles2`'ye `.brf` kopyalanır) ya da yayalar için ayrı profil gerekir.
 - Serbest çizilen rotada yükseklik yok (BRouter'a sorulmuyor); ayrı bir yükseklik servisi gerekir.
 - Karanlık mod (12 Kas 2026, `gorunum-ayari`): örnek veri ekranları (`Ornek*`) ve paylaşım kartı temaları sabit renkli
   bırakıldı. Harita artık karanlıkta ve gece koyu (13 Kas 2026, `harita-renkleri`); uydu, hibrit ve kış hep aynı.
