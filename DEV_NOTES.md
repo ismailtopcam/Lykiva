@@ -90,6 +90,10 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
 14. **Görünüm (karanlık mod), iOS'ta derleme bekliyor:** Android sürüm 7'de geldi. `gorunum-ayari` PR'ı (sürüm 6'dan sonra main'e girdi) `app.json`'da `userInterfaceStyle`'ı
     `automatic` yaptı (önce `light`). Yeni derlemeye kadar Aydınlık / Karanlık seçimi çalışır, "Telefonun ayarı" ise
     her zaman aydınlık görünür (eski derleme telefonun temasını uygulamaya bildirmiyor).
+15. **lykiva-altyapi'yi yeniden kur (15 Kas 2026):** Coolify > Uygulamalar > production > lykiva-altyapi > Redeploy.
+    BRouter imajına yaya profili (`lykiva-yaya-yol`) girdi; yeniden kurulana kadar uygulama eski profile düşer (hata
+    vermez). Segmentler kalıcı birimde, yeniden inmez. Dene: `altyapi/README.md` > Kapı'daki BRouter komutunda
+    `profile=lykiva-yaya-yol` → 200 dönmeli (profil yoksa boş 500).
 
 Gizlilik, ek gizlilik / engelleme ve kulüpler migration'ları (`20261115…`, `20261116…`, `20261117…`) 13 Kas 2026'da
 sunucuya uygulandı (`uygula.sh`, SSH ile). `grup` (herkese açık) ve `grup_gonderi` (gizli) kovaları ve altı depolama
@@ -430,10 +434,20 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
   gidiyordu, ikincisi incelenmedi.
   Rota çizme ekranındaki "yola yapış" + bisiklet de aynı isteği kullanır. Sunucuda değişiklik yok (BRouter 1.7.10
   parametreyi tanıyor). Yalnızca JS; telefonlara **bir sonraki derlemeyle** gider (OTA yok).
-- [ ] "Yol öncelikli" yürüyüş / koşu / dağ bisikleti ve "patika öncelikli" bisiklet `trekking` profilini kullanıyor;
-  o da `trunk`'ı 10 kat cezalandırır ve `allow_motorways` ayarı yoktur (aynı ölçümde 6110 m, en kısa yol 3627 m).
-  Patikada isteneni bu olabilir; "yol öncelikli" yürüyüşte dolanma şikâyeti gelirse kendi sunucumuza özel profil
-  (`profiles2`'ye `.brf` kopyalanır) ya da yayalar için ayrı profil gerekir.
+- [~] "Yol öncelikli" yürüyüş / koşu da dolanıyordu (15 Kas 2026, İsmail, `claude/yaya-yol-oncelikli`): hazır `trekking`
+  bisiklet profili kullanılıyordu (tek yönlere uyar, `trunk`'ı 10 kat cezalandırır, `allow_motorways` ayarı yok).
+  Kendi sunucumuza yaya profili eklendi: `altyapi/brouter/profiller/lykiva-yaya-yol.brf` (Dockerfile `profiles2`'ye
+  kopyalar). En kısa yola yakın gider, tek yön saymaz, toprak yol / patika 1,5 kat, zor dağ patikası 5 kat, otoyol yasak.
+  Uygulama yol öncelikli yaya etkinliklerinde (yürüyüş, koşu, doğa yürüyüşü, patika koşusu) bunu ister; sunucu profili
+  tanımıyorsa (boş gövdeli 500) ya da kendi sunucumuz tanımlı değilse (brouter.de) eskisi gibi `trekking`.
+  Ölçüm (profil brouter.de'ye özel profil olarak yüklenerek; Ankamall'a 2,6 km kuş uçuşu sekiz yön, trekking → yeni,
+  parantezde en kısa yol): 3657 → 3555 (3555), 3574 → 3526 (3526), 4452 → 3973 (3714), 3867 → 3233 (3193),
+  4106 → 3391 (3262), 6110 → 3709 (3627), 5204 → 3644 (3615), 4189 → 3558 (3491) m. Kaş → Çukurbağ: en kısa yol
+  4 km patikadan giderken (7671 m) profil asfaltta kalıyor (9415 m). Ankara çevre yolunda otoyola girmiyor.
+  **Kalan:** sunucu yeniden kurulmadan profil yok (Bekleyen elle yapılacaklar 15); kendi sunucumuzda henüz denenmedi.
+  Yalnızca JS + sunucu imajı; telefonlara bir sonraki derlemeyle gider.
+- [ ] "Yol öncelikli" dağ bisikleti ve "patika öncelikli" bisiklet hâlâ `trekking` kullanıyor (`trunk` 10 kat).
+  Patikada isteneni bu olabilir; dağ bisikletinde şikâyet gelirse `lykiva-yaya-yol` gibi kendi profilimiz yazılır.
 - Serbest çizilen rotada yükseklik yok (BRouter'a sorulmuyor); ayrı bir yükseklik servisi gerekir.
 - Karanlık mod (12 Kas 2026, `gorunum-ayari`): örnek veri ekranları (`Ornek*`) ve paylaşım kartı temaları sabit renkli
   bırakıldı. Harita artık karanlıkta ve gece koyu (13 Kas 2026, `harita-renkleri`); uydu, hibrit ve kış hep aynı.

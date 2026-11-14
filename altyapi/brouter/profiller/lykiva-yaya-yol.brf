@@ -1,0 +1,133 @@
+# Lykiva — yaya, yol öncelikli (yürüyüş / koşu; uygulamada "yol öncelikli" + yaya etkinlikleri).
+#
+# BRouter'ın hazır profillerinde buna uyan yok: trekking bisiklet profili (tek yönlere uyar, trunk yolları 10 kat
+# cezalandırır; Ankara'da 3,6 km'lik yürüyüş 6,1 km çıkıyordu), hiking-mountain ana yollardan kaçar (patika öncelikli
+# için doğru), shortest zor dağ patikasını da asfaltla bir tutar.
+#
+# Kural: en kısa yola yakın; yaya için tek yön yok. Asfalt yol ve kaldırım 1,0; ana yol biraz pahalı (kaldırımı
+# etiketliyse değil); toprak yol / patika 1,5; zor dağ patikası 5; otoyol, motorroad ve yayaya kapalı yollar yasak.
+# shortest.brf (BRouter 1.7.10) üzerine kuruldu; sesli yönlendirme sınıfları oradan aynen.
+
+---context:global   # genel ayarlar
+
+# Yükseklik rotayı etkilemez (yol öncelikli: yokuş diye yoldan çıkılmaz)
+assign downhillcost 0
+assign downhillcutoff 1.5
+assign uphillcost 0
+assign uphillcutoff 1.5
+
+assign   turnInstructionMode  = 1
+assign   validForFoot        1
+
+---context:way   # yol etiketleri
+
+assign turncost 0
+
+assign initialclassifier =
+     if route=ferry then 1
+     else 0
+
+assign initialcost switch route=ferry 10000 0
+
+# Etiketsiz erişim: motorroad ve otoyol kapalı, gerisi açık
+assign defaultaccess
+       switch access=
+              (
+                    if motorroad=yes then false
+                    else if highway=motorway|motorway_link then false
+                    else true
+              )
+              switch or access=private access=no
+                     false
+                     true
+
+assign issidewalk sidewalk=left|right|both|yes
+
+# Yaya erişimi: foot etiketi varsa o, yoksa genel erişim
+assign footaccess
+       or bicycle=dismount
+          switch foot=
+                 defaultaccess
+                 not or foot=private or foot=no foot=use_sidepath
+
+assign accesspenalty switch footaccess 0 10000
+
+assign ispaved surface=asphalt|paved|concrete|paving_stones|sett
+assign isunpaved surface=unpaved|gravel|ground|dirt|grass|compacted|sand|pebblestone|fine_gravel|earth|mud|clay|rock|stone
+
+# sac_scale=hiking (T1) sıradan patika; üstü dağ patikası
+assign zorpatika sac_scale=mountain_hiking|demanding_mountain_hiking|alpine_hiking|demanding_alpine_hiking|difficult_alpine_hiking
+
+assign costfactor
+  add accesspenalty
+
+  switch and highway= not route=ferry                 10000
+  switch    route=ferry                               5.67
+  switch or highway=motorway highway=motorway_link    10000
+  switch or highway=proposed highway=abandoned        10000
+  switch    highway=construction|raceway|via_ferrata  10000
+  switch    zorpatika                                 5
+  switch or highway=trunk highway=trunk_link          switch issidewalk 1.0 1.3
+  switch or highway=primary highway=primary_link      switch issidewalk 1.0 1.15
+  switch    highway=steps                             1.3
+  switch    highway=cycleway                          1.2
+  switch    highway=track                             switch or ispaved tracktype=grade1 1.0 1.5
+  switch    highway=path|bridleway                    switch ispaved 1.0 1.5
+  switch    isunpaved                                 1.5
+  1.0
+
+# sesli yönlendirme için yol öncelikleri (shortest.brf ile aynı)
+
+assign isresidentialorliving = or highway=residential|living_street living_street=yes
+
+assign priorityclassifier =
+
+  if      ( highway=motorway                       ) then  30
+  else if ( highway=motorway_link                  ) then  29
+  else if ( highway=trunk                          ) then  28
+  else if ( highway=trunk_link                     ) then  27
+  else if ( highway=primary                        ) then  26
+  else if ( highway=primary_link                   ) then  25
+  else if ( highway=secondary                      ) then  24
+  else if ( highway=secondary_link                 ) then  23
+  else if ( highway=tertiary                       ) then  22
+  else if ( highway=tertiary_link                  ) then  21
+  else if ( highway=unclassified                   ) then  20
+  else if ( isresidentialorliving                  ) then  6
+  else if ( highway=service                        ) then  6
+  else if ( highway=cycleway                       ) then  6
+  else if ( highway=track                          ) then if tracktype=grade1 then 6 else 4
+  else if ( highway=bridleway|road|path|footway    ) then  4
+  else if ( highway=steps                          ) then  2
+  else if ( highway=pedestrian                     ) then  2
+  else 0
+
+assign isroundabout = junction=roundabout
+assign islinktype = highway=motorway_link|trunk_link|primary_link|secondary_link|tertiary_link
+assign isgoodforcars = if greater priorityclassifier 6 then true
+                  else if ( or isresidentialorliving highway=service ) then true
+                  else if ( and highway=track tracktype=grade1 ) then true
+                  else false
+
+assign classifiermask add multiply isroundabout   4
+                      add multiply islinktype     8
+                          multiply isgoodforcars 16
+
+---context:node  # düğüm etiketleri (kapı, bariyer)
+
+assign defaultaccess
+       switch access=
+              1
+              switch or access=private access=no
+                     0
+                     1
+
+assign footaccess
+       or bicycle=dismount
+          switch foot=
+                 defaultaccess
+                 switch or foot=private foot=no
+                        0
+                        1
+
+assign initialcost switch footaccess 0 1000000

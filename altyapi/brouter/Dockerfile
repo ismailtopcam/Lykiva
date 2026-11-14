@@ -14,11 +14,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl unzip ca-c
 COPY baslat.sh segment-guncelle.sh /brouter/
 RUN chmod +x /brouter/*.sh
 
+# Kendi profillerimiz hazır profillerin yanına: istekte profile=<dosya adı> (ör. lykiva-yaya-yol)
+COPY profiller/*.brf /brouter/profiles2/
+
 # Segment dosyaları kalıcı birimde (ilk açılışta indirilir, haftalık güncellenebilir)
 VOLUME /segments
 EXPOSE 17777
 
-# Uygulamanın kullandığı istek: /brouter?lonlats=...&profile=trekking|fastbike|hiking-mountain|mtb&format=geojson
+# Uygulamanın kullandığı istek: /brouter?lonlats=...&profile=trekking|fastbike|hiking-mountain|mtb|lykiva-yaya-yol&format=geojson
 HEALTHCHECK --interval=60s --timeout=20s --start-period=600s --retries=3 \
   CMD curl -fsS "http://127.0.0.1:17777/brouter?lonlats=29.6386,36.2018%7C29.6012,36.2088&profile=trekking&format=geojson" > /dev/null || exit 1
 
