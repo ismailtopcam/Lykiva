@@ -120,6 +120,9 @@ Kalan: telefonlarda deneme. Yeni yerel modüller (fotoğraf, bildirim, kilit ekr
 
 ### [ ] Telefonda ve gerçek sunucuda denenmemiş özellikler
 Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
+- Paylaşım kartlarında harita zemini (15 Kas 2026, İsmail; yalnızca JS): Gece haritası ve Hız haritası temalarında
+  koyu harita (kıyı, yollar) rotanın altına oturuyor mu, paylaşılan görselde de var mı (karolar inmeden yakalanmamalı)?
+  Uzun rotada (100+ km) ve şehir içinde ne kadar hızlı açılıyor, telefon takılıyor mu? Uçak modunda kart zeminsiz çıkmalı.
 - Paylaşım temaları (15 Kas 2026, İsmail; yalnızca JS, yeni derleme gerekmez): aktivite > Paylaş > önizlemenin altındaki
   tema şeridi. Her temayı seç; Hikâye ve Kart görseli düğmeleriyle paylaş: görsel tam mı (boş ya da kırpık değil mi),
   yazılar taşıyor mu (uzun aktivite adı, Almanca / Rusça), "Başlangıç ve bitişi gizle" izi kısaltıyor mu? Fotoğraf
@@ -544,8 +547,10 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
   üstünde, 09 Hız haritası, 10 Günün akışı. Kod: `components/paylasim/` (`ortak.tsx`, `temalar.tsx`). Her tema kendi
   biçiminde (hikâye 9:16 / gönderi 4:5 / kare); gönderi ve kare kartlar "Hikâye" ile 9:16 zemine oturur. Fotoğraf yalnızca
   telefonda kalır, sunucuya yüklenmez (yakalanan görselde EXIF yok).
-- [ ] 01 ve 09'un harita zemini (şimdilik koyu zemin + rota). MapLibre anlık görüntüsü ya da kendi karo sunucusu;
-  OpenTopoMap / Esri lisansları için `AKTARIM.md` > Kaynaklar.
+- [x] 01 Gece haritası ve 09 Hız haritasında harita zemini (15 Kas 2026): OpenFreeMap vektör karoları indirilip su, yeşil
+  alan, akarsu ve yollar kartın içinde SVG olarak koyu renkte çiziliyor (`components/paylasim/haritaZemini.tsx`).
+  Yalnızca JS paketleri eklendi (`@mapbox/vector-tile`, `pbf`), yeni derleme gerekmez. İnternet yoksa kart zeminsiz çıkar.
+  Rotanın izdüşümü Web Mercator'a geçti (harita ile aynı). Eş yükselti / tepe gölgesi yok (OpenFreeMap'te yükseklik katmanı yok).
 - [ ] 07 Birlikte (grup aktivitesi, avatar halkaları) ve 08 Harita posteri.
 - [ ] Biniş kartında yer kodları: aktivite adı "A – B" biçimindeyse ilk üç harf, değilse saatler. Başlangıç / bitiş yerinin
   adı (Photon ile ters arama) eklenirse kodlar ve Kartpostal başlığı ("Kaş'tan selamlar") gerçek yer adını kullanabilir.
@@ -596,6 +601,10 @@ Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde
 
 ## Kararlar
 
+- **Paylaşım kartında harita zemini vektör karodan çiziliyor** (15 Kas 2026): uygulamanın haritasıyla aynı kaynak
+  (OpenFreeMap, OpenMapTiles şeması), kartın içinde SVG. Raster karo (OpenTopoMap, Esri) lisans / kullanım sınırı yüzünden,
+  MapLibre anlık görüntüsü görsel yakalamada güvenilmez olduğu için seçilmedi. Kart altında "© OpenStreetMap katkıcıları ·
+  OpenMapTiles" satırı zorunlu (ODbL).
 - **Egzersiz sekmesi yalnızca kayıt sürerken** (15 Kas 2026): egzersiz başlatma Harita sekmesine taşındı, alt menü dört
   sekmeye indi. Kayıt sürerken (ya da duraklatılmışken) Egzersiz sekmesi araya girer ve süren kaydı açar; yoksa başka
   sekmedeyken kayda dönmenin tek yolu Harita > "Süren kayda dön" olurdu. `useKayitDurumu` yalnızca durum değişince

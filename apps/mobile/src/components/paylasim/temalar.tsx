@@ -12,6 +12,7 @@ import Svg, { Circle, Defs, Line, LinearGradient, Path, Pattern, RadialGradient,
 
 import type { Activity, LngLat } from '@/data/ornek';
 import { $t } from '@/i18n';
+import { GECE_HARITA, HaritaZemini } from './haritaZemini';
 import {
   BICIM_OLCU,
   birlikteAdlar,
@@ -93,8 +94,17 @@ function Hucreler({ liste, etiket, deger, boyut, satirAraligi = 1.15 }: { liste:
 /* 01 Gece haritası (hikâye)                                           */
 /* ------------------------------------------------------------------ */
 
+/** Harita kaynağı satırı (ODbL: kaynak gösterimi zorunlu) */
+function HaritaKaynak({ top }: { top: number }) {
+  return (
+    <T numberOfLines={1} style={{ position: 'absolute', right: 10, top, fontFamily: F.govde, fontSize: 6, color: '#8C968F' }}>
+      {$t('paylasimTemalari.harita_kaynak')}
+    </T>
+  );
+}
+
 function GeceHaritasi({ a, route, uclariGizle }: TemaProps) {
-  const { pts } = izNoktalari(route, { x: 40, y: 100, w: 280, h: 250 });
+  const { pts, cerceve } = izNoktalari(route, { x: 40, y: 100, w: 280, h: 250 });
   const d = yolD(pts);
   const son = pts[pts.length - 1];
   const kisiler = birlikteAdlar(a);
@@ -106,20 +116,24 @@ function GeceHaritasi({ a, route, uclariGizle }: TemaProps) {
             <Stop offset="0" stopColor="#25322B" />
             <Stop offset="1" stopColor={R.night} />
           </RadialGradient>
+          <LinearGradient id="sonum" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0.7" stopColor={R.night} stopOpacity={0} />
+            <Stop offset="1" stopColor={R.night} stopOpacity={1} />
+          </LinearGradient>
         </Defs>
         <Rect width={360} height={400} fill="url(#isik)" />
+        <HaritaZemini alan={{ x: 0, y: 0, w: 360, h: 400 }} cerceve={cerceve} palet={GECE_HARITA} />
+        <Rect width={360} height={400} fill="url(#sonum)" />
         {d ? (
           <>
-            {/* Eş yükselti çizgisi izlenimi: izin geniş, soluk kopyaları */}
-            {[84, 60, 38].map((w, i) => (
-              <Path key={w} d={d} {...yuvarlak} stroke={R.cream} strokeOpacity={0.025 + i * 0.02} strokeWidth={w} />
-            ))}
+            <Path d={d} {...yuvarlak} stroke={R.orange} strokeOpacity={0.12} strokeWidth={22} />
             <Path d={d} {...yuvarlak} stroke={R.night} strokeWidth={10} />
             <Path d={d} {...yuvarlak} stroke={R.orange} strokeWidth={4.8} />
           </>
         ) : null}
         {!uclariGizle && son ? <Circle cx={son[0]} cy={son[1]} r={6} fill={R.night} stroke={R.orange} strokeWidth={2.6} /> : null}
       </Svg>
+      {cerceve ? <HaritaKaynak top={86} /> : null}
       <View style={{ position: 'absolute', left: 28, right: 28, bottom: 90 }}>
         <Ust metin={`${buyuk(tur(a))} · ${buyuk(gun(a))}`} renk={R.mutedDark} />
         <T numberOfLines={1} style={{ fontFamily: F.baslik, fontSize: 26, color: R.cream, marginTop: 6 }}>
@@ -490,7 +504,7 @@ const HIZ_RENK = ['#F6D9A8', '#E07A4A', '#FF5A3C'] as const;
 
 /** Hıza göre renkli parçalar + eşikler + en hızlı nokta */
 function hizParcalari(a: Activity, route: LngLat[], kutu: { x: number; y: number; w: number; h: number }) {
-  const { pts, idx } = izNoktalari(route, kutu);
+  const { pts, idx, cerceve } = izNoktalari(route, kutu);
   const ham = noktaHizlari(a, route);
   const v = idx.map((i) => ham[i] ?? 0);
   // Kısa titremeleri yumuşat (5 noktalık hareketli ortalama)
@@ -517,12 +531,12 @@ function hizParcalari(a: Activity, route: LngLat[], kutu: { x: number; y: number
   v.forEach((x, i) => {
     if (x > v[enHizli]) enHizli = i;
   });
-  return { pts, parcalar, e1, e2, enHizli: pts[enHizli] as Nokta | undefined };
+  return { pts, parcalar, e1, e2, enHizli: pts[enHizli] as Nokta | undefined, cerceve };
 }
 
 function HizHaritasi({ a, route, uclariGizle }: TemaProps) {
   const H = 300;
-  const { pts, parcalar, e1, e2, enHizli } = hizParcalari(a, route, { x: 30, y: 30, w: 300, h: 220 });
+  const { pts, parcalar, e1, e2, enHizli, cerceve } = hizParcalari(a, route, { x: 30, y: 30, w: 300, h: 220 });
   const tum = yolD(pts);
   const son = pts[pts.length - 1];
   const asagi = enHizli ? enHizli[1] < H - 70 : true;
@@ -546,9 +560,9 @@ function HizHaritasi({ a, route, uclariGizle }: TemaProps) {
           </RadialGradient>
         </Defs>
         <Rect width={360} height={H} fill="url(#hizIsik)" />
+        <HaritaZemini alan={{ x: 0, y: 0, w: 360, h: H }} cerceve={cerceve} palet={GECE_HARITA} />
         {tum ? (
           <>
-            <Path d={tum} {...yuvarlak} stroke={R.cream} strokeOpacity={0.04} strokeWidth={46} />
             <Path d={tum} {...yuvarlak} stroke={R.night} strokeWidth={11} />
           </>
         ) : null}
@@ -563,6 +577,7 @@ function HizHaritasi({ a, route, uclariGizle }: TemaProps) {
           </>
         ) : null}
       </Svg>
+      {cerceve ? <HaritaKaynak top={120 + H - 12} /> : null}
       {enHizli ? (
         <T
           numberOfLines={1}

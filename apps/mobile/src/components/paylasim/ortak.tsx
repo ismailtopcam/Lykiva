@@ -62,32 +62,40 @@ export function Olcekli({ w, h, s, children }: { w: number; h: number; s: number
 /* ------------------------------------------------------------------ */
 
 export type Nokta = [number, number];
+export type Kutu = { x: number; y: number; w: number; h: number };
+
+/** Web Mercator "dünya pikseli" (yakınlaştırma 0, 256 px'lik karo) */
+export const dunyaX = (lng: number) => ((lng + 180) / 360) * 256;
+export function dunyaY(lat: number) {
+  const r = (Math.max(-85, Math.min(85, lat)) * Math.PI) / 180;
+  return ((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2) * 256;
+}
+
+/** Dünya pikselinden kart pikseline: kart = o + dünya × s (harita zemini aynı dönüşümle çizilir) */
+export type Cerceve = { s: number; ox: number; oy: number };
 
 /**
- * İzi (enlem düzeltmeli) kutuya sığdırır. `idx` her çizim noktasının izdeki sırası (hız rengi için).
- * Çok noktalı izler en fazla `enFazla` noktaya seyreltilir.
+ * İzi kutuya sığdırır (Web Mercator, harita karolarıyla aynı izdüşüm). `idx` her çizim noktasının izdeki sırası
+ * (hız rengi için). Çok noktalı izler en fazla `enFazla` noktaya seyreltilir.
  */
-export function izNoktalari(route: LngLat[], kutu: { x: number; y: number; w: number; h: number }, enFazla = 400): { pts: Nokta[]; idx: number[] } {
-  if (route.length < 2) return { pts: [], idx: [] };
-  const lat0 = route.reduce((s, c) => s + c[1], 0) / route.length;
-  const kx = Math.cos((lat0 * Math.PI) / 180);
-  let [minX, maxX, minY, maxY] = [Infinity, -Infinity, Infinity, -Infinity];
-  for (const c of route) {
-    const x = c[0] * kx;
-    minX = Math.min(minX, x);
-    maxX = Math.max(maxX, x);
-    minY = Math.min(minY, c[1]);
-    maxY = Math.max(maxY, c[1]);
-  }
-  const s = Math.min(kutu.w / (maxX - minX || 1e-9), kutu.h / (maxY - minY || 1e-9));
-  const offX = kutu.x + (kutu.w - (maxX - minX) * s) / 2;
-  const offY = kutu.y + (kutu.h - (maxY - minY) * s) / 2;
+export function izNoktalari(route: LngLat[], kutu: Kutu, enFazla = 400): { pts: Nokta[]; idx: number[]; cerceve: Cerceve | null } {
+  if (route.length < 2) return { pts: [], idx: [], cerceve: null };
+  const wx = route.map((c) => dunyaX(c[0]));
+  const wy = route.map((c) => dunyaY(c[1]));
+  const [minX, maxX, minY, maxY] = [Math.min(...wx), Math.max(...wx), Math.min(...wy), Math.max(...wy)];
+  // Çok kısa izde (birkaç metre) aşırı büyütme olmasın: en fazla ~yakınlaştırma 17
+  const s = Math.min(kutu.w / (maxX - minX || 1e-9), kutu.h / (maxY - minY || 1e-9), 2 ** 17);
+  const cerceve: Cerceve = {
+    s,
+    ox: kutu.x + (kutu.w - (maxX - minX) * s) / 2 - minX * s,
+    oy: kutu.y + (kutu.h - (maxY - minY) * s) / 2 - minY * s,
+  };
   const adim = Math.max(1, Math.floor(route.length / enFazla));
   const idx: number[] = [];
   for (let i = 0; i < route.length; i += adim) idx.push(i);
   if (idx[idx.length - 1] !== route.length - 1) idx.push(route.length - 1);
-  const pts = idx.map((i): Nokta => [offX + (route[i][0] * kx - minX) * s, offY + (maxY - route[i][1]) * s]);
-  return { pts, idx };
+  const pts = idx.map((i): Nokta => [cerceve.ox + wx[i] * s, cerceve.oy + wy[i] * s]);
+  return { pts, idx, cerceve };
 }
 
 export const yolD = (pts: Nokta[]) => (pts.length < 2 ? '' : 'M' + pts.map((p) => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' L'));

@@ -969,6 +969,7 @@ export const tr = {
     sn: '{number} sn',
   },
   paylasimTemalari: {
+    harita_kaynak: 'Harita © OpenStreetMap katkıcıları · OpenMapTiles',
     klasik: 'Klasik',
     gece: 'Gece haritası',
     foto: 'Fotoğrafın üstünde',

@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header } from '@/components/Header';
 import { Icon, type IconName } from '@/components/Icon';
 import { HikayeGorseli, KART_SABLONLARI, PaylasimKarti, uclariKirp, type KartIstatistigi } from '@/components/PaylasimKarti';
+import { haritaZeminiHazir } from '@/components/paylasim/haritaZemini';
 import { BICIM_OLCU, Olcekli } from '@/components/paylasim/ortak';
 import { PAYLASIM_TEMALARI, TemaGorseli, type TemaKimligi } from '@/components/paylasim/temalar';
 import { Txt } from '@/components/Txt';
@@ -113,6 +114,9 @@ export default function PaylasimStudyosuScreen() {
     type YakalamaHedefi = Parameters<typeof captureRef>[0];
     const ad = `${dosyaAdi(a!.title)}-${secili?.id ?? 'klasik'}-${tur}`;
     if (secili) {
+      // Harita zemini olan temalarda karolar insin, çizim bitsin (en fazla birkaç saniye; inmezse zeminsiz çıkar)
+      await haritaZeminiHazir();
+      await new Promise((r) => setTimeout(r, 150));
       // Tema kendi biçiminde (hikâye / gönderi / kare); hikâye istenirse gönderi ve kare kartlar 9:16 zemine oturur
       const o = BICIM_OLCU[secili.bicim];
       const hikayeMi = tur === 'hikaye' || secili.bicim === 'hikaye';
