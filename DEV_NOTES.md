@@ -99,13 +99,19 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
 11. **Android sürüm 4'ü telefonda dene** (12 Kas 2026'da Play dahili teste yüklendi): hedefler /
     meydan okumalar / rozetler, harita türleri, ısı haritaları ilk kez telefonda. Neye bakılacağı aşağıda
     "Telefonda ve gerçek sunucuda denenmemiş özellikler"de. (Kilit ekranı penceresi bu sürümde yok; madde 12.)
-12. **Android sürüm 7'yi Play'e yükle** (13 Kas 2026'da derlendi): EAS > lykiva > Builds'ten versionCode 7 AAB'sini indir,
+12. **Android sürüm 8 derlendi (15 Kas 2026, main `d59f193`, EAS build `7330e9cc-…`)**: sürüm 7'nin ve 15 Kasım'daki her şeyin
+    üstünde; sürüm 7'yi ayrıca yüklemeye gerek yok. Gönderim anahtarı EAS'a eklenince Claude dahili teste gönderir (madde 13);
+    acelesi varsa EAS > lykiva > Builds'ten AAB'yi indirip Play Console > Dahili test > Yeni sürüm'e elle yükle.
+    Eski not — **Android sürüm 7'yi Play'e yükle** (13 Kas 2026'da derlendi): EAS > lykiva > Builds'ten versionCode 7 AAB'sini indir,
     Play Console > Lykiva > Test > Dahili test > Yeni sürüm oluştur'a yükle, yayınla. Sonra telefonda dene.
     Geliştirme APK'sı Metro'suz açılınca beyaz ekranda kalır; günlük kullanım için Play sürümünü kur.
 12b. **Sürüm 6'da kilit ekranını telefonda dene** (aşağıda "Kilit ekranı" maddesi).
-13. (İsteğe bağlı) **Play gönderimini Claude'a devretmek için:** EAS'ta Google hizmet hesabı anahtarı yok, o yüzden
-    `eas submit -p android` çalışmıyor ve AAB elle yükleniyor. Play Console'da hizmet hesabı açılıp anahtarı EAS'a eklenirse
-    gönderimi Claude yapar.
+13. **Play gönderimi için anahtar (15 Kas 2026):** Google Cloud'da `play-yukleme@lykiva.iam.gserviceaccount.com` hizmet
+    hesabı var; Play Console'da Lykiva için davet edildi (yalnızca uygulama bilgilerini görme + test kanallarına yayınlama).
+    Kalan (İsmail): Cloud Console > IAM > Service accounts > play-yukleme > Keys > Add key > JSON; dosyayı expo.dev > lykiva >
+    Credentials > Android > app.lykiva.mobile > "Google Service Account Key for Play Store Submissions"e yükle, bilgisayardan
+    sil. Sonra Claude `eas submit -p android --latest` ile dahili teste gönderir (`eas.json` > submit > android: internal,
+    completed). Davet bazen birkaç saat sonra geçerli olur; ilk denemede izin hatası gelirse beklenir.
 14. **Görünüm (karanlık mod), iOS'ta derleme bekliyor:** Android sürüm 7'de geldi. `gorunum-ayari` PR'ı (sürüm 6'dan sonra main'e girdi) `app.json`'da `userInterfaceStyle`'ı
     `automatic` yaptı (önce `light`). Yeni derlemeye kadar Aydınlık / Karanlık seçimi çalışır, "Telefonun ayarı" ise
     her zaman aydınlık görünür (eski derleme telefonun temasını uygulamaya bildirmiyor).
