@@ -35,7 +35,7 @@ import type { LngLat } from '@/data/ornek';
 import type { Rota } from '@/data/rota';
 import { baslat, IzinHatasi, konumOnizlemeBaslat, useKayit } from '@/kayit/kaydedici';
 import { TUR_IKONLARI } from '@/lib/egzersizTuru';
-import { sonHedefEkle, useSonHedefler } from '@/lib/sonHedefler';
+import { sonHedefEkle, useSonHedefler, type SonHedef } from '@/lib/sonHedefler';
 import { yerAra, type YerSonucu } from '@/lib/yerArama';
 import { rotaHesapla, type CizimModu, type YolTuru } from '@/lib/yonlendirme';
 import { colors, fontFamily, radius, space, temaliStil } from '@/theme';
@@ -114,6 +114,19 @@ export default function HaritaScreen() {
   const [hata, setHata] = useState<string | null>(null);
   const [basliyor, setBasliyor] = useState(false);
   const [q, setQ] = useState('');
+  // Arama kutusu odaktayken ve boşken altında son aramalar listelenir. Odak gidince liste biraz geç kapanır:
+  // web'de listeye basınca önce kutu odağı bırakır, liste basıştan önce kaybolmasın
+  const [aramaOdakta, setAramaOdakta] = useState(false);
+  const odakZamanlayici = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (odakZamanlayici.current) clearTimeout(odakZamanlayici.current);
+  }, []);
+  function aramaOdagi(odakta: boolean) {
+    if (odakZamanlayici.current) clearTimeout(odakZamanlayici.current);
+    odakZamanlayici.current = null;
+    if (odakta) setAramaOdakta(true);
+    else odakZamanlayici.current = setTimeout(() => setAramaOdakta(false), 200);
+  }
   const [sonuclar, setSonuclar] = useState<YerSonucu[]>([]);
   const [odak, setOdak] = useState<Odak | null>(null);
   const ilkOdak = useRef(false);
@@ -234,11 +247,22 @@ export default function HaritaScreen() {
   if (yolculuk && imlecYeri) markers.push({ id: 'imlec', coord: imlecYeri, kind: 'cursor' });
 
   function hedefSec(h: Hedef) {
+    // Arama kutusu açıkken haritaya dokunulursa klavye ve son aramalar kapansın
+    Keyboard.dismiss();
     // Panel aşağı indirilmişken hedef seçilirse (haritaya dokunma, arama) yol bilgisi görünsün
     panel.ac();
     setHedef(h);
     setBaslangic(ben);
     setHata(null);
+  }
+
+  /** Son aramalardan biri (arama kutusunun altındaki liste ya da boş paneldeki "Son gittiklerin") */
+  function sonHedefSec(h: SonHedef) {
+    Keyboard.dismiss();
+    setAramaOdakta(false);
+    sonHedefEkle(h);
+    hedefSec({ c: h.c, ad: h.ad, ayrinti: h.ayrinti });
+    setOdak({ c: h.c, z: 14 });
   }
 
   function yerSec(y: YerSonucu) {
@@ -347,6 +371,8 @@ export default function HaritaScreen() {
               <TextInput
                 value={q}
                 onChangeText={setQ}
+                onFocus={() => aramaOdagi(true)}
+                onBlur={() => aramaOdagi(false)}
                 placeholder={hedef ? hedefAdi : $t('harita.nereye_gidiyorsun')}
                 placeholderTextColor={hedef ? colors.ink : colors.inkMuted}
                 accessibilityLabel={$t('harita.hedef_ara')}
@@ -383,6 +409,30 @@ export default function HaritaScreen() {
           <Txt variant="small" style={styles.resultsNote}>
             {$t('rota_olustur.yalnizca_turkiyedeki_yerler')}
           </Txt>
+        </View>
+      ) : null}
+
+      {/* Arama kutusuna dokununca, bir şey yazılmadan: son aramalar (yazınca yerini arama sonuçları alır) */}
+      {yolculuk && aramaOdakta && !q.trim() && sonHedefler.length ? (
+        <View style={[styles.results, { top: insets.top + 64 }]}>
+          <Txt variant="caption" accessibilityRole="header" style={styles.resultsBaslik}>
+            {$t('harita.son_aramalar')}
+          </Txt>
+          {sonHedefler.map((h) => (
+            <Pressable key={`${h.ad}|${h.c.join(',')}`} accessibilityRole="button" onPress={() => sonHedefSec(h)} style={styles.result}>
+              <Icon name="clock" size={18} color={colors.seaInk} />
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14 }} numberOfLines={1}>
+                  {h.ad}
+                </Txt>
+                {h.ayrinti ? (
+                  <Txt variant="small" numberOfLines={1}>
+                    {h.ayrinti}
+                  </Txt>
+                ) : null}
+              </View>
+            </Pressable>
+          ))}
         </View>
       ) : null}
 
@@ -431,10 +481,7 @@ export default function HaritaScreen() {
                       <Pressable
                         key={`${h.ad}|${h.c.join(',')}`}
                         accessibilityRole="button"
-                        onPress={() => {
-                          hedefSec({ c: h.c, ad: h.ad, ayrinti: h.ayrinti });
-                          setOdak({ c: h.c, z: 14 });
-                        }}
+                        onPress={() => sonHedefSec(h)}
                         style={({ pressed }) => [styles.sonSatir, i > 0 && styles.sonSatirCizgi, pressed && { opacity: 0.7 }]}>
                         <View style={styles.sonIkon}>
                           <Icon name="clock" size={20} color={colors.seaInk} />
@@ -673,6 +720,7 @@ const styles = temaliStil(() => StyleSheet.create({
   searchKapat: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginRight: -6 },
   results: { position: 'absolute', left: space.md, right: space.md, borderRadius: 16, backgroundColor: colors.surface, paddingVertical: 4, borderWidth: 1, borderColor: colors.line },
   result: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 48, paddingHorizontal: 14, paddingVertical: 6 },
+  resultsBaslik: { paddingHorizontal: 14, paddingTop: 8, paddingBottom: 2 },
   resultsNote: { color: colors.inkMuted, paddingHorizontal: 14, paddingTop: 4, paddingBottom: 6 },
   sheet: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet },
   // Panelin içi: iç boşluklar burada, panelin boyu bunun ölçüsünden (bkz. panelKademesi.ts)

@@ -389,6 +389,11 @@ ikili geçiş var: **Yolculuk yap** (yol tarifi) / **Egzersiz yap** (tür seç, 
   yol tercihi; basınca seçenekleri altında açılır), "Egzersiz olarak da kaydet" anahtarı, en altta büyük Yola çık.
   Kısa özetle ayrıntı aynı yerde durur: panel büyürken kısa özet söner, ayrıntı belirir (`panelKademesi.ts` > `gecis`).
   İniş ölçüsü ve ayrı yükselti kademesi kalktı (profil kartın içinde).
+- Arama kutusuna dokununca, bir şey yazılmadan, altında "Son aramalar" açılır (aynı liste: `lib/sonHedefler.ts`, en
+  fazla 5); klavye paneli örttüğünde ve hedef seçiliyken de son yerlere ulaşılır. Seçilen yer listenin başına geçer.
+- Haritanın katman penceresinde **Görünüm**: Sistemle aynı (varsayılan; karanlık temada ya da gün batınca koyu) /
+  Açık / Karanlık. Seçim telefonda saklanır, bütün haritalara (kayıt ekranı dahil) uygulanır (`map/gunduzGece.ts`).
+  Yalnızca standart türü etkiler; uydu ve hibrit fotoğraf, kış hep açık.
 - Panel her durumda (yolculuk, egzersiz, boş) tutamağından aşağı çekilince yalnızca tutamaç kalır, harita açılır;
   yukarı çekince ya da tutamağa dokununca son kademesinde geri gelir (`panelKademesi.ts` > `kapanir`). Kapalıyken
   hedef seçilirse panel kendiliğinden açılır.

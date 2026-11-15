@@ -1,7 +1,7 @@
 /**
- * Harita üstündeki katman düğmesi ve seçim penceresi: harita türü (standart, uydu, hibrit, kış) ve
- * ısı haritası (küresel, haftalık, gece, kişisel). Seçimler bütün haritalara uygulanır
- * (bkz. haritaTurleri.ts, isiHaritasi.ts).
+ * Harita üstündeki katman düğmesi ve seçim penceresi: harita türü (standart, uydu, hibrit, kış), görünüm
+ * (sistemle aynı, açık, karanlık) ve ısı haritası (küresel, haftalık, gece, kişisel). Seçimler bütün haritalara
+ * uygulanır (bkz. haritaTurleri.ts, gunduzGece.ts, isiHaritasi.ts).
  */
 import { useState } from 'react';
 import { Modal, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
@@ -13,6 +13,7 @@ import { Chip } from '@/components/ui';
 import { $t } from '@/i18n';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space, temaliStil } from '@/theme';
+import { HARITA_GORUNUMLERI, haritaGorunumuSec, useHaritaGorunumu, type HaritaGorunumu } from './gunduzGece';
 import { HARITA_TURLERI, haritaTuruSec, useHaritaTuru, type HaritaTuru } from './haritaTurleri';
 import { ISI_TURLERI, isiTuruSec, useIsiTuru, type IsiTuru } from './isiHaritasi';
 
@@ -26,6 +27,17 @@ function turAdi(t: HaritaTuru): string {
       return $t('haritaTuru.hibrit');
     case 'kis':
       return $t('haritaTuru.kis');
+  }
+}
+
+function gorunumAdi(g: HaritaGorunumu): string {
+  switch (g) {
+    case 'sistem':
+      return $t('haritaTuru.gorunum_sistem');
+    case 'acik':
+      return $t('haritaTuru.gorunum_acik');
+    case 'koyu':
+      return $t('haritaTuru.gorunum_koyu');
   }
 }
 
@@ -79,6 +91,7 @@ export function HaritaTuruDugmesi({ style, koyu }: { style?: StyleProp<ViewStyle
   const [acik, setAcik] = useState(false);
   const tur = useHaritaTuru();
   const isi = useIsiTuru();
+  const gorunum = useHaritaGorunumu();
   const insets = useSafeAreaInsets();
   return (
     <>
@@ -122,6 +135,19 @@ export function HaritaTuruDugmesi({ style, koyu }: { style?: StyleProp<ViewStyle
               })}
             </View>
             {tur === 'kis' ? <Txt variant="small" style={{ marginTop: space.md }}>{$t('haritaTuru.kis_aciklama')}</Txt> : null}
+
+            <Txt accessibilityRole="header" style={styles.bolum}>
+              {$t('haritaTuru.gorunum')}
+            </Txt>
+            <View accessibilityRole="radiogroup" style={styles.cipler}>
+              {HARITA_GORUNUMLERI.map((g) => (
+                <Chip key={g} label={gorunumAdi(g)} role="radio" selected={gorunum === g} onPress={() => haritaGorunumuSec(g)} />
+              ))}
+            </View>
+            {/* Açık / koyu yalnızca standart haritayı değiştirir */}
+            <Txt variant="small" style={{ marginTop: space.sm }}>
+              {tur !== 'standart' ? $t('haritaTuru.gorunum_yalniz_standart') : gorunum === 'sistem' ? $t('haritaTuru.gorunum_sistem_aciklama') : ''}
+            </Txt>
 
             {supabaseHazir ? (
               <>
