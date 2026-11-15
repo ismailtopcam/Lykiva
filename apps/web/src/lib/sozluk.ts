@@ -78,6 +78,27 @@ const tr = {
   ana_sayfaya: 'Lykiva ana sayfası',
   aktivite_bulunamadi: 'Bu paylaşım açılmıyor',
   aktivite_bulunamadi_aciklama: 'Bağlantı kapatılmış ya da yanlış olabilir.',
+  canli_baslik: 'Canlı konum',
+  canli_canli: 'Canlı',
+  canli_molada: 'Molada',
+  canli_bitti: 'Paylaşım bitti',
+  canli_bitti_aciklama: '{ad} konum paylaşımını bitirdi.',
+  canli_bekliyor: 'Bekleniyor',
+  canli_bekliyor_aciklama: '{ad} henüz konum göndermedi. Sayfa açık kalsın, konum gelince burada görünür.',
+  canli_son_konum: 'Son konum:',
+  canli_az_once: 'az önce',
+  canli_dk_once: '{dk} dk önce',
+  canli_hareketsiz: '{ad} {dk} dakikadır aynı yerde ve molada değil.',
+  canli_sessiz: '{dk} dakikadır yeni konum gelmedi (sinyal, pil ya da internet olabilir). Haritadaki yer en son bilinen konum.',
+  canli_mesafe: 'Mesafe',
+  canli_sure: 'Geçen süre',
+  canli_hiz: 'Hız',
+  canli_haritalarda_ac: "Google Haritalar'da aç",
+  canli_baglanti_hatasi: 'Bağlantı sorunu, yeniden deneniyor…',
+  canli_bulunamadi: 'Bu bağlantı açılmıyor',
+  canli_bulunamadi_aciklama: 'Bağlantı yanlış olabilir.',
+  canli_kapanis: 'Bağlantı en geç {saat} saatinde kapanır.',
+  canli_harita: 'Canlı konum haritası',
 };
 
 export type WebSozluk = Record<keyof typeof tr, string>;
@@ -156,6 +177,27 @@ const en: WebSozluk = {
   ana_sayfaya: 'Lykiva home page',
   aktivite_bulunamadi: "This share can't be opened",
   aktivite_bulunamadi_aciklama: 'The link may have been turned off or be incorrect.',
+  canli_baslik: 'Live location',
+  canli_canli: 'Live',
+  canli_molada: 'On a break',
+  canli_bitti: 'Sharing ended',
+  canli_bitti_aciklama: '{ad} has stopped sharing their location.',
+  canli_bekliyor: 'Waiting',
+  canli_bekliyor_aciklama: '{ad} hasn’t sent a location yet. Keep this page open; it appears here once it arrives.',
+  canli_son_konum: 'Last location:',
+  canli_az_once: 'just now',
+  canli_dk_once: '{dk} min ago',
+  canli_hareketsiz: '{ad} has been in the same place for {dk} minutes and is not on a break.',
+  canli_sessiz: 'No new location for {dk} minutes (signal, battery or internet). The map shows the last known location.',
+  canli_mesafe: 'Distance',
+  canli_sure: 'Elapsed',
+  canli_hiz: 'Speed',
+  canli_haritalarda_ac: 'Open in Google Maps',
+  canli_baglanti_hatasi: 'Connection problem, retrying…',
+  canli_bulunamadi: 'This link doesn’t open',
+  canli_bulunamadi_aciklama: 'The link may be wrong.',
+  canli_kapanis: 'The link closes at {saat} at the latest.',
+  canli_harita: 'Live location map',
 };
 
 const de: WebSozluk = {
@@ -232,6 +274,27 @@ const de: WebSozluk = {
   ana_sayfaya: 'Lykiva Startseite',
   aktivite_bulunamadi: 'Diese Freigabe lässt sich nicht öffnen',
   aktivite_bulunamadi_aciklama: 'Der Link wurde vielleicht deaktiviert oder ist falsch.',
+  canli_baslik: 'Live-Standort',
+  canli_canli: 'Live',
+  canli_molada: 'Pause',
+  canli_bitti: 'Teilen beendet',
+  canli_bitti_aciklama: '{ad} teilt den Standort nicht mehr.',
+  canli_bekliyor: 'Warten',
+  canli_bekliyor_aciklama: '{ad} hat noch keinen Standort gesendet. Lass die Seite offen, er erscheint hier, sobald er ankommt.',
+  canli_son_konum: 'Letzter Standort:',
+  canli_az_once: 'gerade eben',
+  canli_dk_once: 'vor {dk} Min.',
+  canli_hareketsiz: '{ad} ist seit {dk} Minuten am selben Ort und macht keine Pause.',
+  canli_sessiz: 'Seit {dk} Minuten kein neuer Standort (Signal, Akku oder Internet). Die Karte zeigt den letzten bekannten Standort.',
+  canli_mesafe: 'Distanz',
+  canli_sure: 'Vergangene Zeit',
+  canli_hiz: 'Geschwindigkeit',
+  canli_haritalarda_ac: 'In Google Maps öffnen',
+  canli_baglanti_hatasi: 'Verbindungsproblem, neuer Versuch…',
+  canli_bulunamadi: 'Dieser Link lässt sich nicht öffnen',
+  canli_bulunamadi_aciklama: 'Der Link ist möglicherweise falsch.',
+  canli_kapanis: 'Der Link endet spätestens um {saat} Uhr.',
+  canli_harita: 'Karte mit Live-Standort',
 };
 
 const ru: WebSozluk = {
@@ -308,6 +371,27 @@ const ru: WebSozluk = {
   ana_sayfaya: 'Главная страница Lykiva',
   aktivite_bulunamadi: 'Эта ссылка не открывается',
   aktivite_bulunamadi_aciklama: 'Возможно, ссылку отключили или в ней ошибка.',
+  canli_baslik: 'Местоположение онлайн',
+  canli_canli: 'В пути',
+  canli_molada: 'Перерыв',
+  canli_bitti: 'Передача завершена',
+  canli_bitti_aciklama: '{ad} больше не делится местоположением.',
+  canli_bekliyor: 'Ожидание',
+  canli_bekliyor_aciklama: '{ad}: местоположение ещё не получено. Не закрывайте страницу — оно появится здесь.',
+  canli_son_konum: 'Последнее местоположение:',
+  canli_az_once: 'только что',
+  canli_dk_once: '{dk} мин назад',
+  canli_hareketsiz: '{ad}: уже {dk} мин на одном месте, не на перерыве.',
+  canli_sessiz: 'Новых данных нет уже {dk} мин (сигнал, батарея или интернет). На карте — последнее известное место.',
+  canli_mesafe: 'Расстояние',
+  canli_sure: 'Прошло',
+  canli_hiz: 'Скорость',
+  canli_haritalarda_ac: 'Открыть в Google Картах',
+  canli_baglanti_hatasi: 'Проблема со связью, повторяем…',
+  canli_bulunamadi: 'Эта ссылка не открывается',
+  canli_bulunamadi_aciklama: 'Возможно, ссылка неверна.',
+  canli_kapanis: 'Ссылка закроется не позже {saat}.',
+  canli_harita: 'Карта местоположения',
 };
 
 const SOZLUKLER: Record<Dil, WebSozluk> = { tr, en, de, ru };
@@ -319,3 +403,8 @@ export function metinler(dil: Dil) {
 }
 
 export type Metin = ReturnType<typeof metinler>;
+
+/** Doldurulmamış (çoğul biçimi seçilmemiş) metin: değişkenleri tarayıcıda dolacak bileşenlere vermek için */
+export function hamMetin(dil: Dil, anahtar: keyof WebSozluk): string {
+  return (SOZLUKLER[dil] ?? tr)[anahtar] ?? tr[anahtar];
+}

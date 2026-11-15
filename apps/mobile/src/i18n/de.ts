@@ -767,6 +767,16 @@ export const de: Sozluk = {
     bu_mola_kaydin_hiz: 'Diese Pause erscheint mit ihrem Ort auf der Seite „Tempo & Pausen“ der Aktivität. Pausen über 1 Minute ohne Pausieren werden ebenfalls automatisch erkannt.',
     kaydetmek_icin_henuz_yeterli: 'Noch nicht genug GPS-Punkte zum Speichern.',
   },
+  canli_baglanti: {
+    baglanti: 'Link',
+    baglantiyla_paylas: 'Per Link teilen',
+    baglantiyla_paylas_alt: 'Wer den Link hat (Familie, Freunde), sieht deinen Live-Standort, auch ohne App. Er endet mit der Aufzeichnung, spätestens nach 24 Stunden.',
+    paylasim_metni: 'Hier kannst du meinen Live-Standort verfolgen: {adres}',
+    paylasiliyor: 'Live-Standort per Link geteilt',
+    paylas: 'Teilen',
+    paylas_etiket: 'Live-Standort-Link teilen',
+    acilamadi: 'Link konnte nicht erstellt werden, prüfe deine Internetverbindung',
+  },
   rota_uyarisi: {
     kanal: 'Routenabweichung',
     baslik: 'Du hast die Route verlassen',

@@ -58,8 +58,10 @@ export type Kayit = {
   rotaIlerleme: RouteProgress | null;
   /** Rotadan çıkma uyarısının durumu (saklanır: uygulama kapanıp açılsa da aynı uyarı tekrarlanmaz) */
   rotaUyari: RotaUyariDurumu | null;
-  /** Canlı konumun paylaşıldığı grup (yoksa paylaşılmıyor) */
+  /** Canlı konumun paylaşıldığı grup (yoksa grupla paylaşılmıyor) */
   paylasim: PaylasimGrubu | null;
+  /** Canlı konum bağlantısının anahtarı (bağlantıyla paylaşılıyorsa; bkz. canliPaylasim.ts) */
+  canliBaglanti: string | null;
   /** Kayıt başlarken alınan hava (internet yoksa null kalır) */
   hava: HavaDurumu | null;
   /** Yalnızca yol tarifi: bitince aktivite olarak kaydedilmeyecek */
@@ -83,6 +85,7 @@ const BOS: Kayit = {
   rotaIlerleme: null,
   rotaUyari: null,
   paylasim: null,
+  canliBaglanti: null,
   hava: null,
   kaydetme: false,
 };
@@ -182,7 +185,7 @@ function noktalarEkle(locs: Location.LocationObject[]) {
   degistir({ segments, sonKonum, rotaIlerleme, rotaUyari });
   if (uyari && kayit.rota && rotaIlerleme) void rotaUyarisiVer(uyari, rotaIlerleme.offRouteM, kayit.rota.name);
   if (!kayit.hava) havayiYakala();
-  if (kayit.paylasim) konumYayinla(paylasimDurumu());
+  if (kayit.paylasim || kayit.canliBaglanti) konumYayinla(paylasimDurumu());
 }
 
 // Kayıt başına bir kez dene (internet yoksa sessizce vazgeç; kayıt hava bilgisiz kaydedilir)
@@ -202,6 +205,7 @@ function havayiYakala() {
 function paylasimDurumu() {
   return {
     grup: kayit.paylasim,
+    baglanti: !!kayit.canliBaglanti,
     activity: kayit.activity,
     segments: kayit.segments,
     baslangic: kayit.baslangic,
@@ -302,8 +306,9 @@ export class IzinHatasi extends Error {}
 /**
  * `kaydetme`: yalnızca yol tarifi; bitince aktivite olarak kaydedilmeyecek.
  * `activity` 'car' ise araba yolculuğu: her zaman `kaydetme` ve sonradan da kaydedilemez (bkz. `Kayit.araba`).
+ * `canliBaglanti`: önceden açılmış canlı konum bağlantısının anahtarı (`baglantiAc`).
  */
-export async function baslat(activity: ActivityType | 'car', rota: KayitRotasi | null = null, paylasim: PaylasimGrubu | null = null, kaydetme = false) {
+export async function baslat(activity: ActivityType | 'car', rota: KayitRotasi | null = null, paylasim: PaylasimGrubu | null = null, kaydetme = false, canliBaglanti: string | null = null) {
   const fg = await Location.requestForegroundPermissionsAsync();
   if (!fg.granted) throw new IzinHatasi($t('kayit_kaydedici.konum_izni_verilmedi_ayarlar'));
   degistir({
@@ -318,9 +323,10 @@ export async function baslat(activity: ActivityType | 'car', rota: KayitRotasi |
     rota,
     rotaIlerleme: rota && kayit.sonKonum ? trackOnRoute(hazir(rota), kayit.sonKonum) : null,
     paylasim,
+    canliBaglanti,
     kaydetme: kaydetme || activity === 'car',
   });
-  if (paylasim) hemenYayinla(paylasimDurumu());
+  if (paylasim || canliBaglanti) hemenYayinla(paylasimDurumu());
   havayiYakala();
   const arkaPlan = await izlemeyiBaslat();
   degistir({ arkaPlan });
@@ -337,7 +343,7 @@ export async function duraklat() {
   if (kayit.durum !== 'kayitta') return;
   await izlemeyiDurdur();
   degistir({ durum: 'duraklatildi', duraklatmaBaslangic: Date.now() });
-  if (kayit.paylasim) hemenYayinla(paylasimDurumu());
+  if (kayit.paylasim || kayit.canliBaglanti) hemenYayinla(paylasimDurumu());
 }
 
 export async function devamEt() {
@@ -346,7 +352,7 @@ export async function devamEt() {
   const segments = son && son.length === 0 ? kayit.segments : [...kayit.segments, []];
   const duraklamaToplam = kayit.duraklamaToplam + (kayit.duraklatmaBaslangic ? Date.now() - kayit.duraklatmaBaslangic : 0);
   degistir({ durum: 'kayitta', duraklatmaBaslangic: null, duraklamaToplam, segments });
-  if (kayit.paylasim) hemenYayinla(paylasimDurumu());
+  if (kayit.paylasim || kayit.canliBaglanti) hemenYayinla(paylasimDurumu());
   const arkaPlan = await izlemeyiBaslat();
   degistir({ arkaPlan });
   kilitEkraniniYenile(1500);
@@ -366,7 +372,7 @@ export async function bitir(title?: string): Promise<string | null> {
   void rotaUyarisiniKaldir();
   const paket = paketOlustur({ clientId: kayit.clientId, activity: kayit.activity, segments: kayit.segments, title, routeId: kayit.rota?.id, hava: kayit.hava });
   const clientId = kayit.clientId;
-  const paylasiyordu = !!kayit.paylasim;
+  const paylasiyordu = !!kayit.paylasim || !!kayit.canliBaglanti;
   degistir({ ...BOS, sonKonum: kayit.sonKonum });
   if (paylasiyordu) void paylasimiBitir();
   if (!paket) return null;
@@ -382,7 +388,7 @@ export async function bitir(title?: string): Promise<string | null> {
 export async function iptalEt() {
   await izlemeyiDurdur();
   void rotaUyarisiniKaldir();
-  const paylasiyordu = !!kayit.paylasim;
+  const paylasiyordu = !!kayit.paylasim || !!kayit.canliBaglanti;
   degistir({ ...BOS, sonKonum: kayit.sonKonum });
   if (paylasiyordu) void paylasimiBitir();
 }

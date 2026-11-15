@@ -93,6 +93,7 @@ const asamalar = [
   ['20261117000000_kulupler', 'grup_gonderileri', { g: '00000000-0000-0000-0000-000000000000' }],
   // İstemciye kapalı: var ise "izin yok" (42501) döner
   ['20261118000000_push_makbuzlari', 'push_makbuzlari', {}],
+  ['20261119000000_canli_baglanti', 'canli_baglanti', { anahtar: '0'.repeat(32) }],
 ];
 for (const [dosya, fn, govde] of asamalar) {
   try {

@@ -768,6 +768,16 @@ export const tr = {
     bu_mola_kaydin_hiz: 'Bu mola, kaydın “Hız & molalar” sayfasında yeriyle birlikte görünecek. Duraklatmadan verdiğin 1 dakikadan uzun molalar da otomatik bulunur.',
     kaydetmek_icin_henuz_yeterli: 'Kaydetmek için henüz yeterli GPS noktası yok.',
   },
+  canli_baglanti: {
+    baglanti: 'Bağlantı',
+    baglantiyla_paylas: 'Bağlantıyla paylaş',
+    baglantiyla_paylas_alt: 'Uygulaması olmayanlar da (ailen, arkadaşın) bağlantıdan canlı konumunu görür. Kayıt bitince ya da en geç 24 saatte kapanır.',
+    paylasim_metni: 'Canlı konumumu buradan izleyebilirsin: {adres}',
+    paylasiliyor: 'Bağlantıyla canlı paylaşılıyor',
+    paylas: 'Paylaş',
+    paylas_etiket: 'Canlı konum bağlantısını paylaş',
+    acilamadi: 'Bağlantı açılamadı, internet bağlantını kontrol et',
+  },
   rota_uyarisi: {
     kanal: 'Rotadan çıkma uyarısı',
     baslik: 'Rotadan çıktın',

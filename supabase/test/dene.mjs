@@ -1285,5 +1285,56 @@ bekle('Haftalık: takip edince "takipçiler" aktivitesi de sayılır', r.rows[0]
 r = await olarak(KC, `select grup_haftalik_istatistik($1) as j`, [kGrup]);
 bekle('Haftalık: üye olmayan göremez', r.rows[0].j === null, r.rows[0].j);
 
+console.log('\nCanlı konum bağlantısı (aileyle paylaşım)');
+{
+  await db.query(`delete from live_locations where user_id = $1`, [A]);
+  await db.query(`delete from canli_baglantilar`);
+  let m = await hataMesaji(() => olarak(A, `select canli_konum_gonder($1::jsonb)`, [JSON.stringify({ lng: 29.6, lat: 36.2 })]));
+  bekle('Grup ve bağlantı yokken konum gönderilemez', /paylaşımı açık değil/.test(m ?? ''), m);
+  m = await hataMesaji(() => anonOlarak(`select canli_baglanti_ac()`));
+  bekle('Giriş yapmadan bağlantı açılamaz', /permission denied/.test(m ?? ''), m);
+  const k1 = (await olarak(A, `select canli_baglanti_ac() as k`)).rows[0].k;
+  const k2 = (await olarak(A, `select canli_baglanti_ac() as k`)).rows[0].k;
+  bekle('Bağlantı 32 karakter; açıkken ikinci kez aynısı döner', /^[0-9a-f]{32}$/.test(k1) && k1 === k2, [k1, k2]);
+  let s = (await anonOlarak(`select canli_baglanti($1) as j`, [k1])).rows[0].j;
+  bekle('Konum gelmeden sayfa "bekliyor" der, adı gösterir', s?.durum === 'bekliyor' && s.ad === 'Ayşe Yılmaz' && !('lng' in s), s);
+  const bas = new Date().toISOString();
+  const gonder = (lng, lat, ek = {}) => olarak(A, `select canli_konum_gonder($1::jsonb)`, [JSON.stringify({ lng, lat, activity: 'hike', started_at: bas, distance_m: 1200, ...ek })]);
+  await gonder(29.6, 36.2);
+  s = (await anonOlarak(`select canli_baglanti($1) as j`, [k1])).rows[0].j;
+  bekle('Grupsuz konum gider; sayfa konumu, türü, izi görür, kimliği görmez',
+    s?.durum === 'canli' && Math.abs(s.lng - 29.6) < 1e-6 && s.activity === 'hike' && s.iz.length === 1 && !JSON.stringify(s).includes(A), s);
+  const ilkHareket = s.son_hareket;
+  await gonder(29.6001, 36.2); // ~9 m
+  s = (await anonOlarak(`select canli_baglanti($1) as j`, [k1])).rows[0].j;
+  bekle('Az kımıldayınca (≤ 30 m) iz uzar, son hareket zamanı değişmez', s.iz.length === 2 && s.son_hareket === ilkHareket, s);
+  await gonder(29.601, 36.2); // ~90 m
+  s = (await anonOlarak(`select canli_baglanti($1) as j`, [k1])).rows[0].j;
+  bekle('30 m\'den fazla ilerleyince son hareket zamanı yenilenir', s.iz.length === 3 && s.son_hareket > ilkHareket, s);
+  await olarak(A, `select canli_konum_gonder($1::jsonb)`, [JSON.stringify({ lng: 29.7, lat: 36.3, started_at: new Date(Date.now() + 60000).toISOString() })]);
+  s = (await anonOlarak(`select canli_baglanti($1) as j`, [k1])).rows[0].j;
+  bekle('Yeni kayıtta iz baştan başlar', s.iz.length === 1 && Math.abs(s.iz[0][0] - 29.7) < 1e-6, s.iz);
+  const uzun = Array.from({ length: 500 }, (_, i) => [29 + i * 1e-4, 36, 0]);
+  const kirp = (await db.query(`select jsonb_array_length(canli_iz_ekle($1::jsonb, 30, 37)) as n, canli_iz_ekle($1::jsonb, 30, 37) -> -1 ->> 0 as son`, [JSON.stringify(uzun)])).rows[0];
+  bekle('İz en fazla 480 nokta, en yenisi sonda', kirp.n === 480 && Number(kirp.son) === 30, kirp);
+  m = await hataMesaji(() => olarak(A, `select * from canli_baglantilar`));
+  bekle('Bağlantı tablosu istemciye kapalı (anahtar okunamaz)', /permission denied/.test(m ?? ''), m);
+  bekle('Bilinmeyen anahtar boş döner', (await anonOlarak(`select canli_baglanti($1) as j`, ['0'.repeat(32)])).rows[0].j === null, null);
+  await olarak(A, `select canli_konum_bitir()`);
+  s = (await anonOlarak(`select canli_baglanti($1) as j`, [k1])).rows[0].j;
+  bekle('Kayıt bitince bağlantı kapanır: "bitti", konum yok', s?.durum === 'bitti' && !('lng' in s) && !('iz' in s), s);
+  m = await hataMesaji(() => gonder(29.6, 36.2));
+  bekle('Kapanan bağlantıyla konum gönderilemez', /paylaşımı açık değil/.test(m ?? ''), m);
+  const k3 = (await olarak(A, `select canli_baglanti_ac() as k`)).rows[0].k;
+  bekle('Kapandıktan sonra yeni bağlantı yeni anahtar', k3 !== k1 && /^[0-9a-f]{32}$/.test(k3), k3);
+  await olarak(A, `select canli_baglanti_kapat()`);
+  bekle('Elle kapatılınca "bitti"', (await anonOlarak(`select canli_baglanti($1) as j`, [k3])).rows[0].j?.durum === 'bitti', null);
+  await db.exec(`update canli_baglantilar set bitis = now() + interval '1 hour', created_at = now() - interval '25 hours'`);
+  await db.query(`update canli_baglantilar set bitis = now() - interval '1 second' where anahtar = $1`, [k3]);
+  bekle('Süresi dolan bağlantı "bitti"', (await anonOlarak(`select canli_baglanti($1) as j`, [k3])).rows[0].j?.durum === 'bitti', null);
+  await db.exec(`delete from canli_baglantilar`);
+  await db.query(`delete from live_locations where user_id = $1`, [A]);
+}
+
 console.log(hata ? `\n${hata} senaryo başarısız` : '\nTüm senaryolar geçti');
 process.exit(hata ? 1 : 0);

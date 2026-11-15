@@ -767,6 +767,16 @@ export const en: Sozluk = {
     bu_mola_kaydin_hiz: 'This break will appear with its location on the activity\'s “Speed & breaks” page. Breaks longer than 1 minute taken without pausing are found automatically too.',
     kaydetmek_icin_henuz_yeterli: 'Not enough GPS points to save yet.',
   },
+  canli_baglanti: {
+    baglanti: 'Link',
+    baglantiyla_paylas: 'Share with a link',
+    baglantiyla_paylas_alt: 'Anyone with the link (family, friends) can follow your live location, no app needed. It closes when you finish or after 24 hours at most.',
+    paylasim_metni: 'Follow my live location here: {adres}',
+    paylasiliyor: 'Live location shared by link',
+    paylas: 'Share',
+    paylas_etiket: 'Share live location link',
+    acilamadi: 'Could not create the link, check your internet connection',
+  },
   rota_uyarisi: {
     kanal: 'Off-route alerts',
     baslik: 'You’re off route',
