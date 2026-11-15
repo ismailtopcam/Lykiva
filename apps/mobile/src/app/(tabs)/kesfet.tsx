@@ -46,8 +46,6 @@ type Hedef = { c: LngLat; ad: string | null; ayrinti?: string | null };
 type Odak = { c: LngLat; z: number };
 /** Bilgi panelinin son bölümünün altındaki boşluk (styles.sheetIc paddingBottom) */
 const PANEL_ALT_BOSLUK = 16;
-/** Boş durumda panelde gösterilen son yer sayısı */
-const SON_HEDEF_SAYISI = 3;
 const BOS: RoutePoint[] = [];
 /** "Egzersiz olarak da kaydet" seçimi telefonda saklanır ('0' = kapalı) */
 const KAYDET_ANAHTARI = 'lykiva.yolculuk-kaydet.v1';
@@ -257,7 +255,7 @@ export default function HaritaScreen() {
     setHata(null);
   }
 
-  /** Son aramalardan biri (arama kutusunun altındaki liste ya da boş paneldeki "Son gittiklerin") */
+  /** Arama kutusunun altındaki "Son aramalar"dan biri */
   function sonHedefSec(h: SonHedef) {
     Keyboard.dismiss();
     setAramaOdakta(false);
@@ -493,45 +491,8 @@ export default function HaritaScreen() {
               <EgzersizPaneli rota={rota} onRota={setRota} kayitDurumu={kayit.durum} onBasladi={() => router.push('/kayit/canli')} />
             ) : !hedef ? (
               <>
-                {sonHedefler.length ? (
-                  <>
-                    <View style={styles.sonBaslik}>
-                      <Txt variant="caption" accessibilityRole="header" style={{ flex: 1 }}>
-                        {$t('harita.son_gittiklerin')}
-                      </Txt>
-                      <TemizleBag onPress={sonHedefleriTemizle} />
-                    </View>
-                    {sonHedefler.slice(0, SON_HEDEF_SAYISI).map((h, i) => (
-                      <Pressable
-                        key={`${h.ad}|${h.c.join(',')}`}
-                        accessibilityRole="button"
-                        onPress={() => sonHedefSec(h)}
-                        style={({ pressed }) => [styles.sonSatir, i > 0 && styles.sonSatirCizgi, pressed && { opacity: 0.7 }]}>
-                        <View style={styles.sonIkon}>
-                          <Icon name="clock" size={20} color={colors.seaInk} />
-                        </View>
-                        <View style={{ flex: 1, minWidth: 0 }}>
-                          <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 15 }} numberOfLines={1}>
-                            {h.ad}
-                          </Txt>
-                          {h.ayrinti ? (
-                            <Txt variant="small" numberOfLines={1}>
-                              {h.ayrinti}
-                            </Txt>
-                          ) : null}
-                        </View>
-                        <Icon name="chevron" size={18} color={colors.inkMuted} strokeWidth={2} />
-                      </Pressable>
-                    ))}
-                    {gercekHarita ? (
-                      <Txt variant="small" style={{ marginTop: 8, textAlign: 'center' }}>
-                        {$t('harita.ya_da_haritaya_dokun')}
-                      </Txt>
-                    ) : null}
-                  </>
-                ) : (
-                  <Txt variant="small">{gercekHarita ? $t('harita.haritaya_dokun_ya_da_ara') : $t('harita.yukaridan_ara')}</Txt>
-                )}
+                {/* Geçmiş yalnızca arama kutusunun altında (dokununca "Son aramalar") */}
+                <Txt variant="small">{gercekHarita ? $t('harita.haritaya_dokun_ya_da_ara') : $t('harita.yukaridan_ara')}</Txt>
                 {!ben ? (
                   <Txt variant="small" style={{ marginTop: 4, color: colors.inkMuted }}>
                     {$t('harita.konum_bekleniyor')}
@@ -716,7 +677,7 @@ export default function HaritaScreen() {
   );
 }
 
-/** Son yerler listesinin başlığındaki "Temizle" */
+/** "Son aramalar" başlığındaki "Temizle" */
 function TemizleBag({ onPress }: { onPress: () => void }) {
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={$t('harita.son_aramalari_temizle')} onPress={onPress} hitSlop={8} style={styles.temizle}>
@@ -756,7 +717,6 @@ const styles = temaliStil(() => StyleSheet.create({
   resultsBaslik: { flexDirection: 'row', alignItems: 'center', paddingLeft: 14, paddingRight: 6, paddingTop: 4 },
   sonAramaSatiri: { flexDirection: 'row', alignItems: 'center' },
   sil: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginRight: 4 },
-  sonBaslik: { flexDirection: 'row', alignItems: 'center', marginLeft: 4, marginBottom: 2 },
   temizle: { minHeight: 32, paddingHorizontal: 8, justifyContent: 'center' },
   temizleYazi: { fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: colors.seaInk },
   resultsNote: { color: colors.inkMuted, paddingHorizontal: 14, paddingTop: 4, paddingBottom: 6 },
@@ -793,7 +753,4 @@ const styles = temaliStil(() => StyleSheet.create({
   ozetSatiri: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   sure: { fontFamily: fontFamily.display, fontSize: 26, lineHeight: 30, color: colors.ink, letterSpacing: -0.3 },
   ozetDugme: { maxWidth: '62%', paddingHorizontal: 22 },
-  sonSatir: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, paddingHorizontal: 4 },
-  sonSatirCizgi: { borderTopWidth: 1, borderTopColor: colors.line },
-  sonIkon: { width: 36, height: 36, borderRadius: 11, backgroundColor: colors.seaSoft, alignItems: 'center', justifyContent: 'center' },
 }));

@@ -380,8 +380,8 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
 ### [~] Harita + Egzersiz tek sekmede (15 Kas 2026)
 Tasarım: "Lykiva — Yolculuk ve Spor birleşik ekranı" (Claude Design canvas'ı). Harita sekmesinin panelinin başında
 ikili geçiş var: **Yolculuk yap** (yol tarifi) / **Egzersiz yap** (tür seç, kaydı başlat).
-- Yolculuk: arama hep yukarıda (hedef seçilince adını gösterir, çarpı hedefi kaldırır); hedef yokken panelde "Son
-  gittiklerin" (aramayla seçilen son yerler, yalnızca telefonda: `lib/sonHedefler.ts`). Hedef seçilince panel üç
+- Yolculuk: arama hep yukarıda (hedef seçilince adını gösterir, çarpı hedefi kaldırır). Hedef yokken panelde yalnızca
+  geçiş ve "haritaya dokun ya da ara" yazısı; geçmiş arama kutusunun altında (aşağıda). Hedef seçilince panel üç
   kademe: kısa özet (süre + Yola çık; panel aşağı çekilince yalnızca bu kalır), ayrıntı (açılışta burada durur),
   tırmanışlar ve rüzgâr.
 - Ayrıntı kademesi tasarımdaki "Yol tarifi (panel açık)" ekranı (15 Kas 2026): hedef adı ve altında "ilçe, il ·
@@ -389,9 +389,10 @@ ikili geçiş var: **Yolculuk yap** (yol tarifi) / **Egzersiz yap** (tür seç, 
   yol tercihi; basınca seçenekleri altında açılır), "Egzersiz olarak da kaydet" anahtarı, en altta büyük Yola çık.
   Kısa özetle ayrıntı aynı yerde durur: panel büyürken kısa özet söner, ayrıntı belirir (`panelKademesi.ts` > `gecis`).
   İniş ölçüsü ve ayrı yükselti kademesi kalktı (profil kartın içinde).
-- Arama kutusuna dokununca, bir şey yazılmadan, altında "Son aramalar" açılır (aynı liste: `lib/sonHedefler.ts`, en
-  fazla 5); klavye paneli örttüğünde ve hedef seçiliyken de son yerlere ulaşılır. Seçilen yer listenin başına geçer.
-  Aramanın altındaki listede her satırda çarpı (tek tek siler), iki listenin başlığında "Temizle" (hepsini siler).
+- Arama kutusuna dokununca, bir şey yazılmadan, altında "Son aramalar" açılır (aramayla seçilen son yerler, en fazla 5,
+  yalnızca telefonda: `lib/sonHedefler.ts`). Seçilen yer listenin başına geçer. Her satırda çarpı (tek tek siler),
+  başlıkta "Temizle" (hepsini siler). Geçmiş yalnızca burada: tasarımdaki paneldeki "Son gittiklerin" İsmail'in
+  isteğiyle kaldırıldı (15 Kas 2026).
 - Haritanın katman penceresinde **Görünüm**: Sistemle aynı (varsayılan; karanlık temada ya da gün batınca koyu) /
   Açık / Karanlık. Seçim telefonda saklanır, bütün haritalara (kayıt ekranı dahil) uygulanır (`map/gunduzGece.ts`).
   Yalnızca standart türü etkiler; uydu ve hibrit fotoğraf, kış hep açık.

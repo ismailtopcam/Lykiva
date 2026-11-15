@@ -1,5 +1,6 @@
 /**
- * Harita sekmesinde aramayla seçilen son yerler ("Son gittiklerin"); yalnızca telefonda saklanır, sunucuya gitmez.
+ * Harita sekmesinde aramayla seçilen son yerler (arama kutusunun altındaki "Son aramalar"); yalnızca telefonda
+ * saklanır, sunucuya gitmez.
  * Haritaya dokunarak seçilen adsız noktalar listeye girmez. Tek tek ya da hepsi birden silinebilir.
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
