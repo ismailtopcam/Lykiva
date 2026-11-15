@@ -120,6 +120,10 @@ Kalan: telefonlarda deneme. Yeni yerel modüller (fotoğraf, bildirim, kilit ekr
 
 ### [ ] Telefonda ve gerçek sunucuda denenmemiş özellikler
 Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
+- 3B video temaları (15 Kas 2026, İsmail; yalnızca JS): Paylaş > şeridin sonundaki "Yörünge 3B" / "Takip kamerası 3B" (şehir
+  şablonları 20 km altı rotada). "3B videoyu hazırla" → ilerleme çubuğu → "Videoyu paylaş": video Instagram / WhatsApp'ta
+  oynuyor mu? Ekrandan çıkınca bildirim geliyor mu, dokununca paylaşım ekranı açılıyor mu? Uygulamayı arka plana atıp
+  geri gelince takip sürüyor mu? `.env`'de `EXPO_PUBLIC_ALTYAPI_ANAHTARI` yoksa video temaları görünmez.
 - Birlikte ve Harita posteri temaları (15 Kas 2026, İsmail; yalnızca JS): birlikte yapılmış gerçek bir aktivitede
   avatarlar ve adlar doğru mu (sahip dahil, kişi sayısı)? Posterde koordinatlar uçlar gizliyken evden uzak mı?
 - Paylaşım kartlarında harita zemini (15 Kas 2026, İsmail; yalnızca JS): Gece haritası ve Hız haritası temalarında
@@ -580,9 +584,15 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
     (uygulama anahtarı; yeni iş IP başına dakikada 1 + 4 anlık, durum/indirme dakikada 60). DNS A kaydı eklendi.
     Hız (sunucuda, uçtan uca): ilk sürüm 12 sn'lik yörünge videosu 18 dk → hızlandırmadan sonra **2 dk 51 sn** (3B arazili).
     Ölçümler ve denenenler: `altyapi/kart-video/README.md` > Hız.
-  - [ ] Şehir şablonları yavaş: şehir maketi (İstanbul, 3,1 km) ~8–9 dk (binlerce bina 3B çiziliyor). Yapılacak: yalnız rotanın
-    çevresindeki binaları çiz (`within` süzgeci), gerekirse şehir şablonu süresini kısalt.
-  - [ ] 3. aşama: telefonda 3B video temaları (iş gönder, ilerleme, MP4 indir, `expo-sharing` ile paylaş).
+  - [~] Şehir şablonları yavaş: şehir maketi (İstanbul, 3,1 km) önce çöküyordu (kare 30 sn'yi aşınca servis düşüyordu,
+    düzeltildi), şimdi **7,5 dk**. Binalar saydamlıkla beliriyor, 3B yalnız rota çevresinde (`distance` süzgeci). Kalan
+    seçenekler: koridoru daraltmak, şehir videosunu 10 sn'ye indirmek, uzak binaların düz tabanını kaldırmak.
+  - [x] 3. aşama: telefonda 3B video temaları (15 Kas 2026; yalnızca JS, yeni derleme gerekmez). Paylaş > tema şeridinin
+    sonunda 4 video teması (şehir şablonları yalnız 20 km altı rotalarda). Seçince örnek kare, biçim (hikâye / gönderi),
+    "3B videoyu hazırla" → ilerleme / sıradaki yer → hazır olunca "Videoyu paylaş". Ekrandan çıkılırsa yerel bildirim,
+    dokununca paylaşım ekranı. Kod: `lib/kartVideo.ts`, `components/paylasim/videoTemalari.ts`. Uygulama anahtarı
+    (`EXPO_PUBLIC_ALTYAPI_ANAHTARI`) yoksa video temaları görünmez; adres `EXPO_PUBLIC_VIDEO_URL` (varsayılan
+    `https://video.ismailtopcam.dev`). Takip uygulama açıkken sürer (iOS arka planda durdurur, öne gelince devam eder).
   - Bilinen: haritada yer adları kapalı; şehir şablonları kısa rotalar için (uzun rotada uzaklaşınca binalar z14 altında kalır).
 - Hız haritasında kademeler sabit 13 / 25 km/sa değil, aktivitenin ortalamasına göre (×0,85 ve ×1,2): koşu ve yürüyüşte de anlamlı.
 
