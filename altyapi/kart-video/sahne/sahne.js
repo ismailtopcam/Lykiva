@@ -107,6 +107,16 @@ function izHazirla(rota) {
   return { nk: rota, kum, L, yon };
 }
 
+/** Noktaları en fazla n'e seyreltir (bina süzgeci her binada rotaya uzaklık hesaplar) */
+function seyrelt(nk, n) {
+  if (nk.length <= n) return nk;
+  const adim = (nk.length - 1) / (n - 1);
+  return Array.from({ length: n }, (_, i) => nk[Math.round(i * adim)]);
+}
+
+/** 3B bina koridorunun yarı genişliği (m): kısa rotada 250, uzunda rotanın %8'i, en fazla 600 */
+const koridor = () => Math.round(Math.min(600, Math.max(250, iz.L * 0.08)));
+
 /** İzde d metredeki nokta, sıra ve o noktaya kadarki parça */
 function izde(d) {
   const { nk, kum } = iz;
@@ -194,7 +204,8 @@ function katmanlariKur() {
   // Yazılar kapalı: kart dilden bağımsız ve sade kalsın
   for (const l of stil.layers) if (l.type === 'symbol') map.setLayoutProperty(l.id, 'visibility', 'none');
   if (HIZ.sade) {
-    for (const l of stil.layers) if (!KALAN.test(l.id)) map.removeLayer(l.id);
+    // Şehir şablonlarında stilin düz bina tabanı kalır: 3B çizilmeyen uzak binalar yine görünsün
+    for (const l of stil.layers) if (!KALAN.test(l.id) && !(A.bina && l.id === 'building')) map.removeLayer(l.id);
     stil = map.getStyle();
   }
   const ilkCizgi = stil.layers.find((l) => l.type === 'line')?.id;
@@ -227,11 +238,15 @@ function katmanlariKur() {
       source: 'openmaptiles',
       'source-layer': 'building',
       minzoom: 13,
+      // Yalnız rotanın çevresindeki binalar 3B: yazılım WebGL'de binlerce bina kareyi saniyelerce uzatıyordu
+      filter: ['<', ['distance', { type: 'LineString', coordinates: seyrelt(iz.nk, 150) }], koridor()],
       paint: {
         'fill-extrusion-color': A.bina.renk,
-        'fill-extrusion-height': 0,
-        'fill-extrusion-base': 0,
-        'fill-extrusion-opacity': 0.96,
+        // Yükseklik sabit; binalar eğilirken saydamlıkla belirir. Yüksekliği her karede veriye bağlı ifadeyle değiştirmek
+        // bütün binaları yeniden hesaplatıyor, yazılım WebGL'de kare başına saniyeler sürüyordu.
+        'fill-extrusion-height': ['coalesce', ['get', 'render_height'], 10],
+        'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], 0],
+        'fill-extrusion-opacity': 0,
         'fill-extrusion-vertical-gradient': true,
       },
     });
@@ -370,8 +385,7 @@ window.kare = async (t) => {
     sonAbarti = s.abarti;
   }
   if (A.bina && Math.abs(s.bina - sonBina) > 0.002) {
-    map.setPaintProperty('binalar', 'fill-extrusion-height', ['*', ['coalesce', ['get', 'render_height'], 10], s.bina]);
-    map.setPaintProperty('binalar', 'fill-extrusion-base', ['*', ['coalesce', ['get', 'render_min_height'], 0], s.bina]);
+    map.setPaintProperty('binalar', 'fill-extrusion-opacity', 0.96 * s.bina);
     sonBina = s.bina;
   }
   // Rota değişmediyse kaynağa dokunma: her setData arazinin üstündeki harita dokusunu (render-to-texture) baştan çizdirir

@@ -86,14 +86,19 @@ export async function videoUret(girdi, cikti, sahneAdresi, ilerleme = () => {}) 
     for (let i = 0; i < kareSayisi; i++) {
       const degisti = await sayfa.evaluate((s) => window.kare(s), i / FPS);
       // Görünüm değişmediyse (sondaki bekleme) son kare tekrarlanır: çizim ve ekran görüntüsü yok
-      if (degisti || !goruntu) goruntu = await sayfa.screenshot({ type: 'jpeg', quality: 90, animations: 'disabled', caret: 'hide' });
+      // Yazılım WebGL'de ağır bir kare 30 sn'yi (Playwright varsayılanı) aşabiliyor
+      if (degisti || !goruntu) goruntu = await sayfa.screenshot({ type: 'jpeg', quality: 90, animations: 'disabled', caret: 'hide', timeout: 120_000 });
       await ff.yaz(goruntu);
       ilerleme((i + 1) / kareSayisi);
     }
     ff.kapat();
     await ff.bitti;
   } catch (e) {
-    ff?.oldur();
+    if (ff) {
+      // ffmpeg öldürülünce "bitti" sözü reddedilir; sahipsiz kalırsa süreç çöker (bütün işler kaybolur)
+      ff.bitti.catch(() => undefined);
+      ff.oldur();
+    }
     if (gunluk.length) e.message += ` | sahne: ${gunluk.slice(-3).join(' / ')}`;
     throw e;
   } finally {
