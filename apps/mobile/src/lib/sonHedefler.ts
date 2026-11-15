@@ -1,6 +1,6 @@
 /**
  * Harita sekmesinde aramayla seçilen son yerler ("Son gittiklerin"); yalnızca telefonda saklanır, sunucuya gitmez.
- * Haritaya dokunarak seçilen adsız noktalar listeye girmez.
+ * Haritaya dokunarak seçilen adsız noktalar listeye girmez. Tek tek ya da hepsi birden silinebilir.
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSyncExternalStore } from 'react';
@@ -50,10 +50,31 @@ export function useSonHedefler(): SonHedef[] {
   return useSyncExternalStore(abone, () => liste, () => liste);
 }
 
-/** Aynı yer (ad ve yaklaşık konum) yeniden seçilirse başa taşınır */
-export function sonHedefEkle(h: SonHedef) {
-  const ayni = (x: SonHedef) => x.ad === h.ad && Math.abs(x.c[0] - h.c[0]) < 1e-4 && Math.abs(x.c[1] - h.c[1]) < 1e-4;
-  liste = [h, ...liste.filter((x) => !ayni(x))].slice(0, EN_FAZLA);
+/** Aynı yer: ad ve yaklaşık konum */
+function ayniYer(a: SonHedef, b: SonHedef) {
+  return a.ad === b.ad && Math.abs(a.c[0] - b.c[0]) < 1e-4 && Math.abs(a.c[1] - b.c[1]) < 1e-4;
+}
+
+function kaydet(yeni: SonHedef[]) {
+  // Okuma bitmeden yazılırsa sonradan gelen eski liste bunu ezmesin
+  yuklendi = true;
+  liste = yeni;
   dinleyiciler.forEach((f) => f());
-  void AsyncStorage.setItem(ANAHTAR, JSON.stringify(liste)).catch(() => undefined);
+  if (liste.length) void AsyncStorage.setItem(ANAHTAR, JSON.stringify(liste)).catch(() => undefined);
+  else void AsyncStorage.removeItem(ANAHTAR).catch(() => undefined);
+}
+
+/** Aynı yer yeniden seçilirse başa taşınır */
+export function sonHedefEkle(h: SonHedef) {
+  kaydet([h, ...liste.filter((x) => !ayniYer(x, h))].slice(0, EN_FAZLA));
+}
+
+/** Bir yeri listeden kaldırır */
+export function sonHedefSil(h: SonHedef) {
+  kaydet(liste.filter((x) => !ayniYer(x, h)));
+}
+
+/** Bütün listeyi siler */
+export function sonHedefleriTemizle() {
+  kaydet([]);
 }
