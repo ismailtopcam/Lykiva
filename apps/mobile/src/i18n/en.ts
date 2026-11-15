@@ -1366,6 +1366,7 @@ export const en: Sozluk = {
     baslangic_noktasi_icin_haritaya: 'Tap the map for the starting point.',
     rota_cizim_haritasi_nokta: 'Route drawing map: {length} point|Route drawing map: {length} points',
     sonraki_noktaya_dokun_patika: 'Tap the next point; a trail or road is found automatically.',
+    nokta_kaldir_ipucu: 'Tap a point to remove it.',
     haritaya_dokunarak_rota_cizmek: 'Drawing a route by tapping the map needs the phone build of the app (it can\'t be drawn in Expo Go or on the web).',
     serbest_cizimde_yukseklik_ve: 'Free drawing has no elevation or gradient; choose “Snap to trail” or “Snap to road”.',
     dk: '{dk} min',

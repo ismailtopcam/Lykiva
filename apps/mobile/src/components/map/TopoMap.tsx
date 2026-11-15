@@ -35,6 +35,8 @@ export type MapMarker = {
   text?: string;
   /** Harita üzerinde özel görünüm (yalnızca friend) */
   render?: ReactNode;
+  /** Parmakla basılacak işaret (ör. rota çizerken durak): daha büyük çizilir, basınca onMarkerPress çağrılır */
+  basilir?: boolean;
 };
 
 export type TopoMapProps = {
@@ -70,6 +72,11 @@ export type TopoMapProps = {
   onKullaniciOynatti?: () => void;
   /** Haritaya dokununca (yalnızca gerçek haritada) */
   onPress?: (coord: LngLat) => void;
+  /**
+   * `basilir` işaretlerden birine dokununca (yalnızca gerçek haritada); o dokunuş onPress'e gitmez.
+   * Dokunma alanı işaretin çevresinde 44×44 nokta (MapLibre varsayılanı).
+   */
+  onMarkerPress?: (id: string) => void;
   /** Sağ üstte harita türü (katman) düğmesi; top: haritanın üst kenarından uzaklık. Yalnızca gerçek haritada. */
   katmanDugmesi?: { top: number };
   accessibilityLabel: string;
@@ -141,7 +148,7 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
     .filter((m) => m.kind !== 'friend')
     .map((m) => ({
       type: 'Feature' as const,
-      properties: { kind: m.kind, text: m.text ?? '' },
+      properties: { id: m.id, kind: m.kind, text: m.text ?? '', b: m.basilir ? 1 : 0 },
       geometry: { type: 'Point' as const, coordinates: m.coord },
     }));
 
@@ -160,7 +167,16 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
       doubleTapZoom={interactive}
       touchRotate={interactive}
       touchPitch={false}
-      onPress={props.onPress ? (e) => props.onPress?.([e.nativeEvent.lngLat[0], e.nativeEvent.lngLat[1]]) : undefined}
+      onPress={
+        props.onPress
+          ? (e) => {
+              // Basılır bir işaretten kabarcıklanan dokunuş haritaya dokunma sayılmaz (stopPropagation işlemezse de)
+              const n = e.nativeEvent;
+              if (props.onMarkerPress && 'features' in n && n.features.some((f) => f.properties?.b === 1)) return;
+              props.onPress?.([n.lngLat[0], n.lngLat[1]]);
+            }
+          : undefined
+      }
       onRegionWillChange={
         props.onKullaniciOynatti
           ? (e) => {
@@ -313,12 +329,32 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
       ) : null}
 
       {pointFeatures.length ? (
-        <ML.GeoJSONSource id="isaretler" data={{ type: 'FeatureCollection', features: pointFeatures }}>
+        <ML.GeoJSONSource
+          id="isaretler"
+          data={{ type: 'FeatureCollection', features: pointFeatures }}
+          onPress={
+            props.onMarkerPress
+              ? (e) => {
+                  const f = e.nativeEvent.features.find((x) => x.properties?.b === 1);
+                  const id = f?.properties?.id;
+                  if (typeof id !== 'string') return;
+                  // Basılan işaret haritaya dokunma sayılmasın (ör. yanına yeni durak eklenmesin)
+                  e.stopPropagation();
+                  props.onMarkerPress?.(id);
+                }
+              : undefined
+          }>
           <ML.Layer
             id="isaret-daire"
             type="circle"
             paint={{
-              'circle-radius': ['match', ['get', 'kind'], 'stop', 10, 'me', 9, 'cursor', 8, 7],
+              // Basılır işaretler (rota çizerken duraklar) parmakla tutturulsun diye büyük
+              'circle-radius': [
+                'case',
+                ['==', ['get', 'b'], 1],
+                ['match', ['get', 'kind'], 'stop', 14, 12],
+                ['match', ['get', 'kind'], 'stop', 10, 'me', 9, 'cursor', 8, 7],
+              ],
               'circle-color': [
                 'match',
                 ['get', 'kind'],
@@ -336,14 +372,14 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
                 '#16201B',
               ],
               'circle-stroke-color': ['match', ['get', 'kind'], 'start', rotaMoru, 'cursor', '#16201B', '#FBF8F2'],
-              'circle-stroke-width': ['match', ['get', 'kind'], 'start', 3, 'cursor', 3.5, 2.5],
+              'circle-stroke-width': ['case', ['==', ['get', 'b'], 1], 3.5, ['match', ['get', 'kind'], 'start', 3, 'cursor', 3.5, 2.5]],
             }}
           />
           <ML.Layer
             id="isaret-yazi"
             type="symbol"
             // Yazı tipi belirtilmezse "Open Sans" istenir; OpenFreeMap'te yok (404) ve numaralar görünmez
-            layout={{ 'text-field': ['get', 'text'], 'text-font': ['Noto Sans Bold'], 'text-size': 11, 'text-allow-overlap': true }}
+            layout={{ 'text-field': ['get', 'text'], 'text-font': ['Noto Sans Bold'], 'text-size': ['case', ['==', ['get', 'b'], 1], 14, 11], 'text-allow-overlap': true }}
             paint={{ 'text-color': '#FBF8F2' }}
           />
         </ML.GeoJSONSource>

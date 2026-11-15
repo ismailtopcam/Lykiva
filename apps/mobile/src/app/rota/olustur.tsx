@@ -134,6 +134,8 @@ export default function RotaOlusturScreen() {
     coord: c,
     kind: i === 0 ? 'start' : i === duraklar.length - 1 && duraklar.length > 1 ? 'end' : 'stop',
     text: i > 0 && i < duraklar.length - 1 ? String(i) : undefined,
+    // Duraklar büyük çizilir; üstüne dokununca kaldırılır
+    basilir: true,
   }));
   if (imlecYeri) markers.push({ id: 'imlec', coord: imlecYeri, kind: 'cursor' });
 
@@ -183,6 +185,10 @@ export default function RotaOlusturScreen() {
         follow={odak?.c ?? null}
         followZoom={odak?.z}
         onPress={(c) => setDuraklar((d) => [...d, c])}
+        onMarkerPress={(id) => {
+          const i = Number(id.slice(1));
+          if (id.startsWith('d') && Number.isInteger(i)) setDuraklar((d) => d.filter((_c, k) => k !== i));
+        }}
         katmanDugmesi={{ top: insets.top + 58 }}
         padding={{ top: 120, bottom: panelH + 40 }}
         accessibilityLabel={$t('rota_olustur.rota_cizim_haritasi_nokta', { length: duraklar.length })}
@@ -269,6 +275,11 @@ export default function RotaOlusturScreen() {
                   {$t('rota_olustur.yalnizca_turkiye')}
                 </Txt>
               </>
+            ) : null}
+            {gercekHarita && duraklar.length ? (
+              <Txt variant="small" style={[styles.note, { color: colors.inkMuted }]}>
+                {$t('rota_olustur.nokta_kaldir_ipucu')}
+              </Txt>
             ) : null}
             {yeterli ? (
               <View style={styles.ozetSatiri}>
