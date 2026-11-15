@@ -1367,6 +1367,7 @@ export const tr = {
     baslangic_noktasi_icin_haritaya: 'Başlangıç noktası için haritaya dokun.',
     rota_cizim_haritasi_nokta: 'Rota çizim haritası: {length} nokta',
     sonraki_noktaya_dokun_patika: 'Sonraki noktaya dokun; patika ya da yol otomatik bulunur.',
+    nokta_kaldir_ipucu: 'Bir noktayı kaldırmak için üstüne dokun.',
     haritaya_dokunarak_rota_cizmek: 'Haritaya dokunarak rota çizmek için uygulamanın telefon derlemesi gerekir (Expo Go ve web’de çizilemez).',
     serbest_cizimde_yukseklik_ve: 'Serbest çizimde yükseklik ve eğim yok; “Patikaya yapış” ya da “Yola yapış” seç.',
     dk: '{dk} dk',

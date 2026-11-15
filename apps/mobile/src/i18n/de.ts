@@ -1366,6 +1366,7 @@ export const de: Sozluk = {
     baslangic_noktasi_icin_haritaya: 'Tippe für den Startpunkt auf die Karte.',
     rota_cizim_haritasi_nokta: 'Karte zum Zeichnen der Route: {length} Punkt|Karte zum Zeichnen der Route: {length} Punkte',
     sonraki_noktaya_dokun_patika: 'Tippe auf den nächsten Punkt; Pfad oder Straße werden automatisch gefunden.',
+    nokta_kaldir_ipucu: 'Tippe auf einen Punkt, um ihn zu entfernen.',
     haritaya_dokunarak_rota_cizmek: 'Zum Zeichnen einer Route per Tippen auf die Karte braucht es die Handy-Version der App (in Expo Go und im Web nicht möglich).',
     serbest_cizimde_yukseklik_ve: 'Beim freien Zeichnen gibt es keine Höhe und Steigung; wähle „An Pfad ausrichten“ oder „An Straße ausrichten“.',
     dk: '{dk} Min.',

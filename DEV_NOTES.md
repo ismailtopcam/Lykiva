@@ -399,6 +399,8 @@ ikili geçiş var: **Yolculuk yap** (yol tarifi) / **Egzersiz yap** (tür seç, 
 - Rota oluşturma ekranının (`rota/olustur.tsx`) paneli de aynı sürüklenen panel (15 Kas 2026): açılışta en altta kısa
   özet (mesafe, tırmanış, süre) ve Rotayı kaydet; yukarı çekince ayrıntı (ad, etkinlik, ölçüler, profil, zemin,
   görünürlük), rota varsa en üstte tırmanışlar ve rüzgâr; aşağı çekince yalnızca tutamaç. Çizim modları panelle kayar.
+  Duraklar büyük çizilir; bir durağa dokununca kaldırılır (TopoMap `basilir` + `onMarkerPress`, MapLibre kaynağının
+  onPress'i; dokunuş haritaya gitmez, yanına yeni durak eklenmez). **Telefonda denenmedi.**
 - Panel her durumda (yolculuk, egzersiz, boş) tutamağından aşağı çekilince yalnızca tutamaç kalır, harita açılır;
   yukarı çekince ya da tutamağa dokununca son kademesinde geri gelir (`panelKademesi.ts` > `kapanir`). Kapalıyken
   hedef seçilirse panel kendiliğinden açılır.
