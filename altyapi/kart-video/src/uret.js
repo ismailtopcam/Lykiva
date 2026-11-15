@@ -3,8 +3,13 @@
  * ffmpeg'e akıtılır (H.264, yuv420p, +faststart → Instagram / WhatsApp oynatır).
  *
  * Ayarlar (ortam):
- *   KV_FPS     kare hızı (varsayılan 30)
+ *   KV_FPS     kare hızı (varsayılan 24)
  *   KV_OLCEK   çizim ölçeği: CSS pikselin kaç katı çizilir (varsayılan 2 → hikâye 720×1280, çıkışta 1080×1920'ye büyütülür)
+ *   KV_HARITA_ORAN  haritanın çözünürlük çarpanı (varsayılan 0,75; yazılar etkilenmez)
+ *   KV_AA      kenar yumuşatma (varsayılan 0; yazılım WebGL'de çok pahalı)
+ *   KV_GOLGE   tepe gölgesi (varsayılan 1)
+ *   KV_SADE    sade stil (varsayılan 1)
+ *   KV_ARAZI   yörünge / takipte 3B arazi (varsayılan 1; kapalıysa eğik harita + tepe gölgesi, ~3 kat hızlı)
  *   KV_GL      'swiftshader' (varsayılan; ekran kartı olmayan sunucu) ya da 'gpu'
  *   KV_FFMPEG  ffmpeg yolu (varsayılan 'ffmpeg')
  */
@@ -13,9 +18,16 @@ import { chromium } from 'playwright';
 
 import { BICIMLER } from './dogrula.js';
 
-const FPS = Number(process.env.KV_FPS || 30);
+const FPS = Number(process.env.KV_FPS || 24);
 const OLCEK = Number(process.env.KV_OLCEK || 2);
 const GL = process.env.KV_GL || 'swiftshader';
+const SAHNE_AYAR = new URLSearchParams({
+  aa: process.env.KV_AA || '0',
+  oran: process.env.KV_HARITA_ORAN || '0.75',
+  golge: process.env.KV_GOLGE || '1',
+  sade: process.env.KV_SADE || '1',
+  arazi: process.env.KV_ARAZI || '1',
+}).toString();
 const FFMPEG = process.env.KV_FFMPEG || 'ffmpeg';
 
 let tarayici = null;
@@ -65,14 +77,16 @@ export async function videoUret(girdi, cikti, sahneAdresi, ilerleme = () => {}) 
   sayfa.on('pageerror', (e) => gunluk.push(String(e)));
   let ff = null;
   try {
-    await sayfa.goto(sahneAdresi, { waitUntil: 'load' });
+    await sayfa.goto(`${sahneAdresi}?${SAHNE_AYAR}`, { waitUntil: 'load' });
     // Harita, arazi ve yazı tipleri yüklenip ilk kare hazır olana kadar
     await sayfa.evaluate((v) => window.sahneKur(v), girdi);
     const kareSayisi = Math.round(girdi.sure * FPS);
     ff = ffmpegBaslat(cikti, b.cw, b.ch);
+    let goruntu = null;
     for (let i = 0; i < kareSayisi; i++) {
-      await sayfa.evaluate((s) => window.kare(s), i / FPS);
-      const goruntu = await sayfa.screenshot({ type: 'jpeg', quality: 92, animations: 'disabled', caret: 'hide' });
+      const degisti = await sayfa.evaluate((s) => window.kare(s), i / FPS);
+      // Görünüm değişmediyse (sondaki bekleme) son kare tekrarlanır: çizim ve ekran görüntüsü yok
+      if (degisti || !goruntu) goruntu = await sayfa.screenshot({ type: 'jpeg', quality: 90, animations: 'disabled', caret: 'hide' });
       await ff.yaz(goruntu);
       ilerleme((i + 1) / kareSayisi);
     }
@@ -96,7 +110,7 @@ export async function kareleriAl(girdi, sahneAdresi, saniyeler) {
   const gunluk = [];
   sayfa.on('console', (m) => m.type() === 'error' && gunluk.push(m.text()));
   try {
-    await sayfa.goto(sahneAdresi, { waitUntil: 'load' });
+    await sayfa.goto(`${sahneAdresi}?${SAHNE_AYAR}`, { waitUntil: 'load' });
     await sayfa.evaluate((v) => window.sahneKur(v), girdi);
     const out = [];
     for (const s of saniyeler) {

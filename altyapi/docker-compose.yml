@@ -53,8 +53,11 @@ services:
     build: ./kart-video
     restart: unless-stopped
     environment:
-      - KV_FPS=${KV_FPS:-30}
+      # Hız ayarları: altyapi/kart-video/README.md > Hız (sunucuda ekran kartı yok)
+      - KV_FPS=${KV_FPS:-24}
       - KV_OLCEK=${KV_OLCEK:-2}
+      - KV_HARITA_ORAN=${KV_HARITA_ORAN:-0.75}
+      - KV_ARAZI=${KV_ARAZI:-1}
       - KV_SAKLA_DK=${KV_SAKLA_DK:-60}
       - KV_EN_FAZLA_SIRA=${KV_EN_FAZLA_SIRA:-20}
     cpus: ${KV_ISLEMCI:-3}
