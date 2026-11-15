@@ -404,8 +404,11 @@ ikili geçiş var: **Yolculuk yap** (yol tarifi) / **Egzersiz yap** (tür seç, 
 - Panel her durumda (yolculuk, egzersiz, boş) tutamağından aşağı çekilince yalnızca tutamaç kalır, harita açılır;
   yukarı çekince ya da tutamağa dokununca son kademesinde geri gelir (`panelKademesi.ts` > `kapanir`). Kapalıyken
   hedef seçilirse panel kendiliğinden açılır.
-- Egzersiz: `components/EgzersizPaneli.tsx` (tür şeridi, rota, canlı konum, "{tür} başlat"). Aynı panel rota
-  sayfasındaki "Bu rotayı başlat" ekranında da (`kayit/index.tsx`). Seçilen tür ve şeridin sırası telefonda saklanır
+- Egzersiz: `components/EgzersizPaneli.tsx`, panelde iki kademe: `EgzersizSeridi` ("Hangi egzersiz?" ve tür şeridi;
+  panel aşağı çekilince en azından bu kalır) ve `EgzersizAyrinti` (rota, canlı konum, "{tür} başlat"). Rota
+  sayfasındaki "Bu rotayı başlat" Harita'nın Egzersiz paneline gider, rota seçili gelir (`/kesfet?rota=`).
+  Eski `kayit/index.tsx` artık yalnızca yönlendirir. Kayıt silinince `dismissTo('/')`: yığındaki sekmelere dönülür
+  (önce `replace('/')` idi; rotadan başlatılan kayıt silinince sürüklenmeyen eski başlatma ekranı görünüyordu). Seçilen tür ve şeridin sırası telefonda saklanır
   (`lib/egzersizTuru.ts`); en son başlatılan tür başa gelir. Şeridin sonundaki "Tümü" gruplu, aranabilir listeyi açar
   (`app/egzersiz-turleri.tsx`).
 - Alt menü dört sekme: Ana Sayfa · Harita · Gruplar · Profil. Egzersiz sekmesi yalnızca kayıt sürerken görünür.

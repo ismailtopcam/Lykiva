@@ -1,6 +1,6 @@
 /**
  * Harita sekmesi: iki iş tek ekranda. Panelin başındaki geçişle "Yolculuk yap" (bulunduğun yerden seçtiğin yere
- * yol tarifi) ya da "Egzersiz yap" (tür seç, kaydı başlat; bkz. `EgzersizPaneli`) seçilir.
+ * yol tarifi) ya da "Egzersiz yap" (tür seç, kaydı başlat; bkz. `EgzersizPaneli.tsx`) seçilir.
  *
  * Hedef haritaya dokunarak ya da yer aramayla (Photon) seçilir; yol BRouter'la, seçilen etkinliğe göre hesaplanır
  * (patika ya da yol öncelikli). "Yola çık" kaydı bu yolla başlatır, kayıt ekranı kalan mesafeyi gösterir.
@@ -14,13 +14,13 @@
  */
 import { ACTIVITY_LABELS, ACTIVITY_TYPES, estimateDuration, formatKm, formatMeters, kmUnit, routeStats, type RoutePoint } from '@lykiva/shared';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Keyboard, Linking, Platform, Pressable, ScrollView, StyleSheet, TextInput, View, useWindowDimensions, type TextInputInstance } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EgimProfili, imlecKonumu, TirmanisListesi, useRotaEgim } from '@/components/EgimProfili';
-import { EgzersizPaneli, GpsRozeti } from '@/components/EgzersizPaneli';
+import { EgzersizAyrinti, EgzersizSeridi, GpsRozeti } from '@/components/EgzersizPaneli';
 import { FloatingHeader } from '@/components/Header';
 import { Icon, type IconName } from '@/components/Icon';
 import { IconButton } from '@/components/IconButton';
@@ -32,9 +32,9 @@ import { RotaRuzgari } from '@/components/RotaRuzgari';
 import { Txt } from '@/components/Txt';
 import { Button, Chip, Stat, ToggleRow } from '@/components/ui';
 import type { LngLat } from '@/data/ornek';
-import type { Rota } from '@/data/rota';
+import { rotaGetir, type Rota } from '@/data/rota';
 import { baslat, IzinHatasi, konumOnizlemeBaslat, useKayit } from '@/kayit/kaydedici';
-import { TUR_IKONLARI } from '@/lib/egzersizTuru';
+import { egzersizTuruSec, TUR_IKONLARI } from '@/lib/egzersizTuru';
 import { sonHedefEkle, sonHedefleriTemizle, sonHedefSil, useSonHedefler, type SonHedef } from '@/lib/sonHedefler';
 import { yerAra, type YerSonucu } from '@/lib/yerArama';
 import { rotaHesapla, type CizimModu, type YolTuru } from '@/lib/yonlendirme';
@@ -214,7 +214,9 @@ export default function HaritaScreen() {
   // Hedef yokken ve egzersizde tek bölüm. Panel ayrıntı kademesinde açılır; seçilen kademe hedef değişince de kalır.
   // Her durumda panel tutamağından aşağı çekilince yalnızca tutamaç kalır (kapalı; harita açılır), yukarı çekince
   // ya da tutamağa dokununca geri gelir
-  const kademeAdlari = !yolculuk || !hedef
+  const kademeAdlari = !yolculuk
+    ? [$t('egzersiz.hangi_egzersiz'), $t('harita.panel_ozet')]
+    : !hedef
     ? [$t('harita.panel_ozet')]
     : !yolVar
       ? [$t('harita.panel_kisa'), $t('harita.panel_ozet')]
@@ -222,6 +224,30 @@ export default function HaritaScreen() {
   const panel = usePanelKademesi({ ilk: 1, sayi: kademeAdlari.length, altBosluk: PANEL_ALT_BOSLUK, kapanir: true });
   // Kısa özet yalnızca en alttaki kademede, ayrıntı ondan sonrakilerde görünür ve dokunulur
   const kisaAcik = panel.kademe === 0;
+
+  // Rota sayfasındaki "Bu rotayı başlat" (ve eski /kayit bağlantıları) buraya gelir: Egzersiz yap, rota seçili.
+  // Parametre bir kez uygulanır, sonra silinir (sekmeye her dönüşte yeniden uygulanmasın)
+  const parametre = useLocalSearchParams<{ rota?: string; egzersiz?: string }>();
+  const istek = parametre.rota ?? parametre.egzersiz ?? null;
+  const [uygulananIstek, setUygulananIstek] = useState<string | null>(null);
+  // Geçiş çizim sırasında (React'in "önceki değere göre state ayarla" kalıbı); panel, rota ve parametre efektte
+  if (istek !== uygulananIstek) {
+    setUygulananIstek(istek);
+    if (istek) setGorev('egzersiz');
+  }
+  useEffect(() => {
+    if (!parametre.rota && !parametre.egzersiz) return;
+    panel.ac();
+    if (parametre.rota) {
+      rotaGetir(parametre.rota)
+        .then((r) => {
+          setRota(r);
+          egzersizTuruSec(r.activity);
+        })
+        .catch(() => undefined);
+    }
+    router.setParams({ rota: undefined, egzersiz: undefined });
+  }, [parametre.rota, parametre.egzersiz, panel]);
   const gecis = panel.gecis;
   const kisaOpak = useMemo(() => gecis?.interpolate({ inputRange: [0, 0.5], outputRange: [1, 0], extrapolate: 'clamp' }), [gecis]);
   const ayrintiOpak = useMemo(() => gecis?.interpolate({ inputRange: [0.4, 1], outputRange: [0, 1], extrapolate: 'clamp' }), [gecis]);
@@ -488,7 +514,8 @@ export default function HaritaScreen() {
             </View>
 
             {!yolculuk ? (
-              <EgzersizPaneli rota={rota} onRota={setRota} kayitDurumu={kayit.durum} onBasladi={() => router.push('/kayit/canli')} />
+              // Panel aşağı çekilince en azından tür şeridi görünür; rota, canlı konum ve Başlat bir sonraki bölümde
+              <EgzersizSeridi style={{ marginBottom: 0 }} />
             ) : !hedef ? (
               <>
                 {/* Geçmiş yalnızca arama kutusunun altında (dokununca "Son aramalar") */}
@@ -528,6 +555,13 @@ export default function HaritaScreen() {
               </Animated.View>
             )}
           </View>
+
+          {/* Egzersiz 2. bölüm: rota, canlı konum, Başlat */}
+          {!yolculuk ? (
+            <View onLayout={panel.bolum[1]} style={styles.bolum} aria-hidden={panel.kapali || panel.kademe < 1}>
+              <EgzersizAyrinti rota={rota} onRota={setRota} kayitDurumu={kayit.durum} onBasladi={() => router.push('/kayit/canli')} />
+            </View>
+          ) : null}
 
           {/* 2. bölüm: ayrıntı (tasarımdaki "Yol tarifi, panel açık"). Kısa özetin üstüne biner (eksi üst boşluk):
               açık panelde geçişin hemen altında hedef başlar, Yola çık en altta durur */}
