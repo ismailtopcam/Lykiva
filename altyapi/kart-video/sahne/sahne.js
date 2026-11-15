@@ -15,15 +15,37 @@ const STIL = {
 };
 /** Harita kabının CSS'teki büyütmesi (sahne.css > #harita) */
 const K = 2;
+/**
+ * Hız ayarları (adres parametresi; uret.js ortamdan doldurur). Sunucuda ekran kartı yok, WebGL yazılımla çizilir:
+ *   aa=1      kenar yumuşatma (MSAA; yazılımla pahalı)
+ *   oran=1    harita çözünürlüğü çarpanı (0,75 → piksel sayısı ~%56)
+ *   golge=1   tepe gölgesi katmanı
+ *   sade=1    stil sadeleşir: yalnız zemin, yeşil alan, su ve ana yollar kalır. Yazılım WebGL'de maliyet piksel sayısından çok
+ *             katman sayısına bağlı (arazi açıkken her katman her karede dokuya ayrıca çizilir); liberty ~110 katman.
+ *   arazi=1   3B arazi (kapalıysa eğik görünüm + tepe gölgesi)
+ *   demboyut=256  arazi karosu boyutu; 512 → aynı alan için 4 kat az arazi parçası (daha kaba, çok daha hızlı)
+ */
+const Q = new URLSearchParams(location.search);
+const HIZ = {
+  aa: Q.get('aa') === '1',
+  oran: Number(Q.get('oran') || 1),
+  golge: Q.get('golge') !== '0',
+  sade: Q.get('sade') !== '0',
+  arazi: Q.get('arazi') !== '0',
+  demBoyut: Number(Q.get('demboyut') || 256),
+};
+
+/** Sade stilde kalan katmanlar (OpenFreeMap liberty / dark / positron adları) */
+const KALAN = /^(background|natural_earth|park|landuse_park|landuse_residential|landcover_(wood|grass|wetland|sand|ice|glacier|ice_shelf)|water|waterway|waterway_river|road_(motorway|trunk_primary|secondary_tertiary|minor)(_casing)?|highway_(minor|major_casing|major_inner|motorway_casing|motorway_inner))$/;
 const DEM = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
 
 const AYAR = {
   // 11, 12, 16: düz harita → eğilir, dağlar yükselir, kamera döner
   yorunge: { stil: 'liberty', su: '#9CC8D3', abarti: 1.7, golge: 0.55, bina: null, rota: '#E07A4A', gok: '#0E1512', kamera: 'yorunge', yaklas: 0.3 },
   // 13: gece şehir, binalar yükselir
-  'sehir-gece': { stil: 'dark', abarti: 1.2, golge: 0.2, bina: { renk: '#3C4048' }, rota: '#E07A4A', gok: '#1B1B20', kamera: 'yorunge', yaklas: 0.7 },
+  'sehir-gece': { stil: 'dark', abarti: 1.2, golge: 0.2, bina: { renk: '#3C4048' }, rota: '#E07A4A', gok: '#1B1B20', kamera: 'yorunge', yaklas: 0.7, arazi: false },
   // 14 (15'in uydusu yerine): beyaz maket şehir
-  'sehir-maket': { stil: 'positron', abarti: 1.2, golge: 0.12, bina: { renk: '#F3F3F5' }, rota: '#B04E25', gok: '#E9E9EE', kamera: 'yorunge', yaklas: 0.7 },
+  'sehir-maket': { stil: 'positron', abarti: 1.2, golge: 0.12, bina: { renk: '#F3F3F5' }, rota: '#B04E25', gok: '#E9E9EE', kamera: 'yorunge', yaklas: 0.7, arazi: false },
   // 17: kamera rotanın arkasından izler
   takip: { stil: 'liberty', su: '#9CC8D3', abarti: 1.5, golge: 0.55, bina: null, rota: '#E07A4A', gok: '#8FCFE0', ufuk: '#DCEFF3', kamera: 'takip' },
 };
@@ -35,6 +57,7 @@ let iz; // { nk: [[lng,lat]], kum: [m], L, yon: [derece] }
 let bas; // genel bakış kamerası { center, zoom }
 let sonAbarti = -1;
 let sonBina = -1;
+let sonP = -1;
 
 /* ------------------------------------------------------------------ */
 /* Yardımcılar                                                         */
@@ -167,9 +190,13 @@ function bosAlan() {
 }
 
 function katmanlariKur() {
-  const stil = map.getStyle();
+  let stil = map.getStyle();
   // Yazılar kapalı: kart dilden bağımsız ve sade kalsın
   for (const l of stil.layers) if (l.type === 'symbol') map.setLayoutProperty(l.id, 'visibility', 'none');
+  if (HIZ.sade) {
+    for (const l of stil.layers) if (!KALAN.test(l.id)) map.removeLayer(l.id);
+    stil = map.getStyle();
+  }
   const ilkCizgi = stil.layers.find((l) => l.type === 'line')?.id;
   // Liberty'nin parlak mavi denizi yerine tasarımdaki turkuaz
   if (A.su) {
@@ -181,9 +208,9 @@ function katmanlariKur() {
 
   // Arazi ve tepe gölgesi için iki ayrı kaynak (MapLibre önerisi)
   const dem = { type: 'raster-dem', tiles: [DEM], tileSize: 256, encoding: 'terrarium', maxzoom: 15 };
-  map.addSource('dem', dem);
-  map.addSource('dem-golge', dem);
-  map.addLayer(
+  map.addSource('dem', { ...dem, tileSize: HIZ.demBoyut });
+  if (HIZ.golge) map.addSource('dem-golge', dem);
+  if (HIZ.golge) map.addLayer(
     {
       id: 'golge',
       type: 'hillshade',
@@ -192,7 +219,6 @@ function katmanlariKur() {
     },
     ilkCizgi,
   );
-  map.setTerrain({ source: 'dem', exaggeration: 0.01 });
 
   if (A.bina) {
     map.addLayer({
@@ -252,8 +278,8 @@ window.sahneKur = async (veri) => {
     maxPitch: 85,
     center: iz.nk[0],
     zoom: 10,
-    pixelRatio: window.devicePixelRatio / K,
-    canvasContextAttributes: { antialias: true, preserveDrawingBuffer: true },
+    pixelRatio: (window.devicePixelRatio / K) * HIZ.oran,
+    canvasContextAttributes: { antialias: HIZ.aa, preserveDrawingBuffer: Q.get('pdb') === '1' },
   });
   await new Promise((res, rej) => {
     map.once('load', res);
@@ -324,11 +350,23 @@ function takip(t) {
   return { p, km: p, abarti: ara(0.01, A.abarti, yumusak((t - 2) / 2)), bina: 1, kamera };
 }
 
+let sonImza = '';
+
+/** Kareyi çizer. Görünüm bir önceki kareyle aynıysa (sondaki bekleme) çizmeden false döner: Node son kareyi tekrarlar. */
 window.kare = async (t) => {
   const s = A.kamera === 'takip' ? takip(t) : yorunge(t);
-  if (Math.abs(s.abarti - sonAbarti) > 0.002 && map.terrain) {
-    // Arazi nesnesini her karede yeniden kurmamak için abartı doğrudan değiştirilir
-    map.terrain.exaggeration = s.abarti;
+  const k = s.kamera;
+  const imza = [s.p, s.km, s.abarti, s.bina, k.center[0], k.center[1], k.zoom, k.pitch, k.bearing].map((x) => x.toFixed(6)).join('|');
+  if (imza === sonImza) return false;
+  sonImza = imza;
+  if (Math.abs(s.abarti - sonAbarti) > 0.002 || sonAbarti < 0) {
+    // Düz karelerde arazi kapalı (pahalı doku çizimi yok); eğilmeye başlayınca açılır.
+    // Arazi nesnesini her karede yeniden kurmamak için abartı doğrudan değiştirilir.
+    // Şehir şablonlarında arazi yok (3B etkisini binalar verir; arazi kareyi ~3 kat yavaşlatıyor)
+    if (s.abarti <= 0.0105 || !HIZ.arazi || A.arazi === false) {
+      if (map.terrain) map.setTerrain(null);
+    } else if (!map.terrain) map.setTerrain({ source: 'dem', exaggeration: s.abarti });
+    else map.terrain.exaggeration = s.abarti;
     sonAbarti = s.abarti;
   }
   if (A.bina && Math.abs(s.bina - sonBina) > 0.002) {
@@ -336,10 +374,15 @@ window.kare = async (t) => {
     map.setPaintProperty('binalar', 'fill-extrusion-base', ['*', ['coalesce', ['get', 'render_min_height'], 0], s.bina]);
     sonBina = s.bina;
   }
-  const d = s.p * iz.L;
-  map.getSource('rota').setData({ type: 'LineString', coordinates: s.p > 0 ? izParcasi(d) : [iz.nk[0], iz.nk[0]] });
-  map.getSource('uc').setData({ type: 'Point', coordinates: izde(d).p });
+  // Rota değişmediyse kaynağa dokunma: her setData arazinin üstündeki harita dokusunu (render-to-texture) baştan çizdirir
+  if (Math.abs(s.p - sonP) > 1e-6) {
+    const d = s.p * iz.L;
+    map.getSource('rota').setData({ type: 'LineString', coordinates: s.p > 0 ? izParcasi(d) : [iz.nk[0], iz.nk[0]] });
+    map.getSource('uc').setData({ type: 'Point', coordinates: izde(d).p });
+    sonP = s.p;
+  }
   map.jumpTo(s.kamera);
   kmYaz(s.km);
   await bekle();
+  return true;
 };

@@ -40,8 +40,8 @@ body {
   pointer-events: none;
 }
 .kutu {
+  /* backdrop-filter yok: yazılımla çizimde her karede haritayı bulanıklaştırmak ekran görüntüsünü saniyelerce uzatıyordu */
   background: var(--kutu);
-  backdrop-filter: blur(6px);
 }
 .baslikYazi {
   font-family: 'Bricolage Grotesque', system-ui, sans-serif;

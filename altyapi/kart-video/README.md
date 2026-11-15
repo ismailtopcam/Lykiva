@@ -48,12 +48,34 @@ dolunca 503. Kimlik doğrulama ve istek sınırı önündeki kapıda olacak (BRo
 | Değişken | Varsayılan | Ne |
 | --- | --- | --- |
 | `PORT` | 8080 | |
-| `KV_FPS` | 30 | kare hızı |
+| `KV_FPS` | 24 | kare hızı |
 | `KV_OLCEK` | 2 | çizim ölçeği (hikâye 720×1280 çizilir, çıkışta 1080×1920'ye büyütülür) |
+| `KV_HARITA_ORAN` | 0.75 | haritanın çözünürlük çarpanı (yazılar etkilenmez) |
+| `KV_ARAZI` | 1 | yörünge / takipte 3B arazi; 0 → eğik harita + tepe gölgesi, ~3 kat hızlı |
+| `KV_AA` | 0 | kenar yumuşatma (yazılım WebGL'de çok pahalı) |
+| `KV_SADE` | 1 | sade stil (yalnız zemin, yeşil alan, su, ana yollar) |
+| `KV_GOLGE` | 1 | tepe gölgesi |
 | `KV_GL` | swiftshader | ekran kartı yoksa yazılımla WebGL; ekran kartlı makinede `gpu` |
 | `KV_CIKTI` | /tmp/kart-video | videoların yazıldığı klasör |
 | `KV_SAKLA_DK` | 60 | |
 | `KV_EN_FAZLA_SIRA` | 20 | |
+
+## Hız (15 Kas 2026, sunucu "uygulama", 3 çekirdek, yazılım WebGL)
+
+İlk sürüm 12 sn'lik hikâyeyi sunucuda **18 dk**'da üretti (yerelde 3,7 dk). Kare başına ölçüm (`sunucu_olc`):
+
+| Ayar | Düz kare | Eğik kare |
+| --- | --- | --- |
+| İlk sürüm (kenar yumuşatma açık, arazi hep açık) | 2,2 sn | 2,7–3,5 sn |
+| Kenar yumuşatma kapalı, harita ×0,75 | 1,5 sn | 1,6–2,0 sn |
+| + düz karelerde arazi kapalı, rota değişmezse kaynağa dokunulmaz | 0,3–0,5 sn | 1,8 sn |
+| + 3B arazi kapalı | 0,3–0,6 sn | 0,6–0,8 sn |
+
+- Maliyet piksel sayısından çok 3B araziden geliyor (harita çözünürlüğünü yarıya indirmek eğik karede ~%10 kazandırıyor).
+- Ekran görüntüsü süresi asıl çizimi de içerir (yazılım WebGL çizimi görüntü okunurken tamamlanır).
+- Denendi, işe yaramadı: `toDataURL` ile tuvali okumak (aynı süre), arazi karosunu 512 yapmak (daha yavaş),
+  stili sadeleştirmek (eğik karede fark yok; düz karede az), yazı kutularındaki bulanıklığı kaldırmak.
+- Şehir şablonlarında arazi kapalı (3B etkisini binalar verir).
 
 ## Yerelde deneme
 
