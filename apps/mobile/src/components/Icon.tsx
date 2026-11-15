@@ -57,7 +57,8 @@ export type IconName =
   | 'star'
   | 'navigation'
   | 'pulse'
-  | 'grid';
+  | 'grid'
+  | 'car';
 
 type Props = { name: IconName; size?: number; color?: string; strokeWidth?: number };
 
@@ -127,6 +128,14 @@ function render(name: IconName, p: Record<string, unknown>, color: string) {
       );
     case 'star':
       return <Path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" {...p} />;
+    case 'car':
+      return (
+        <>
+          <Path d="M5 17H4v-5l2-5h12l2 5v5h-1M9 17h6M4.5 12h15" {...p} />
+          <Circle cx={7} cy={17} r={2} {...p} />
+          <Circle cx={17} cy={17} r={2} {...p} />
+        </>
+      );
     case 'navigation':
       return <Path d="M12 3l7 17-7-4-7 4z" {...p} />;
     case 'pulse':
