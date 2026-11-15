@@ -171,6 +171,9 @@ export async function baslat(port = Number(process.env.PORT || 8080)) {
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  // Tek bir işteki beklenmeyen hata bütün servisi (ve sıradaki işleri) düşürmesin
+  process.on('unhandledRejection', (e) => console.error('yakalanmamış söz reddi:', e));
+  process.on('uncaughtException', (e) => console.error('yakalanmamış hata:', e));
   const s = await baslat();
   console.log(`kart-video ${s.port} portunda; çıktı ${CIKTI}`);
 }
