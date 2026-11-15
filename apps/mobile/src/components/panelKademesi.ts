@@ -39,9 +39,11 @@ type Ayarlar = {
   sonYukseklik?: number | null;
   /** Panel en alttaki kademenin altına, yalnızca tutamaç görünecek kadar inebilsin */
   kapanir?: boolean;
+  /** Kapalı durakta tutamağın altına eklenen boşluk (ör. alt menüsüz ekranda telefonun alt güvenli alanı) */
+  kapaliAltBosluk?: number;
 };
 
-export function usePanelKademesi({ ilk, sayi, altBosluk, sonYukseklik = null, kapanir = false }: Ayarlar) {
+export function usePanelKademesi({ ilk, sayi, altBosluk, sonYukseklik = null, kapanir = false, kapaliAltBosluk = 0 }: Ayarlar) {
   const [kademe, setKademe] = useState(ilk);
   const [kapali, setKapali] = useState(false);
   // İlk iki durağın yükseklikleri (`gecis` için); bölümler ölçüldükçe güncellenir
@@ -54,7 +56,7 @@ export function usePanelKademesi({ ilk, sayi, altBosluk, sonYukseklik = null, ka
   const [api] = useState(() => {
     const yukseklik = new Animated.Value(0);
     // Aşağıdakiler yalnızca bu kapanışta tutulur (çizimde okunmaz)
-    const ayar = { sayi: Math.max(1, sayi), altBosluk, son: sonYukseklik, kapanir };
+    const ayar = { sayi: Math.max(1, sayi), altBosluk, son: sonYukseklik, kapanir, kapaliAlt: kapaliAltBosluk };
     const bitis: (number | undefined)[] = [];
     // Tutamağın sonu (ölçülünce): kapalı durağın yüksekliği
     let tutamacBitis: number | undefined;
@@ -77,7 +79,7 @@ export function usePanelKademesi({ ilk, sayi, altBosluk, sonYukseklik = null, ka
     };
 
     /** Kapalı durak: yalnızca tutamaç görünür. Tutamaç ölçülmediyse ya da `kapanir` yoksa böyle bir durak yok */
-    const kapaliH = (): number | null => (ayar.kapanir && tutamacBitis !== undefined ? Math.min(tutamacBitis, durak(0)) : null);
+    const kapaliH = (): number | null => (ayar.kapanir && tutamacBitis !== undefined ? Math.min(tutamacBitis + ayar.kapaliAlt, durak(0)) : null);
 
     /** Kullanıcı bir kademe seçti (sürükleyip bıraktı, erişilebilirlik hareketi); kapalıysa panel açılır */
     const sec = (k: number) => {
@@ -148,11 +150,12 @@ export function usePanelKademesi({ ilk, sayi, altBosluk, sonYukseklik = null, ka
       yenile();
     };
 
-    const ayarla = (sayi: number, altBosluk: number, son: number | null, kapanir: boolean) => {
+    const ayarla = (sayi: number, altBosluk: number, son: number | null, kapanir: boolean, kapaliAlt: number) => {
       ayar.sayi = Math.max(1, sayi);
       ayar.altBosluk = altBosluk;
       ayar.son = son;
       ayar.kapanir = kapanir;
+      ayar.kapaliAlt = kapaliAlt;
       // Bölüm sayısı azaldıysa artık olmayan bölümlerin ölçüsü unutulur
       bitis.length = Math.min(bitis.length, ayar.sayi);
       simdiki = sinirla(istenen);
@@ -214,8 +217,8 @@ export function usePanelKademesi({ ilk, sayi, altBosluk, sonYukseklik = null, ka
   });
 
   useEffect(() => {
-    api.ayarla(sayi, altBosluk, sonYukseklik, kapanir);
-  }, [api, sayi, altBosluk, sonYukseklik, kapanir]);
+    api.ayarla(sayi, altBosluk, sonYukseklik, kapanir, kapaliAltBosluk);
+  }, [api, sayi, altBosluk, sonYukseklik, kapanir, kapaliAltBosluk]);
 
   const gecis = useMemo(
     () => (aralik && aralik[1] - aralik[0] > 1 ? api.yukseklik.interpolate({ inputRange: [aralik[0], aralik[1]], outputRange: [0, 1], extrapolate: 'clamp' }) : null),
@@ -233,6 +236,8 @@ export function usePanelKademesi({ ilk, sayi, altBosluk, sonYukseklik = null, ka
     bolum: api.bolum,
     tutamac: api.tutamac,
     ac: api.ac,
+    /** Panelin görünen yüksekliği (parmağı izler): üstünde yüzen öğeler panelle birlikte kaysın diye */
+    yukseklik: api.yukseklik,
     buyut: api.buyut,
     kucult: api.kucult,
     stil: olculdu ? { height: api.yukseklik, overflow: 'hidden' as const } : { opacity: 0 },

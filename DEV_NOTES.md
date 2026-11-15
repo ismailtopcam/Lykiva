@@ -396,6 +396,9 @@ ikili geçiş var: **Yolculuk yap** (yol tarifi) / **Egzersiz yap** (tür seç, 
 - Haritanın katman penceresinde **Görünüm**: Sistemle aynı (varsayılan; karanlık temada ya da gün batınca koyu) /
   Açık / Karanlık. Seçim telefonda saklanır, bütün haritalara (kayıt ekranı dahil) uygulanır (`map/gunduzGece.ts`).
   Yalnızca standart türü etkiler; uydu ve hibrit fotoğraf, kış hep açık.
+- Rota oluşturma ekranının (`rota/olustur.tsx`) paneli de aynı sürüklenen panel (15 Kas 2026): açılışta en altta kısa
+  özet (mesafe, tırmanış, süre) ve Rotayı kaydet; yukarı çekince ayrıntı (ad, etkinlik, ölçüler, profil, zemin,
+  görünürlük), rota varsa en üstte tırmanışlar ve rüzgâr; aşağı çekince yalnızca tutamaç. Çizim modları panelle kayar.
 - Panel her durumda (yolculuk, egzersiz, boş) tutamağından aşağı çekilince yalnızca tutamaç kalır, harita açılır;
   yukarı çekince ya da tutamağa dokununca son kademesinde geri gelir (`panelKademesi.ts` > `kapanir`). Kapalıyken
   hedef seçilirse panel kendiliğinden açılır.
