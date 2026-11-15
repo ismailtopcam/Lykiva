@@ -1,13 +1,14 @@
 /**
- * Egzersiz başlatma paneli: tür şeridi, rota ve canlı konum seçimi, Başlat.
- *
- * İki yerde aynı panel: Harita sekmesinin "Egzersiz yap" kısmı ve rota sayfasından açılan başlat ekranı
- * (`kayit/index.tsx`). Haritayı çağıran ekran çizer; seçilen rotayı da o tutar (haritada göstermek için).
+ * Egzersiz başlatma paneli (Harita sekmesinin "Egzersiz yap" kısmı). İki parça, çünkü Harita'nın sürüklenen
+ * panelinde ayrı kademeler (bkz. panelKademesi.ts):
+ * - `EgzersizSeridi`: "Hangi egzersiz?" ve tür şeridi (panel aşağı çekilince en azından bu görünür)
+ * - `EgzersizAyrinti`: rota ve canlı konum seçimi, Başlat
+ * Haritayı çağıran ekran çizer; seçilen rotayı da o tutar (haritada göstermek için).
  */
 import { ACTIVITY_LABELS, ACTIVITY_TYPES, formatKm } from '@lykiva/shared';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet, View, type ScrollViewInstance } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, View, type ScrollViewInstance, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Icon, type IconName } from '@/components/Icon';
 import { Txt } from '@/components/Txt';
@@ -52,16 +53,9 @@ type Props = {
   kayitDurumu: KayitDurumu;
 };
 
-export function EgzersizPaneli({ rota, onRota, onBasladi, kayitDurumu }: Props) {
+/** "Hangi egzersiz?" başlığı ve kaydırılan tür şeridi. style: şeridin dış boşluğunu değiştirmek için */
+export function EgzersizSeridi({ style }: { style?: StyleProp<ViewStyle> }) {
   const { secili: tur, sira } = useEgzersizTuru();
-  const [acik, setAcik] = useState<'rota' | 'paylasim' | null>(null);
-  const [rotaListesi, setRotaListesi] = useState<Rota[] | null>(null);
-  // Canlı konum: varsayılan kapalı; kullanıcı açıkça bir grup seçer
-  const [paylasim, setPaylasim] = useState<PaylasimGrubu | null>(null);
-  const [gruplar, setGruplar] = useState<GrupOzeti[] | null>(null);
-  const [hata, setHata] = useState<string | null>(null);
-  const [izinHatasi, setIzinHatasi] = useState(false);
-  const [basliyor, setBasliyor] = useState(false);
 
   // Şerit: seçili tür görünen kısmın dışındaysa (ör. "Tüm egzersizler"den seçildi) oraya kaydır
   const serit = useRef<ScrollViewInstance>(null);
@@ -81,28 +75,6 @@ export function EgzersizPaneli({ rota, onRota, onBasladi, kayitDurumu }: Props) 
       return () => clearTimeout(t);
     }, [seciliyiGoster]),
   );
-
-  async function ac(hangi: 'rota' | 'paylasim') {
-    setAcik((a) => (a === hangi ? null : hangi));
-    if (hangi === 'rota' && !rotaListesi) setRotaListesi(await rotalarim().catch(() => []));
-    if (hangi === 'paylasim' && !gruplar) setGruplar(await gruplarim().catch(() => []));
-  }
-
-  async function onBaslat() {
-    setHata(null);
-    setIzinHatasi(false);
-    setBasliyor(true);
-    try {
-      await baslat(tur, rota ? { id: rota.id, name: rota.name, points: rota.points } : null, paylasim);
-      egzersizBaslatildi(tur);
-      onBasladi();
-    } catch (e) {
-      setIzinHatasi(e instanceof IzinHatasi);
-      setHata(e instanceof Error ? e.message : $t('kayit.kayit_baslatilamadi'));
-    } finally {
-      setBasliyor(false);
-    }
-  }
 
   return (
     <View>
@@ -124,7 +96,7 @@ export function EgzersizPaneli({ rota, onRota, onBasladi, kayitDurumu }: Props) 
         onLayout={(e) => (kayma.current.w = e.nativeEvent.layout.width)}
         onScroll={(e) => (kayma.current.x = e.nativeEvent.contentOffset.x)}
         scrollEventThrottle={32}
-        style={styles.serit}
+        style={[styles.serit, style]}
         contentContainerStyle={styles.seritIc}>
         {sira.map((t) => {
           const on = t === tur;
@@ -154,7 +126,46 @@ export function EgzersizPaneli({ rota, onRota, onBasladi, kayitDurumu }: Props) 
           </Txt>
         </Pressable>
       </ScrollView>
+    </View>
+  );
+}
 
+/** Rota ve canlı konum seçimi, uyarılar ve Başlat (ya da süren kayda dönüş) */
+export function EgzersizAyrinti({ rota, onRota, onBasladi, kayitDurumu }: Props) {
+  const { secili: tur } = useEgzersizTuru();
+  const [acik, setAcik] = useState<'rota' | 'paylasim' | null>(null);
+  const [rotaListesi, setRotaListesi] = useState<Rota[] | null>(null);
+  // Canlı konum: varsayılan kapalı; kullanıcı açıkça bir grup seçer
+  const [paylasim, setPaylasim] = useState<PaylasimGrubu | null>(null);
+  const [gruplar, setGruplar] = useState<GrupOzeti[] | null>(null);
+  const [hata, setHata] = useState<string | null>(null);
+  const [izinHatasi, setIzinHatasi] = useState(false);
+  const [basliyor, setBasliyor] = useState(false);
+
+  async function ac(hangi: 'rota' | 'paylasim') {
+    setAcik((a) => (a === hangi ? null : hangi));
+    if (hangi === 'rota' && !rotaListesi) setRotaListesi(await rotalarim().catch(() => []));
+    if (hangi === 'paylasim' && !gruplar) setGruplar(await gruplarim().catch(() => []));
+  }
+
+  async function onBaslat() {
+    setHata(null);
+    setIzinHatasi(false);
+    setBasliyor(true);
+    try {
+      await baslat(tur, rota ? { id: rota.id, name: rota.name, points: rota.points } : null, paylasim);
+      egzersizBaslatildi(tur);
+      onBasladi();
+    } catch (e) {
+      setIzinHatasi(e instanceof IzinHatasi);
+      setHata(e instanceof Error ? e.message : $t('kayit.kayit_baslatilamadi'));
+    } finally {
+      setBasliyor(false);
+    }
+  }
+
+  return (
+    <View>
       <View style={styles.kutular}>
         <Kutu
           icon="route"

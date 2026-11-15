@@ -38,13 +38,13 @@ export default function DuraklatildiScreen() {
     setKaydediyor(true);
     const hedef = await bitir();
     if (hedef) router.replace({ pathname: '/aktivite/[id]', params: { id: hedef } });
-    else router.replace('/');
+    else router.dismissTo('/');
   }
 
   function onSil() {
     const sil = async () => {
       await iptalEt();
-      router.replace('/');
+      router.dismissTo('/');
     };
     // Yalnızca yol tarifi: silinecek bir kayıt sözü verilmedi, sormadan bitir
     if (Platform.OS === 'web' || kayit.kaydetme) {

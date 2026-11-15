@@ -150,7 +150,7 @@ export default function RotaDetayScreen() {
         }
       />
       <View style={[styles.bottom, { paddingBottom: insets.bottom + 16 }]}>
-        <Button label={$t('rota.bu_rotayi_baslat')} icon="play" onPress={() => router.push({ pathname: '/kayit', params: { rota: r.id } })} style={{ flex: 1 }} />
+        <Button label={$t('rota.bu_rotayi_baslat')} icon="play" onPress={() => router.dismissTo({ pathname: '/kesfet', params: { rota: r.id } })} style={{ flex: 1 }} />
       </View>
     </View>
   );
