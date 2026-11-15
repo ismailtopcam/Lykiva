@@ -596,6 +596,50 @@ m = await hataMesaji(() => olarak(A, `select push_yanitlarini_isle()`));
 bekle('Temizlik fonksiyonu istemciye kapalı', /permission denied/.test(m ?? ''), m);
 await db.exec(`drop schema net cascade; delete from push_jetonlari;`);
 
+console.log('\nTelefon bildirimi makbuzları (ölü jeton temizliği)');
+await db.exec(`
+  create schema if not exists net;
+  delete from push_istekleri; delete from push_biletleri; delete from push_makbuz_istekleri;
+  create sequence net.istek_sira;
+  create table net.cagri (id bigint, url text, body jsonb);
+  create table net._http_response (id bigint primary key, status_code integer, content text, created timestamptz default now());
+  create function net.http_post(url text, body jsonb default '{}'::jsonb, params jsonb default '{}'::jsonb, headers jsonb default '{}'::jsonb, timeout_milliseconds integer default 5000)
+  returns bigint language sql as $$ insert into net.cagri values (nextval('net.istek_sira'), url, body) returning id $$;
+`);
+await olarak(A, `select push_jetonu_kaydet($1, 'android')`, ['ExponentPushToken[makbuzEski0000000001]']);
+await olarak(A, `select push_jetonu_kaydet($1, 'android')`, ['ExponentPushToken[makbuzYeni0000000002]']);
+await db.query(`insert into bildirimler (alici, aktor, tur, activity_id) values ($1, $2, 'yorum', $3)`, [A, D, aKas]);
+const mGonder = (await db.query(`select istek, jetonlar from push_istekleri`)).rows;
+bekle('Makbuz: bildirim iki jetona gider', mGonder.length === 1 && mGonder[0].jetonlar.length === 2, mGonder);
+// Expo ikisini de kabul etti (biletler)
+await db.query(`insert into net._http_response (id, status_code, content) values ($1, 200, $2)`, [mGonder[0].istek, JSON.stringify({ data: [{ status: 'ok', id: 'b1' }, { status: 'ok', id: 'b2' }] })]);
+await db.query(`select push_makbuzlari()`);
+let mBilet = (await db.query(`select bilet, jeton, istendi from push_biletleri order by bilet`)).rows;
+const makbuzCagrisi = async () => (await db.query(`select id, body from net.cagri where url like '%getReceipts'`)).rows;
+bekle('Makbuz: kabul edilen biletler jetonlarıyla saklanır, 15 dakika dolmadan makbuz istenmez',
+  mBilet.length === 2 && mBilet[0].jeton === mGonder[0].jetonlar[0] && mBilet[1].jeton === mGonder[0].jetonlar[1] && !mBilet[0].istendi && (await makbuzCagrisi()).length === 0, mBilet);
+await db.exec(`update push_biletleri set created_at = now() - interval '20 minutes'`);
+await db.query(`select push_makbuzlari()`);
+const mk = await makbuzCagrisi();
+const mki = (await db.query(`select istek, biletler from push_makbuz_istekleri`)).rows;
+bekle('Makbuz: 15 dakika sonra biletlerin makbuzu tek istekle istenir',
+  mk.length === 1 && JSON.stringify([...mk[0].body.ids].sort()) === '["b1","b2"]' && mki.length === 1 && mki[0].istek == mk[0].id, { mk, mki });
+await db.query(`select push_makbuzlari()`);
+bekle('Makbuz: sorulmuş bilet yeniden sorulmaz', (await makbuzCagrisi()).length === 1, null);
+// Makbuz: b2'nin telefonu artık kayıtlı değil
+await db.query(`insert into net._http_response (id, status_code, content) values ($1, 200, $2)`, [mk[0].id, JSON.stringify({ data: { b1: { status: 'ok' }, b2: { status: 'error', message: 'not registered', details: { error: 'DeviceNotRegistered' } } } })]);
+const mSilinen = (await db.query(`select push_makbuzlari() as n`)).rows[0].n;
+r = await db.query(`select jeton from push_jetonlari where user_id = '${A}'`);
+bekle('Makbuz: "DeviceNotRegistered" dönen jeton silinir, çalışan kalır',
+  mSilinen === 1 && r.rows.length === 1 && r.rows[0].jeton === mBilet[0].jeton, { mSilinen, rows: r.rows });
+bekle('Makbuz: işlenen biletler ve makbuz isteği silinir',
+  (await db.query(`select (select count(*) from push_biletleri)::int + (select count(*) from push_makbuz_istekleri)::int as n`)).rows[0].n === 0, null);
+m = await hataMesaji(() => olarak(A, `select push_makbuzlari()`));
+bekle('Makbuz fonksiyonu istemciye kapalı', /permission denied/.test(m ?? ''), m);
+m = await hataMesaji(() => olarak(A, `select * from push_biletleri`));
+bekle('Bilet tablosu istemciye kapalı', /permission denied/.test(m ?? ''), m);
+await db.exec(`drop schema net cascade; delete from push_jetonlari; delete from push_istekleri; delete from push_biletleri;`);
+
 const anahtarKas = (await olarak(A, `select paylasim_baglantisi_ac($1) as k`, [aKas])).rows[0].k;
 const pk = (await anonOlarak(`select paylasilan_aktivite($1) as j`, [anahtarKas])).rows[0].j;
 bekle('Paylaşım sayfası kayıt başındaki havayı da alır', pk?.weather?.sicaklik === 14.2 && pk.weather.sembol === 'partlycloudy_day', pk?.weather);

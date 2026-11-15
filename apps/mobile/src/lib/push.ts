@@ -7,6 +7,10 @@
  *   - iOS: Apple Developer'da push anahtarı (APNs .p8) ve `npx eas-cli@latest credentials` ile Expo'ya yüklenmesi
  *   - Telefona yeni derleme (expo-notifications yerel modül): `npx expo run:ios --device`
  * Bunlar yoksa özellik sessizce kapalı kalır (Ayarlar'da nedeni yazar); uygulama içi bildirimler etkilenmez.
+ *
+ * İzin, kullanıcı giriş yapınca bir kez kendiliğinden istenir (`pushGiristen`; her kurulumda bir kez). Reddederse bir
+ * daha sorulmaz; Ayarlar'dan ya da Bildirimler ekranındaki öneriden açılır. Ölü jetonları sunucu Expo'nun
+ * makbuzlarından temizler (20261118000000_push_makbuzlari.sql).
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
@@ -20,6 +24,8 @@ import { $t } from '@/i18n';
 
 const JETON_DEPO = 'lykiva.push.jeton.v1';
 const KAPALI_DEPO = 'lykiva.push.kapali.v1';
+/** Bu kurulumda izin kendiliğinden bir kez soruldu mu */
+const SORULDU_DEPO = 'lykiva.push.soruldu.v1';
 
 export const PROJE_KIMLIGI: string | null =
   (Constants.expoConfig?.extra as { eas?: { projectId?: string } } | undefined)?.eas?.projectId ?? Constants.easConfig?.projectId ?? null;
@@ -67,6 +73,8 @@ export async function pushAc(): Promise<PushDurumu> {
   const d = await pushDurumu();
   if (d === 'desteklenmiyor' || d === 'proje-yok' || d === 'reddedildi') return d;
   if (d === 'sorulmadi') {
+    // Android 13+: izin penceresi bir bildirim kanalı varken çıkar
+    await kanaliHazirla();
     const izin = await Notifications.requestPermissionsAsync();
     if (!izin.granted) return izin.canAskAgain ? 'sorulmadi' : 'reddedildi';
   }
@@ -87,4 +95,19 @@ export async function pushKapat(kalici = true): Promise<void> {
 export async function pushTazele(): Promise<void> {
   if ((await pushDurumu()) !== 'acik') return;
   await jetonuKaydet().catch(() => undefined);
+}
+
+/**
+ * Kullanıcı giriş yapınca (geçici hesap değilken; hesap değişince yeniden): izin varsa jeton bu hesaba kaydedilir;
+ * izin hiç sorulmadıysa bu kurulumda bir kez sorulur.
+ */
+export async function pushGiristen(): Promise<void> {
+  const d = await pushDurumu();
+  if (d === 'acik') {
+    await jetonuKaydet().catch(() => undefined);
+    return;
+  }
+  if (d !== 'sorulmadi' || (await AsyncStorage.getItem(SORULDU_DEPO))) return;
+  await AsyncStorage.setItem(SORULDU_DEPO, '1');
+  await pushAc().catch(() => undefined);
 }

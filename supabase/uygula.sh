@@ -48,6 +48,7 @@ MIGRATIONLAR=(
   "20261115000000_gizlilik.sql|exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'profil_gizliligi')"
   "20261116000000_ek_gizlilik.sql|to_regclass('public.engellemeler') is not null"
   "20261117000000_kulupler.sql|to_regclass('public.grup_gonderileri') is not null"
+  "20261118000000_push_makbuzlari.sql|to_regclass('public.push_biletleri') is not null"
 )
 
 # Betik "curl ... | bash" ile çalışırken kendi girdisi betiğin geri kalanıdır: sorgular girdi okumamalı,
