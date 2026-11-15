@@ -91,6 +91,8 @@ const asamalar = [
   ['20261115000000_gizlilik', 'gizlilik_ayarla', { alan: 'profil_gizliligi', deger: 'herkes', gecmise_uygula: false }],
   ['20261116000000_ek_gizlilik', 'engellenenler', {}],
   ['20261117000000_kulupler', 'grup_gonderileri', { g: '00000000-0000-0000-0000-000000000000' }],
+  // İstemciye kapalı: var ise "izin yok" (42501) döner
+  ['20261118000000_push_makbuzlari', 'push_makbuzlari', {}],
 ];
 for (const [dosya, fn, govde] of asamalar) {
   try {

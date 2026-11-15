@@ -4,7 +4,8 @@ import { type ColorValue, View } from 'react-native';
 
 import { Icon, type IconName } from '@/components/Icon';
 import { kayitDurumu, useKayitDurumu } from '@/kayit/kaydedici';
-import { useGirisGerekli } from '@/lib/giris';
+import { useGirisGerekli, useHesap } from '@/lib/giris';
+import { pushGiristen } from '@/lib/push';
 import { colors, fontFamily } from '@/theme';
 import { $t } from '@/i18n';
 
@@ -36,6 +37,12 @@ export default function TabsLayout() {
   // İlk açılışta giriş ekranı. Durum kısa sürede belli olmazsa sekmeler gösterilir (internetsiz açılışı bekletmemek için).
   const girisGerekli = useGirisGerekli();
   const kayitSuruyor = useKayitDurumu() !== 'bos';
+  // Telefon bildirimi: giriş yapılınca izin bir kez sorulur, jeton bu hesaba kaydedilir (hesap değişince yeniden)
+  const hesap = useHesap();
+  const kayitliHesap = hesap && !hesap.gecici ? hesap.id : null;
+  useEffect(() => {
+    if (kayitliHesap) void pushGiristen();
+  }, [kayitliHesap]);
   const [beklemeBitti, setBeklemeBitti] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setBeklemeBitti(true), GIRIS_BEKLEME_MS);

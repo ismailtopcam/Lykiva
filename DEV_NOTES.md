@@ -376,6 +376,14 @@ Kuruldu (11 Kas 2026): Firebase, `lykiva` Google Cloud projesine eklendi (Analyt
 `app.lykiva.mobile` → `apps/mobile/google-services.json` (repoda; gizli değil), `app.json` > `android.googleServicesFile`.
 FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (production profili), yerel kopya silindi.
 **Android sürüm 3 dahili testte yayında** (11 Kas 2026, FCM + Google girişi + anlık hız + rota eğimi). Kalan: telefonda bildirim gelip gelmediğini denemek.
+- **Neden gelmiyordu (15 Kas 2026):** sunucu gönderiyordu (pg_net, Expo 200), ama Expo makbuzları son bildirimler için
+  FCM "DeviceNotRegistered" dedi: jetonlar eski kurulumlarındı. İzin yalnızca Ayarlar / Bildirimler'den açılınca
+  isteniyordu (yeni kurulum kaydolmuyordu) ve sunucu ölü jetonları yalnızca biletten tanıyordu (bu hata makbuzda gelir).
+- **Düzeltme:** giriş yapılınca izin her kurulumda bir kez kendiliğinden istenir, jeton o hesaba kaydedilir
+  (`lib/push.ts` > `pushGiristen`; Android 13 için kanal izinden önce açılır). Sunucu 15 dakikada bir Expo makbuzlarını
+  okuyup ölü jetonları siler (`20261118000000_push_makbuzlari.sql`, pg_cron işi `lykiva-push-makbuzlari`).
+  Yalnızca JS + migration, yeni derleme gerekmez (expo-notifications derlemelerde var).
+- Kalan: telefonda deneme (Android geliştirme derlemesi ve Play sürümü; iPhone'dan henüz hiç jeton yok, TestFlight'ta denenecek).
 
 ### [~] Harita + Egzersiz tek sekmede (15 Kas 2026)
 Tasarım: "Lykiva — Yolculuk ve Spor birleşik ekranı" (Claude Design canvas'ı). Harita sekmesinin panelinin başında
