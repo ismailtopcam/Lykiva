@@ -391,6 +391,7 @@ ikili geçiş var: **Yolculuk yap** (yol tarifi) / **Egzersiz yap** (tür seç, 
   İniş ölçüsü ve ayrı yükselti kademesi kalktı (profil kartın içinde).
 - Arama kutusuna dokununca, bir şey yazılmadan, altında "Son aramalar" açılır (aynı liste: `lib/sonHedefler.ts`, en
   fazla 5); klavye paneli örttüğünde ve hedef seçiliyken de son yerlere ulaşılır. Seçilen yer listenin başına geçer.
+  Aramanın altındaki listede her satırda çarpı (tek tek siler), iki listenin başlığında "Temizle" (hepsini siler).
 - Haritanın katman penceresinde **Görünüm**: Sistemle aynı (varsayılan; karanlık temada ya da gün batınca koyu) /
   Açık / Karanlık. Seçim telefonda saklanır, bütün haritalara (kayıt ekranı dahil) uygulanır (`map/gunduzGece.ts`).
   Yalnızca standart türü etkiler; uydu ve hibrit fotoğraf, kış hep açık.

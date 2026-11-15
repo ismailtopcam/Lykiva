@@ -16,7 +16,7 @@ import { ACTIVITY_LABELS, ACTIVITY_TYPES, estimateDuration, formatKm, formatMete
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Keyboard, Linking, Platform, Pressable, ScrollView, StyleSheet, TextInput, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Animated, Keyboard, Linking, Platform, Pressable, ScrollView, StyleSheet, TextInput, View, useWindowDimensions, type TextInputInstance } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EgimProfili, imlecKonumu, TirmanisListesi, useRotaEgim } from '@/components/EgimProfili';
@@ -35,7 +35,7 @@ import type { LngLat } from '@/data/ornek';
 import type { Rota } from '@/data/rota';
 import { baslat, IzinHatasi, konumOnizlemeBaslat, useKayit } from '@/kayit/kaydedici';
 import { TUR_IKONLARI } from '@/lib/egzersizTuru';
-import { sonHedefEkle, useSonHedefler, type SonHedef } from '@/lib/sonHedefler';
+import { sonHedefEkle, sonHedefleriTemizle, sonHedefSil, useSonHedefler, type SonHedef } from '@/lib/sonHedefler';
 import { yerAra, type YerSonucu } from '@/lib/yerArama';
 import { rotaHesapla, type CizimModu, type YolTuru } from '@/lib/yonlendirme';
 import { colors, fontFamily, radius, space, temaliStil } from '@/theme';
@@ -117,6 +117,7 @@ export default function HaritaScreen() {
   // Arama kutusu odaktayken ve boşken altında son aramalar listelenir. Odak gidince liste biraz geç kapanır:
   // web'de listeye basınca önce kutu odağı bırakır, liste basıştan önce kaybolmasın
   const [aramaOdakta, setAramaOdakta] = useState(false);
+  const aramaKutusu = useRef<TextInputInstance>(null);
   const odakZamanlayici = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => {
     if (odakZamanlayici.current) clearTimeout(odakZamanlayici.current);
@@ -265,6 +266,12 @@ export default function HaritaScreen() {
     setOdak({ c: h.c, z: 14 });
   }
 
+  /** Arama kutusunun altındaki listeden silme: liste açık kalsın diye kutu yeniden odaklanır (web'de basış odağı alır) */
+  function sonAramayiSil(h: SonHedef) {
+    sonHedefSil(h);
+    aramaKutusu.current?.focus();
+  }
+
   function yerSec(y: YerSonucu) {
     Keyboard.dismiss();
     setQ('');
@@ -369,6 +376,7 @@ export default function HaritaScreen() {
             <View style={styles.search}>
               <Icon name="search" size={18} color={colors.inkMuted} strokeWidth={2} />
               <TextInput
+                ref={aramaKutusu}
                 value={q}
                 onChangeText={setQ}
                 onFocus={() => aramaOdagi(true)}
@@ -415,23 +423,36 @@ export default function HaritaScreen() {
       {/* Arama kutusuna dokununca, bir şey yazılmadan: son aramalar (yazınca yerini arama sonuçları alır) */}
       {yolculuk && aramaOdakta && !q.trim() && sonHedefler.length ? (
         <View style={[styles.results, { top: insets.top + 64 }]}>
-          <Txt variant="caption" accessibilityRole="header" style={styles.resultsBaslik}>
-            {$t('harita.son_aramalar')}
-          </Txt>
+          <View style={styles.resultsBaslik}>
+            <Txt variant="caption" accessibilityRole="header" style={{ flex: 1 }}>
+              {$t('harita.son_aramalar')}
+            </Txt>
+            <TemizleBag onPress={sonHedefleriTemizle} />
+          </View>
           {sonHedefler.map((h) => (
-            <Pressable key={`${h.ad}|${h.c.join(',')}`} accessibilityRole="button" onPress={() => sonHedefSec(h)} style={styles.result}>
-              <Icon name="clock" size={18} color={colors.seaInk} />
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14 }} numberOfLines={1}>
-                  {h.ad}
-                </Txt>
-                {h.ayrinti ? (
-                  <Txt variant="small" numberOfLines={1}>
-                    {h.ayrinti}
+            <View key={`${h.ad}|${h.c.join(',')}`} style={styles.sonAramaSatiri}>
+              <Pressable accessibilityRole="button" onPress={() => sonHedefSec(h)} style={[styles.result, { flex: 1, paddingRight: 0 }]}>
+                <Icon name="clock" size={18} color={colors.seaInk} />
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14 }} numberOfLines={1}>
+                    {h.ad}
                   </Txt>
-                ) : null}
-              </View>
-            </Pressable>
+                  {h.ayrinti ? (
+                    <Txt variant="small" numberOfLines={1}>
+                      {h.ayrinti}
+                    </Txt>
+                  ) : null}
+                </View>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={$t('harita.son_aramayi_sil', { ad: h.ad })}
+                onPress={() => sonAramayiSil(h)}
+                hitSlop={6}
+                style={({ pressed }) => [styles.sil, pressed && { opacity: 0.6 }]}>
+                <Icon name="close" size={16} color={colors.inkMuted} strokeWidth={2} />
+              </Pressable>
+            </View>
           ))}
         </View>
       ) : null}
@@ -474,9 +495,12 @@ export default function HaritaScreen() {
               <>
                 {sonHedefler.length ? (
                   <>
-                    <Txt variant="caption" accessibilityRole="header" style={{ marginLeft: 4, marginBottom: 2 }}>
-                      {$t('harita.son_gittiklerin')}
-                    </Txt>
+                    <View style={styles.sonBaslik}>
+                      <Txt variant="caption" accessibilityRole="header" style={{ flex: 1 }}>
+                        {$t('harita.son_gittiklerin')}
+                      </Txt>
+                      <TemizleBag onPress={sonHedefleriTemizle} />
+                    </View>
                     {sonHedefler.slice(0, SON_HEDEF_SAYISI).map((h, i) => (
                       <Pressable
                         key={`${h.ad}|${h.c.join(',')}`}
@@ -692,6 +716,15 @@ export default function HaritaScreen() {
   );
 }
 
+/** Son yerler listesinin başlığındaki "Temizle" */
+function TemizleBag({ onPress }: { onPress: () => void }) {
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={$t('harita.son_aramalari_temizle')} onPress={onPress} hitSlop={8} style={styles.temizle}>
+      <Txt style={styles.temizleYazi}>{$t('harita.temizle')}</Txt>
+    </Pressable>
+  );
+}
+
 /** Açılır hap: seçili değeri gösterir, basınca seçenekleri altında açılır */
 function Hap({ icon, baslik, deger, acik, onPress }: { icon: IconName; baslik: string; deger: string; acik: boolean; onPress: () => void }) {
   return (
@@ -720,7 +753,12 @@ const styles = temaliStil(() => StyleSheet.create({
   searchKapat: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginRight: -6 },
   results: { position: 'absolute', left: space.md, right: space.md, borderRadius: 16, backgroundColor: colors.surface, paddingVertical: 4, borderWidth: 1, borderColor: colors.line },
   result: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 48, paddingHorizontal: 14, paddingVertical: 6 },
-  resultsBaslik: { paddingHorizontal: 14, paddingTop: 8, paddingBottom: 2 },
+  resultsBaslik: { flexDirection: 'row', alignItems: 'center', paddingLeft: 14, paddingRight: 6, paddingTop: 4 },
+  sonAramaSatiri: { flexDirection: 'row', alignItems: 'center' },
+  sil: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginRight: 4 },
+  sonBaslik: { flexDirection: 'row', alignItems: 'center', marginLeft: 4, marginBottom: 2 },
+  temizle: { minHeight: 32, paddingHorizontal: 8, justifyContent: 'center' },
+  temizleYazi: { fontFamily: fontFamily.bodySemiBold, fontSize: 13, color: colors.seaInk },
   resultsNote: { color: colors.inkMuted, paddingHorizontal: 14, paddingTop: 4, paddingBottom: 6 },
   sheet: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet },
   // Panelin içi: iç boşluklar burada, panelin boyu bunun ölçüsünden (bkz. panelKademesi.ts)
