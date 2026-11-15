@@ -249,6 +249,8 @@ export const tr = {
     cikis_yapiliyor: 'Çıkış yapılıyor…',
     kalici_olarak_sil: 'Kalıcı olarak sil',
     telefona_bildirim: 'Telefona bildirim',
+    rotadan_cikinca_uyar: 'Rotadan çıkınca uyar',
+    rotadan_cikinca_uyar_alt: 'Rota takip ederken rotadan uzaklaşınca telefon titrer ve bildirim gelir; ekran kapalıyken de.',
     kullanim_kosullari: 'Kullanım koşulları',
     gizlilik_politikasi: 'Gizlilik politikası',
     gizlilik_kontrolleri: 'Gizlilik kontrolleri',
@@ -765,6 +767,12 @@ export const tr = {
     mola_suresi: 'Mola süresi ',
     bu_mola_kaydin_hiz: 'Bu mola, kaydın “Hız & molalar” sayfasında yeriyle birlikte görünecek. Duraklatmadan verdiğin 1 dakikadan uzun molalar da otomatik bulunur.',
     kaydetmek_icin_henuz_yeterli: 'Kaydetmek için henüz yeterli GPS noktası yok.',
+  },
+  rota_uyarisi: {
+    kanal: 'Rotadan çıkma uyarısı',
+    baslik: 'Rotadan çıktın',
+    hatirlat_baslik: 'Hâlâ rotanın dışındasın',
+    govde: '{ad} rotasından {meters} m uzaktasın',
   },
   kayit_kaydedici: {
     kilit_kanal: 'Süren kayıt',
