@@ -230,6 +230,7 @@ export default function ProfilScreen() {
         {tab === 1 ? (
           <View style={{ padding: space.md, gap: space.sm }}>
             <Button label={$t('profil.yeni_rota_ciz')} icon="route" variant="outline" href="/rota/olustur" />
+            <Button label={$t('gpx_ice_aktar.baslik')} icon="download" variant="outline" href="/rota/ice-aktar" />
             {rotalar && rotalar.length === 0 ? (
               <Txt variant="muted" style={{ textAlign: 'center', paddingVertical: space.lg }}>
                 {$t('profil.henuz_rotan_yok_yeni')}</Txt>

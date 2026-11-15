@@ -3,6 +3,7 @@ export * from './activity';
 export * from './format';
 export * from './track';
 export * from './route';
+export * from './gpx';
 export * from './ucBoyut';
 export * from './hava';
 export * from './egim';

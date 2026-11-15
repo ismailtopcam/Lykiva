@@ -578,7 +578,13 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
   (izleyen uygulama kullanmıyor; e-posta / SMS gerekir).
 
 **Sonra — veri alışverişi**
-- [ ] GPX içe aktarma (rota ve aktivite); şu an yalnızca dışa aktarma var.
+- [x] GPX içe aktarma (15 Kas 2026): Profil > Rotalar > "GPX içe aktar" (`app/rota/ice-aktar.tsx`). Dosya seçici
+  expo-file-system'in `File.pickFileAsync`'i (derlemelerde var, yeni derleme gerekmez; eski derlemede açılmazsa ekran
+  söyler). Okuyucu `@lykiva/shared` > `gpxOku` (testli): iz (trkseg parçaları) ya da rota (rte), ad, tür, rakım, zaman;
+  ara noktalar (wpt) okunmaz. Rota olarak: `rotaSadelestir` (Douglas–Peucker, en fazla 5000 nokta) + `rotaKaydet`.
+  Zaman bilgisi varsa aktivite olarak da: kayıt paketi + kuyruk (süre, hız, molalar kayıttaki gibi). **Telefonda
+  denenmedi** (dosya seçici iOS / Android, Komoot / Strava / Garmin dosyaları). Sonra: paylaş menüsünden "Lykiva ile aç"
+  (iOS belge türü / Android intent; `app.json` + yeni derleme).
 - [ ] Apple Sağlık / Google Health Connect senkronu (D).
 - [ ] Bluetooth sensörler: nabız, tekerlek hızı / kadans, güç (D). Bisiklette anlık hızın en doğru kaynağı.
 
