@@ -383,6 +383,8 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
   (`lib/push.ts` > `pushGiristen`; Android 13 için kanal izinden önce açılır). Sunucu 15 dakikada bir Expo makbuzlarını
   okuyup ölü jetonları siler (`20261118000000_push_makbuzlari.sql`, pg_cron işi `lykiva-push-makbuzlari`).
   Yalnızca JS + migration, yeni derleme gerekmez (expo-notifications derlemelerde var).
+  **Migration sunucuya uygulandı** (15 Kas 2026, `uygula.sh`, SSH): pg_cron 1.6 açık, iş etkin. Elle denendi: bekleyen
+  iki biletin makbuzu istendi, Expo 200 döndü, "DeviceNotRegistered" iki jeton silindi (10 → 8).
 - Kalan: telefonda deneme (Android geliştirme derlemesi ve Play sürümü; iPhone'dan henüz hiç jeton yok, TestFlight'ta denenecek).
 
 ### [~] Harita + Egzersiz tek sekmede (15 Kas 2026)
