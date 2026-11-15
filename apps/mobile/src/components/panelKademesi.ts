@@ -8,11 +8,16 @@
  * - Bırakınca parmağın hızına göre ileri atılan noktaya en yakın durağa yumuşakça oturur (içerik değişmediği için
  *   titreme olmaz). En üst / en alt durağın ötesine lastik gibi az gider.
  * - Bölümlerin boyu kendiliğinden değişirse (yol yüklendi, uyarı çıktı) panel o kademenin yeni durağına kayar.
+ * - `kapanir` verilirse en alttaki kademenin de altında bir durak daha olur: panel yalnızca tutamağı görünecek kadar
+ *   iner (harita açılır). Bu bir kademe değildir; seçili kademe saklanır, panel açılınca oraya döner.
  *
  * Kullanım: panel `Animated.View`'ine `stil` verilir; içinde iç boşluklu tek bir `View`, onun doğrudan çocukları
  * bölümlerdir ve her bölüme `onLayout={bolum[i]}` bağlanır. `surukle.panHandlers` sürükleme alanına verilir.
+ * `gecis`: panel 1. duraktan 2. durağa büyürken 0'dan 1'e giden değer. İlk iki bölüm üst üste bindirilip (ikincisine
+ * eksi üst boşluk) biri sönerken öbürü belirsin diye; yükseklik gibi parmağı izler.
+ * `kapanir` ile: tutamaç da o `View`'in doğrudan çocuğudur ve `onLayout={tutamac}` alır; kapalı durak tutamağın sonudur.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Animated, Easing, PanResponder, type LayoutChangeEvent } from 'react-native';
 
 /** Bırakırken parmağın hızı kadar ileri atılan nokta (ms): hızlı fırlatma bir sonraki durağa gider */
@@ -32,10 +37,15 @@ type Ayarlar = {
   altBosluk: number;
   /** Verilirse son kademe bu yükseklikte durur (ör. tam ekran) */
   sonYukseklik?: number | null;
+  /** Panel en alttaki kademenin altına, yalnızca tutamaç görünecek kadar inebilsin */
+  kapanir?: boolean;
 };
 
-export function usePanelKademesi({ ilk, sayi, altBosluk, sonYukseklik = null }: Ayarlar) {
+export function usePanelKademesi({ ilk, sayi, altBosluk, sonYukseklik = null, kapanir = false }: Ayarlar) {
   const [kademe, setKademe] = useState(ilk);
+  const [kapali, setKapali] = useState(false);
+  // İlk iki durağın yükseklikleri (`gecis` için); bölümler ölçüldükçe güncellenir
+  const [aralik, setAralik] = useState<[number, number] | null>(null);
   // Oturulan durağın yüksekliği (harita dolgusu için); sürüklerken değişmez
   const [gorunenH, setGorunenH] = useState(0);
   // İlk ölçüden önce panel görünmez (bir kare bütün içerik görünmesin)
@@ -44,8 +54,11 @@ export function usePanelKademesi({ ilk, sayi, altBosluk, sonYukseklik = null }: 
   const [api] = useState(() => {
     const yukseklik = new Animated.Value(0);
     // Aşağıdakiler yalnızca bu kapanışta tutulur (çizimde okunmaz)
-    const ayar = { sayi: Math.max(1, sayi), altBosluk, son: sonYukseklik };
+    const ayar = { sayi: Math.max(1, sayi), altBosluk, son: sonYukseklik, kapanir };
     const bitis: (number | undefined)[] = [];
+    // Tutamağın sonu (ölçülünce): kapalı durağın yüksekliği
+    let tutamacBitis: number | undefined;
+    let kapaliMi = false;
     // Kullanıcının seçtiği kademe; bölüm sayısı geçici azalsa da (ör. yol yüklenirken) korunur
     let istenen = ilk;
     let simdiki = Math.min(ilk, ayar.sayi - 1);
@@ -63,16 +76,40 @@ export function usePanelKademesi({ ilk, sayi, altBosluk, sonYukseklik = null }: 
       return b === undefined ? onceki : Math.max(onceki, b + ayar.altBosluk);
     };
 
-    /** Kullanıcı bir kademe seçti (sürükleyip bıraktı, erişilebilirlik hareketi) */
+    /** Kapalı durak: yalnızca tutamaç görünür. Tutamaç ölçülmediyse ya da `kapanir` yoksa böyle bir durak yok */
+    const kapaliH = (): number | null => (ayar.kapanir && tutamacBitis !== undefined ? Math.min(tutamacBitis, durak(0)) : null);
+
+    /** Kullanıcı bir kademe seçti (sürükleyip bıraktı, erişilebilirlik hareketi); kapalıysa panel açılır */
     const sec = (k: number) => {
+      kapaliMi = false;
       istenen = sinirla(k);
       oturt(istenen);
     };
 
+    /** Paneli tutamağa kadar indirir; seçili kademe saklanır */
+    const kapat = () => {
+      if (kapaliH() == null) return;
+      kapaliMi = true;
+      oturt(simdiki);
+    };
+
+    /** Kapalı paneli son kademesinde açar (açıksa dokunmaz) */
+    const ac = () => {
+      if (!kapaliMi) return;
+      kapaliMi = false;
+      oturt(simdiki);
+    };
+
     const oturt = (k: number, animasyonlu = true) => {
       simdiki = sinirla(k);
-      const h = durak(simdiki);
+      const kh = kapaliMi ? kapaliH() : null;
+      if (kh == null) kapaliMi = false;
+      const h = kh ?? durak(simdiki);
       setKademe(simdiki);
+      setKapali(kapaliMi);
+      const d0 = durak(0);
+      const d1 = ayar.sayi > 1 ? durak(1) : d0;
+      setAralik((a) => (a && a[0] === d0 && a[1] === d1 ? a : [d0, d1]));
       setGorunenH(Math.round(h));
       if (animasyonlu) {
         Animated.timing(yukseklik, { toValue: h, duration: SURE_MS, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
@@ -105,10 +142,17 @@ export function usePanelKademesi({ ilk, sayi, altBosluk, sonYukseklik = null }: 
       yenile();
     });
 
-    const ayarla = (sayi: number, altBosluk: number, son: number | null) => {
+    const tutamac = (e: LayoutChangeEvent) => {
+      const { y, height } = e.nativeEvent.layout;
+      tutamacBitis = y + height;
+      yenile();
+    };
+
+    const ayarla = (sayi: number, altBosluk: number, son: number | null, kapanir: boolean) => {
       ayar.sayi = Math.max(1, sayi);
       ayar.altBosluk = altBosluk;
       ayar.son = son;
+      ayar.kapanir = kapanir;
       // Bölüm sayısı azaldıysa artık olmayan bölümlerin ölçüsü unutulur
       bitis.length = Math.min(bitis.length, ayar.sayi);
       simdiki = sinirla(istenen);
@@ -126,7 +170,7 @@ export function usePanelKademesi({ ilk, sayi, altBosluk, sonYukseklik = null }: 
         });
       },
       onPanResponderMove: (_e, g) => {
-        const enAz = durak(0);
+        const enAz = kapaliH() ?? durak(0);
         const enCok = durak(ayar.sayi - 1);
         let h = basH - g.dy;
         if (h > enCok) h = enCok + (h - enCok) * LASTIK;
@@ -141,7 +185,10 @@ export function usePanelKademesi({ ilk, sayi, altBosluk, sonYukseklik = null }: 
         for (let k = 1; k < ayar.sayi; k++) {
           if (Math.abs(durak(k) - hedefH) < Math.abs(durak(enYakin) - hedefH)) enYakin = k;
         }
-        sec(enYakin);
+        // Kapalı durak en alttaki kademeden de yakınsa panel tutamağa iner (seçili kademe değişmez)
+        const kh = kapaliH();
+        if (kh != null && Math.abs(kh - hedefH) < Math.abs(durak(enYakin) - hedefH)) kapat();
+        else sec(enYakin);
       },
       onPanResponderTerminate: () => {
         surukluyor = false;
@@ -152,22 +199,40 @@ export function usePanelKademesi({ ilk, sayi, altBosluk, sonYukseklik = null }: 
     return {
       surukle,
       bolum,
+      tutamac,
       ayarla,
-      buyut: () => sec(simdiki + 1),
-      kucult: () => sec(simdiki - 1),
+      ac,
+      // Kapalıyken büyütmek paneli açar; en alttaki kademede küçültmek kapatır
+      buyut: () => (kapaliMi ? ac() : sec(simdiki + 1)),
+      kucult: () => {
+        if (kapaliMi) return;
+        if (simdiki === 0 && kapaliH() != null) kapat();
+        else sec(simdiki - 1);
+      },
       yukseklik,
     };
   });
 
   useEffect(() => {
-    api.ayarla(sayi, altBosluk, sonYukseklik);
-  }, [api, sayi, altBosluk, sonYukseklik]);
+    api.ayarla(sayi, altBosluk, sonYukseklik, kapanir);
+  }, [api, sayi, altBosluk, sonYukseklik, kapanir]);
+
+  const gecis = useMemo(
+    () => (aralik && aralik[1] - aralik[0] > 1 ? api.yukseklik.interpolate({ inputRange: [aralik[0], aralik[1]], outputRange: [0, 1], extrapolate: 'clamp' }) : null),
+    [api, aralik],
+  );
 
   return {
     kademe: Math.min(kademe, Math.max(0, sayi - 1)),
+    /** 1. duraktan 2. durağa 0..1 (duraklar ölçülmediyse ya da tek kademe varsa null) */
+    gecis,
+    /** Panel tutamağa kadar indirilmiş (yalnızca `kapanir` ile) */
+    kapali,
     gorunenH,
     surukle: api.surukle,
     bolum: api.bolum,
+    tutamac: api.tutamac,
+    ac: api.ac,
     buyut: api.buyut,
     kucult: api.kucult,
     stil: olculdu ? { height: api.yukseklik, overflow: 'hidden' as const } : { opacity: 0 },

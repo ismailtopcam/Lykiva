@@ -381,9 +381,17 @@ FCM V1 hizmet hesabı anahtarı (`firebase-adminsdk-fbsvc@lykiva`) EAS'ta (produ
 Tasarım: "Lykiva — Yolculuk ve Spor birleşik ekranı" (Claude Design canvas'ı). Harita sekmesinin panelinin başında
 ikili geçiş var: **Yolculuk yap** (yol tarifi) / **Egzersiz yap** (tür seç, kaydı başlat).
 - Yolculuk: arama hep yukarıda (hedef seçilince adını gösterir, çarpı hedefi kaldırır); hedef yokken panelde "Son
-  gittiklerin" (aramayla seçilen son yerler, yalnızca telefonda: `lib/sonHedefler.ts`). Hedef seçilince panel dört
+  gittiklerin" (aramayla seçilen son yerler, yalnızca telefonda: `lib/sonHedefler.ts`). Hedef seçilince panel üç
   kademe: kısa özet (süre + Yola çık; panel aşağı çekilince yalnızca bu kalır), ayrıntı (açılışta burada durur),
-  yükselti, tırmanışlar ve rüzgâr.
+  tırmanışlar ve rüzgâr.
+- Ayrıntı kademesi tasarımdaki "Yol tarifi (panel açık)" ekranı (15 Kas 2026): hedef adı ve altında "ilçe, il ·
+  bulunduğun yerden", ölçü kartı (mesafe, tahmini süre, tırmanış; içinde yükselti profili), iki açılır hap (ulaşım,
+  yol tercihi; basınca seçenekleri altında açılır), "Egzersiz olarak da kaydet" anahtarı, en altta büyük Yola çık.
+  Kısa özetle ayrıntı aynı yerde durur: panel büyürken kısa özet söner, ayrıntı belirir (`panelKademesi.ts` > `gecis`).
+  İniş ölçüsü ve ayrı yükselti kademesi kalktı (profil kartın içinde).
+- Panel her durumda (yolculuk, egzersiz, boş) tutamağından aşağı çekilince yalnızca tutamaç kalır, harita açılır;
+  yukarı çekince ya da tutamağa dokununca son kademesinde geri gelir (`panelKademesi.ts` > `kapanir`). Kapalıyken
+  hedef seçilirse panel kendiliğinden açılır.
 - Egzersiz: `components/EgzersizPaneli.tsx` (tür şeridi, rota, canlı konum, "{tür} başlat"). Aynı panel rota
   sayfasındaki "Bu rotayı başlat" ekranında da (`kayit/index.tsx`). Seçilen tür ve şeridin sırası telefonda saklanır
   (`lib/egzersizTuru.ts`); en son başlatılan tür başa gelir. Şeridin sonundaki "Tümü" gruplu, aranabilir listeyi açar
@@ -393,6 +401,8 @@ ikili geçiş var: **Yolculuk yap** (yol tarifi) / **Egzersiz yap** (tür seç, 
 Kalan:
 - [ ] **Telefonda denenmedi.** Bakılacaklar: panel kademeleri arasında sürükleme, tür şeridinin kayması, kayıt
   başlayınca / bitince alt menüde Egzersiz sekmesinin çıkıp kaybolması (iOS ve Android), karanlık tema.
+  Yeni panelde: tutamağa kadar indirme ve geri açma, kısa özet ↔ ayrıntı geçişinin sürüklerken akıcılığı, yol
+  hesaplanmışken kartın içindeki yükselti profilinde parmakla gezme, hapların seçenekleri açılınca panelin boyu.
 - [x] "Egzersiz olarak da kaydet" anahtarı (15 Kas 2026): yol tarifinin ayrıntı bölümünde, varsayılan açık, seçim
   telefonda saklanır. Kapalıyken "Yola çık" aynı canlı ekranı açar ama kayıt `kaydetme` işaretiyle başlar: rozet
   "Yol tarifi · tür" yazar, Android bildirimi "kaydediyor" demez, Bitir aktivite oluşturmadan kapatır (`iptalEt`).
