@@ -15,7 +15,7 @@ import { Txt } from '@/components/Txt';
 import { Button } from '@/components/ui';
 import { rotalarim, type Rota } from '@/data/rota';
 import { gruplarim, type GrupOzeti } from '@/grup/gruplar';
-import type { PaylasimGrubu } from '@/kayit/canliPaylasim';
+import { baglantiAc, baglantiyiPaylas, type PaylasimGrubu } from '@/kayit/canliPaylasim';
 import { baslat, IzinHatasi, type KayitDurumu } from '@/kayit/kaydedici';
 import { egzersizBaslatildi, egzersizTuruSec, TUR_IKONLARI, useEgzersizTuru } from '@/lib/egzersizTuru';
 import { supabaseHazir } from '@/lib/supabase';
@@ -137,6 +137,8 @@ export function EgzersizAyrinti({ rota, onRota, onBasladi, kayitDurumu }: Props)
   const [rotaListesi, setRotaListesi] = useState<Rota[] | null>(null);
   // Canlı konum: varsayılan kapalı; kullanıcı açıkça bir grup seçer
   const [paylasim, setPaylasim] = useState<PaylasimGrubu | null>(null);
+  // Bağlantıyla da paylaş (uygulaması olmayan aile / arkadaş web'den izler)
+  const [baglanti, setBaglanti] = useState(false);
   const [gruplar, setGruplar] = useState<GrupOzeti[] | null>(null);
   const [hata, setHata] = useState<string | null>(null);
   const [izinHatasi, setIzinHatasi] = useState(false);
@@ -153,8 +155,11 @@ export function EgzersizAyrinti({ rota, onRota, onBasladi, kayitDurumu }: Props)
     setIzinHatasi(false);
     setBasliyor(true);
     try {
-      await baslat(tur, rota ? { id: rota.id, name: rota.name, points: rota.points } : null, paylasim);
+      // Bağlantı kayıttan önce açılır: açılamazsa (internet yok) kayıt başlamadan söylenir
+      const anahtar = baglanti ? await baglantiAc() : null;
+      await baslat(tur, rota ? { id: rota.id, name: rota.name, points: rota.points } : null, paylasim, false, anahtar);
       egzersizBaslatildi(tur);
+      if (anahtar) void baglantiyiPaylas(anahtar);
       onBasladi();
     } catch (e) {
       setIzinHatasi(e instanceof IzinHatasi);
@@ -182,7 +187,15 @@ export function EgzersizAyrinti({ rota, onRota, onBasladi, kayitDurumu }: Props)
             bg={colors.seaSoft}
             fg={colors.seaInk}
             baslik={$t('kayit.canli_konum')}
-            deger={paylasim ? paylasim.ad : $t('egzersiz.kapali')}
+            deger={
+              paylasim && baglanti
+                ? `${paylasim.ad} + ${$t('canli_baglanti.baglanti')}`
+                : paylasim
+                  ? paylasim.ad
+                  : baglanti
+                    ? $t('canli_baglanti.baglanti')
+                    : $t('egzersiz.kapali')
+            }
             acik={acik === 'paylasim'}
             onPress={() => void ac('paylasim')}
           />
@@ -216,6 +229,18 @@ export function EgzersizAyrinti({ rota, onRota, onBasladi, kayitDurumu }: Props)
 
       {acik === 'paylasim' ? (
         <ScrollView style={styles.liste} contentContainerStyle={{ gap: 4 }}>
+          {/* Bağlantı gruptan bağımsız: ikisi birlikte de seçilebilir */}
+          <Pressable
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: baglanti }}
+            onPress={() => setBaglanti((b) => !b)}
+            style={[styles.secenek, styles.baglantiSecenegi]}>
+            <View style={[styles.kutucuk, baglanti && styles.kutucukOn]}>{baglanti ? <Icon name="check" size={14} color={colors.ground} strokeWidth={2.6} /> : null}</View>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Txt style={{ fontFamily: baglanti ? fontFamily.bodyBold : fontFamily.bodySemiBold, fontSize: 14 }}>{$t('canli_baglanti.baglantiyla_paylas')}</Txt>
+              <Txt variant="small">{$t('canli_baglanti.baglantiyla_paylas_alt')}</Txt>
+            </View>
+          </Pressable>
           <Pressable accessibilityRole="radio" accessibilityState={{ checked: !paylasim }} onPress={() => { setPaylasim(null); setAcik(null); }} style={styles.secenek}>
             <Txt style={{ fontFamily: paylasim ? fontFamily.body : fontFamily.bodyBold, fontSize: 14 }}>{$t('kayit.paylasma')}</Txt>
           </Pressable>
@@ -318,6 +343,9 @@ const styles = temaliStil(() => StyleSheet.create({
   kutuAcik: { borderColor: colors.lineStrong },
   kutuIkon: { width: 36, height: 36, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   liste: { maxHeight: 180, marginTop: space.sm },
+  baglantiSecenegi: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  kutucuk: { width: 22, height: 22, borderRadius: 6, borderWidth: 1.5, borderColor: colors.inkMuted, alignItems: 'center', justifyContent: 'center' },
+  kutucukOn: { backgroundColor: colors.sea, borderColor: colors.sea },
   secenek: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 12, backgroundColor: colors.ground },
   error: { marginTop: space.sm, padding: 12, borderRadius: 12, backgroundColor: colors.terraSoft },
 }));

@@ -14,6 +14,7 @@ import { useHaritaTuru } from '@/components/map/haritaTurleri';
 import { YolHaritasi } from '@/components/map/YolHaritasi';
 import { Txt } from '@/components/Txt';
 import { Stat } from '@/components/ui';
+import { baglantiyiPaylas } from '@/kayit/canliPaylasim';
 import { bitir, duraklat, iptalEt } from '@/kayit/kaydedici';
 import { kisaSure, rotaBilgisi, useCanliVeri } from '@/kayit/istatistik';
 import { colors, fontFamily, space } from '@/theme';
@@ -222,6 +223,20 @@ export default function CanliTakipScreen() {
                 <Txt style={[styles.pillText, { flex: 1 }]} numberOfLines={1}>
                   {$t('kayit_canli.canli_paylasiliyor', { ad: kayit.paylasim.ad })}</Txt>
                 <Txt style={[styles.pillText, { color: n.sea }]}>{$t('kayit_canli.harita')}</Txt>
+              </Pressable>
+            ) : null}
+            {/* Bağlantıyla canlı paylaşım: bağlantı yeniden paylaşılabilir (başlatırken paylaşım penceresi bir kez açıldı) */}
+            {kayit.canliBaglanti ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={$t('canli_baglanti.paylas_etiket')}
+                onPress={() => void baglantiyiPaylas(kayit.canliBaglanti!)}
+                style={styles.paylasim}>
+                <View style={[styles.dot, { backgroundColor: n.sea }]} />
+                <Txt style={[styles.pillText, { flex: 1 }]} numberOfLines={1}>
+                  {$t('canli_baglanti.paylasiliyor')}
+                </Txt>
+                <Txt style={[styles.pillText, { color: n.sea }]}>{$t('canli_baglanti.paylas')}</Txt>
               </Pressable>
             ) : null}
 

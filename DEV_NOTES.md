@@ -447,8 +447,8 @@ Kalan:
 - Hava yalnızca kayıt başında bir kez ölçülüyor; rota detayında tahmin yok (rotanın planlanan tarihi yok).
 - Rota eğimi köprü ve tünelde yanlış olabilir: BRouter çıktısında köprü / tünel etiketi yok (Galata Köprüsü örneğinde denendi), DEM
   köprüde vadinin tabanını, tünelde dağın üstünü verir. Kendi BRouter sunucumuzda etiketin çıktıya eklenip eklenemeyeceğine bakılmalı.
-- Alt menü (12 Kas 2026): sekmeler Ana Sayfa · Harita · Egzersiz · Gruplar · Profil oldu (eski: Akış · Keşfet · + · Gruplar · Profil).
-  Egzersiz sekmesi kayıt başlatma ekranını açar. Yalnızca JS değişikliği, yeni derleme gerekmez.
+- Alt menü (15 Kas 2026'dan beri): Ana Sayfa · Harita · Gruplar · Profil; Egzersiz sekmesi yalnızca kayıt sürerken araya
+  girer ve süren kaydı açar. Egzersiz başlatmak Harita > Egzersiz yap'ta (bkz. "Harita + Egzersiz tek sekmede").
 - [x] Kayıt sürerken ana sayfaya dönüş, iOS (13 Kas 2026, Gökhan, `kayit-ana-sayfa-ios`): canlı ve duraklatıldı ekranlarında
   iOS'ta geri kaydırma kapalı olduğu için (haritada yanlışlıkla çıkılmasın) çıkış yolu yoktu; Android'de donanım geri tuşu
   çalışıyordu. Sol üste ev simgeli düğme eklendi (`components/AnaSayfaDugmesi.tsx`): kayıt arka planda sürer, alt menüdeki
@@ -567,8 +567,15 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
   `VIBRATE` izni yok, eklemek yeni derleme isterdi), iOS'ta sesli bildirim. Ayarlar > Bildirimler'den kapatılır.
   Yalnızca JS, yeni derleme gerekmez. **Telefonda denenmedi** (cepteyken / kilitliyken titriyor mu, iOS'ta arka planda
   bildirim geliyor mu). Sonra: sesli yönlendirme (dönüş dönüş).
-- [ ] Aileyle canlı konum: gruba üye olmayan birine web bağlantısıyla canlı konum (AllTrails Live Share / Garmin LiveTrack gibi);
-  uzun süre hareketsiz kalınca uyarı.
+- [x] Aileyle canlı konum (15 Kas 2026): Egzersiz yap > Canlı konum > "Bağlantıyla paylaş" (grupla birlikte de seçilebilir).
+  Başlatınca paylaşım penceresi açılır, canlı kayıt ekranından yeniden paylaşılır. Adres `https://lykiva.app/c/<anahtar>`:
+  uygulaması olmayan biri haritada canlı konumu ve izi (son ~2 saat), mesafe, geçen süre, hızı görür; 15 sn'de bir
+  yenilenir; "Google Haritalar'da aç". Molada değilken 10 dk hareket yoksa ve 5 dk konum gelmezse sayfada uyarı.
+  Bağlantı kayıt bitince ya da en geç 24 saatte kapanır. Sunucu `20261119000000_canli_baglanti.sql` (testli), web
+  `apps/web/src/app/c/[anahtar]` (MapLibre GL, OpenFreeMap; `maplibre-gl` web'e eklendi), uygulama
+  `kayit/canliPaylasim.ts`. Yalnızca JS + migration, yeni derleme gerekmez. **Telefonda ve gerçek sunucuda uçtan uca
+  denenmedi.** Sonra: hareketsizlikte kaydı yapanın telefonunda "İyi misin?" sorusu, cevap yoksa izleyene haber
+  (izleyen uygulama kullanmıyor; e-posta / SMS gerekir).
 
 **Sonra — veri alışverişi**
 - [ ] GPX içe aktarma (rota ve aktivite); şu an yalnızca dışa aktarma var.

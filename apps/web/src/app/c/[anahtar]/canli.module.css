@@ -1,0 +1,163 @@
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 16px 48px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  padding: 18px 0 8px;
+}
+
+.brand {
+  text-decoration: none;
+}
+
+.kart {
+  margin-top: 12px;
+}
+
+.ust {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.baslik {
+  margin-top: 8px;
+  font-size: clamp(1.8rem, 6vw, 2.6rem);
+  font-weight: 800;
+}
+
+.soluk {
+  margin-top: 6px;
+  font-size: 15px;
+  color: var(--ink-muted);
+}
+
+.rozet {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.rozetCanli {
+  background: #d3e8e4;
+  color: #0b4f4f;
+}
+
+.rozetMola {
+  background: #f1dccd;
+  color: #7a3416;
+}
+
+.rozetBitti,
+.rozetBekliyor {
+  background: var(--line);
+  color: var(--ink);
+}
+
+.nabiz {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0b6a6a;
+  animation: nabiz 1.6s ease-in-out infinite;
+}
+
+@keyframes nabiz {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nabiz {
+    animation: none;
+  }
+}
+
+.uyari {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #f1dccd;
+  color: #7a3416;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.harita {
+  margin-top: 16px;
+  height: min(60vh, 420px);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--land);
+}
+
+.olculer {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.olculer dt {
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+.olculer dd {
+  margin: 2px 0 0;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.olculer small {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+
+.dugme {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16px;
+  min-height: 52px;
+  border-radius: 26px;
+  background: #0b6a6a;
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.dugme:hover {
+  color: #ffffff;
+  background: #0b4f4f;
+}
+
+.kapanis {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--ink-muted);
+  text-align: center;
+}
