@@ -115,6 +115,77 @@ export function trackOnRoute(route: PreparedRoute, here: { lat: number; lng: num
   };
 }
 
+/* ------------------------------------------------------------------ */
+/* Rotadan çıkma uyarısı                                               */
+/* ------------------------------------------------------------------ */
+
+/** Rotadan çıkma uyarısının eşikleri */
+export const ROTA_UYARI = {
+  /** Bu uzaklığın üstü dışarı sayılır (m); GPS doğruluğu kötüyse eşik büyür */
+  CIKIS_M: OFF_ROUTE_M,
+  /** Bu uzaklığın altına gelince rotaya dönüldü sayılır (m); çıkıştan düşük, sınırda gidip gelince uyarı çırpınmasın */
+  DONUS_M: 40,
+  /** Bu kadar süre dışarıda kalınca uyarılır (ms); kısa GPS sapmaları sayılmaz */
+  SURE_MS: 10_000,
+  /** Dışarıda kalınırsa hatırlatma aralığı (ms) */
+  TEKRAR_MS: 120_000,
+  /** En fazla bu kadar hatırlatma (rotaya dönene kadar) */
+  EN_FAZLA_HATIRLATMA: 3,
+  /** Rotanın son bu kadar metresinde uyarılmaz (rota bitti, kullanıcı başka yere gidiyor olabilir) */
+  BITIS_M: 50,
+} as const;
+
+export type RotaUyariDurumu = {
+  /** Kullanıcı rotaya bir kez girdi mi (girmeden uyarılmaz: başlangıca giderken alarm çalmasın) */
+  girdi: boolean;
+  disarida: boolean;
+  /** Eşiğin ilk aşıldığı an (henüz uyarılmadıysa) */
+  ilkUzakT: number | null;
+  sonUyariT: number | null;
+  hatirlatma: number;
+};
+
+export type RotaUyariOlayi = 'cikti' | 'hatirlat' | 'dondu' | null;
+
+const UYARI_BASI: RotaUyariDurumu = { girdi: false, disarida: false, ilkUzakT: null, sonUyariT: null, hatirlatma: 0 };
+
+/**
+ * Kayıtta her kabul edilen konumda çağrılır; uyarı durumunu ilerletir ve verilecek uyarıyı döner.
+ * `acc`: GPS doğruluğu (m). Saf fonksiyon; durum kayıtla birlikte saklanır (uygulama kapanıp açılsa da sürer).
+ */
+export function rotaUyarisi(
+  onceki: RotaUyariDurumu | null,
+  p: { offRouteM: number; remainingM: number; t: number; acc?: number | null },
+): { durum: RotaUyariDurumu; olay: RotaUyariOlayi } {
+  const d = onceki ?? UYARI_BASI;
+  const esik = Math.max(ROTA_UYARI.CIKIS_M, (p.acc ?? 0) * 1.5);
+  const disari = p.offRouteM > esik;
+
+  if (!d.girdi) {
+    // Rotaya girene kadar yalnızca girişi bekle
+    return { durum: p.offRouteM <= ROTA_UYARI.CIKIS_M ? { ...UYARI_BASI, girdi: true } : d, olay: null };
+  }
+
+  if (d.disarida) {
+    if (p.offRouteM < ROTA_UYARI.DONUS_M) {
+      return { durum: { ...d, disarida: false, ilkUzakT: null, hatirlatma: 0 }, olay: 'dondu' };
+    }
+    if (d.hatirlatma < ROTA_UYARI.EN_FAZLA_HATIRLATMA && p.t - (d.sonUyariT ?? p.t) >= ROTA_UYARI.TEKRAR_MS) {
+      return { durum: { ...d, sonUyariT: p.t, hatirlatma: d.hatirlatma + 1 }, olay: 'hatirlat' };
+    }
+    return { durum: d, olay: null };
+  }
+
+  if (!disari || p.remainingM <= ROTA_UYARI.BITIS_M) {
+    return { durum: d.ilkUzakT == null ? d : { ...d, ilkUzakT: null }, olay: null };
+  }
+  const ilk = d.ilkUzakT ?? p.t;
+  if (p.t - ilk >= ROTA_UYARI.SURE_MS) {
+    return { durum: { ...d, disarida: true, ilkUzakT: ilk, sonUyariT: p.t, hatirlatma: 0 }, olay: 'cikti' };
+  }
+  return { durum: d.ilkUzakT === ilk ? d : { ...d, ilkUzakT: ilk }, olay: null };
+}
+
 /** Rota istatistikleri: mesafe, tırmanış, iniş, en yüksek/alçak, döngü mü */
 export function routeStats(points: RoutePoint[]) {
   const r = prepareRoute(points);

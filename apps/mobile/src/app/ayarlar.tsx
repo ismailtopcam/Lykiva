@@ -13,6 +13,7 @@ import { cevrimdisiDestekleniyor, useIndirilenRotalar } from '@/lib/cevrimdisi';
 import { cikisYap, useHesap, type Saglayici } from '@/lib/giris';
 import { hesabiSil } from '@/lib/hesap';
 import { pushAc, pushDurumu, pushKapat, type PushDurumu } from '@/lib/push';
+import { rotaUyarisiAyarla, useRotaUyarisiAcik } from '@/kayit/rotaUyarisi';
 import { supabaseHazir } from '@/lib/supabase';
 import { aktifSema, colors, GORUNUMLER, gorunumSecimi, gorunumSecimiYap, space, temaliStil, type GorunumSecimi } from '@/theme';
 import { $t, cihazDili, DIL_ADLARI, DILLER, dilSecimi, dilSecimiYap, type Dil } from '@/i18n';
@@ -29,6 +30,7 @@ export default function AyarlarScreen() {
   const [cikiliyor, setCikiliyor] = useState(false);
   const [siliniyor, setSiliniyor] = useState(false);
   const [push, setPush] = useState<PushDurumu | null>(null);
+  const rotaUyarisiAcik = useRotaUyarisiAcik();
   const indirilenler = useIndirilenRotalar();
   const [gorunum, setGorunum] = useState<GorunumSecimi>(gorunumSecimi);
 
@@ -193,6 +195,7 @@ export default function AyarlarScreen() {
             <Label>{$t('ayarlar.bildirimler')}</Label>
             <Card style={{ paddingHorizontal: space.lg }}>
               <ToggleRow title={$t('ayarlar.telefona_bildirim')} subtitle={pushAlt} value={push === 'acik'} onChange={(v) => void pushDegistir(v)} />
+              <ToggleRow title={$t('ayarlar.rotadan_cikinca_uyar')} subtitle={$t('ayarlar.rotadan_cikinca_uyar_alt')} value={rotaUyarisiAcik} onChange={rotaUyarisiAyarla} />
             </Card>
           </View>
         ) : null}

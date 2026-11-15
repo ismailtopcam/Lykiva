@@ -248,6 +248,8 @@ export const ru: Sozluk = {
     cikis_yapiliyor: 'Выход…',
     kalici_olarak_sil: 'Удалить навсегда',
     telefona_bildirim: 'Уведомления на телефон',
+    rotadan_cikinca_uyar: 'Предупреждать о сходе с маршрута',
+    rotadan_cikinca_uyar_alt: 'Когда вы идёте по маршруту и отклоняетесь от него, телефон вибрирует и присылает уведомление, даже при выключенном экране.',
     kullanim_kosullari: 'Условия использования',
     gizlilik_politikasi: 'Политика конфиденциальности',
     gizlilik_kontrolleri: 'Настройки приватности',
@@ -764,6 +766,12 @@ export const ru: Sozluk = {
     mola_suresi: 'Время остановки ',
     bu_mola_kaydin_hiz: 'Эта остановка появится с местом на странице «Скорость и остановки». Остановки дольше 1 минуты без паузы тоже находятся автоматически.',
     kaydetmek_icin_henuz_yeterli: 'Пока недостаточно GPS-точек для сохранения.',
+  },
+  rota_uyarisi: {
+    kanal: 'Сход с маршрута',
+    baslik: 'Вы сошли с маршрута',
+    hatirlat_baslik: 'Вы всё ещё вне маршрута',
+    govde: '{meters} м от маршрута «{ad}»',
   },
   kayit_kaydedici: {
     kilit_kanal: 'Текущая запись',

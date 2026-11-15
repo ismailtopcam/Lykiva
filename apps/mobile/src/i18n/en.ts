@@ -248,6 +248,8 @@ export const en: Sozluk = {
     cikis_yapiliyor: 'Signing out…',
     kalici_olarak_sil: 'Delete permanently',
     telefona_bildirim: 'Phone notifications',
+    rotadan_cikinca_uyar: 'Warn when off route',
+    rotadan_cikinca_uyar_alt: 'While following a route, your phone vibrates and notifies you when you stray from it, even with the screen off.',
     kullanim_kosullari: 'Terms of use',
     gizlilik_politikasi: 'Privacy policy',
     gizlilik_kontrolleri: 'Privacy controls',
@@ -764,6 +766,12 @@ export const en: Sozluk = {
     mola_suresi: 'Break time ',
     bu_mola_kaydin_hiz: 'This break will appear with its location on the activity\'s “Speed & breaks” page. Breaks longer than 1 minute taken without pausing are found automatically too.',
     kaydetmek_icin_henuz_yeterli: 'Not enough GPS points to save yet.',
+  },
+  rota_uyarisi: {
+    kanal: 'Off-route alerts',
+    baslik: 'You’re off route',
+    hatirlat_baslik: 'Still off route',
+    govde: '{meters} m away from {ad}',
   },
   kayit_kaydedici: {
     kilit_kanal: 'Ongoing recording',

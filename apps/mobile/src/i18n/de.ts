@@ -248,6 +248,8 @@ export const de: Sozluk = {
     cikis_yapiliyor: 'Wird abgemeldet…',
     kalici_olarak_sil: 'Endgültig löschen',
     telefona_bildirim: 'Handy-Benachrichtigungen',
+    rotadan_cikinca_uyar: 'Warnen, wenn ich die Route verlasse',
+    rotadan_cikinca_uyar_alt: 'Beim Folgen einer Route vibriert das Handy und meldet sich, wenn du abweichst, auch bei ausgeschaltetem Bildschirm.',
     kullanim_kosullari: 'Nutzungsbedingungen',
     gizlilik_politikasi: 'Datenschutzerklärung',
     gizlilik_kontrolleri: 'Privatsphäre-Einstellungen',
@@ -764,6 +766,12 @@ export const de: Sozluk = {
     mola_suresi: 'Pausenzeit ',
     bu_mola_kaydin_hiz: 'Diese Pause erscheint mit ihrem Ort auf der Seite „Tempo & Pausen“ der Aktivität. Pausen über 1 Minute ohne Pausieren werden ebenfalls automatisch erkannt.',
     kaydetmek_icin_henuz_yeterli: 'Noch nicht genug GPS-Punkte zum Speichern.',
+  },
+  rota_uyarisi: {
+    kanal: 'Routenabweichung',
+    baslik: 'Du hast die Route verlassen',
+    hatirlat_baslik: 'Immer noch abseits der Route',
+    govde: '{meters} m von „{ad}“ entfernt',
   },
   kayit_kaydedici: {
     kilit_kanal: 'Laufende Aufzeichnung',

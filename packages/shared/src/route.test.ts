@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { estimateDifficulty, estimateDuration, prepareRoute, routeStats, trackOnRoute, type RoutePoint } from './route';
+import { estimateDifficulty, estimateDuration, prepareRoute, ROTA_UYARI, rotaUyarisi, routeStats, trackOnRoute, type RotaUyariDurumu, type RoutePoint } from './route';
 
 const O = { lat: 36.2, lng: 29.6 };
 const M_LAT = 1 / 111195;
@@ -87,5 +87,57 @@ describe('estimateDifficulty', () => {
   it('bisiklette ölçek farklı', () => {
     expect(estimateDifficulty('bike', 20000, 150)).toBe('easy');
     expect(estimateDifficulty('walk', 20000, 150)).toBe('hard');
+  });
+});
+
+describe('rotaUyarisi', () => {
+  /** Saniyede bir konum: [uzaklık m, ...] dizisini sırayla verir, olayları döner */
+  function oynat(uzakliklar: number[], bas: RotaUyariDurumu | null = null, kalan = 5000, acc: number | null = 5) {
+    let d = bas;
+    const olaylar: { t: number; olay: string }[] = [];
+    uzakliklar.forEach((m, i) => {
+      const r = rotaUyarisi(d, { offRouteM: m, remainingM: kalan, t: i * 1000, acc });
+      d = r.durum;
+      if (r.olay) olaylar.push({ t: i, olay: r.olay });
+    });
+    return { d, olaylar };
+  }
+  const tekrar = (m: number, n: number) => Array.from({ length: n }, () => m);
+
+  it('rotaya girmeden uyarmaz (başlangıca giderken)', () => {
+    expect(oynat(tekrar(500, 60)).olaylar).toEqual([]);
+  });
+
+  it('10 saniyeden kısa sapmayı saymaz', () => {
+    expect(oynat([...tekrar(5, 3), ...tekrar(90, 8), ...tekrar(5, 5)]).olaylar).toEqual([]);
+  });
+
+  it('10 saniye dışarıda kalınca bir kez uyarır, dönünce "dondu" der', () => {
+    const { olaylar, d } = oynat([...tekrar(5, 3), ...tekrar(90, 20), ...tekrar(20, 3)]);
+    expect(olaylar).toEqual([
+      { t: 13, olay: 'cikti' },
+      { t: 23, olay: 'dondu' },
+    ]);
+    expect(d?.disarida).toBe(false);
+  });
+
+  it('sınırda (40–60 m) gidip gelince uyarı çırpınmaz', () => {
+    const sinir = Array.from({ length: 30 }, (_, i) => (i % 2 ? 45 : 70));
+    const { olaylar } = oynat([...tekrar(5, 2), ...tekrar(90, 12), ...sinir]);
+    expect(olaylar.map((o) => o.olay)).toEqual(['cikti']);
+  });
+
+  it('dışarıda kalınca 2 dakikada bir, en fazla 3 kez hatırlatır', () => {
+    const { olaylar } = oynat([...tekrar(5, 2), ...tekrar(200, 12 * 60)]);
+    expect(olaylar.map((o) => o.olay)).toEqual(['cikti', 'hatirlat', 'hatirlat', 'hatirlat']);
+    expect(olaylar[1].t - olaylar[0].t).toBe(ROTA_UYARI.TEKRAR_MS / 1000);
+  });
+
+  it('GPS doğruluğu kötüyse eşik büyür', () => {
+    expect(oynat([...tekrar(5, 2), ...tekrar(80, 30)], null, 5000, 70).olaylar).toEqual([]);
+  });
+
+  it('rotanın son 50 metresinde uyarmaz', () => {
+    expect(oynat([...tekrar(5, 2), ...tekrar(150, 30)], null, 30).olaylar).toEqual([]);
   });
 });

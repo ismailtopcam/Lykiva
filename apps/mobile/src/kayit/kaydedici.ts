@@ -9,9 +9,10 @@
  * - Kilit ekranında süre, mesafe ve ortalama hız gösterilir: Android bildirim, iOS Live Activity (kilitEkrani.ts).
  * - Yol tarifi "Egzersiz olarak da kaydet" kapalıyken başlatıldıysa (`kaydetme`) her şey aynı işler, yalnızca
  *   bitirince aktivite oluşmaz: ekranlar `bitir` yerine `iptalEt` çağırır (kullanıcı isterse yine kaydedebilir).
+ * - Rota takip edilirken rotadan çıkınca telefon titrer ve bildirim gelir (arka planda da; bkz. rotaUyarisi.ts).
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { acceptPoint, haversine, LOCATION_DISTANCE_INTERVAL_M, prepareRoute, trackOnRoute, type ActivityType, type HavaDurumu, type PreparedRoute, type RouteProgress, type RoutePoint, type TrackPoint } from '@lykiva/shared';
+import { acceptPoint, haversine, LOCATION_DISTANCE_INTERVAL_M, prepareRoute, rotaUyarisi, trackOnRoute, type ActivityType, type HavaDurumu, type PreparedRoute, type RotaUyariDurumu, type RotaUyariOlayi, type RouteProgress, type RoutePoint, type TrackPoint } from '@lykiva/shared';
 import { randomUUID } from 'expo-crypto';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
@@ -24,6 +25,7 @@ import { hemenYayinla, konumYayinla, paylasimiBitir, type PaylasimGrubu } from '
 import { kilitEkrani, kilitEkraniIzniIste, kilitEkraniniYenile } from './kilitEkrani';
 import { kuyrugaEkle, kuyruguGonder, sunucuIdsi } from './kuyruk';
 import { paketOlustur } from './paket';
+import { rotaUyarisiIzni, rotaUyarisiniKaldir, rotaUyarisiVer } from './rotaUyarisi';
 import { $t } from '@/i18n';
 
 export const KONUM_GOREVI = 'lykiva-konum-kaydi';
@@ -54,6 +56,8 @@ export type Kayit = {
   rota: KayitRotasi | null;
   /** Rotadaki son ilerleme */
   rotaIlerleme: RouteProgress | null;
+  /** Rotadan çıkma uyarısının durumu (saklanır: uygulama kapanıp açılsa da aynı uyarı tekrarlanmaz) */
+  rotaUyari: RotaUyariDurumu | null;
   /** Canlı konumun paylaşıldığı grup (yoksa paylaşılmıyor) */
   paylasim: PaylasimGrubu | null;
   /** Kayıt başlarken alınan hava (internet yoksa null kalır) */
@@ -77,6 +81,7 @@ const BOS: Kayit = {
   sonKonum: null,
   rota: null,
   rotaIlerleme: null,
+  rotaUyari: null,
   paylasim: null,
   hava: null,
   kaydetme: false,
@@ -159,14 +164,23 @@ function noktalarEkle(locs: Location.LocationObject[]) {
   const segments = kayit.segments.length ? [...kayit.segments] : [[]];
   const seg = [...segments[segments.length - 1]];
   let rotaIlerleme = kayit.rotaIlerleme;
+  let rotaUyari = kayit.rotaUyari;
+  let uyari: RotaUyariOlayi = null;
   for (const p of yeni) {
     if (acceptPoint(seg[seg.length - 1], p)) {
       seg.push(p);
-      if (kayit.rota) rotaIlerleme = trackOnRoute(hazir(kayit.rota), p, rotaIlerleme);
+      if (kayit.rota) {
+        rotaIlerleme = trackOnRoute(hazir(kayit.rota), p, rotaIlerleme);
+        const u = rotaUyarisi(rotaUyari, { offRouteM: rotaIlerleme.offRouteM, remainingM: rotaIlerleme.remainingM, t: p.t, acc: p.acc });
+        rotaUyari = u.durum;
+        // Arka planda konumlar toplu gelebilir: gruptaki son olay geçerli (çıktı ve döndüyse uyarı kalkar)
+        if (u.olay) uyari = u.olay;
+      }
     }
   }
   segments[segments.length - 1] = seg;
-  degistir({ segments, sonKonum, rotaIlerleme });
+  degistir({ segments, sonKonum, rotaIlerleme, rotaUyari });
+  if (uyari && kayit.rota && rotaIlerleme) void rotaUyarisiVer(uyari, rotaIlerleme.offRouteM, kayit.rota.name);
   if (!kayit.hava) havayiYakala();
   if (kayit.paylasim) konumYayinla(paylasimDurumu());
 }
@@ -311,8 +325,12 @@ export async function baslat(activity: ActivityType | 'car', rota: KayitRotasi |
   const arkaPlan = await izlemeyiBaslat();
   degistir({ arkaPlan });
   kilitEkraniniYenile(1500);
-  // İzin yeni verildiyse bildirim ancak yeniden gönderilince görünür
-  void kilitEkraniIzniIste().then(() => kilitEkraniniYenile());
+  // İzin yeni verildiyse bildirim ancak yeniden gönderilince görünür. Rota takip ediliyorsa rotadan çıkma uyarısı için
+  // de bildirim izni gerekir (iOS'ta burada sorulur; Android 13+'ta kilit ekranı için zaten soruldu)
+  void kilitEkraniIzniIste().then(() => {
+    kilitEkraniniYenile();
+    if (rota) return rotaUyarisiIzni();
+  });
 }
 
 export async function duraklat() {
@@ -345,6 +363,7 @@ export async function bitir(title?: string): Promise<string | null> {
     return null;
   }
   await izlemeyiDurdur();
+  void rotaUyarisiniKaldir();
   const paket = paketOlustur({ clientId: kayit.clientId, activity: kayit.activity, segments: kayit.segments, title, routeId: kayit.rota?.id, hava: kayit.hava });
   const clientId = kayit.clientId;
   const paylasiyordu = !!kayit.paylasim;
@@ -362,6 +381,7 @@ export async function bitir(title?: string): Promise<string | null> {
 
 export async function iptalEt() {
   await izlemeyiDurdur();
+  void rotaUyarisiniKaldir();
   const paylasiyordu = !!kayit.paylasim;
   degistir({ ...BOS, sonKonum: kayit.sonKonum });
   if (paylasiyordu) void paylasimiBitir();

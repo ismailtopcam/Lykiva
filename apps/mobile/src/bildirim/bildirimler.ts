@@ -47,6 +47,8 @@ export function bildirimHedefi(b: { tur?: string | null; aktor?: string | null; 
   if (b.tur === 'etkinlik' && b.event_id) return { pathname: '/etkinlik/[id]', params: { id: b.event_id } };
   // Telefonun kendi yerel bildirimi: 3B paylaşım videosu hazır (lib/kartVideo)
   if (b.tur === 'kart_video' && b.activity_id) return { pathname: '/aktivite/[id]/paylas', params: { id: b.activity_id } };
+  // Yerel bildirim: rotadan çıktın (kayit/rotaUyarisi)
+  if (b.tur === 'rota_uyarisi') return '/kayit/canli';
   return null;
 }
 export const bildirimlerim = (once?: string | null) => rpc<Bildirim[]>('bildirimlerim', { once: once ?? null, adet: SAYFA });

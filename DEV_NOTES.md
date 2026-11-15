@@ -560,7 +560,13 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
 - [x] Çevrimdışı harita: rotanın çevresini telefona indir (30. aşama, `lib/cevrimdisi.ts`). Kalan: telefonda deneme;
   OpenFreeMap'in "en fazla 4 paralel istek" kuralını MapLibre'den ayarlayamıyoruz (bkz. Kararlar).
   Sonra: haritada serbest alan seçip indirme (rotasız), kayıt başlatırken "bu rota indirilmemiş" uyarısı.
-- [ ] Rotadan çıkınca titreşim + bildirim (telefon cepteyken de); sonra sesli yönlendirme (dönüş dönüş). Şu an uyarı yalnızca ekranda.
+- [x] Rotadan çıkınca titreşim + bildirim (15 Kas 2026; telefon cepteyken, ekran kapalıyken de). Karar `@lykiva/shared` >
+  `rotaUyarisi` (testli): rotaya bir kez girmeden uyarmaz, 60 m'yi (GPS kötüyse doğrulukla büyür) 10 sn aşınca uyarır,
+  40 m'ye dönünce kaldırır, dışarıda kalınırsa 2 dakikada bir en fazla 3 hatırlatma, son 50 m'de uyarmaz. Uyarı yerel
+  bildirim (`kayit/rotaUyarisi.ts`): Android'de titreşimli yüksek öncelikli kanal (titreşimi sistem yapar; uygulamada
+  `VIBRATE` izni yok, eklemek yeni derleme isterdi), iOS'ta sesli bildirim. Ayarlar > Bildirimler'den kapatılır.
+  Yalnızca JS, yeni derleme gerekmez. **Telefonda denenmedi** (cepteyken / kilitliyken titriyor mu, iOS'ta arka planda
+  bildirim geliyor mu). Sonra: sesli yönlendirme (dönüş dönüş).
 - [ ] Aileyle canlı konum: gruba üye olmayan birine web bağlantısıyla canlı konum (AllTrails Live Share / Garmin LiveTrack gibi);
   uzun süre hareketsiz kalınca uyarı.
 
