@@ -11,6 +11,25 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | Kim | İş | Dal |
 | --- | --- | --- |
 
+## Gökhan için: 15 Kasım 2026'da değişenler (İsmail)
+
+Hepsi main'de, yalnızca JS (yeni derleme gerekmez); migration'lar sunucuya uygulandı. Ayrıntılar "Yapılacaklar"da.
+- **Harita sekmesi** (#114–#120): Yolculuk yap'ın açık paneli tasarımdaki gibi (hedef, ölçü kartı + yükselti, ulaşım ve
+  tercih hapları, kayıt anahtarı, altta Yola çık); panel her durumda tutamağa kadar iner. Arama kutusuna dokununca
+  son aramalar (tek tek / hepsi silinir); paneldeki "Son gittiklerin" kalktı. Katman penceresinde harita görünümü
+  (Sistemle aynı / Açık / Karanlık). Egzersiz yap paneli aşağıda "Hangi egzersiz?" şeridinde durur.
+- **Rota oluşturma** (#118, #119): panel Harita'daki gibi sürüklenir; duraklar büyük, dokununca kalkar.
+- **Rotadan başlatma** (#120): "Bu rotayı başlat" artık Harita'nın Egzersiz paneline gider (`/kesfet?rota=`);
+  `kayit/index` yalnızca yönlendirir. Kayıt silinince `dismissTo('/')`.
+- **Telefon bildirimi** (#121): girişte izin bir kez sorulur; sunucu Expo makbuzlarından ölü jetonları siler
+  (pg_cron, `20261118000000_push_makbuzlari.sql`).
+- **Rotadan çıkınca titreşim + bildirim** (#123, `kayit/rotaUyarisi.ts`, karar `@lykiva/shared` > `rotaUyarisi`).
+- **Aileyle canlı konum** (#124): "Bağlantıyla paylaş" → `lykiva.app/c/<anahtar>` (web sayfası, MapLibre);
+  `20261119000000_canli_baglanti.sql`. `kaydedici.baslat`'a beşinci parametre geldi: `canliBaglanti`.
+- **GPX içe aktarma** (#126): Profil > Rotalar > "GPX içe aktar" (`app/rota/ice-aktar.tsx`, `@lykiva/shared` > `gpxOku`).
+- Telefona Metro'dan kod verirken çalışan kopyanın main'de olduğuna bak: 15 Kas'ta Metro 22 commit geride bir
+  worktree'den çalışıyordu, "tasarım gitmiş" sanıldı.
+
 ## Gökhan için: kilit ekranı iOS (12 Kasım 2026, İsmail)
 
 - **iOS'ta da kilit ekranı penceresi var artık:** Live Activity (kilit ekranı + Dynamic Island), `expo-widgets` ile —
@@ -61,7 +80,7 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
 4. **Hetzner depolama anahtarını yenile:** gizli anahtar sohbette paylaşıldı. Hetzner Console > Security > S3 credentials'ta
    yeni çift oluştur, `/etc/lykiva-yedek.env`'de `S3_ANAHTAR` / `S3_GIZLI`'yi değiştir (Claude yapabilir: erişim anahtarını
    sohbete, gizliyi yalnızca sunucuya yaz), sonra eski iki çifti (`3W8WDQ…`, `CZE21…`) sil.
-5. **Coolify API anahtarı (12 Kas 2026):** BRouter / Photon kurulumu için sohbette paylaşılan anahtarı (`4|HHdY…`)
+5. **Coolify API anahtarı (12 Kas 2026; 15 Kas'ta lykiva-web kurulumu için yine kullanıldı, hâlâ etkin):** sohbette paylaşılan anahtarı (`4|HHdY…`)
    Coolify > Keys & Tokens'tan sil.
 6. **Play dahili test:** katılma bağlantısını "Gösterge test" listesindekilere gönder:
    https://play.google.com/apps/internaltest/4701532399950766309 — telefonda denenmemiş özellikleri (aşağıda) dene.
@@ -120,6 +139,14 @@ Kalan: telefonlarda deneme. Yeni yerel modüller (fotoğraf, bildirim, kilit ekr
 
 ### [ ] Telefonda ve gerçek sunucuda denenmemiş özellikler
 Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
+- 15 Kas 2026 (İsmail; yalnızca JS): **Harita** paneli (tutamağa inme, kısa özet ↔ açık panel geçişi, yol hesaplanmışken
+  karttaki yükselti profili, haplar), son aramalar (klavye açıkken çarpı), harita görünümü seçimi (gerçek MapLibre'de),
+  Egzersiz panelinin şerit durağı. **Rota oluşturma** paneli ve durak silme (yanına yeni durak eklenmemeli).
+  **Rotadan başlat → durdur → kaydı sil** (ana sayfaya dönmeli, eski başlatma ekranı çıkmamalı). **Bildirim izni**
+  girişte soruluyor mu, takip / beğeni / yorum bildirimi geliyor mu (iPhone'dan henüz hiç jeton yok). **Rotadan
+  çıkınca** cepteyken / kilitliyken titreşim ve bildirim, dönünce kalkması. **Canlı konum bağlantısı** uçtan uca
+  (başka telefonda sayfa ilerliyor mu, bitince "Paylaşım bitti"). **GPX içe aktarma** (dosya seçici iOS / Android;
+  Komoot / Strava / Garmin dosyaları; aktivite olarak süre ve hız).
 - 3B video temaları (15 Kas 2026, İsmail; yalnızca JS): Paylaş > şeridin sonundaki "Yörünge 3B" / "Takip kamerası 3B" (şehir
   şablonları 20 km altı rotada). "3B videoyu hazırla" → ilerleme çubuğu → "Videoyu paylaş": video Instagram / WhatsApp'ta
   oynuyor mu? Ekrandan çıkınca bildirim geliyor mu, dokununca paylaşım ekranı açılıyor mu? Uygulamayı arka plana atıp
