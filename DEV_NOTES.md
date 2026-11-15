@@ -575,12 +575,13 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
   Sahne MapLibre GL JS (OpenFreeMap harita + binalar, Terrarium arazi) başsız Chromium'da kare kare çizilir, ffmpeg MP4 yapar.
   Telefon izi (uçları kırpılmış) ve kendi dilindeki metinleri gönderir; servis veritabanına bağlanmaz.
   4 şablon: yörünge (11, 12, 16), şehir gecesi (13), şehir maketi (14; 15'in uydusu lisanslı olduğu için açık harita), takip (17).
-  - [x] 1. aşama: servis, sahne, 4 şablon, yerelde deneme. Ölçüm: 12 sn'lik hikâye videosu yazılım WebGL'iyle
-    (sunucudaki gibi, ekran kartsız) İsmail'in bilgisayarında ~3,7 dk (360 kare, ~0,6 sn/kare). Sunucuda tekrar ölçülecek;
-    yavaşsa `KV_FPS=24` ya da `KV_OLCEK` düşürülür.
-  - [~] 2. aşama: kurulum. Compose'a `kart-video` (3 çekirdek, 3 GB, shm 1 GB), kapıya `video.ismailtopcam.dev`
-    (uygulama anahtarı; yeni iş IP başına dakikada 1 + 4 anlık, durum/indirme dakikada 60) eklendi, nginx -t sunucuda geçti.
-    Kalan: DNS A kaydı, Coolify'da kapı alan adı + redeploy, sunucuda süre ölçümü.
+  - [x] 1. aşama: servis, sahne, 4 şablon, yerelde deneme.
+  - [x] 2. aşama: kurulum (15 Kas 2026). `kart-video` lykiva-altyapi'de (3 çekirdek, 3 GB), kapı `video.ismailtopcam.dev`
+    (uygulama anahtarı; yeni iş IP başına dakikada 1 + 4 anlık, durum/indirme dakikada 60). DNS A kaydı eklendi.
+    Hız (sunucuda, uçtan uca): ilk sürüm 12 sn'lik yörünge videosu 18 dk → hızlandırmadan sonra **2 dk 51 sn** (3B arazili).
+    Ölçümler ve denenenler: `altyapi/kart-video/README.md` > Hız.
+  - [ ] Şehir şablonları yavaş: şehir maketi (İstanbul, 3,1 km) ~8–9 dk (binlerce bina 3B çiziliyor). Yapılacak: yalnız rotanın
+    çevresindeki binaları çiz (`within` süzgeci), gerekirse şehir şablonu süresini kısalt.
   - [ ] 3. aşama: telefonda 3B video temaları (iş gönder, ilerleme, MP4 indir, `expo-sharing` ile paylaş).
   - Bilinen: haritada yer adları kapalı; şehir şablonları kısa rotalar için (uzun rotada uzaklaşınca binalar z14 altında kalır).
 - Hız haritasında kademeler sabit 13 / 25 km/sa değil, aktivitenin ortalamasına göre (×0,85 ve ×1,2): koşu ve yürüyüşte de anlamlı.
