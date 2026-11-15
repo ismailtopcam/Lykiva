@@ -573,8 +573,8 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
   yenilenir; "Google Haritalar'da aç". Molada değilken 10 dk hareket yoksa ve 5 dk konum gelmezse sayfada uyarı.
   Bağlantı kayıt bitince ya da en geç 24 saatte kapanır. Sunucu `20261119000000_canli_baglanti.sql` (testli), web
   `apps/web/src/app/c/[anahtar]` (MapLibre GL, OpenFreeMap; `maplibre-gl` web'e eklendi), uygulama
-  `kayit/canliPaylasim.ts`. Yalnızca JS + migration, yeni derleme gerekmez. **Telefonda ve gerçek sunucuda uçtan uca
-  denenmedi.** Sonra: hareketsizlikte kaydı yapanın telefonunda "İyi misin?" sorusu, cevap yoksa izleyene haber
+  `kayit/canliPaylasim.ts`. Yalnızca JS + migration, yeni derleme gerekmez. Migration sunucuya uygulandı (15 Kas 2026,
+  `uygula.sh`, SSH; anon yalnızca `canli_baglanti`'yı çağırabiliyor). **Telefondan uçtan uca denenmedi.** Sonra: hareketsizlikte kaydı yapanın telefonunda "İyi misin?" sorusu, cevap yoksa izleyene haber
   (izleyen uygulama kullanmıyor; e-posta / SMS gerekir).
 
 **Sonra — veri alışverişi**
