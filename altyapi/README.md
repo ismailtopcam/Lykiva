@@ -23,7 +23,7 @@ vardır; biri yeniden kurulunca diğerleri etkilenmez. Watch Paths sayesinde yal
 | --- | --- | --- | --- |
 | `brouter` | `/brouter/docker-compose.yml` | `https://brouter.ismailtopcam.dev` | `altyapi/brouter/**`, `altyapi/kapi/**` |
 | `photon` | `/photon/docker-compose.yml` | `https://photon.ismailtopcam.dev` | `altyapi/photon/**`, `altyapi/kapi/**` |
-| `kart-video` | `/docker-compose.yml` | `https://video.ismailtopcam.dev` | `altyapi/docker-compose.yml`, `altyapi/kart-video/**`, `altyapi/kapi/**` |
+| `video` | `/docker-compose.yml` | `https://video.ismailtopcam.dev` | `altyapi/docker-compose.yml`, `altyapi/kart-video/**`, `altyapi/kapi/**` |
 
 `brouter` ve `photon`'da **Connect To Predefined Network** açıktır: Gösterge (aynı sunucu) onlara Coolify'ın `coolify`
 ağından `http://brouter:17777` ve `http://photon:2322` ile, kapısız ve anahtarsız gider (Gösterge deposu
@@ -50,7 +50,7 @@ Dışarıya yalnızca `kapi` (nginx) açıktır; `brouter` ve `photon`'a alan ad
 Telefonlar sunuculara doğrudan bağlandığı için IP ile kapatmak mümkün değil; bunun yerine:
 
 - **Uygulama anahtarı:** `X-Lykiva-Anahtar` başlığı `LYKIVA_UYGULAMA_ANAHTARI` ile aynı değilse **403**. Anahtar
-  Coolify'da (brouter, photon ve kart-video uygulamalarının üçünde de > Environment Variables) ve uygulamada `EXPO_PUBLIC_ALTYAPI_ANAHTARI` (EAS + yerel `.env`)
+  Coolify'da (brouter, photon ve video uygulamalarının üçünde de > Environment Variables) ve uygulamada `EXPO_PUBLIC_ALTYAPI_ANAHTARI` (EAS + yerel `.env`)
   olarak durur; repoya yazılmaz. Boş ya da 24 karakterden kısaysa kapı açılmaz. Uygulamanın içinde durduğu için
   kararlı biri çıkarabilir: sıradan kullanımı ve botları keser, asıl koruma istek sınırıdır.
 - **IP başına istek sınırı (aşılınca 429):** rota dakikada 60 (+30 anlık), arama dakikada 120 (+40 anlık);
@@ -74,7 +74,7 @@ curl -H "X-Lykiva-Anahtar: $A" "https://brouter.ismailtopcam.dev/brouter?lonlats
 ## Kurulu (12 Kas 2026)
 
 Coolify > Uygulamalar > production, sunucu "uygulama". İlk kurulumda tek uygulamaydı (`lykiva-altyapi`); 17 Kas 2026'da
-**`brouter`**, **`photon`** ve **`kart-video`** olarak üçe ayrıldı (yukarıdaki tablo; veriler eski birimlerden kopyalandı,
+**`brouter`**, **`photon`** ve **`video`** olarak üçe ayrıldı (yukarıdaki tablo; veriler eski birimlerden kopyalandı,
 yeniden indirilmedi). Alan adları `https://brouter.ismailtopcam.dev` ve `https://photon.ismailtopcam.dev`. Eski
 `brouter.` / `photon.lykiva.app` adları 12 Kas 2026'da kaldırıldı. Ortam: `PHOTON_BELLEK=3g`.
 Ölçülen: Photon ilk içe aktarma ~5 dk, ~3 GB bellek; çalışırken ~400 MB. BRouter ~50 MB (boşta).
@@ -84,11 +84,12 @@ Haftalık güncelleme (her uygulamanın kendi Scheduled Tasks'ı): pazartesi 05:
 
 ## 3B kart video (`kart-video`) kurulumu
 
-Coolify'daki `kart-video` uygulamasında çalışır (17 Kas 2026'ya kadar adı `lykiva-altyapi`, BRouter ve Photon da içindeydi):
+Coolify'daki `video` uygulamasında çalışır (17 Kas 2026'ya kadar adı `lykiva-altyapi`, BRouter ve Photon da içindeydi). Uygulama yalnızca
+video üretir; servisin depodaki adı `kart-video` olarak kaldı:
 
 1. **DNS:** `video.ismailtopcam.dev` için A kaydı → 91.90.81.195. `*.ismailtopcam.dev` başka sunucuya gittiği için
    ayrı kayıt şart.
-2. Coolify > kart-video > `kapi` servisinin alan adı `https://video.ismailtopcam.dev`.
+2. Coolify > video > `kapi` servisinin alan adı `https://video.ismailtopcam.dev`.
    `kart-video` servisine alan adı verilmez.
 3. Redeploy. İlk kurulumda Playwright imajı (~2 GB) iner, birkaç dakika sürer.
 4. Dene (anahtar `$A`): `curl -H "X-Lykiva-Anahtar: $A" https://video.ismailtopcam.dev/video/00000000-0000-0000-0000-000000000000`
