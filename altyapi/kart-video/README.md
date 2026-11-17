@@ -8,7 +8,8 @@ H.264 MP4'e çevirir (Instagram / WhatsApp oynatır).
 `https://video.ismailtopcam.dev` (uygulama anahtarı; yeni iş IP başına dakikada 1). Telefon Paylaş ekranındaki 3B video
 temalarından çağırır (`apps/mobile/src/lib/kartVideo.ts`, adres `EXPO_PUBLIC_VIDEO_URL`). Servis yalnızca telefonun
 gönderdiği izi ve metni işler; veritabanına bağlanmaz, videoyu `KV_SAKLA_DK` (60 dk) sonra siler.
-Coolify'a webhook ile bağlı değil: `main`'e birleşen değişiklikten sonra Coolify > video > Redeploy elle yapılır.
+Coolify'da GitHub App'e bağlı (17 Kas 2026): `altyapi/kart-video/**`, `altyapi/docker-compose.yml` ya da `altyapi/kapi/**`
+`main`'e birleşince kendiliğinden yeniden kurulur.
 Aşamalar: DEV_NOTES > "Paylaşım kartları — tasarım aktarımı".
 
 ## Neden böyle
