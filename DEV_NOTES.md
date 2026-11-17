@@ -110,10 +110,10 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
 14. **Görünüm (karanlık mod), iOS'ta derleme bekliyor:** Android sürüm 7'de geldi. `gorunum-ayari` PR'ı (sürüm 6'dan sonra main'e girdi) `app.json`'da `userInterfaceStyle`'ı
     `automatic` yaptı (önce `light`). Yeni derlemeye kadar Aydınlık / Karanlık seçimi çalışır, "Telefonun ayarı" ise
     her zaman aydınlık görünür (eski derleme telefonun temasını uygulamaya bildirmiyor).
-15. **lykiva-altyapi'yi yeniden kur (15 Kas 2026):** Coolify > Uygulamalar > production > lykiva-altyapi > Redeploy.
-    BRouter imajına yaya profili (`lykiva-yaya-yol`) girdi; yeniden kurulana kadar uygulama eski profile düşer (hata
-    vermez). Segmentler kalıcı birimde, yeniden inmez. Dene: `altyapi/README.md` > Kapı'daki BRouter komutunda
-    `profile=lykiva-yaya-yol` → 200 dönmeli (profil yoksa boş 500).
+15. **Coolify'da `video` ve `lykiva-web`'i GitHub App'e bağla (17 Kas 2026):** ikisinin kaynağı GitHub App değil
+    (`source_id 0`), bu yüzden `main`'e birleşen değişiklikle kendiliğinden kurulmuyorlar; şimdilik Coolify > Redeploy elle.
+    Coolify > uygulama > Git Source'tan "ismailtopcam-coolify" GitHub App seçilir (API desteklemiyor). Watch Paths ikisinde
+    de girili; bağlanınca yalnızca kendi klasörleri değişince kurulurlar. `brouter` ve `photon` zaten bağlı.
 
 Gizlilik, ek gizlilik / engelleme ve kulüpler migration'ları (`20261115…`, `20261116…`, `20261117…`) 13 Kas 2026'da
 sunucuya uygulandı (`uygula.sh`, SSH ile). `grup` (herkese açık) ve `grup_gonderi` (gizli) kovaları ve altı depolama
@@ -358,7 +358,7 @@ girildi → **sürüm 5'ten itibaren** kendi sunucularımız; o zamana kadar tel
   Şimdilik kabul (uygulama hesaplarken bekleme göstergesi gösteriyor).
 - **Ölçekleme planı (BRouter):** sunucu "uygulama" 6 çekirdek (AMD EPYC, paylaşımlı vCPU), diğer uygulamalarla ortak;
   BRouter aynı anda en fazla 4 rota hesaplar (`BROUTER_ISLEM=4`), fazlası sırada bekler. Kullanıcı artınca:
-  1) `BROUTER_ISLEM` artır (Coolify > lykiva-altyapi > Environment Variables, yeniden kur; ücretsiz),
+  1) `BROUTER_ISLEM` artır (Coolify > brouter > Environment Variables, yeniden kur; ücretsiz),
   2) çekirdek yetmezse sunucuyu büyüt ya da BRouter'ı ayrı sunucuya taşı (kapı ve alan adları aynı kalır, uygulama değişmez),
   3) tek rotanın hızı da önemliyse ayrılmış ve daha hızlı işlemcili (dedicated vCPU) sunucu. Ne zaman: kapının günlüğündeki
   bekleme süreleri ve 429'lar izlenerek karar verilir. Fiyatlar o zaman sağlayıcıdan bakılır.
@@ -667,7 +667,7 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
   Telefon izi (uçları kırpılmış) ve kendi dilindeki metinleri gönderir; servis veritabanına bağlanmaz.
   4 şablon: yörünge (11, 12, 16), şehir gecesi (13), şehir maketi (14; 15'in uydusu lisanslı olduğu için açık harita), takip (17).
   - [x] 1. aşama: servis, sahne, 4 şablon, yerelde deneme.
-  - [x] 2. aşama: kurulum (15 Kas 2026). `kart-video` lykiva-altyapi'de (3 çekirdek, 3 GB), kapı `video.ismailtopcam.dev`
+  - [x] 2. aşama: kurulum (15 Kas 2026). `kart-video` lykiva-altyapi'de, 17 Kas'tan beri Coolify'da ayrı `video` uygulaması (3 çekirdek, 3 GB), kapı `video.ismailtopcam.dev`
     (uygulama anahtarı; yeni iş IP başına dakikada 1 + 4 anlık, durum/indirme dakikada 60). DNS A kaydı eklendi.
     Hız (sunucuda, uçtan uca): ilk sürüm 12 sn'lik yörünge videosu 18 dk → hızlandırmadan sonra **2 dk 51 sn** (3B arazili).
     Ölçümler ve denenenler: `altyapi/kart-video/README.md` > Hız.
