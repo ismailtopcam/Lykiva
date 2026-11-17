@@ -2,10 +2,10 @@
 # Coolify > Docker Compose: Git deposu bu repo, Base Directory `/altyapi`, dosya `/brouter/docker-compose.yml`.
 # Alan adı (https://brouter.ismailtopcam.dev) yalnızca "kapi" servisine verilir; brouter'a alan adı VERİLMEZ.
 # "Connect To Predefined Network" açık: Gösterge BRouter'a Coolify'ın iç ağından `http://brouter:17777` ile, anahtarsız gider.
-# Ayrıntı: altyapi/README.md
+# Derleme yolları Base Directory'ye (/altyapi) göredir; Coolify öyle çözer. Ayrıntı: altyapi/README.md
 services:
   kapi:
-    build: ../kapi
+    build: ./kapi
     restart: unless-stopped
     environment:
       # Zorunlu; Coolify'da girilir, repoya yazılmaz. Uygulamadaki EXPO_PUBLIC_ALTYAPI_ANAHTARI ile aynı olmalı.
@@ -22,7 +22,7 @@ services:
       - '80'
 
   brouter:
-    build: .
+    build: ./brouter
     restart: unless-stopped
     environment:
       - BROUTER_BELLEK=${BROUTER_BELLEK:-512M}

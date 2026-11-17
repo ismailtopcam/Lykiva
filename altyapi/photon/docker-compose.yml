@@ -2,10 +2,10 @@
 # Coolify > Docker Compose: Git deposu bu repo, Base Directory `/altyapi`, dosya `/photon/docker-compose.yml`.
 # Alan adı (https://photon.ismailtopcam.dev) yalnızca "kapi" servisine verilir; photon'a alan adı VERİLMEZ.
 # "Connect To Predefined Network" açık: Gösterge Photon'a Coolify'ın iç ağından `http://photon:2322` ile, anahtarsız gider.
-# Ayrıntı: altyapi/README.md
+# Derleme yolları Base Directory'ye (/altyapi) göredir; Coolify öyle çözer. Ayrıntı: altyapi/README.md
 services:
   kapi:
-    build: ../kapi
+    build: ./kapi
     restart: unless-stopped
     environment:
       # Zorunlu; Coolify'da girilir, repoya yazılmaz. Uygulamadaki EXPO_PUBLIC_ALTYAPI_ANAHTARI ile aynı olmalı.
@@ -22,7 +22,7 @@ services:
       - '80'
 
   photon:
-    build: .
+    build: ./photon
     restart: unless-stopped
     environment:
       - PHOTON_BELLEK=${PHOTON_BELLEK:-2g}
