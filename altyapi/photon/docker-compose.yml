@@ -1,0 +1,36 @@
+# Photon (yer arama) — Coolify'da ayrı uygulama: "photon".
+# Coolify > Docker Compose: Git deposu bu repo, Base Directory `/altyapi`, dosya `/photon/docker-compose.yml`.
+# Alan adı (https://photon.ismailtopcam.dev) yalnızca "kapi" servisine verilir; photon'a alan adı VERİLMEZ.
+# "Connect To Predefined Network" açık: Gösterge Photon'a Coolify'ın iç ağından `http://photon:2322` ile, anahtarsız gider.
+# Derleme yolları Base Directory'ye (/altyapi) göredir; Coolify öyle çözer. Ayrıntı: altyapi/README.md
+services:
+  kapi:
+    build: ./kapi
+    restart: unless-stopped
+    environment:
+      # Zorunlu; Coolify'da girilir, repoya yazılmaz. Uygulamadaki EXPO_PUBLIC_ALTYAPI_ANAHTARI ile aynı olmalı.
+      - LYKIVA_UYGULAMA_ANAHTARI=${LYKIVA_UYGULAMA_ANAHTARI}
+      # Şablondaki bütün sınırlar tanımlı olmalı (boş değer nginx'i açmaz); kullanılmayanlar da varsayılanla durur.
+      - LYKIVA_ROTA_SINIRI=${LYKIVA_ROTA_SINIRI:-60r/m}
+      - LYKIVA_ROTA_YIGIN=${LYKIVA_ROTA_YIGIN:-30}
+      - LYKIVA_ARAMA_SINIRI=${LYKIVA_ARAMA_SINIRI:-120r/m}
+      - LYKIVA_ARAMA_YIGIN=${LYKIVA_ARAMA_YIGIN:-40}
+      - LYKIVA_VIDEO_SINIRI=${LYKIVA_VIDEO_SINIRI:-1r/m}
+      - LYKIVA_VIDEO_YIGIN=${LYKIVA_VIDEO_YIGIN:-4}
+      - NGINX_ENVSUBST_FILTER=^LYKIVA_
+    expose:
+      - '80'
+
+  photon:
+    build: ./photon
+    restart: unless-stopped
+    environment:
+      - PHOTON_BELLEK=${PHOTON_BELLEK:-2g}
+      - PHOTON_DILLER=${PHOTON_DILLER:-tr,en}
+    volumes:
+      - photon-veri:/veri
+    expose:
+      - '2322'
+
+volumes:
+  photon-veri:

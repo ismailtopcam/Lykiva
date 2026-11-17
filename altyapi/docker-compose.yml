@@ -1,8 +1,7 @@
-# Lykiva — kendi rota (BRouter), yer arama (Photon) ve 3B kart video (kart-video) sunucularımız.
-# Coolify > yeni kaynak > Docker Compose (Git deposu: bu repo, dosya: altyapi/docker-compose.yml).
-# Dışarıya yalnızca "kapi" açılır: Coolify'da bütün alan adları kapi servisine verilir
-# (https://brouter.ismailtopcam.dev,https://photon.ismailtopcam.dev,https://video.ismailtopcam.dev).
-# brouter, photon ve kart-video'ya alan adı VERİLMEZ.
+# Lykiva — 3B paylaşım kartı videoları (kart-video). Coolify'da uygulama adı: "kart-video".
+# Coolify > Docker Compose: Git deposu bu repo, Base Directory `/altyapi`, dosya `/docker-compose.yml`.
+# BRouter ve Photon ayrı uygulamalardır: brouter/docker-compose.yml, photon/docker-compose.yml.
+# Dışarıya yalnızca "kapi" açılır: alan adı (https://video.ismailtopcam.dev) kapi servisine verilir, kart-video'ya VERİLMEZ.
 # Kapı uygulama anahtarını (X-Lykiva-Anahtar) ve IP başına istek sınırını denetler. Ayrıntı: altyapi/README.md
 services:
   kapi:
@@ -11,7 +10,7 @@ services:
     environment:
       # Zorunlu; Coolify'da girilir, repoya yazılmaz. Uygulamadaki EXPO_PUBLIC_ALTYAPI_ANAHTARI ile aynı olmalı.
       - LYKIVA_UYGULAMA_ANAHTARI=${LYKIVA_UYGULAMA_ANAHTARI}
-      # IP başına: rota isteği dakikada 60 (anlık 30 fazlası), arama dakikada 120 (anlık 40)
+      # Şablondaki bütün sınırlar tanımlı olmalı (boş değer nginx'i açmaz); rota / arama burada kullanılmaz.
       - LYKIVA_ROTA_SINIRI=${LYKIVA_ROTA_SINIRI:-60r/m}
       - LYKIVA_ROTA_YIGIN=${LYKIVA_ROTA_YIGIN:-30}
       - LYKIVA_ARAMA_SINIRI=${LYKIVA_ARAMA_SINIRI:-120r/m}
@@ -23,30 +22,6 @@ services:
       - NGINX_ENVSUBST_FILTER=^LYKIVA_
     expose:
       - '80'
-
-  brouter:
-    build: ./brouter
-    restart: unless-stopped
-    environment:
-      - BROUTER_BELLEK=${BROUTER_BELLEK:-512M}
-      - BROUTER_ISLEM=${BROUTER_ISLEM:-4}
-      - BROUTER_ZAMAN_ASIMI=${BROUTER_ZAMAN_ASIMI:-60}
-      - BROUTER_SEGMENTLER=${BROUTER_SEGMENTLER:-E25_N35 E30_N35 E35_N35 E40_N35 E25_N40 E30_N40 E35_N40 E40_N40}
-    volumes:
-      - brouter-segmentler:/segments
-    expose:
-      - '17777'
-
-  photon:
-    build: ./photon
-    restart: unless-stopped
-    environment:
-      - PHOTON_BELLEK=${PHOTON_BELLEK:-2g}
-      - PHOTON_DILLER=${PHOTON_DILLER:-tr,en}
-    volumes:
-      - photon-veri:/veri
-    expose:
-      - '2322'
 
   # 3B paylaşım kartı videoları (altyapi/kart-video/README.md). Sunucu diğer uygulamalarla ortak: işlemci ve bellek sınırlı.
   kart-video:
@@ -67,6 +42,3 @@ services:
     expose:
       - '8080'
 
-volumes:
-  brouter-segmentler:
-  photon-veri:

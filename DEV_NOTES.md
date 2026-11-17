@@ -329,7 +329,12 @@ Sunucu paketleri güncellendi (12 Kas 2026; Ubuntu 24.04.5, Docker eklentileri, 
 hepsi çalışıyor, yeniden başlatma gerekmedi. Otomatik güvenlik güncellemeleri (unattended-upgrades) açık.
 
 ### [x] Kendi rota hesaplama ve yer arama sunucumuz (12 Kas 2026)
-Coolify > Uygulamalar > production > **lykiva-altyapi** (Docker Compose, `altyapi/docker-compose.yml`, sunucu "uygulama"):
+- **Üç ayrı Coolify uygulamasına ayrıldı (17 Kas 2026, İsmail):** `brouter`, `photon`, `kart-video` (eski `lykiva-altyapi`).
+  Her biri kendi kapısıyla ve kendi Watch Paths'iyle: mobil / web PR'ları artık BRouter'ı, Photon'u ve kart-video'yu
+  yeniden kurmuyor (otomatik deploy 16 Kas'ta düzelince her push dördünü birden kuruyordu). Alan adları, anahtar ve
+  uygulama tarafı aynı; Gösterge iç ağdan `brouter` / `photon` adlarıyla kullanmaya devam ediyor. Ayrıntı: `altyapi/README.md`.
+
+İlk kurulum: Coolify > Uygulamalar > production > **lykiva-altyapi** (Docker Compose, `altyapi/docker-compose.yml`, sunucu "uygulama"):
 `https://brouter.ismailtopcam.dev` (BRouter 1.7.10, Türkiye ve çevresi 8 karo) ve `https://photon.ismailtopcam.dev` (Photon 1.3.0,
 Türkiye, tr + en; 1,18 milyon kayıt, 449 MB). `PHOTON_BELLEK=3g` (ilk içe aktarma ~3 GB, 5 dk; sonra ~400 MB).
 Denendi: BRouter dört profilde brouter.de ile aynı sonuç (Kaş 3653 m); Photon Türkçe aramalarda komoot ile aynı ya da daha iyi.
