@@ -110,10 +110,6 @@ Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil
 14. **Görünüm (karanlık mod), iOS'ta derleme bekliyor:** Android sürüm 7'de geldi. `gorunum-ayari` PR'ı (sürüm 6'dan sonra main'e girdi) `app.json`'da `userInterfaceStyle`'ı
     `automatic` yaptı (önce `light`). Yeni derlemeye kadar Aydınlık / Karanlık seçimi çalışır, "Telefonun ayarı" ise
     her zaman aydınlık görünür (eski derleme telefonun temasını uygulamaya bildirmiyor).
-15. **Coolify'da `video` ve `lykiva-web`'i GitHub App'e bağla (17 Kas 2026):** ikisinin kaynağı GitHub App değil
-    (`source_id 0`), bu yüzden `main`'e birleşen değişiklikle kendiliğinden kurulmuyorlar; şimdilik Coolify > Redeploy elle.
-    Coolify > uygulama > Git Source'tan "ismailtopcam-coolify" GitHub App seçilir (API desteklemiyor). Watch Paths ikisinde
-    de girili; bağlanınca yalnızca kendi klasörleri değişince kurulurlar. `brouter` ve `photon` zaten bağlı.
 
 Gizlilik, ek gizlilik / engelleme ve kulüpler migration'ları (`20261115…`, `20261116…`, `20261117…`) 13 Kas 2026'da
 sunucuya uygulandı (`uygula.sh`, SSH ile). `grup` (herkese açık) ve `grup_gonderi` (gizli) kovaları ve altı depolama
@@ -333,6 +329,8 @@ hepsi çalışıyor, yeniden başlatma gerekmedi. Otomatik güvenlik güncelleme
   Her biri kendi kapısıyla ve kendi Watch Paths'iyle: mobil / web PR'ları artık BRouter'ı, Photon'u ve kart-video'yu
   yeniden kurmuyor (otomatik deploy 16 Kas'ta düzelince her push dördünü birden kuruyordu). Alan adları, anahtar ve
   uygulama tarafı aynı; Gösterge iç ağdan `brouter` / `photon` adlarıyla kullanmaya devam ediyor. Ayrıntı: `altyapi/README.md`.
+  Dördü de (`brouter`, `photon`, `video`, `lykiva-web`) GitHub App'e bağlı: `main`'e birleşen değişiklik yalnızca ilgili
+  uygulamayı kendiliğinden kurar (`video` ve `lykiva-web` 17 Kas'a kadar bağlı değildi, elle kuruluyordu).
 
 İlk kurulum: Coolify > Uygulamalar > production > **lykiva-altyapi** (Docker Compose, `altyapi/docker-compose.yml`, sunucu "uygulama"):
 `https://brouter.ismailtopcam.dev` (BRouter 1.7.10, Türkiye ve çevresi 8 karo) ve `https://photon.ismailtopcam.dev` (Photon 1.3.0,
