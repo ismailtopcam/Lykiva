@@ -329,7 +329,7 @@ Sunucu paketleri güncellendi (12 Kas 2026; Ubuntu 24.04.5, Docker eklentileri, 
 hepsi çalışıyor, yeniden başlatma gerekmedi. Otomatik güvenlik güncellemeleri (unattended-upgrades) açık.
 
 ### [x] Kendi rota hesaplama ve yer arama sunucumuz (12 Kas 2026)
-- **Üç ayrı Coolify uygulamasına ayrıldı (17 Kas 2026, İsmail):** `brouter`, `photon`, `kart-video` (eski `lykiva-altyapi`).
+- **Üç ayrı Coolify uygulamasına ayrıldı (17 Kas 2026, İsmail):** `brouter`, `photon`, `video` (eski `lykiva-altyapi`; içinde kart-video servisi).
   Her biri kendi kapısıyla ve kendi Watch Paths'iyle: mobil / web PR'ları artık BRouter'ı, Photon'u ve kart-video'yu
   yeniden kurmuyor (otomatik deploy 16 Kas'ta düzelince her push dördünü birden kuruyordu). Alan adları, anahtar ve
   uygulama tarafı aynı; Gösterge iç ağdan `brouter` / `photon` adlarıyla kullanmaya devam ediyor. Ayrıntı: `altyapi/README.md`.
