@@ -3,7 +3,7 @@
 set -eu
 anahtar="${LYKIVA_UYGULAMA_ANAHTARI:-}"
 if [ "${#anahtar}" -lt 24 ]; then
-  echo "HATA: LYKIVA_UYGULAMA_ANAHTARI boş ya da 24 karakterden kısa; kapı açılmıyor (Coolify > lykiva-altyapi > Environment Variables)" >&2
+  echo "HATA: LYKIVA_UYGULAMA_ANAHTARI boş ya da 24 karakterden kısa; kapı açılmıyor (Coolify > brouter / photon / kart-video > Environment Variables)" >&2
   exit 1
 fi
 case "$anahtar" in

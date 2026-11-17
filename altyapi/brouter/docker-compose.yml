@@ -1,0 +1,38 @@
+# BRouter (rota çizme) — Coolify'da ayrı uygulama: "brouter".
+# Coolify > Docker Compose: Git deposu bu repo, Base Directory `/altyapi`, dosya `/brouter/docker-compose.yml`.
+# Alan adı (https://brouter.ismailtopcam.dev) yalnızca "kapi" servisine verilir; brouter'a alan adı VERİLMEZ.
+# "Connect To Predefined Network" açık: Gösterge BRouter'a Coolify'ın iç ağından `http://brouter:17777` ile, anahtarsız gider.
+# Ayrıntı: altyapi/README.md
+services:
+  kapi:
+    build: ../kapi
+    restart: unless-stopped
+    environment:
+      # Zorunlu; Coolify'da girilir, repoya yazılmaz. Uygulamadaki EXPO_PUBLIC_ALTYAPI_ANAHTARI ile aynı olmalı.
+      - LYKIVA_UYGULAMA_ANAHTARI=${LYKIVA_UYGULAMA_ANAHTARI}
+      # Şablondaki bütün sınırlar tanımlı olmalı (boş değer nginx'i açmaz); kullanılmayanlar da varsayılanla durur.
+      - LYKIVA_ROTA_SINIRI=${LYKIVA_ROTA_SINIRI:-60r/m}
+      - LYKIVA_ROTA_YIGIN=${LYKIVA_ROTA_YIGIN:-30}
+      - LYKIVA_ARAMA_SINIRI=${LYKIVA_ARAMA_SINIRI:-120r/m}
+      - LYKIVA_ARAMA_YIGIN=${LYKIVA_ARAMA_YIGIN:-40}
+      - LYKIVA_VIDEO_SINIRI=${LYKIVA_VIDEO_SINIRI:-1r/m}
+      - LYKIVA_VIDEO_YIGIN=${LYKIVA_VIDEO_YIGIN:-4}
+      - NGINX_ENVSUBST_FILTER=^LYKIVA_
+    expose:
+      - '80'
+
+  brouter:
+    build: .
+    restart: unless-stopped
+    environment:
+      - BROUTER_BELLEK=${BROUTER_BELLEK:-512M}
+      - BROUTER_ISLEM=${BROUTER_ISLEM:-4}
+      - BROUTER_ZAMAN_ASIMI=${BROUTER_ZAMAN_ASIMI:-60}
+      - BROUTER_SEGMENTLER=${BROUTER_SEGMENTLER:-E25_N35 E30_N35 E35_N35 E40_N35 E25_N40 E30_N40 E35_N40 E40_N40}
+    volumes:
+      - brouter-segmentler:/segments
+    expose:
+      - '17777'
+
+volumes:
+  brouter-segmentler:
