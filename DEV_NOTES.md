@@ -10,7 +10,6 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
-| Gökhan | Otomatik duraklat / devam et (`kayit/kaydedici.ts`, `kayit/canli.tsx`, `@lykiva/shared` > `otoDurak`) | `gokhan/oto-duraklat` |
 
 ## Gökhan için: 15 Kasım 2026'da değişenler (İsmail)
 
