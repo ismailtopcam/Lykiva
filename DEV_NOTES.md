@@ -10,7 +10,6 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
-| Gökhan | 3B paylaşım videoları: tempo ve hıza göre akış (`altyapi/kart-video/sahne/sahne.js`, `src/dogrula.js`, `components/paylasim/videoTemalari.ts`) | `gokhan/video-sure` |
 
 ## İsmail için: tarihi yürüyüş yolları (20 Kasım 2026, Gökhan)
 
@@ -735,7 +734,7 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
     hızı gizlediyse göndermez). Çizgi / kamera / km sayacı hızlı yerde hızlı, yokuşta ve molada yavaş ilerliyor; hız
     yumuşatılıp ortalamanın 0,4–2,5 katına sıkıştırılıyor (mola animasyonu durdurmaz). Toplam süre aynı. Eski uygulama
     `hiz` göndermez → düz hız; yeni uygulama eski sunucuya gönderse sunucu alanı yok sayar. Telefon tarafı yalnızca JS,
-    derleme gerekmez. Sunucuda sıra: önce bu PR `main`'e girince `video` kendiliğinden kurulur.
+    derleme gerekmez. #142 ile `main`'de (20 Kas 2026); `video` kendiliğinden kurulur.
 - Hız haritasında kademeler sabit 13 / 25 km/sa değil, aktivitenin ortalamasına göre (×0,85 ve ×1,2): koşu ve yürüyüşte de anlamlı.
 
 ### [~] Kulüpler (13 Kas 2026, `20261117000000_kulupler.sql`)
