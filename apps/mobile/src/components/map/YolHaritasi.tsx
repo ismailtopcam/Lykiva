@@ -30,6 +30,8 @@ type Props = {
   egim?: RotaEgim | null;
   /** Bulunduğun yer; işareti ve konum düğmesi için */
   ben: LngLat | null;
+  /** Bisiklet egzersizi: bulunduğun yerin işareti yuvarlak yerine bisiklet */
+  bisiklet?: boolean;
   /** Bulunduğun yer dışındaki işaretler (bitiş, imleç…) */
   markers?: MapMarker[];
   /** Konum düğmesine basınca */
@@ -42,7 +44,7 @@ type Props = {
   ustBosluk: number;
 } & Pick<TopoMapProps, 'style' | 'padding' | 'follow' | 'followZoom' | 'onKullaniciOynatti' | 'onPress' | 'accessibilityLabel'>;
 
-export function YolHaritasi({ points, iz, progress, egim: verilenEgim, ben, markers = [], onKonum, konumSecili, koyu, ustBosluk, ...harita }: Props) {
+export function YolHaritasi({ points, iz, progress, egim: verilenEgim, ben, bisiklet, markers = [], onKonum, konumSecili, koyu, ustBosluk, ...harita }: Props) {
   const [ucBoyut, setUcBoyut] = useState(false);
   const hesaplanan = useRotaEgim(verilenEgim === undefined ? points : BOS);
   const egim = verilenEgim === undefined ? hesaplanan : verilenEgim;
@@ -57,7 +59,7 @@ export function YolHaritasi({ points, iz, progress, egim: verilenEgim, ben, mark
         route={route}
         routeColors={points.length > 1 ? egim?.renkler : undefined}
         progress={progress}
-        markers={[...markers, ...(ben ? [{ id: 'me', coord: ben, kind: 'me' as const }] : [])]}
+        markers={[...markers, ...(ben ? [{ id: 'me', coord: ben, kind: 'me' as const, bisiklet }] : [])]}
         ucBoyut={ucBoyut}
         katmanDugmesi={{ top: ustBosluk }}
       />

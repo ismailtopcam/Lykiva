@@ -157,6 +157,8 @@ export default function CanliTakipScreen() {
         iz={iz}
         progress={rb ? Math.max(0.001, rb.kesir) : undefined}
         ben={ben}
+        // Bisiklet / dağ bisikleti egzersizinde konum işareti bisiklet
+        bisiklet={!kayit.araba && (kayit.activity === 'bike' || kayit.activity === 'mtb')}
         markers={
           kayit.rota && kayit.rota.points.length > 1
             ? [

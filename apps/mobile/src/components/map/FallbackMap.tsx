@@ -7,6 +7,7 @@ import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import Svg, { Circle, Ellipse, G, Path, Rect, Text as SvgText } from 'react-native-svg';
 
 import type { LngLat } from '@/data/ornek';
+import { BISIKLET_IMLECI_BOYU, BisikletCizimi } from './BisikletImleci';
 import { GIDILEN_RENGI, ROTA_RENGI } from './stilRenkleri';
 import type { TopoMapProps } from './TopoMap';
 
@@ -59,6 +60,16 @@ export function FallbackMap({ route = [], progress, markers = [], dark, padding 
               const [x, y] = project(m.coord);
               if (m.kind === 'start') return <Circle key={m.id} cx={x} cy={y} r={7} fill={c.casing} stroke={c.line} strokeWidth={3} />;
               if (m.kind === 'end') return <Circle key={m.id} cx={x} cy={y} r={7} fill={c.line} stroke={c.casing} strokeWidth={2} />;
+              if (m.kind === 'me' && m.bisiklet)
+                return (
+                  <G key={m.id}>
+                    <Circle cx={x} cy={y} r={22} fill={dark ? '#E07A4A' : '#0B6A6A'} fillOpacity={0.18} />
+                    <G transform={`translate(${x - BISIKLET_IMLECI_BOYU / 2} ${y - BISIKLET_IMLECI_BOYU / 2}) scale(${BISIKLET_IMLECI_BOYU / 24})`}>
+                      <BisikletCizimi renk={c.casing} kalinlik={5} />
+                      <BisikletCizimi renk={dark ? '#E07A4A' : '#0B6A6A'} kalinlik={2.4} />
+                    </G>
+                  </G>
+                );
               if (m.kind === 'me')
                 return (
                   <G key={m.id}>

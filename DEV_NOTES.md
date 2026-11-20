@@ -494,6 +494,10 @@ Kalan:
   kesilince duraklama sonradan geri alınır (çıkılan yere yürüme hızından hızlı varıldıysa). iOS'ta arka planda uygulama
   uyurken mola, sonraki konum geldiğinde geriye dönük işlenir. Ayarlar > Kayıt > "Otomatik duraklat" (varsayılan açık).
   Yalnızca JS, yeni derleme gerekmez. Telefonda denenecek: kırmızı ışıkta bekleme, yavaş yokuş çıkışı, ekran kapalıyken mola.
+- [x] Bisiklet imleci (20 Kas 2026, Gökhan, `bisiklet-imleci`): bisiklet ve dağ bisikleti egzersizinde (yolculukta bisiklet
+  seçiliyse de) kayıt ekranının haritasında konum işareti yuvarlak yerine aynı boyda bisiklet (`components/map/BisikletImleci.tsx`,
+  açık kenarlı; renk yuvarlakla aynı). Gerçek haritada `ViewAnnotation`, Expo Go'da SVG. Bisiklet hep sağa bakar (gidiş yönüne
+  dönmez). Yalnızca JS, yeni derleme gerekmez. Telefonda denenecek: açık / koyu haritada görünürlük, takipte kayma.
 - [x] Kayıt sürerken ana sayfaya dönüş, iOS (13 Kas 2026, Gökhan, `kayit-ana-sayfa-ios`): canlı ve duraklatıldı ekranlarında
   iOS'ta geri kaydırma kapalı olduğu için (haritada yanlışlıkla çıkılmasın) çıkış yolu yoktu; Android'de donanım geri tuşu
   çalışıyordu. Sol üste ev simgeli düğme eklendi (`components/AnaSayfaDugmesi.tsx`): kayıt arka planda sürer, alt menüdeki
