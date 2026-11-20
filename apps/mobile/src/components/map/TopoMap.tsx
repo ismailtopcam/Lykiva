@@ -16,6 +16,7 @@ import { useRef, useState, type ReactNode } from 'react';
 import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import type { LngLat } from '@/data/ornek';
+import { BisikletImleci } from './BisikletImleci';
 import { FallbackMap } from './FallbackMap';
 import { useKoyuHarita } from './gunduzGece';
 import { HaritaTuruDugmesi } from './HaritaTuruSecici';
@@ -38,7 +39,12 @@ export type MapMarker = {
   render?: ReactNode;
   /** Parmakla basılacak işaret (ör. rota çizerken durak): daha büyük çizilir, basınca onMarkerPress çağrılır */
   basilir?: boolean;
+  /** Yalnızca me: bisiklet egzersizinde yuvarlak yerine aynı boyda bisiklet çizilir */
+  bisiklet?: boolean;
 };
+
+/** Haritada çizim katmanı yerine görünüm (View) olarak konan işaretler */
+const gorunumIsareti = (m: MapMarker) => m.kind === 'friend' || (m.kind === 'me' && m.bisiklet);
 
 export type TopoMapProps = {
   route?: LngLat[];
@@ -147,7 +153,7 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
       : null;
 
   const pointFeatures = markers
-    .filter((m) => m.kind !== 'friend')
+    .filter((m) => !gorunumIsareti(m))
     .map((m) => ({
       type: 'Feature' as const,
       properties: { id: m.id, kind: m.kind, text: m.text ?? '', b: m.basilir ? 1 : 0 },
@@ -438,6 +444,14 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
         .map((m) => (
           <ML.ViewAnnotation key={m.id} id={m.id} lngLat={m.coord} anchor="bottom">
             <View>{m.render}</View>
+          </ML.ViewAnnotation>
+        ))}
+
+      {markers
+        .filter((m) => m.kind === 'me' && m.bisiklet)
+        .map((m) => (
+          <ML.ViewAnnotation key={m.id} id={m.id} lngLat={m.coord} anchor="center">
+            <BisikletImleci renk={koyuZemin ? '#E07A4A' : '#0B6A6A'} />
           </ML.ViewAnnotation>
         ))}
     </ML.Map>
