@@ -804,6 +804,13 @@ export const de: Sozluk = {
     hatirlat_baslik: 'Immer noch abseits der Route',
     govde: '{meters} m von „{ad}“ entfernt',
   },
+  pil_optimizasyonu: {
+    baslik: 'Aufzeichnung nicht unterbrechen',
+    aciklama: 'Manche Handys (Xiaomi, Samsung, Huawei, Oppo…) beenden Apps bei ausgeschaltetem Bildschirm, um Akku zu sparen – die Aufzeichnung bricht dann ab.\n\nÖffne auf der nächsten Seite „Akku“ und wähle „Nicht eingeschränkt“ (oder „Nicht optimieren“). Bei Xiaomi zusätzlich „Autostart“ aktivieren.',
+    ayar_alt: 'Akku-Einstellung, damit dein Handy Lykiva bei ausgeschaltetem Bildschirm nicht beendet.',
+    ayari_ac: 'Einstellung öffnen',
+    simdi_degil: 'Nicht jetzt',
+  },
   kayit_kaydedici: {
     kilit_kanal: 'Laufende Aufzeichnung',
     kilit_kaydediyor: 'Aufzeichnung läuft',

@@ -804,6 +804,13 @@ export const en: Sozluk = {
     hatirlat_baslik: 'Still off route',
     govde: '{meters} m away from {ad}',
   },
+  pil_optimizasyonu: {
+    baslik: 'Keep recording uninterrupted',
+    aciklama: 'Some phones (Xiaomi, Samsung, Huawei, Oppo…) stop apps while the screen is off to save battery, which cuts your recording short.\n\nOn the next page open “Battery” and choose “Unrestricted” (or “Don’t optimize”). On Xiaomi, also turn on “Autostart”.',
+    ayar_alt: 'Battery setting so your phone doesn’t stop Lykiva while the screen is off.',
+    ayari_ac: 'Open settings',
+    simdi_degil: 'Not now',
+  },
   kayit_kaydedici: {
     kilit_kanal: 'Ongoing recording',
     kilit_kaydediyor: 'Recording',

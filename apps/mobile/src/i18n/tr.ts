@@ -805,6 +805,13 @@ export const tr = {
     hatirlat_baslik: 'Hâlâ rotanın dışındasın',
     govde: '{ad} rotasından {meters} m uzaktasın',
   },
+  pil_optimizasyonu: {
+    baslik: 'Kayıt yarıda kesilmesin',
+    aciklama: 'Bazı telefonlar (Xiaomi, Samsung, Huawei, Oppo…) pil tasarrufu için ekran kapalıyken uygulamaları durdurabiliyor; kayıt yarıda kesilir.\n\nAçılan sayfada “Pil” bölümüne gir ve “Kısıtlamasız” (ya da “Optimize etme”) seç. Xiaomi’de ayrıca “Otomatik başlatma”yı aç.',
+    ayar_alt: 'Ekran kapalıyken telefonun Lykiva’yı durdurmaması için pil ayarı.',
+    ayari_ac: 'Ayarı aç',
+    simdi_degil: 'Şimdi değil',
+  },
   kayit_kaydedici: {
     kilit_kanal: 'Süren kayıt',
     kilit_kaydediyor: 'Kaydediyor',
