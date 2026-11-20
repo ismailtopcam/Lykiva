@@ -27,6 +27,8 @@ export type VideoGovdesi = {
   tema: VideoTema;
   bicim: VideoBicim;
   rota: [number, number][];
+  /** Her noktadaki hız (km/sa, rotayla aynı uzunlukta): animasyon rotada bu hızla ilerler. Hız gizliyse gönderilmez. */
+  hiz?: number[];
   metin: {
     ust: string;
     baslik: string;

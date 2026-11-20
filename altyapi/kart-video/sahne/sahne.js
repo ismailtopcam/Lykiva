@@ -104,7 +104,73 @@ function izHazirla(rota) {
     }
     return sx || sy ? (Math.atan2(sx, sy) * 180) / Math.PI : 0;
   });
-  return { nk: rota, kum, L, yon };
+  return { nk: rota, kum, L, yon, zam: zamanTablosu(kum, L, V.hiz) };
+}
+
+/**
+ * Her noktaya animasyonda ne zaman varılacağı (0–1). Hız yoksa mesafeyle orantılı (düz hız).
+ * Hız varsa kullanıcının hızıyla: hızlı yerde çizgi / kamera hızlı, yavaş yerde yavaş gider. İzlenebilir kalsın diye
+ * hız rota boyunca yumuşatılır (±%3 rota, 150–600 m) ve ortalamanın 0,4–2,5 katına sıkıştırılır: molada (hız 0)
+ * animasyon durmaz, yalnız yavaşlar; hızlı inişler de bir anda geçip gitmez.
+ */
+function zamanTablosu(kum, L, hiz) {
+  const n = kum.length;
+  const duz = kum.map((d) => d / L);
+  if (!hiz || hiz.length !== n || n < 2) return duz;
+  const ds = [];
+  const v = [];
+  for (let j = 0; j < n - 1; j++) {
+    ds.push(kum[j + 1] - kum[j]);
+    v.push((hiz[j] + hiz[j + 1]) / 2);
+  }
+  // Mesafe penceresinde ağırlıklı ortalama (iki işaretçiyle, önek toplamları)
+  const W = sinir(L * 0.03, 150, 600);
+  const onekVd = [0];
+  const onekD = [0];
+  for (let j = 0; j < ds.length; j++) {
+    onekVd.push(onekVd[j] + v[j] * ds[j]);
+    onekD.push(onekD[j] + ds[j]);
+  }
+  const yumusakV = [];
+  let bas = 0;
+  let son = 0;
+  for (let j = 0; j < ds.length; j++) {
+    const orta = (kum[j] + kum[j + 1]) / 2;
+    while (bas < j && (kum[bas] + kum[bas + 1]) / 2 < orta - W) bas++;
+    while (son < ds.length - 1 && (kum[son + 1] + kum[son + 2]) / 2 <= orta + W) son++;
+    const d = onekD[son + 1] - onekD[bas];
+    yumusakV.push(d > 0 ? (onekVd[son + 1] - onekVd[bas]) / d : v[j]);
+  }
+  // Ortalama: yalnız hareket edilen parçalar (molalar ortalamayı düşürmesin)
+  let vd = 0;
+  let dd = 0;
+  for (let j = 0; j < ds.length; j++) {
+    if (v[j] > 1) {
+      vd += v[j] * ds[j];
+      dd += ds[j];
+    }
+  }
+  if (!(dd > 0)) return duz;
+  const ort = vd / dd;
+  const t = [0];
+  for (let j = 0; j < ds.length; j++) t.push(t[j] + ds[j] / sinir(yumusakV[j], ort * 0.4, ort * 2.5));
+  const T = t[n - 1];
+  return T > 0 ? t.map((x) => x / T) : duz;
+}
+
+/** Animasyon zamanının oranı (0–1) → rotada gidilen mesafenin oranı (0–1) */
+function izOrani(u) {
+  const { zam, kum } = iz;
+  u = sinir(u);
+  let lo = 0;
+  let hi = zam.length - 1;
+  while (hi - lo > 1) {
+    const m = (lo + hi) >> 1;
+    if (zam[m] <= u) lo = m;
+    else hi = m;
+  }
+  const k = zam[hi] - zam[lo] > 0 ? (u - zam[lo]) / (zam[hi] - zam[lo]) : 0;
+  return ara(kum[lo], kum[hi], k) / iz.L;
 }
 
 /** Noktaları en fazla n'e seyreltir (bina süzgeci her binada rotaya uzaklık hesaplar) */
@@ -320,11 +386,20 @@ window.sahneKur = async (veri) => {
 /* Kareler                                                             */
 /* ------------------------------------------------------------------ */
 
-/** 12 sn: 0–4 düz haritada rota çizilir · 4–7 eğilir, arazi yükselir · 7–11 kamera döner · 11–12 bekler */
+/** Yumuşak başlayıp yumuşak biten ama ortada fazla hızlanmayan eğri (en yüksek hız ortalamanın 1,5 katı) */
+const akici = (x) => {
+  x = sinir(x);
+  return x * x * (3 - 2 * x);
+};
+
+/**
+ * 15 sn: 0–0,8 düz harita (göz yerleşir) · 0,8–7,3 rota çizilir · 6,8–9,8 eğilir, arazi yükselir ·
+ * 8,8–13,3 kamera döner · 13,3–15 bekler (değerler okunur). Evreler yarım saniye örtüşür, hareket kesilmez.
+ */
 function yorunge(t) {
-  const p = yumusak(t / 4);
-  const e = yumusak((t - 4) / 3);
-  const r = yumusak((t - 7) / 4);
+  const p = izOrani(akici((t - 0.8) / 6.5));
+  const e = yumusak((t - 6.8) / 3);
+  const r = yumusak((t - 8.8) / 4.5);
   return {
     p,
     km: p,
@@ -335,7 +410,10 @@ function yorunge(t) {
   };
 }
 
-/** 16 sn: 0–2 üstten düz · 2–4 yükselir, kamera rotanın arkasına iner · 4–13 izler · 13–15 geri çekilir · 15–16 bekler */
+/**
+ * 20 sn: 0–1,5 üstten düz · 1,5–4 yükselir, kamera rotanın arkasına iner · 4–16 izler · 16–18,2 geri çekilir ·
+ * 18,2–20 bekler. İzleme 12 sn: 26 km'lik rotada kamera saniyede ~2 km gider, yol okunur.
+ */
 function takip(t) {
   const L = iz.L;
   const zIzle = L > 8000 ? 15.1 : L > 3000 ? 15.7 : 16.3;
@@ -352,17 +430,16 @@ function takip(t) {
     bearing: aciAra(a.bearing, b.bearing, k),
     padding: { top: ara(a.padding.top, b.padding.top, k), bottom: ara(a.padding.bottom, b.padding.bottom, k), left: ara(a.padding.left, b.padding.left, k), right: ara(a.padding.right, b.padding.right, k) },
   });
-  const q = sinir((t - 4) / 9);
-  const p = q * q * (3 - 2 * q);
+  const p = izOrani(akici((t - 4) / 12));
   let kamera;
-  if (t < 2) kamera = genel;
-  else if (t < 4) kamera = kamAra(genel, izle(0), yumusak((t - 2) / 2));
-  else if (t < 13) kamera = izle(p);
+  if (t < 1.5) kamera = genel;
+  else if (t < 4) kamera = kamAra(genel, izle(0), yumusak((t - 1.5) / 2.5));
+  else if (t < 16) kamera = izle(p);
   else {
     const son = izle(1);
-    kamera = kamAra(son, { ...bas, zoom: bas.zoom - 0.4, pitch: 48, bearing: son.bearing }, yumusak((t - 13) / 2));
+    kamera = kamAra(son, { ...bas, zoom: bas.zoom - 0.4, pitch: 48, bearing: son.bearing }, yumusak((t - 16) / 2.2));
   }
-  return { p, km: p, abarti: ara(0.01, A.abarti, yumusak((t - 2) / 2)), bina: 1, kamera };
+  return { p, km: p, abarti: ara(0.01, A.abarti, yumusak((t - 1.5) / 2.5)), bina: 1, kamera };
 }
 
 let sonImza = '';
