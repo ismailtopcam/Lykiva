@@ -85,8 +85,10 @@ function gonder() {
   const anlikMs = anlikHizi(k);
   const anlik = anlikMs == null ? '—' : formatSpeedKmh(anlikMs);
   const sayiyor = k.durum === 'kayitta';
+  // Otomatik duraklatılmışken (hareket edince kendiliğinden sürecek) başlık bunu söyler
+  const durakYazi = !sayiyor && k.otoDurak?.durdu ? $t('kayit_canli.oto_duraklatildi') : $t('kayit_duraklatildi.duraklatildi');
   // Süre telefonda sayıyor; yalnızca durum, değerler ya da dil değişince (bir de 15 sn'de bir) yeniden gönder
-  const anahtar = [k.clientId, k.durum, mesafe, anlik, hiz, $t('ortak.sure'), Math.floor(Date.now() / ONARIM_MS)].join('|');
+  const anahtar = [k.clientId, k.durum, durakYazi, mesafe, anlik, hiz, $t('ortak.sure'), Math.floor(Date.now() / ONARIM_MS)].join('|');
   if (anahtar === sonAnahtar && !zorla) return;
   zorla = false;
   sonAnahtar = anahtar;
@@ -96,8 +98,8 @@ function gonder() {
     etkinlik: k.activity,
     // Araba yolculuğu kaydedilmez: "Kaydediyor" yerine "Yol tarifi" (simge iOS'ta etkinliğinki kalır, pencere kodu derlemeyle gider)
     baslik: k.araba
-      ? `${$t('harita.araba')} · ${sayiyor ? $t('harita.yol_tarifi') : $t('kayit_duraklatildi.duraklatildi')}`
-      : `${activityLabel(k.activity)} · ${sayiyor ? $t('kayit_kaydedici.kilit_kaydediyor') : $t('kayit_duraklatildi.duraklatildi')}`,
+      ? `${$t('harita.araba')} · ${sayiyor ? $t('harita.yol_tarifi') : durakYazi}`
+      : `${activityLabel(k.activity)} · ${sayiyor ? $t('kayit_kaydedici.kilit_kaydediyor') : durakYazi}`,
     gecenMs: istek.gecenMs(),
     sayiyor,
     mesafe,

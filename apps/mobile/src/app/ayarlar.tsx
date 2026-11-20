@@ -13,6 +13,7 @@ import { cevrimdisiDestekleniyor, useIndirilenRotalar } from '@/lib/cevrimdisi';
 import { cikisYap, useHesap, type Saglayici } from '@/lib/giris';
 import { hesabiSil } from '@/lib/hesap';
 import { pushAc, pushDurumu, pushKapat, type PushDurumu } from '@/lib/push';
+import { otoDuraklatAyarla, useOtoDuraklatAcik } from '@/kayit/otoDuraklat';
 import { rotaUyarisiAyarla, useRotaUyarisiAcik } from '@/kayit/rotaUyarisi';
 import { supabaseHazir } from '@/lib/supabase';
 import { aktifSema, colors, GORUNUMLER, gorunumSecimi, gorunumSecimiYap, space, temaliStil, type GorunumSecimi } from '@/theme';
@@ -31,6 +32,7 @@ export default function AyarlarScreen() {
   const [siliniyor, setSiliniyor] = useState(false);
   const [push, setPush] = useState<PushDurumu | null>(null);
   const rotaUyarisiAcik = useRotaUyarisiAcik();
+  const otoDuraklatAcik = useOtoDuraklatAcik();
   const indirilenler = useIndirilenRotalar();
   const [gorunum, setGorunum] = useState<GorunumSecimi>(gorunumSecimi);
 
@@ -188,6 +190,13 @@ export default function AyarlarScreen() {
               <Chip key={g} label={gorunumAdlari()[g]} role="radio" selected={gorunum === g} onPress={() => void gorunumDegistir(g)} />
             ))}
           </View>
+        </View>
+
+        <View>
+          <Label>{$t('ayarlar.kayit_baslik')}</Label>
+          <Card style={{ paddingHorizontal: space.lg }}>
+            <ToggleRow title={$t('ayarlar.oto_duraklat')} subtitle={$t('ayarlar.oto_duraklat_alt')} value={otoDuraklatAcik} onChange={otoDuraklatAyarla} />
+          </Card>
         </View>
 
         {push && push !== 'desteklenmiyor' ? (
