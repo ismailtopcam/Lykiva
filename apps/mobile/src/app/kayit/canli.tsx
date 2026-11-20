@@ -159,6 +159,8 @@ export default function CanliTakipScreen() {
         ben={ben}
         // Bisiklet / dağ bisikleti egzersizinde konum işareti bisiklet
         bisiklet={!kayit.araba && (kayit.activity === 'bike' || kayit.activity === 'mtb')}
+        // Tarihi yürüyüşte tarihi yollar haritada
+        tarihiYollar={!kayit.araba && kayit.activity === 'historic_hike' ? 'hepsi' : null}
         markers={
           kayit.rota && kayit.rota.points.length > 1
             ? [

@@ -1,14 +1,12 @@
 /**
  * Tarihi yürüyüş yolları: Likya, Karia, Frig, Hitit, Evliya Çelebi, Aziz Paul, Sultanlar ve Efeler yolu.
- * Haritanın katman penceresinden açılır; açıksa bütün haritalarda kesikli renkli çizgi + adıyla çizilir.
+ * Egzersizde "Tarihi yürüyüş" seçiliyken, o türdeki kayıtta ve Harita'da bir yol aranıp seçilince kesikli renkli
+ * çizgi + adıyla çizilir (TopoMap > tarihiYollar).
  *
  * Çizgiler OpenStreetMap'teki yürüyüş rotası ilişkilerinden (route=hiking) `scripts/tarihi-yollar.mjs` ile
  * çıkarılıp sadeleştirildi ve uygulamaya gömüldü (`tarihiYollar.json`; internet gerekmez). Veriyi yenilemek
  * için betiği yeniden çalıştır. Veri © OpenStreetMap katkıcıları, ODbL.
  */
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useSyncExternalStore } from 'react';
-
 import { $t, yerel } from '@/i18n';
 
 export type TarihiYolId = 'likya' | 'karia' | 'frig' | 'hitit' | 'evliya' | 'paul' | 'sultanlar' | 'efeler';
@@ -48,44 +46,32 @@ export function tarihiYolAdi(id: TarihiYolId): string {
   }
 }
 
-const SECIM_ANAHTARI = 'lykiva.tarihi_yollar.v1';
+/**
+ * Haritada hangi tarihi yollar çizilsin: hepsi (egzersizde Tarihi yürüyüş seçiliyken ve o kayıtta) ya da
+ * yalnızca biri (Harita'da aranıp seçilen); null = hiçbiri.
+ */
+export type TarihiYolGorunumu = 'hepsi' | TarihiYolId | null;
 
-// ---- Seçim deposu (açık / kapalı) ----
+/** Arama: yolun adı (uygulamanın dilinde ve Türkçe) ya da bilinen başka adı yazılanla eşleşiyor mu */
+const DIGER_ADLAR: Record<TarihiYolId, string[]> = {
+  likya: ['likya', 'lycian', 'lykisch', 'ликийск'],
+  karia: ['karia', 'carian', 'karisch', 'карийск'],
+  frig: ['frig', 'phryg', 'фригий'],
+  hitit: ['hitit', 'hittite', 'hethit', 'хетт'],
+  evliya: ['evliya', 'çelebi', 'celebi', 'эвли'],
+  paul: ['paul', 'pavlus', 'pavlos', 'павл'],
+  sultanlar: ['sultan', 'султан'],
+  efeler: ['efeler', 'эфелер'],
+};
 
-let acik = false;
-let yuklendi = false;
-const dinleyiciler = new Set<() => void>();
-const haberVer = () => dinleyiciler.forEach((f) => f());
+const kucuk = (s: string) => s.toLocaleLowerCase('tr').normalize('NFC');
 
-function abone(f: () => void) {
-  if (!yuklendi) {
-    yuklendi = true;
-    AsyncStorage.getItem(SECIM_ANAHTARI)
-      .then((s) => {
-        if (s === '1' && !acik) {
-          acik = true;
-          haberVer();
-        }
-      })
-      .catch(() => undefined);
-  }
-  dinleyiciler.add(f);
-  return () => {
-    dinleyiciler.delete(f);
-  };
-}
-
-/** Tarihi yollar haritada görünsün mü */
-export function useTarihiYollar(): boolean {
-  return useSyncExternalStore(abone, () => acik, () => acik);
-}
-
-export function tarihiYollariSec(a: boolean) {
-  yuklendi = true;
-  acik = a;
-  haberVer();
-  if (a) void AsyncStorage.setItem(SECIM_ANAHTARI, '1').catch(() => undefined);
-  else void AsyncStorage.removeItem(SECIM_ANAHTARI).catch(() => undefined);
+/** Yazılana uyan tarihi yollar (en az 3 harf) */
+export function tarihiYolAra(q: string): TarihiYolId[] {
+  const a = kucuk(q.trim());
+  if (a.length < 3) return [];
+  // "lyc" → Likya, "likya yolu" → Likya; "sultanahmet" Sultanlar Yolu'nu getirmez
+  return TARIHI_YOLLAR.filter((id) => kucuk(tarihiYolAdi(id)).includes(a) || DIGER_ADLAR[id].some((d) => d.startsWith(a) || a.startsWith(d + ' ')));
 }
 
 // ---- Veri ----
@@ -170,18 +156,20 @@ function yaziNoktalari(c: [number, number][]): [number, number][] {
   return cikti;
 }
 
-let veri: { dil: string; cizgiler: TarihiYolCizgileri; yazilar: TarihiYolYazilari } | null = null;
+type Veri = { cizgiler: TarihiYolCizgileri; yazilar: TarihiYolYazilari };
 
-/**
- * Haritada çizilecek GeoJSON: cizgiler (kesikli çizgi) ve yazilar (ad etiketlerinin noktaları). Adlar uygulamanın
- * diline göre; aynı dil için hep aynı nesneler (her çizimde yeni nesne verilirse kaynak baştan yüklenir).
- */
-export function tarihiYolVerisi(): { cizgiler: TarihiYolCizgileri; yazilar: TarihiYolYazilari } {
-  const dil = yerel();
-  if (veri?.dil === dil) return veri;
+/** Dil ve görünüm başına önbellek: aynı istek için hep aynı nesneler (her çizimde yeni nesne verilirse kaynak baştan yüklenir) */
+const onbellek = new Map<string, Veri>();
+
+/** Haritada çizilecek GeoJSON: cizgiler (kesikli çizgi) ve yazilar (ad etiketlerinin noktaları); adlar uygulamanın dilinde */
+export function tarihiYolVerisi(gorunum: 'hepsi' | TarihiYolId): Veri {
+  const anahtar = `${yerel()}|${gorunum}`;
+  const hazir = onbellek.get(anahtar);
+  if (hazir) return hazir;
   const cizgiler: Cizgi[] = [];
   const yazilar: Nokta[] = [];
   for (const y of hamVeri().yollar) {
+    if (gorunum !== 'hepsi' && y.id !== gorunum) continue;
     const properties = { id: y.id, ad: tarihiYolAdi(y.id), renk: TARIHI_YOL_RENGI[y.id] };
     for (const p of y.parcalar) {
       const coordinates = polylineCoz(p);
@@ -190,10 +178,12 @@ export function tarihiYolVerisi(): { cizgiler: TarihiYolCizgileri; yazilar: Tari
       for (const n of yaziNoktalari(coordinates)) yazilar.push({ type: 'Feature', properties, geometry: { type: 'Point', coordinates: n } });
     }
   }
-  veri = {
-    dil,
-    cizgiler: { type: 'FeatureCollection', features: cizgiler },
-    yazilar: { type: 'FeatureCollection', features: yazilar },
-  };
-  return veri;
+  const v: Veri = { cizgiler: { type: 'FeatureCollection', features: cizgiler }, yazilar: { type: 'FeatureCollection', features: yazilar } };
+  onbellek.set(anahtar, v);
+  return v;
+}
+
+/** Yolun bütün noktaları (aranan yolu ekrana sığdırmak için) */
+export function tarihiYolNoktalari(id: TarihiYolId): { lng: number; lat: number }[] {
+  return tarihiYolVerisi(id).cizgiler.features.flatMap((f) => f.geometry.coordinates.map(([lng, lat]) => ({ lng, lat })));
 }

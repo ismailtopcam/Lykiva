@@ -42,7 +42,7 @@ type Props = {
   koyu?: boolean;
   /** Katman düğmesinin haritanın üstünden uzaklığı; 3B ve konum düğmeleri onun altında */
   ustBosluk: number;
-} & Pick<TopoMapProps, 'style' | 'padding' | 'follow' | 'followZoom' | 'onKullaniciOynatti' | 'onPress' | 'accessibilityLabel'>;
+} & Pick<TopoMapProps, 'style' | 'padding' | 'follow' | 'followZoom' | 'onKullaniciOynatti' | 'onPress' | 'accessibilityLabel' | 'tarihiYollar'>;
 
 export function YolHaritasi({ points, iz, progress, egim: verilenEgim, ben, bisiklet, markers = [], onKonum, konumSecili, koyu, ustBosluk, ...harita }: Props) {
   const [ucBoyut, setUcBoyut] = useState(false);

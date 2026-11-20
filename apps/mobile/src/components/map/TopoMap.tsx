@@ -23,7 +23,7 @@ import { HaritaTuruDugmesi } from './HaritaTuruSecici';
 import { GECE_STIL_URL, MAP_STYLE_URL, useHaritaStili } from './haritaTurleri';
 import { ISI_RENKLERI, useIsiTuru, useIsiVerisi, type Gorunum } from './isiHaritasi';
 import { GIDILEN_RENGI, ROTA_RENGI } from './stilRenkleri';
-import { tarihiYolVerisi, useTarihiYollar } from './tarihiYollar';
+import { tarihiYolVerisi, type TarihiYolGorunumu } from './tarihiYollar';
 
 export { MAP_STYLE_URL };
 
@@ -84,6 +84,11 @@ export type TopoMapProps = {
    * Dokunma alanı işaretin çevresinde 44×44 nokta (MapLibre varsayılanı).
    */
   onMarkerPress?: (id: string) => void;
+  /**
+   * Tarihi yürüyüş yolları: hepsi (egzersizde Tarihi yürüyüş seçiliyken, o kayıtta) ya da aranıp seçilen tek yol.
+   * Yalnızca gerçek haritada.
+   */
+  tarihiYollar?: TarihiYolGorunumu;
   /** Sağ üstte harita türü (katman) düğmesi; top: haritanın üst kenarından uzaklık. Yalnızca gerçek haritada. */
   katmanDugmesi?: { top: number };
   accessibilityLabel: string;
@@ -118,7 +123,7 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
   const isiTuru = useIsiTuru();
   const [gorunum, setGorunum] = useState<Gorunum | null>(null);
   const isi = useIsiVerisi(isiTuru, gorunum);
-  const tarihiYollar = useTarihiYollar();
+  const tarihi = props.tarihiYollar ? tarihiYolVerisi(props.tarihiYollar) : null;
   const { route = [], progress, markers = [], interactive = true, padding } = props;
   const egim = props.ucBoyut ? 60 : 0;
   const takipPadding = { top: 0, right: 0, left: 0, bottom: 0, ...padding };
@@ -291,10 +296,10 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
         </ML.GeoJSONSource>
       ) : null}
 
-      {tarihiYollar ? (
-        // Tarihi yürüyüş yolları (tarihiYollar.ts): beyaz / koyu kenarlı kesikli renkli çizgi, adı çizgi boyunca.
+      {tarihi ? (
+        // Tarihi yürüyüş yolları (tarihiYollar.ts): beyaz / koyu kenarlı kesikli renkli çizgi.
         // Kullanıcının rotasının altında kalır.
-        <ML.GeoJSONSource id="tarihi-yollar" data={tarihiYolVerisi().cizgiler}>
+        <ML.GeoJSONSource id="tarihi-yollar" data={tarihi.cizgiler}>
           <ML.Layer
             id="tarihi-yol-kenar"
             type="line"
@@ -316,9 +321,9 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
           />
         </ML.GeoJSONSource>
       ) : null}
-      {tarihiYollar ? (
+      {tarihi ? (
         // Ad, yolun üstünde ~25 km'de bir yatay etiket (kıvrımlı patikada çizgi boyunca yazı yerleşmiyor; tarihiYollar.ts)
-        <ML.GeoJSONSource id="tarihi-yol-yazilari" data={tarihiYolVerisi().yazilar}>
+        <ML.GeoJSONSource id="tarihi-yol-yazilari" data={tarihi.yazilar}>
           <ML.Layer
             id="tarihi-yol-ad"
             type="symbol"

@@ -8,7 +8,7 @@ import * as Sharing from 'expo-sharing';
 import type { GpxNoktasi } from '@/data/aktivite';
 import { $t } from '@/i18n';
 
-const TUR: Record<ActivityType, string> = { bike: 'cycling', mtb: 'mountain_biking', run: 'running', walk: 'walking', hike: 'hiking', trail_run: 'trail_running' };
+const TUR: Record<ActivityType, string> = { bike: 'cycling', mtb: 'mountain_biking', run: 'running', walk: 'walking', hike: 'hiking', trail_run: 'trail_running', historic_hike: 'hiking' };
 
 const kac = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 

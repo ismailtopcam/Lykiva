@@ -27,6 +27,7 @@ import { IconButton } from '@/components/IconButton';
 import { ModGecisi, type HaritaModu } from '@/components/ModGecisi';
 import { usePanelKademesi } from '@/components/panelKademesi';
 import { gercekHarita, type MapMarker } from '@/components/map/TopoMap';
+import { TARIHI_YOL_RENGI, tarihiYolAdi, tarihiYolAra, tarihiYolNoktalari, type TarihiYolGorunumu, type TarihiYolId } from '@/components/map/tarihiYollar';
 import { YolHaritasi } from '@/components/map/YolHaritasi';
 import { RotaRuzgari } from '@/components/RotaRuzgari';
 import { Txt } from '@/components/Txt';
@@ -34,7 +35,7 @@ import { Button, Chip, Stat, ToggleRow } from '@/components/ui';
 import type { LngLat } from '@/data/ornek';
 import { rotaGetir, type Rota } from '@/data/rota';
 import { baslat, IzinHatasi, konumOnizlemeBaslat, useKayit } from '@/kayit/kaydedici';
-import { egzersizTuruSec, TUR_IKONLARI } from '@/lib/egzersizTuru';
+import { egzersizTuruSec, TUR_IKONLARI, useEgzersizTuru } from '@/lib/egzersizTuru';
 import { sonHedefEkle, sonHedefleriTemizle, sonHedefSil, useSonHedefler, type SonHedef } from '@/lib/sonHedefler';
 import { yerAra, type YerSonucu } from '@/lib/yerArama';
 import { rotaHesapla, type CizimModu, type YolTuru } from '@/lib/yonlendirme';
@@ -134,6 +135,11 @@ export default function HaritaScreen() {
   const [secim, setSecim] = useState<{ points: RoutePoint[]; v: number } | null>(null);
   // Kameranın en son hangi yol + panel yüksekliği için yola sığdırıldığı
   const [cerceveli, setCerceveli] = useState<string | null>(null);
+  // Aramadan seçilen tarihi yürüyüş yolu: yol tarifinde haritada yalnızca o çizilir (çarpıyla kalkar)
+  const [arananYol, setArananYol] = useState<TarihiYolId | null>(null);
+  const { secili: egzersizTuru } = useEgzersizTuru();
+  // Tarihi yollar yalnızca egzersizde Tarihi yürüyüş seçiliyken (hepsi) ve aranıp seçilince (o yol) görünür
+  const tarihiYollar: TarihiYolGorunumu = yolculuk ? arananYol : egzersizTuru === 'historic_hike' ? 'hepsi' : null;
 
   // Sekme açıkken GPS'i çalıştır (kayıt sürmüyorsa konumu yalnızca gösterir); sekmeden çıkınca durur
   useFocusEffect(useCallback(() => konumOnizlemeBaslat(), []));
@@ -191,6 +197,8 @@ export default function HaritaScreen() {
   }, [q, odak?.c]);
 
   const gorunenSonuclar = q.trim().length >= 2 ? sonuclar : [];
+  // Yazılana uyan tarihi yollar, yer sonuçlarının üstünde
+  const yolSonuclari = yolculuk ? tarihiYolAra(q) : [];
   // Eski hesap yeni hedefte gösterilmez
   const points = useMemo(() => (yol && yol.icin === anahtar ? yol.points : []), [yol, anahtar]);
   const stats = useMemo(() => (points.length > 1 ? routeStats(points) : null), [points]);
@@ -305,6 +313,16 @@ export default function HaritaScreen() {
     setOdak({ c: y.coord, z: 14 });
   }
 
+  /** Aramadan tarihi yol seçildi: yalnızca o yol çizilir, harita yolun tamamını gösterir */
+  function tarihiYolSec(id: TarihiYolId) {
+    Keyboard.dismiss();
+    setQ('');
+    setSonuclar([]);
+    setArananYol(id);
+    const f = cerceve(tarihiYolNoktalari(id), width - 80, haritaH - insets.top - 120 - panelH - 40);
+    if (f) setOdak(f);
+  }
+
   function temizle() {
     setHedef(null);
     setBaslangic(null);
@@ -389,6 +407,7 @@ export default function HaritaScreen() {
         followZoom={odak?.z}
         onPress={yolculuk ? (c) => hedefSec({ c, ad: null }) : undefined}
         padding={{ top: 120, bottom: panelH + 40 }}
+        tarihiYollar={tarihiYollar}
         accessibilityLabel={yolculuk && hedef ? $t('harita.yol_haritasi', { ad: hedefAdi }) : $t('harita.harita')}
       />
       <FloatingHeader
@@ -405,15 +424,21 @@ export default function HaritaScreen() {
                 onChangeText={setQ}
                 onFocus={() => aramaOdagi(true)}
                 onBlur={() => aramaOdagi(false)}
-                placeholder={hedef ? hedefAdi : $t('harita.nereye_gidiyorsun')}
-                placeholderTextColor={hedef ? colors.ink : colors.inkMuted}
+                placeholder={hedef ? hedefAdi : arananYol ? tarihiYolAdi(arananYol) : $t('harita.nereye_gidiyorsun')}
+                placeholderTextColor={hedef || arananYol ? colors.ink : colors.inkMuted}
                 accessibilityLabel={$t('harita.hedef_ara')}
                 autoCorrect={false}
                 returnKeyType="search"
                 style={styles.searchInput}
               />
-              {hedef && !q ? (
-                <Pressable accessibilityRole="button" accessibilityLabel={$t('harita.hedefi_kaldir')} onPress={temizle} hitSlop={10} style={styles.searchKapat}>
+              {(hedef || arananYol) && !q ? (
+                // Önce hedef, sonra aranan tarihi yol kalkar
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={hedef ? $t('harita.hedefi_kaldir') : $t('harita.tarihi_yolu_kaldir')}
+                  onPress={hedef ? temizle : () => setArananYol(null)}
+                  hitSlop={10}
+                  style={styles.searchKapat}>
                   <Icon name="close" size={18} color={colors.inkMuted} strokeWidth={2} />
                 </Pressable>
               ) : null}
@@ -425,8 +450,19 @@ export default function HaritaScreen() {
         right={<IconButton floating icon="compass" label={$t('kesfet.kesfet')} onPress={() => router.push('/kesfet-liste')} />}
       />
 
-      {yolculuk && gorunenSonuclar.length ? (
+      {yolculuk && (gorunenSonuclar.length || yolSonuclari.length) ? (
         <View style={[styles.results, { top: insets.top + 64 }]}>
+          {yolSonuclari.map((id) => (
+            <Pressable key={`yol-${id}`} accessibilityRole="button" onPress={() => tarihiYolSec(id)} style={styles.result}>
+              <Icon name="antik" size={18} color={TARIHI_YOL_RENGI[id]} />
+              <View style={{ flex: 1 }}>
+                <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14 }} numberOfLines={1}>
+                  {tarihiYolAdi(id)}
+                </Txt>
+                <Txt variant="small">{$t('harita.tarihi_yol_alt')}</Txt>
+              </View>
+            </Pressable>
+          ))}
           {gorunenSonuclar.map((y) => (
             <Pressable key={y.id} accessibilityRole="button" onPress={() => yerSec(y)} style={styles.result}>
               <Icon name="pin" size={18} color={colors.terra} />
@@ -628,7 +664,7 @@ export default function HaritaScreen() {
               </View>
               {acikSecim === 'ulasim' ? (
                 <View style={styles.secenekler} accessibilityRole="radiogroup" accessibilityLabel={$t('harita.ulasim')}>
-                  {ACTIVITY_TYPES.map((t) => (
+                  {ACTIVITY_TYPES.filter((t) => t !== 'historic_hike').map((t) => (
                     <Chip
                       key={t}
                       label={ACTIVITY_LABELS[t]}

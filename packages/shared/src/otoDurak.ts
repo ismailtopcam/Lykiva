@@ -30,7 +30,7 @@ export type OtoDurakAyari = {
 
 /**
  * Türe göre eşikler. Eşik hızı: bisiklet / araba 3,6 km/sa, koşu ve dağ bisikleti ~2,9, patika koşusu ~2,2,
- * yürüyüş 1,8, doğa yürüyüşü ~1,4 (dik yokuşta yavaş çıkarken duraklamasın).
+ * yürüyüş 1,8, doğa ve tarihi yürüyüş ~1,4 (dik yokuşta yavaş çıkarken duraklamasın).
  */
 export const OTO_DURAK: Record<ActivityType | 'car', OtoDurakAyari> = {
   bike: { sureS: 5, yaricapM: 8, hizEsik: 1.0 },
@@ -39,6 +39,7 @@ export const OTO_DURAK: Record<ActivityType | 'car', OtoDurakAyari> = {
   trail_run: { sureS: 6, yaricapM: 8, hizEsik: 0.6 },
   walk: { sureS: 6, yaricapM: 8, hizEsik: 0.5 },
   hike: { sureS: 8, yaricapM: 8, hizEsik: 0.4 },
+  historic_hike: { sureS: 8, yaricapM: 8, hizEsik: 0.4 },
   car: { sureS: 5, yaricapM: 8, hizEsik: 1.0 },
 };
 

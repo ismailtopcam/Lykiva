@@ -33,6 +33,7 @@ export const REKOR_HIZ_SINIRI: Record<ActivityType, number> = {
   trail_run: 40 / 3.6,
   walk: 25 / 3.6,
   hike: 25 / 3.6,
+  historic_hike: 25 / 3.6,
 };
 
 /** Aktivitenin o rekor türündeki değeri; rekora giremiyorsa null */

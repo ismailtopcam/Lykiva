@@ -10,15 +10,20 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
+| Gökhan | Tarihi yürüyüş egzersiz türü (`historic_hike`), tarihi yollar yalnızca orada / aramada | `gokhan/tarihi-yuruyus-egzersiz` |
 
-## İsmail için: tarihi yürüyüş yolları (20 Kasım 2026, Gökhan)
+## İsmail için: tarihi yürüyüş (20 Kasım 2026, Gökhan)
 
-Main'de (#139), yalnızca JS: yeni derleme, migration ya da sunucu işi gerekmez.
-- Haritanın katman düğmesinde yeni bölüm **Tarihi yürüyüş yolları** (Kapalı / Göster). Likya, Karia, Frig, Hitit,
-  Evliya Çelebi, Aziz Paul, Sultanlar ve Efeler yolu bütün haritalarda kesikli renkli çizgi + adıyla. Gökhan'ın
-  telefonunda göründü (20 Kas 2026).
+Tarihi yürüyüş yolları main'de (#139). **Yeni aktivite türü `historic_hike` ("Tarihi yürüyüş") eklendi; migration
+`20261120000000_tarihi_yuruyus.sql` İsmail uygulayacak** (`uygula.sh`; yalnızca enum'a değer ekler). Yeni derleme gerekmez.
+Migration uygulanmadan bu türle yapılan kayıt sunucuya gitmez, telefondaki kuyrukta bekler, uygulanınca gönderilir.
+- Egzersiz yap şeridinde yeni tür **Tarihi yürüyüş** (sütunlu yapı simgesi). Tarihi yollar artık yalnızca: bu tür
+  seçiliyken Egzersiz panelinin haritasında, bu türdeki kaydın canlı haritasında ve Harita'da adı aranıp seçilince (o yol
+  tek başına, ekrana sığdırılır; arama kutusundaki çarpı kaldırır). Katman penceresindeki aç / kapa kaldırıldı.
+- Tür ortak pakette ve web'de de var: rekor / rozet (yürüyüş rozetlerine sayılır), oto duraklat, süre tahmini, GPX
+  (`hiking`), yönetim panelinde meydan okuma türü, web paylaşımda tempo. Yol tarifinin ulaşım seçeneklerinde yok.
 - Veri OpenStreetMap'ten bir kez indirilip uygulamaya gömüldü (`components/map/tarihiYollar.json`, ~74 KB); yenilemek
-  için `node scripts/tarihi-yollar.mjs`. Kod: `components/map/tarihiYollar.ts`, çizim `TopoMap.tsx`, pencere `HaritaTuruSecici.tsx`.
+  için `node scripts/tarihi-yollar.mjs`. Kod: `components/map/tarihiYollar.ts`, çizim `TopoMap.tsx` (`tarihiYollar` prop).
 - **Frig, Hitit ve Evliya Çelebi OSM'de eksik** (110 / 141 / 36 km); yalnızca işlenmiş kısımları çiziliyor.
 - Bu özellik üzerinde çalışmaya devam edeceğiz (yola dokununca bilgi kartı, yolu rota olarak kaydetme / başlatma,
   eksik yolların verisi). Ayrıntılar "Yapılacaklar" > Keşif.
@@ -84,6 +89,9 @@ Hepsi main'de, yalnızca JS (yeni derleme gerekmez); migration'lar sunucuya uygu
 
 Sunucuda, Coolify'da ya da konsollarda yapılması gerekenler. Yapıldıkça sil.
 
+0. **Tarihi yürüyüş migration'ı (İsmail uygulayacak):** `gokhan/tarihi-yuruyus-egzersiz` PR'ı main'e girince
+   `20261120000000_tarihi_yuruyus.sql`'i `uygula.sh` ile uygula (önce durum, sonra `uygula`), ardından
+   `node scripts/sunucu-kontrol.mjs` ile bak. Uygulanana kadar "Tarihi yürüyüş" kayıtları telefonda bekler.
 1. **Zoho Mail (bilgi@lykiva.app):** DNS kayıtlarının hepsi yerinde (MX, SPF, DMARC, doğrulama TXT, DKIM `zmail`).
    Zoho Mail Admin > Domains > lykiva.app'te doğrulama ve DKIM için **Verify**'a bas; bir deneme postası gönderip al.
 2. **Yönetim paneli > Site ayarları** (`https://lykiva.app/admin`) — veri sorumlusu ve adresi.
@@ -148,11 +156,12 @@ Kalan: telefonlarda deneme. Yeni yerel modüller (fotoğraf, bildirim, kilit ekr
 
 ### [ ] Telefonda ve gerçek sunucuda denenmemiş özellikler
 Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
-- Tarihi yürüyüş yolları (20 Kas 2026, Gökhan, `tarihi-yollar`; yalnızca JS): katman düğmesi > Tarihi yürüyüş yolları >
-  Göster. Sekiz yol kesikli renkli çizgiyle bütün haritalarda (Harita, kayıt, rota) çıkıyor mu, adları (6. yakınlaştırmadan
-  sonra, ~25 km'de bir) okunuyor mu, uydu ve koyu haritada seçiliyor mu, kendi rotanın altında mı kalıyor? Açınca harita
-  takılıyor mu (veri ilk açılışta yükleniyor)? Pencere küçük ekranda kayıyor mu? Tarayıcıda (maplibre-gl) denendi;
-  Gökhan'ın telefonunda çizgiler göründü (20 Kas 2026). Kalan: iOS, uydu / koyu harita, kayıt ekranı.
+- Tarihi yürüyüş (20 Kas 2026, Gökhan, `tarihi-yollar` + `tarihi-yuruyus-egzersiz`; JS + migration): Egzersiz yap >
+  Tarihi yürüyüş seçince sekiz yol haritada çıkıyor mu, başka tür seçince kayboluyor mu? Bu türde kayıt başlatınca canlı
+  haritada yollar var mı, kayıt bitince sunucuya gidiyor mu (migration uygulandıktan sonra), akışta / profilde tür adı
+  ve simge doğru mu? Harita'da "likya", "lycian", "karia" yazınca yol sonuçlarda çıkıyor mu, seçince yol ekrana
+  sığıyor mu, çarpı kaldırıyor mu? Adlar (6. yakınlaştırmadan sonra, ~25 km'de bir), uydu ve koyu harita. Çizgiler
+  katmanla açıldığı hâliyle Gökhan'ın telefonunda göründü (20 Kas 2026); yeni hâli denenmedi.
 - 15 Kas 2026 (İsmail; yalnızca JS): **Harita** paneli (tutamağa inme, kısa özet ↔ açık panel geçişi, yol hesaplanmışken
   karttaki yükselti profili, haplar), son aramalar (klavye açıkken çarpı), harita görünümü seçimi (gerçek MapLibre'de),
   Egzersiz panelinin şerit durağı. **Rota oluşturma** paneli ve durak silme (yanına yeni durak eklenmemeli).
@@ -664,9 +673,10 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
 - [ ] Segmentler ve liderlik tablosu (büyük iş, sonraya).
 
 **Keşif**
-- [~] Tarihi yürüyüş yolları (20 Kas 2026, Gökhan): katman penceresinde "Tarihi yürüyüş yolları" (Kapalı / Göster, renk
-  açıklaması). Likya, Karia (+ İç Karia), Frig, Hitit, Evliya Çelebi, Aziz Paul, Sultanlar (Sultans Trail 6. bölüm,
-  Edirne – İstanbul) ve Efeler yolu bütün haritalarda kesikli renkli çizgi + ad. Veri OpenStreetMap'teki yürüyüş rotası
+- [~] Tarihi yürüyüş yolları (20 Kas 2026, Gökhan): Likya, Karia (+ İç Karia), Frig, Hitit, Evliya Çelebi, Aziz Paul,
+  Sultanlar (Sultans Trail 6. bölüm, Edirne – İstanbul) ve Efeler yolu kesikli renkli çizgi + ad. Yalnızca "Tarihi
+  yürüyüş" egzersiz türünde (seçim ve canlı kayıt haritası) ve Harita'da adı aranınca (tek yol) görünür; önce katman
+  penceresinde aç / kapaydı (#139), kaldırıldı. Veri OpenStreetMap'teki yürüyüş rotası
   ilişkilerinden `scripts/tarihi-yollar.mjs` ile çıkarılıp uygulamaya gömüldü (`components/map/tarihiYollar.json`,
   ~74 KB, 20 m sadeleştirme, Google polyline); internet gerekmez. Yenilemek için betiği yeniden çalıştır. Yalnızca JS.
   **OSM'de eksik olanlar** (20 Kas 2026'daki uzunluklar, alternatifler dahil): Likya 629 km, Karia 873 km, Aziz Paul
@@ -882,6 +892,9 @@ Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde
   World Imagery (anahtarsız döşeme); hibrit = uydu + Liberty'nin yol, sınır ve yazı katmanları (stil JSON'u bir kez indirilip
   uygulamada türetilir); kış = Liberty karlı renklerle + OpenSnowMap pist döşemeleri. Seçim telefonda saklanır, bütün
   haritalara uygulanır. Koşullar mağaza öncesi kontrol edilecek (bkz. Mağazaya çıkmadan önce).
+- **Tarihi yürüyüş ayrı aktivite türü** (`historic_hike`, 20 Kas 2026, Gökhan'ın kararı): doğa yürüyüşünün bir
+  seçeneği olarak değil, kendi istatistiği ve etiketiyle ayrı tür. Yürüyüş rozetlerine (`YURUYUS`) sayılır. Eski
+  uygulama sürümleri bu türü tanımaz (etiket boş görünebilir).
 - **Tarihi yürüyüş yolları OSM'den, uygulamaya gömülü** (20 Kas 2026): Waymarked Trails gibi bir döşeme sunucusuna
   bağlanmak yerine sekiz yolun çizgisi bir kez indirilip pakete kondu (çevrimdışında da var, dış servise bağımlılık yok).
   Veri ODbL: standart / hibrit / kış haritadaki OpenStreetMap atfı karşılıyor; `tarihiYollar.json` aynı lisansla kalır.

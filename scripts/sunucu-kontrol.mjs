@@ -107,6 +107,19 @@ for (const [dosya, fn, govde] of asamalar) {
   }
 }
 
+// Fonksiyonu olmayan migration'lar
+// 20261120000000_tarihi_yuruyus: enum'a yeni değer. Geçersiz enum değeri sorgu çözümlenirken reddedilir (22P02),
+// izin denetiminden önce; değer varsa boş liste ya da izin hatası döner.
+try {
+  const r = await fetch(`${URL_}/rest/v1/activities?select=id&activity=eq.historic_hike&limit=1`, { headers: basliklar });
+  const j = await r.json().catch(() => ({}));
+  if (j.code === '22P02') kotu('20261120000000_tarihi_yuruyus uygulanmamış (historic_hike türü yok)');
+  else if (r.ok || j.code === '42501' || r.status === 401 || r.status === 403) iyi('20261120000000_tarihi_yuruyus');
+  else bilgi(`20261120000000_tarihi_yuruyus: beklenmeyen yanıt ${r.status} ${j.code ?? ''} ${j.message ?? ''}`);
+} catch (e) {
+  kotu(`20261120000000_tarihi_yuruyus: istek başarısız (${e.message})`);
+}
+
 // 3. Realtime
 console.log('\nCanlı sohbet (Realtime)');
 await new Promise((bitti) => {

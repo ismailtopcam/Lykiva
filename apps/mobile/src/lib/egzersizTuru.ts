@@ -20,6 +20,7 @@ export const TUR_IKONLARI: Record<ActivityType, IconName> = {
   walk: 'walk',
   hike: 'mountain',
   trail_run: 'mountain',
+  historic_hike: 'antik',
 };
 
 /** "Tüm egzersizler" ekranındaki gruplar. Yeni tür eklenince buraya da yazılmalı (yazılmazsa TypeScript hatası) */
@@ -32,6 +33,7 @@ const GRUP: Record<ActivityType, TurGrubu> = {
   trail_run: 'kosu',
   walk: 'kosu',
   hike: 'kosu',
+  historic_hike: 'kosu',
 };
 
 export function grubunTurleri(g: TurGrubu): ActivityType[] {

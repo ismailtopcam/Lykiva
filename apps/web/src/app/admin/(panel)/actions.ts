@@ -80,7 +80,7 @@ export async function meydanOkumaSil(f: FormData) {
 }
 
 const OLCULER = ['mesafe', 'sure', 'sayi', 'tirmanis'] as const;
-const TURLER = ['bike', 'mtb', 'run', 'walk', 'hike', 'trail_run'] as const;
+const TURLER = ['bike', 'mtb', 'run', 'walk', 'hike', 'trail_run', 'historic_hike'] as const;
 
 /** "2026-11-01" → Türkiye saatiyle (UTC+3, yaz saati yok) o günün başı; `gunEkle` gün sonrası */
 function gunBasi(s: string, gunEkle = 0): string | null {

@@ -828,6 +828,7 @@ export const en: Sozluk = {
     bisiklet_turu: 'ride',
     doga_yuruyusu: 'hike',
     patika_kosusu: 'trail run',
+    tarihi_yuruyus: 'heritage hike',
     dag_bisikleti_turu: 'mountain bike ride',
     baslik: '{zaman} {tur}',
   },
@@ -1450,6 +1451,8 @@ export const en: Sozluk = {
   harita: {
     harita: 'Map',
     nereye_gidiyorsun: 'Where to?',
+    tarihi_yol_alt: 'Historic hiking trail',
+    tarihi_yolu_kaldir: 'Remove historic trail',
     hedef_ara: 'Search for a destination',
     nereye_gitmek_istiyorsun: 'Where do you want to go?',
     haritaya_dokun_ya_da_ara: 'Tap your destination on the map or search above to get directions from where you are.',
@@ -1537,9 +1540,6 @@ export const en: Sozluk = {
     isi_gece_aciklama: 'Public activities done after sunset. Visible when you zoom in.',
     isi_kisisel_aciklama: 'All your activities, including private ones. Only you can see it.',
     isi_gizlilik: 'Hidden start and end points are left out; you can opt out in Settings > Privacy.',
-    tarihi_yollar: 'Historic hiking trails',
-    tarihi_goster: 'Show',
-    tarihi_aciklama: 'Waymarked long-distance trails, drawn as dashed lines. Data: OpenStreetMap.',
   },
   tarihiYollar: {
     likya: 'Lycian Way',

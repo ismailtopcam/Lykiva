@@ -829,6 +829,7 @@ export const tr = {
     bisiklet_turu: 'bisiklet turu',
     doga_yuruyusu: 'doğa yürüyüşü',
     patika_kosusu: 'patika koşusu',
+    tarihi_yuruyus: 'tarihi yürüyüş',
     dag_bisikleti_turu: 'dağ bisikleti turu',
     baslik: '{zaman} {tur}',
   },
@@ -1451,6 +1452,8 @@ export const tr = {
   harita: {
     harita: 'Harita',
     nereye_gidiyorsun: 'Nereye gidiyorsun?',
+    tarihi_yol_alt: 'Tarihi yürüyüş yolu',
+    tarihi_yolu_kaldir: 'Tarihi yolu kaldır',
     hedef_ara: 'Gidilecek yeri ara',
     nereye_gitmek_istiyorsun: 'Nereye gitmek istiyorsun?',
     haritaya_dokun_ya_da_ara: 'Haritada gideceğin yere dokun ya da yukarıdan ara; bulunduğun yerden yol tarifi çıkaralım.',
@@ -1538,9 +1541,6 @@ export const tr = {
     isi_gece_aciklama: 'Güneş battıktan sonra yapılan herkese açık aktiviteler. Yakınlaştırınca görünür.',
     isi_kisisel_aciklama: 'Senin bütün aktivitelerin, gizliler dahil. Yalnızca sen görürsün.',
     isi_gizlilik: 'Başlangıç ve bitişi gizli aktivitelerin uçları sayılmaz; Ayarlar > Gizlilik bölümünden çıkabilirsin.',
-    tarihi_yollar: 'Tarihi yürüyüş yolları',
-    tarihi_goster: 'Göster',
-    tarihi_aciklama: 'İşaretli uzun yürüyüş yolları, haritada kesikli çizgiyle. Veri: OpenStreetMap.',
   },
   tarihiYollar: {
     likya: 'Likya Yolu',

@@ -46,6 +46,7 @@ export function varsayilanBaslik(type: ActivityType, start: Date): string {
     walk: $t('kayit_paket.yuruyusu'),
     hike: $t('kayit_paket.doga_yuruyusu'),
     trail_run: $t('kayit_paket.patika_kosusu'),
+    historic_hike: $t('kayit_paket.tarihi_yuruyus'),
   };
   // "Sabah koşusu", "Morning run", Almancada bitişik: "Morgenlauf"
   return $t('kayit_paket.baslik', { zaman, tur: ad[type] });
