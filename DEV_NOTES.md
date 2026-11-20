@@ -11,6 +11,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 | Kim | İş | Dal |
 | --- | --- | --- |
 | Gökhan | Haritada tarihi yürüyüş yolları (`components/map/tarihiYollar.ts`, katman penceresi) | `gokhan/tarihi-yollar` |
+| Gökhan | 3B paylaşım videoları: tempo ve hıza göre akış (`altyapi/kart-video/sahne/sahne.js`, `src/dogrula.js`, `components/paylasim/videoTemalari.ts`) | `gokhan/video-sure` |
 
 ## Gökhan için: 15 Kasım 2026'da değişenler (İsmail)
 
@@ -712,6 +713,16 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
     (`EXPO_PUBLIC_ALTYAPI_ANAHTARI`) yoksa video temaları görünmez; adres `EXPO_PUBLIC_VIDEO_URL` (varsayılan
     `https://video.ismailtopcam.dev`). Takip uygulama açıkken sürer (iOS arka planda durdurur, öne gelince devam eder).
   - Bilinen: haritada yer adları kapalı; şehir şablonları kısa rotalar için (uzun rotada uzaklaşınca binalar z14 altında kalır).
+  - [x] Video temposu (20 Kas 2026, Gökhan): yörünge / şehir 12 → 15 sn, takip 16 → 20 sn. Rota artık 6,5 sn'de, ortası
+    fırlamadan çiziliyor (eskiden 26 km 4 sn'de); takipte kamera rotayı 12 sn'de izliyor (eskiden 9); sonda değerler
+    ~1,7 sn ekranda kalıyor. Yalnızca `sahne.js` ve `dogrula.js`; derleme gerekmez. Üretim süresi
+    hareketli kısım kadar uzar (yörüngede ~%14, takipte ~%21; şehir maketi 7,5 dk → ~8,5 dk tahmini, sunucuda ölçülmedi).
+    Kare hızı 24'te kaldı; daha akıcı istenirse `KV_FPS=30` (Coolify ortamı, İsmail) — üretim ~%25 daha uzun sürer.
+  - [x] Hıza göre akış (20 Kas 2026, Gökhan): telefon her noktadaki hızı da gönderiyor (`hiz`, `noktaHizlari`; sahibi
+    hızı gizlediyse göndermez). Çizgi / kamera / km sayacı hızlı yerde hızlı, yokuşta ve molada yavaş ilerliyor; hız
+    yumuşatılıp ortalamanın 0,4–2,5 katına sıkıştırılıyor (mola animasyonu durdurmaz). Toplam süre aynı. Eski uygulama
+    `hiz` göndermez → düz hız; yeni uygulama eski sunucuya gönderse sunucu alanı yok sayar. Telefon tarafı yalnızca JS,
+    derleme gerekmez. Sunucuda sıra: önce bu PR `main`'e girince `video` kendiliğinden kurulur.
 - Hız haritasında kademeler sabit 13 / 25 km/sa değil, aktivitenin ortalamasına göre (×0,85 ve ×1,2): koşu ve yürüyüşte de anlamlı.
 
 ### [~] Kulüpler (13 Kas 2026, `20261117000000_kulupler.sql`)
