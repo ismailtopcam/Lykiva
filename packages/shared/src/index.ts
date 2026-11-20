@@ -13,3 +13,4 @@ export * from './rekor';
 export * from './hedef';
 export * from './rozet';
 export * from './gunes';
+export * from './otoDurak';

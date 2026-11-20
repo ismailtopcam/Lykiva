@@ -10,6 +10,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
+| Gökhan | Otomatik duraklat / devam et (`kayit/kaydedici.ts`, `kayit/canli.tsx`, `@lykiva/shared` > `otoDurak`) | `gokhan/oto-duraklat` |
 
 ## Gökhan için: 15 Kasım 2026'da değişenler (İsmail)
 
@@ -480,6 +481,15 @@ Kalan:
   köprüde vadinin tabanını, tünelde dağın üstünü verir. Kendi BRouter sunucumuzda etiketin çıktıya eklenip eklenemeyeceğine bakılmalı.
 - Alt menü (15 Kas 2026'dan beri): Ana Sayfa · Harita · Gruplar · Profil; Egzersiz sekmesi yalnızca kayıt sürerken araya
   girer ve süren kaydı açar. Egzersiz başlatmak Harita > Egzersiz yap'ta (bkz. "Harita + Egzersiz tek sekmede").
+- [x] Otomatik duraklat (20 Kas 2026, Gökhan, `oto-duraklat`): egzersizde ve yolculukta (araba dahil) durunca kayıt
+  kendiliğinden duraklar, hareket edince kaldığı yerden sürer. Karar `@lykiva/shared` > `otoDurak` (testli): türün süresi
+  boyunca 10 m içinde kalınırsa durulmuş sayılır (bisiklet 10 sn, dağ bisikleti / koşu 12, patika koşusu / yürüyüş 15,
+  doğa yürüyüşü 20); duraklama o yere varılan andan başlar. Elle duraklatmadan farkı: GPS açık kalır, yeni parça başlamaz
+  (durulan yerden devam edilen yere yol sayılır), canlı ekran açık kalır ve üstte "Otomatik duraklatıldı" bandı çıkar;
+  kilit ekranında da "Otomatik duraklatıldı" yazar. "Duraklat"a basılırsa elle duraklatmaya döner. Tünelde sinyal
+  kesilince duraklama sonradan geri alınır (çıkılan yere yürüme hızından hızlı varıldıysa). iOS'ta arka planda uygulama
+  uyurken mola, sonraki konum geldiğinde geriye dönük işlenir. Ayarlar > Kayıt > "Otomatik duraklat" (varsayılan açık).
+  Yalnızca JS, yeni derleme gerekmez. Telefonda denenecek: kırmızı ışıkta bekleme, yavaş yokuş çıkışı, ekran kapalıyken mola.
 - [x] Kayıt sürerken ana sayfaya dönüş, iOS (13 Kas 2026, Gökhan, `kayit-ana-sayfa-ios`): canlı ve duraklatıldı ekranlarında
   iOS'ta geri kaydırma kapalı olduğu için (haritada yanlışlıkla çıkılmasın) çıkış yolu yoktu; Android'de donanım geri tuşu
   çalışıyordu. Sol üste ev simgeli düğme eklendi (`components/AnaSayfaDugmesi.tsx`): kayıt arka planda sürer, alt menüdeki

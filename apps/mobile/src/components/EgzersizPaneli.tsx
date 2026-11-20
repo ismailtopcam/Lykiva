@@ -16,7 +16,7 @@ import { Button } from '@/components/ui';
 import { rotalarim, type Rota } from '@/data/rota';
 import { gruplarim, type GrupOzeti } from '@/grup/gruplar';
 import { baglantiAc, baglantiyiPaylas, type PaylasimGrubu } from '@/kayit/canliPaylasim';
-import { baslat, IzinHatasi, type KayitDurumu } from '@/kayit/kaydedici';
+import { baslat, IzinHatasi, kayitEkrani, type KayitDurumu } from '@/kayit/kaydedici';
 import { egzersizBaslatildi, egzersizTuruSec, TUR_IKONLARI, useEgzersizTuru } from '@/lib/egzersizTuru';
 import { supabaseHazir } from '@/lib/supabase';
 import { colors, fontFamily, space, temaliStil } from '@/theme';
@@ -294,7 +294,7 @@ export function EgzersizAyrinti({ rota, onRota, onBasladi, kayitDurumu }: Props)
           icon="record"
           variant="dark"
           big
-          onPress={() => router.push(kayitDurumu === 'kayitta' ? '/kayit/canli' : '/kayit/duraklatildi')}
+          onPress={() => router.push(kayitEkrani())}
           style={{ marginTop: space.md }}
         />
       )}

@@ -9,7 +9,7 @@ import { AnaSayfaDugmesi } from '@/components/AnaSayfaDugmesi';
 import { Icon } from '@/components/Icon';
 import { Txt } from '@/components/Txt';
 import { Button, Stat } from '@/components/ui';
-import { bitir, devamEt, iptalEt } from '@/kayit/kaydedici';
+import { bitir, devamEt, iptalEt, otoDuraklatildi } from '@/kayit/kaydedici';
 import { rotaBilgisi, useCanliVeri } from '@/kayit/istatistik';
 import { colors, fontFamily } from '@/theme';
 import { $t } from '@/i18n';
@@ -24,7 +24,8 @@ export default function DuraklatildiScreen() {
   const [kaydediyor, setKaydediyor] = useState(false);
 
   if (kayit.durum === 'bos' && !kaydediyor) return <Redirect href="/kayit" />;
-  if (kayit.durum === 'kayitta') return <Redirect href="/kayit/canli" />;
+  // Otomatik duraklatılmışken canlı ekran açık kalır (harita, "hareket edince sürer" bandı)
+  if (kayit.durum === 'kayitta' || otoDuraklatildi(kayit)) return <Redirect href="/kayit/canli" />;
 
   const molaS = kayit.duraklatmaBaslangic ? Math.max(0, (simdi - kayit.duraklatmaBaslangic) / 1000) : 0;
   const yetersiz = kayit.segments.flat().length < 2;

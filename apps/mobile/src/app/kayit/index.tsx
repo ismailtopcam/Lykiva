@@ -8,7 +8,7 @@ import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 
-import { useKayit } from '@/kayit/kaydedici';
+import { otoDuraklatildi, useKayit } from '@/kayit/kaydedici';
 import { colors } from '@/theme';
 
 export default function KayitBaslatScreen() {
@@ -21,7 +21,7 @@ export default function KayitBaslatScreen() {
     router.dismissTo({ pathname: '/kesfet', params: params.rota ? { rota: params.rota } : { egzersiz: '1' } });
   }, [bos, params.rota]);
 
-  if (kayit.durum === 'kayitta') return <Redirect href="/kayit/canli" />;
+  if (kayit.durum === 'kayitta' || otoDuraklatildi(kayit)) return <Redirect href="/kayit/canli" />;
   if (kayit.durum === 'duraklatildi') return <Redirect href="/kayit/duraklatildi" />;
   return <View style={{ flex: 1, backgroundColor: colors.land }} />;
 }

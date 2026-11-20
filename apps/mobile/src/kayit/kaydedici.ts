@@ -6,13 +6,17 @@
  * - Arka plan izni yoksa uygulama açıkken kaydeder.
  * - Kayıt durumu her nokta grubunda telefona yazılır; uygulama kapanırsa kaldığı yerden sürer.
  * - Duraklatma yeni bir "parça" başlatır; parçalar arası yol mesafeye eklenmez.
+ * - Otomatik duraklatma (Ayarlar'dan kapatılabilir, bkz. otoDuraklat.ts): durunca kayıt kendiliğinden duraklar, hareket
+ *   edince sürer. Kararı `@lykiva/shared` > `otoDurak` verir. Elle duraklatmadan farkı: GPS açık kalır (yeniden hareketi
+ *   görmek için), yeni parça başlamaz (durulan yerden devam edilen yere kadar yol mesafeye eklenir) ve canlı ekran
+ *   açık kalır. Otomatik duraklatılmışken "Duraklat"a basılırsa elle duraklatmaya dönüşür.
  * - Kilit ekranında süre, mesafe ve ortalama hız gösterilir: Android bildirim, iOS Live Activity (kilitEkrani.ts).
  * - Yol tarifi "Egzersiz olarak da kaydet" kapalıyken başlatıldıysa (`kaydetme`) her şey aynı işler, yalnızca
  *   bitirince aktivite oluşmaz: ekranlar `bitir` yerine `iptalEt` çağırır (kullanıcı isterse yine kaydedebilir).
  * - Rota takip edilirken rotadan çıkınca telefon titrer ve bildirim gelir (arka planda da; bkz. rotaUyarisi.ts).
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { acceptPoint, haversine, LOCATION_DISTANCE_INTERVAL_M, prepareRoute, rotaUyarisi, trackOnRoute, type ActivityType, type HavaDurumu, type PreparedRoute, type RotaUyariDurumu, type RotaUyariOlayi, type RouteProgress, type RoutePoint, type TrackPoint } from '@lykiva/shared';
+import { acceptPoint, haversine, LOCATION_DISTANCE_INTERVAL_M, OTO_DURAK, otoDurak, prepareRoute, rotaUyarisi, trackOnRoute, type ActivityType, type HavaDurumu, type OtoDurakAyari, type OtoDurakDurumu, type OtoDurakOlayi, type PreparedRoute, type RotaUyariDurumu, type RotaUyariOlayi, type RouteProgress, type RoutePoint, type TrackPoint } from '@lykiva/shared';
 import { randomUUID } from 'expo-crypto';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
@@ -23,6 +27,7 @@ import { simdikiHava } from '@/lib/hava';
 
 import { hemenYayinla, konumYayinla, paylasimiBitir, type PaylasimGrubu } from './canliPaylasim';
 import { kilitEkrani, kilitEkraniIzniIste, kilitEkraniniYenile } from './kilitEkrani';
+import { otoDuraklatAcik } from './otoDuraklat';
 import { kuyrugaEkle, kuyruguGonder, sunucuIdsi } from './kuyruk';
 import { paketOlustur } from './paket';
 import { rotaUyarisiIzni, rotaUyarisiniKaldir, rotaUyarisiVer } from './rotaUyarisi';
@@ -66,6 +71,8 @@ export type Kayit = {
   hava: HavaDurumu | null;
   /** Yalnızca yol tarifi: bitince aktivite olarak kaydedilmeyecek */
   kaydetme: boolean;
+  /** Otomatik duraklatmanın durumu; `durdu` ise şu anki duraklatma otomatik (bkz. `otoDuraklatildi`) */
+  otoDurak: OtoDurakDurumu | null;
 };
 
 export type KayitRotasi = { id: string; name: string; points: RoutePoint[] };
@@ -88,6 +95,7 @@ const BOS: Kayit = {
   canliBaglanti: null,
   hava: null,
   kaydetme: false,
+  otoDurak: null,
 };
 
 // Hazırlanmış rota (birikmiş mesafeler) — rota başına bir kez hesaplanır
@@ -111,7 +119,55 @@ function haberVer() {
 function degistir(yeni: Partial<Kayit>, kaydet = true) {
   kayit = { ...kayit, ...yeni };
   haberVer();
+  otoZamanlayiciyiAyarla();
   if (kaydet) void yaz();
+}
+
+/** Şu anki duraklatma otomatik mi (GPS açık, hareket edince kendiliğinden sürecek) */
+export function otoDuraklatildi(k: Kayit): boolean {
+  return k.durum === 'duraklatildi' && !!k.otoDurak?.durdu;
+}
+
+/** Kaydın ekranı: otomatik duraklatılmışken de canlı ekran */
+export function kayitEkrani(): '/kayit/canli' | '/kayit/duraklatildi' | '/kayit' {
+  if (kayit.durum === 'kayitta' || otoDuraklatildi(kayit)) return '/kayit/canli';
+  return kayit.durum === 'duraklatildi' ? '/kayit/duraklatildi' : '/kayit';
+}
+
+function otoAyari(k: Kayit): OtoDurakAyari {
+  return OTO_DURAK[k.araba ? 'car' : k.activity] ?? OTO_DURAK.bike;
+}
+
+/** Durulan yere varıldıktan sonraki noktalar (yerinde kıpırtı) atılır */
+function durustanSonrakileriAt(segments: TrackPoint[][], baslangic: number): TrackPoint[][] {
+  if (!segments.length) return segments;
+  const kopya = [...segments];
+  kopya[kopya.length - 1] = kopya[kopya.length - 1].filter((q) => q.t <= baslangic);
+  return kopya;
+}
+
+// Yerinde dururken konum hiç gelmeyebilir (konum ancak birkaç metre ilerleyince geliyor): kayıt sürerken birkaç
+// saniyede bir konumsuz karar istenir. Uygulama arka planda uyurken çalışmayabilir; o zaman mola, sonraki konum
+// geldiğinde geriye dönük işlenir (bkz. otoDurak).
+const OTO_KONTROL_MS = 2000;
+let otoZamanlayici: ReturnType<typeof setInterval> | null = null;
+
+function otoZamanlayiciyiAyarla() {
+  const gerekli = kayit.durum === 'kayitta';
+  if (gerekli && !otoZamanlayici) {
+    otoZamanlayici = setInterval(otoKontrol, OTO_KONTROL_MS);
+  } else if (!gerekli && otoZamanlayici) {
+    clearInterval(otoZamanlayici);
+    otoZamanlayici = null;
+  }
+}
+
+function otoKontrol() {
+  if (kayit.durum !== 'kayitta' || !otoDuraklatAcik()) return;
+  const r = otoDurak(kayit.otoDurak, { t: Date.now() }, otoAyari(kayit));
+  if (r.olay?.tur !== 'duraklat') return;
+  degistir({ durum: 'duraklatildi', duraklatmaBaslangic: r.olay.baslangic, otoDurak: r.durum, segments: durustanSonrakileriAt(kayit.segments, r.olay.baslangic) });
+  if (kayit.paylasim || kayit.canliBaglanti) hemenYayinla(paylasimDurumu());
 }
 
 let yazmaBekliyor = false;
@@ -140,8 +196,9 @@ export async function kaydiGeriYukle(): Promise<Kayit> {
     kayit = BOS;
   }
   haberVer();
-  // Yarım kalan ve arka plansız kayıtta ön plan izlemesini yeniden başlat
-  if (kayit.durum === 'kayitta' && !kayit.arkaPlan) await onPlanIzle();
+  otoZamanlayiciyiAyarla();
+  // Yarım kalan ve arka plansız kayıtta ön plan izlemesini yeniden başlat (otomatik duraklatılmışken de GPS açık)
+  if ((kayit.durum === 'kayitta' || otoDuraklatildi(kayit)) && !kayit.arkaPlan) await onPlanIzle();
   return kayit;
 }
 
@@ -160,32 +217,69 @@ function noktalarEkle(locs: Location.LocationObject[]) {
   if (!locs.length) return;
   const yeni = [...locs].sort((a, b) => a.timestamp - b.timestamp).map(konumdanNokta);
   const sonKonum = yeni[yeni.length - 1];
-  if (kayit.durum !== 'kayitta') {
+  // Elle duraklatılmışken GPS kapalı; yine de gelen olursa yalnızca konum güncellenir
+  if (kayit.durum !== 'kayitta' && !otoDuraklatildi(kayit)) {
     degistir({ sonKonum }, false);
     return;
   }
   const segments = kayit.segments.length ? [...kayit.segments] : [[]];
-  const seg = [...segments[segments.length - 1]];
+  let seg = [...segments[segments.length - 1]];
   let rotaIlerleme = kayit.rotaIlerleme;
   let rotaUyari = kayit.rotaUyari;
   let uyari: RotaUyariOlayi = null;
+  let durum = kayit.durum;
+  let duraklatmaBaslangic = kayit.duraklatmaBaslangic;
+  let duraklamaToplam = kayit.duraklamaToplam;
+  let oto = kayit.otoDurak;
+  const otoAcik = otoDuraklatAcik();
+  const ayar = otoAyari(kayit);
   for (const p of yeni) {
-    if (acceptPoint(seg[seg.length - 1], p)) {
-      seg.push(p);
-      if (kayit.rota) {
-        rotaIlerleme = trackOnRoute(hazir(kayit.rota), p, rotaIlerleme);
-        const u = rotaUyarisi(rotaUyari, { offRouteM: rotaIlerleme.offRouteM, remainingM: rotaIlerleme.remainingM, t: p.t, acc: p.acc });
-        rotaUyari = u.durum;
-        // Arka planda konumlar toplu gelebilir: gruptaki son olay geçerli (çıktı ve döndüyse uyarı kalkar)
-        if (u.olay) uyari = u.olay;
-      }
+    if (!acceptPoint(seg[seg.length - 1], p)) continue;
+    let olay: OtoDurakOlayi = null;
+    if (otoAcik) {
+      const r = otoDurak(oto, { t: p.t, nokta: p }, ayar);
+      oto = r.durum;
+      olay = r.olay;
+    } else {
+      // Ayar otomatik duraklatılmışken kapatıldıysa kayıt sürer
+      if (durum === 'duraklatildi') olay = { tur: 'devam', bitis: p.t, sinyalKaybi: false };
+      oto = null;
+    }
+    if (olay?.tur === 'duraklat') {
+      const bas = olay.baslangic;
+      seg = seg.filter((q) => q.t <= bas);
+      durum = 'duraklatildi';
+      duraklatmaBaslangic = bas;
+    } else if (olay?.tur === 'mola') {
+      const bas = olay.baslangic;
+      seg = seg.filter((q) => q.t <= bas);
+      duraklamaToplam += Math.max(0, olay.bitis - bas);
+    } else if (olay?.tur === 'devam') {
+      // Sinyal kaybıysa (tünel) mola değildi: süre geri alınır
+      if (!olay.sinyalKaybi && duraklatmaBaslangic != null) duraklamaToplam += Math.max(0, olay.bitis - duraklatmaBaslangic);
+      durum = 'kayitta';
+      duraklatmaBaslangic = null;
+    }
+    // Duraklatılmışken nokta eklenmez; devam edince aynı parçaya eklenir (durulan yerden buraya yol sayılır)
+    if (durum !== 'kayitta') continue;
+    seg.push(p);
+    if (kayit.rota) {
+      rotaIlerleme = trackOnRoute(hazir(kayit.rota), p, rotaIlerleme);
+      const u = rotaUyarisi(rotaUyari, { offRouteM: rotaIlerleme.offRouteM, remainingM: rotaIlerleme.remainingM, t: p.t, acc: p.acc });
+      rotaUyari = u.durum;
+      // Arka planda konumlar toplu gelebilir: gruptaki son olay geçerli (çıktı ve döndüyse uyarı kalkar)
+      if (u.olay) uyari = u.olay;
     }
   }
   segments[segments.length - 1] = seg;
-  degistir({ segments, sonKonum, rotaIlerleme, rotaUyari });
+  const durumDegisti = durum !== kayit.durum;
+  degistir({ segments, sonKonum, rotaIlerleme, rotaUyari, durum, duraklatmaBaslangic, duraklamaToplam, otoDurak: oto });
   if (uyari && kayit.rota && rotaIlerleme) void rotaUyarisiVer(uyari, rotaIlerleme.offRouteM, kayit.rota.name);
   if (!kayit.hava) havayiYakala();
-  if (kayit.paylasim || kayit.canliBaglanti) konumYayinla(paylasimDurumu());
+  if (kayit.paylasim || kayit.canliBaglanti) {
+    if (durumDegisti) hemenYayinla(paylasimDurumu());
+    else konumYayinla(paylasimDurumu());
+  }
 }
 
 // Kayıt başına bir kez dene (internet yoksa sessizce vazgeç; kayıt hava bilgisiz kaydedilir)
@@ -339,19 +433,32 @@ export async function baslat(activity: ActivityType | 'car', rota: KayitRotasi |
   });
 }
 
+/** Elle duraklatır. Otomatik duraklatılmışsa elle duraklatmaya çevirir (GPS kapanır; duraklama başı aynı kalır) */
 export async function duraklat() {
+  if (otoDuraklatildi(kayit)) {
+    await izlemeyiDurdur();
+    degistir({ otoDurak: null });
+    return;
+  }
   if (kayit.durum !== 'kayitta') return;
   await izlemeyiDurdur();
-  degistir({ durum: 'duraklatildi', duraklatmaBaslangic: Date.now() });
+  degistir({ durum: 'duraklatildi', duraklatmaBaslangic: Date.now(), otoDurak: null });
   if (kayit.paylasim || kayit.canliBaglanti) hemenYayinla(paylasimDurumu());
 }
 
 export async function devamEt() {
   if (kayit.durum !== 'duraklatildi') return;
+  // Otomatik duraklatılmışken: GPS zaten açık, aynı parçada sürer
+  if (otoDuraklatildi(kayit)) {
+    const duraklamaToplam = kayit.duraklamaToplam + (kayit.duraklatmaBaslangic ? Math.max(0, Date.now() - kayit.duraklatmaBaslangic) : 0);
+    degistir({ durum: 'kayitta', duraklatmaBaslangic: null, duraklamaToplam, otoDurak: null });
+    if (kayit.paylasim || kayit.canliBaglanti) hemenYayinla(paylasimDurumu());
+    return;
+  }
   const son = kayit.segments[kayit.segments.length - 1];
   const segments = son && son.length === 0 ? kayit.segments : [...kayit.segments, []];
   const duraklamaToplam = kayit.duraklamaToplam + (kayit.duraklatmaBaslangic ? Date.now() - kayit.duraklatmaBaslangic : 0);
-  degistir({ durum: 'kayitta', duraklatmaBaslangic: null, duraklamaToplam, segments });
+  degistir({ durum: 'kayitta', duraklatmaBaslangic: null, duraklamaToplam, segments, otoDurak: null });
   if (kayit.paylasim || kayit.canliBaglanti) hemenYayinla(paylasimDurumu());
   const arkaPlan = await izlemeyiBaslat();
   degistir({ arkaPlan });

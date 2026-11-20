@@ -15,7 +15,7 @@ import { YolHaritasi } from '@/components/map/YolHaritasi';
 import { Txt } from '@/components/Txt';
 import { Stat } from '@/components/ui';
 import { baglantiyiPaylas } from '@/kayit/canliPaylasim';
-import { bitir, duraklat, iptalEt } from '@/kayit/kaydedici';
+import { bitir, duraklat, iptalEt, otoDuraklatildi } from '@/kayit/kaydedici';
 import { kisaSure, rotaBilgisi, useCanliVeri } from '@/kayit/istatistik';
 import { colors, fontFamily, space } from '@/theme';
 import { $t } from '@/i18n';
@@ -54,7 +54,9 @@ export default function CanliTakipScreen() {
     );
   }
   if (kayit.durum === 'bos') return <Redirect href="/kayit" />;
-  if (kayit.durum === 'duraklatildi') return <Redirect href="/kayit/duraklatildi" />;
+  // Otomatik duraklatılmışken ekran açık kalır (bant gösterilir); elle duraklatılınca duraklatma ekranı
+  const oto = otoDuraklatildi(kayit);
+  if (kayit.durum === 'duraklatildi' && !oto) return <Redirect href="/kayit/duraklatildi" />;
 
   const hiz = anlikHiz == null ? '—' : formatSpeedKmh(anlikHiz);
   const zayif = gpsDogruluk == null || gpsDogruluk > 30;
@@ -135,7 +137,7 @@ export default function CanliTakipScreen() {
     <View style={styles.solUst}>
       <AnaSayfaDugmesi />
       <View style={styles.pill}>
-        <View style={[styles.dot, { backgroundColor: kayit.kaydetme ? n.sea : n.recording }]} />
+        <View style={[styles.dot, { backgroundColor: oto ? n.paused : kayit.kaydetme ? n.sea : n.recording }]} />
         <Txt style={styles.pillText}>{$t(kayit.kaydetme ? 'kayit_canli.yolculukta' : 'kayit_canli.kayitta', { a: kayit.araba ? $t('harita.araba') : ACTIVITY_LABELS[kayit.activity] })}</Txt>
       </View>
     </View>
@@ -200,7 +202,12 @@ export default function CanliTakipScreen() {
               <View style={styles.tutamacYan} />
             </View>
 
-            {rb && rb.sapmaM > OFF_ROUTE_M ? (
+            {oto ? (
+              <View style={[styles.warn, styles.oto]} accessibilityRole="alert" accessibilityLiveRegion="polite">
+                <Icon name="pause" size={12} color={n.paused} strokeWidth={3} />
+                <Txt style={[styles.warnText, { flex: 1 }]}>{$t('kayit_canli.oto_duraklatildi_hareket')}</Txt>
+              </View>
+            ) : rb && rb.sapmaM > OFF_ROUTE_M ? (
               <View style={[styles.warn, { backgroundColor: '#3A1D17' }]} accessibilityRole="alert">
                 <Txt style={[styles.warnText, { color: n.accentSoft }]}>{$t('kayit_canli.rotadan_m_uzaktasin', { meters: formatMeters(rb.sapmaM) })}</Txt>
               </View>
@@ -338,6 +345,7 @@ const styles = StyleSheet.create({
   cizgi: { width: 40, height: 4, borderRadius: 2, backgroundColor: n.line },
   warn: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 10, backgroundColor: '#2A2418', marginBottom: 6 },
   warnText: { fontFamily: fontFamily.bodySemiBold, fontSize: 12, color: n.paused },
+  oto: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   hero: { fontFamily: fontFamily.displayHeavy, fontSize: 58, lineHeight: 62, color: n.text, letterSpacing: -2.5 },
   heroTam: { fontSize: 104, lineHeight: 110, letterSpacing: -4 },
   heroUnit: { fontFamily: fontFamily.bodySemiBold, fontSize: 18, letterSpacing: 0, color: n.textMuted },

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { type ColorValue, View } from 'react-native';
 
 import { Icon, type IconName } from '@/components/Icon';
-import { kayitDurumu, useKayitDurumu } from '@/kayit/kaydedici';
+import { kayitEkrani, useKayitDurumu } from '@/kayit/kaydedici';
 import { useGirisGerekli, useHesap } from '@/lib/giris';
 import { pushGiristen } from '@/lib/push';
 import { colors, fontFamily } from '@/theme';
@@ -85,8 +85,7 @@ export default function TabsLayout() {
           tabPress: (e) => {
             e.preventDefault();
             // Kayıt sürüyorsa doğrudan o ekrana: önce başlat ekranı açılıp sonra yönlendirilince iki geçiş üst üste biniyordu
-            const durum = kayitDurumu();
-            router.push(durum === 'kayitta' ? '/kayit/canli' : durum === 'duraklatildi' ? '/kayit/duraklatildi' : '/kayit');
+            router.push(kayitEkrani());
           },
         }}
       />
