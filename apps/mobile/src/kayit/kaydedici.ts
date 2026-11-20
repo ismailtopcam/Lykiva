@@ -16,7 +16,7 @@
  * - Rota takip edilirken rotadan çıkınca telefon titrer ve bildirim gelir (arka planda da; bkz. rotaUyarisi.ts).
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { acceptPoint, haversine, LOCATION_DISTANCE_INTERVAL_M, OTO_DURAK, otoDurak, prepareRoute, rotaUyarisi, trackOnRoute, type ActivityType, type HavaDurumu, type OtoDurakAyari, type OtoDurakDurumu, type OtoDurakOlayi, type PreparedRoute, type RotaUyariDurumu, type RotaUyariOlayi, type RouteProgress, type RoutePoint, type TrackPoint } from '@lykiva/shared';
+import { acceptPoint, haversine, konumuFiltrele, LOCATION_DISTANCE_INTERVAL_M, type KonumFiltresi, OTO_DURAK, otoDurak, prepareRoute, rotaUyarisi, trackOnRoute, type ActivityType, type HavaDurumu, type OtoDurakAyari, type OtoDurakDurumu, type OtoDurakOlayi, type PreparedRoute, type RotaUyariDurumu, type RotaUyariOlayi, type RouteProgress, type RoutePoint, type TrackPoint } from '@lykiva/shared';
 import { randomUUID } from 'expo-crypto';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
@@ -29,12 +29,18 @@ import { hemenYayinla, konumYayinla, paylasimiBitir, type PaylasimGrubu } from '
 import { kilitEkrani, kilitEkraniIzniIste, kilitEkraniniYenile } from './kilitEkrani';
 import { otoDuraklatAcik } from './otoDuraklat';
 import { kuyrugaEkle, kuyruguGonder, sunucuIdsi } from './kuyruk';
+import { noktaDosyasiniSil, noktalariOku, noktalariYaz } from './noktaDosyasi';
 import { paketOlustur } from './paket';
 import { rotaUyarisiIzni, rotaUyarisiniKaldir, rotaUyarisiVer } from './rotaUyarisi';
 import { $t } from '@/i18n';
 
 export const KONUM_GOREVI = 'lykiva-konum-kaydi';
+/**
+ * Kaydın kendisi (noktalar ve rota hariç; `v: 2`). Noktalar ayrı dosyada (noktaDosyasi.ts), rota ayrı anahtarda:
+ * ikisi de uzun olabilir, her yazmada yeniden yazılmasınlar. Eski (v1) kayıtta noktalar bu anahtarın içindeydi.
+ */
 const DEPO = 'lykiva.kayit.aktif.v1';
+const DEPO_ROTA = 'lykiva.kayit.rota.v1';
 
 export type KayitDurumu = 'bos' | 'kayitta' | 'duraklatildi';
 
@@ -178,19 +184,44 @@ function otoKontrol() {
 }
 
 let yazmaBekliyor = false;
+/** Yazmalar sırayla: biri sürerken diğeri başlamasın (dosyaya ekleme sırası önemli) */
+let yazmaSirasi: Promise<void> = Promise.resolve();
+/** Diske en son yazılan rota (aynıysa yeniden yazılmaz) */
+let yazilanRota: KayitRotasi | null | undefined;
+
 async function yaz() {
   if (yazmaBekliyor) return;
   yazmaBekliyor = true;
   // Saniyede bir noktada her seferinde yazmamak için kısa gecikme
   await new Promise((r) => setTimeout(r, 1500));
   yazmaBekliyor = false;
+  yazmaSirasi = yazmaSirasi.then(diskeYaz);
+  await yazmaSirasi;
+}
+
+async function diskeYaz() {
+  const k = kayit;
   try {
-    if (kayit.durum === 'bos') await AsyncStorage.removeItem(DEPO);
-    else await AsyncStorage.setItem(DEPO, JSON.stringify({ ...kayit, sonKonum: null }));
+    if (k.durum === 'bos') {
+      await AsyncStorage.multiRemove([DEPO, DEPO_ROTA]);
+      yazilanRota = null;
+      noktaDosyasiniSil();
+      return;
+    }
+    // Önce noktalar: kayıt yazılıp noktalar yazılamazsa geri yüklemede eksik nokta olur, tersi olmaz
+    await noktalariYaz(k.clientId, k.segments);
+    if (k.rota !== yazilanRota) {
+      if (k.rota) await AsyncStorage.setItem(DEPO_ROTA, JSON.stringify(k.rota));
+      else await AsyncStorage.removeItem(DEPO_ROTA);
+      yazilanRota = k.rota;
+    }
+    await AsyncStorage.setItem(DEPO, JSON.stringify({ ...k, segments: [], rota: null, rotaVar: !!k.rota, sonKonum: null, v: 2 }));
   } catch {
-    // depolama dolu vb. — kayıt bellekte sürer
+    // depolama dolu vb. — kayıt bellekte sürer, sonraki yazmada yeniden denenir
   }
 }
+
+type DepoKaydi = Kayit & { v?: number; rotaVar?: boolean };
 
 /** Uygulama açılışında (veya görev uyandığında) yarım kalan kaydı geri yükler */
 export async function kaydiGeriYukle(): Promise<Kayit> {
@@ -198,7 +229,28 @@ export async function kaydiGeriYukle(): Promise<Kayit> {
   yuklendi = true;
   try {
     const s = await AsyncStorage.getItem(DEPO);
-    if (s) kayit = { ...BOS, ...(JSON.parse(s) as Kayit) };
+    if (s) {
+      const d = JSON.parse(s) as DepoKaydi;
+      if (d.v === 2) {
+        const [segments, rota] = await Promise.all([
+          noktalariOku(d.clientId).catch(() => null),
+          // Rota okunamazsa kayıt rotasız sürer (kaydın kendisi kaybolmasın)
+          d.rotaVar
+            ? AsyncStorage.getItem(DEPO_ROTA)
+                .then((r) => (r ? (JSON.parse(r) as KayitRotasi) : null))
+                .catch(() => null)
+            : Promise.resolve(null),
+        ]);
+        d.segments = segments?.length ? segments : [[]];
+        d.rota = rota;
+        yazilanRota = rota;
+      }
+      delete d.v;
+      delete d.rotaVar;
+      kayit = { ...BOS, ...d };
+    } else {
+      noktaDosyasiniSil();
+    }
   } catch {
     kayit = BOS;
   }
@@ -220,6 +272,9 @@ function konumdanNokta(l: Location.LocationObject): TrackPoint {
   };
 }
 
+/** Konum filtresinin durumu (bellekte; uygulama yeniden açılınca ilk noktadan baştan başlar) */
+let filtre: KonumFiltresi | null = null;
+
 function noktalarEkle(locs: Location.LocationObject[]) {
   if (!locs.length) return;
   const yeni = [...locs].sort((a, b) => a.timestamp - b.timestamp).map(konumdanNokta);
@@ -240,11 +295,15 @@ function noktalarEkle(locs: Location.LocationObject[]) {
   let oto = kayit.otoDurak;
   const otoAcik = otoDuraklatAcik();
   const ayar = otoAyari(kayit);
-  for (const p of yeni) {
-    if (!acceptPoint(seg[seg.length - 1], p)) continue;
+  for (const ham of yeni) {
+    if (!acceptPoint(seg[seg.length - 1], ham)) continue;
+    // Kayda yumuşatılmış konum girer; otomatik duraklatma ham noktaya bakar (eşikleri ham GPS'e göre ayarlı)
+    const f = konumuFiltrele(seg.length ? filtre : null, ham);
+    filtre = f.filtre;
+    const p = f.nokta;
     let olay: OtoDurakOlayi = null;
     if (otoAcik) {
-      const r = otoDurak(oto, { t: p.t, nokta: p }, ayar);
+      const r = otoDurak(oto, { t: ham.t, nokta: ham }, ayar);
       oto = r.durum;
       olay = r.olay;
     } else {
@@ -328,7 +387,8 @@ const IZLEME = (): Location.LocationTaskOptions => ({
   accuracy: Location.Accuracy.BestForNavigation,
   timeInterval: 1000,
   distanceInterval: konumAraligi(),
-  activityType: Location.ActivityType.Fitness,
+  // Arabada iOS konumu yola oturtur; diğerlerinde yürüyüş / bisiklet profili
+  activityType: kayit.araba ? Location.ActivityType.AutomotiveNavigation : Location.ActivityType.Fitness,
   pausesUpdatesAutomatically: false,
   showsBackgroundLocationIndicator: true,
   foregroundService: {

@@ -14,3 +14,5 @@ export * from './hedef';
 export * from './rozet';
 export * from './gunes';
 export * from './otoDurak';
+export * from './kayitGunlugu';
+export * from './konumFiltresi';

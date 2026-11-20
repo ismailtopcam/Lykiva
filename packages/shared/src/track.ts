@@ -139,6 +139,19 @@ export function elevationGainLoss(rawAlts: number[], window = ELEVATION_SMOOTH_W
   return { gainM, lossM, maxAltM, minAltM };
 }
 
+/** Bu hızın altındaki yer değişimi, cihaz da "duruyor" diyorsa kıpırtı sayılır (m/s) */
+const JITTER_MAX_SPEED = 2;
+
+/**
+ * İki nokta arası yer değişimi GPS kıpırtısı mı: iki uçta da cihaz hızı (Doppler) "duruyor" diyor ve yer değişimi
+ * yavaş. Işıkta, molada (otomatik duraklatma devreye girmeden) birikip mesafeyi şişirmesin. Cihaz hızı yoksa
+ * ya da yer değişimi hızlıysa (cihaz hızı yanlışlıkla 0) sayılır.
+ */
+function duruyorKipirtisi(a: TrackPoint, b: TrackPoint, d: number, dt: number): boolean {
+  const durgun = (p: TrackPoint) => p.speed != null && p.speed >= 0 && p.speed < MOVING_SPEED;
+  return durgun(a) && durgun(b) && dt > 0 && d / dt < JITTER_MAX_SPEED;
+}
+
 export function computeStats(points: TrackPoint[]): TrackStats {
   const empty: TrackStats = {
     distanceM: 0,
@@ -160,6 +173,7 @@ export function computeStats(points: TrackPoint[]): TrackStats {
   for (let i = 1; i < points.length; i++) {
     const d = haversine(points[i - 1], points[i]);
     const dt = (points[i].t - points[i - 1].t) / 1000;
+    if (duruyorKipirtisi(points[i - 1], points[i], d, dt)) continue;
     distanceM += d;
     if (dt > 0 && d / dt >= MOVING_SPEED) {
       movingS += dt;

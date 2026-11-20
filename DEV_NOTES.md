@@ -10,7 +10,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
-| Gökhan | Haritada tarihi yürüyüş yolları (`components/map/tarihiYollar.ts`, katman penceresi) | `gokhan/tarihi-yollar` |
+| Gökhan | GPS kaydı: noktaların dosyaya eklenerek saklanması, konum filtresi (`kayit/kaydedici.ts`, `kayit/noktaDosyasi.ts`, `shared/kayitGunlugu.ts`, `shared/konumFiltresi.ts`) | `gokhan/gps-kayit` |
 
 ## Gökhan için: 15 Kasım 2026'da değişenler (İsmail)
 
@@ -499,6 +499,24 @@ Kalan:
   kesilince duraklama sonradan geri alınır (çıkılan yere yürüme hızından hızlı varıldıysa). iOS'ta arka planda uygulama
   uyurken mola, sonraki konum geldiğinde geriye dönük işlenir. Ayarlar > Kayıt > "Otomatik duraklat" (varsayılan açık).
   Yalnızca JS, yeni derleme gerekmez. Telefonda denenecek: kırmızı ışıkta bekleme, yavaş yokuş çıkışı, ekran kapalıyken mola.
+- [x] GPS kaydı daha güvenli ve doğru (20 Kas 2026, Gökhan, `gps-kayit`):
+  **Saklama:** noktalar artık her 1,5 sn'de bütün kayıt AsyncStorage'a yeniden yazılarak değil, telefondaki bir dosyanın
+  sonuna yalnızca yeni noktalar eklenerek saklanıyor (`kayit/noktaDosyasi.ts`, biçim `@lykiva/shared` > `kayitGunlugu`,
+  testli). Uzun sürüşte yazma maliyeti büyümüyor; Android'de tek büyük AsyncStorage değerinin okunamama riski (~2 MB)
+  kalktı. Otomatik duraklatmanın kırptığı son dosyada da kırpılıyor; yarım yazılmış son satır atlanıyor. Takip edilen
+  rota ayrı anahtarda, yalnızca değişince yazılıyor. Eski biçimde (v1) yarım kalan kayıt da açılıyor.
+  **Doğruluk:** kayda giren konum hafif bir Kalman filtresinden geçiyor (`konumFiltresi`, testli): ölçüm doğruluğuna göre
+  ağırlık, hareket payı cihaz hızıyla büyür (bisiklette iz ~1–2 m geride), ölçümden doğruluğun ötesine sapmaz, 10 sn
+  boşluktan sonra baştan başlar. Otomatik duraklatma ham noktaya bakmaya devam ediyor. Mesafede: iki uçta da cihaz hızı
+  "duruyor" diyorsa ve yer değişimi 2 m/sn'den yavaşsa kıpırtı sayılıp eklenmiyor (Android'in eski yolunda hız
+  bilinmiyorsa 0 geldiği için hızlı yer değişimi yine sayılıyor). Arabada iOS'a `AutomotiveNavigation` veriliyor.
+  Yalnızca JS, yeni derleme gerekmez. Telefonda denenecek: uzun sürüş (3+ saat) sonra uygulamayı kapatıp açınca kayıt
+  sürüyor mu; aynı tur başka bir cihazla / uygulamayla birlikte kaydedilip mesafe ve iz karşılaştırılmalı (özellikle
+  yürüyüş, ağaç altı, ışıkta bekleme); keskin virajda iz köşeyi kesiyor mu.
+- [ ] GPS, sıradakiler: Android'de pil optimizasyonu muafiyeti için ayar sayfasını açtırmak (Xiaomi / Samsung arka planda
+  servisi kapatabiliyor; `Linking.sendIntent`, yeni modül gerekmez); kayıt ekranı / kilit ekranı / canlı paylaşımda
+  istatistiğin her konumda bütün kayıttan yeniden hesaplanması (artımlı hesap) ve arka plandayken ekranı güncellememe;
+  rakım için barometre (`expo-sensors`, yeni derleme) ya da sunucuda DEM düzeltmesi.
 - [x] Bisiklet imleci (20 Kas 2026, Gökhan, `bisiklet-imleci`): bisiklet ve dağ bisikleti egzersizinde (yolculukta bisiklet
   seçiliyse de) kayıt ekranının haritasında konum işareti yuvarlak yerine aynı boyda bisiklet (`components/map/BisikletImleci.tsx`,
   açık kenarlı; renk yuvarlakla aynı). Gerçek haritada `ViewAnnotation`, Expo Go'da SVG. Bisiklet hep sağa bakar (gidiş yönüne
