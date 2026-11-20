@@ -22,6 +22,7 @@ import { HaritaTuruDugmesi } from './HaritaTuruSecici';
 import { GECE_STIL_URL, MAP_STYLE_URL, useHaritaStili } from './haritaTurleri';
 import { ISI_RENKLERI, useIsiTuru, useIsiVerisi, type Gorunum } from './isiHaritasi';
 import { GIDILEN_RENGI, ROTA_RENGI } from './stilRenkleri';
+import { tarihiYolVerisi, useTarihiYollar } from './tarihiYollar';
 
 export { MAP_STYLE_URL };
 
@@ -111,6 +112,7 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
   const isiTuru = useIsiTuru();
   const [gorunum, setGorunum] = useState<Gorunum | null>(null);
   const isi = useIsiVerisi(isiTuru, gorunum);
+  const tarihiYollar = useTarihiYollar();
   const { route = [], progress, markers = [], interactive = true, padding } = props;
   const egim = props.ucBoyut ? 60 : 0;
   const takipPadding = { top: 0, right: 0, left: 0, bottom: 0, ...padding };
@@ -279,6 +281,52 @@ function NativeMap(props: TopoMapProps & { koyu: boolean }) {
                 ISI_RENKLERI[isiTuru][4],
               ],
             }}
+          />
+        </ML.GeoJSONSource>
+      ) : null}
+
+      {tarihiYollar ? (
+        // Tarihi yürüyüş yolları (tarihiYollar.ts): beyaz / koyu kenarlı kesikli renkli çizgi, adı çizgi boyunca.
+        // Kullanıcının rotasının altında kalır.
+        <ML.GeoJSONSource id="tarihi-yollar" data={tarihiYolVerisi().cizgiler}>
+          <ML.Layer
+            id="tarihi-yol-kenar"
+            type="line"
+            layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+            paint={{
+              'line-color': koyuZemin ? 'rgba(14,21,18,0.75)' : 'rgba(255,255,255,0.85)',
+              'line-width': ['interpolate', ['linear'], ['zoom'], 5, 3, 10, 5, 15, 7],
+            }}
+          />
+          <ML.Layer
+            id="tarihi-yol-cizgi"
+            type="line"
+            layout={{ 'line-join': 'round' }}
+            paint={{
+              'line-color': ['get', 'renk'],
+              'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1.6, 10, 2.8, 15, 4],
+              'line-dasharray': [2.2, 1.4],
+            }}
+          />
+        </ML.GeoJSONSource>
+      ) : null}
+      {tarihiYollar ? (
+        // Ad, yolun üstünde ~25 km'de bir yatay etiket (kıvrımlı patikada çizgi boyunca yazı yerleşmiyor; tarihiYollar.ts)
+        <ML.GeoJSONSource id="tarihi-yol-yazilari" data={tarihiYolVerisi().yazilar}>
+          <ML.Layer
+            id="tarihi-yol-ad"
+            type="symbol"
+            minzoom={6}
+            layout={{
+              'text-field': ['get', 'ad'],
+              'text-font': ['Noto Sans Bold'],
+              'text-size': 12,
+              'text-anchor': 'bottom',
+              'text-offset': [0, -0.4],
+              // Birbirine yakın etiketler seyrelsin
+              'text-padding': 30,
+            }}
+            paint={{ 'text-color': ['get', 'renk'], 'text-halo-color': koyuZemin ? '#0E1512' : '#FFFFFF', 'text-halo-width': 1.8 }}
           />
         </ML.GeoJSONSource>
       ) : null}
