@@ -481,9 +481,14 @@ Kalan:
 - Alt menü (15 Kas 2026'dan beri): Ana Sayfa · Harita · Gruplar · Profil; Egzersiz sekmesi yalnızca kayıt sürerken araya
   girer ve süren kaydı açar. Egzersiz başlatmak Harita > Egzersiz yap'ta (bkz. "Harita + Egzersiz tek sekmede").
 - [x] Otomatik duraklat (20 Kas 2026, Gökhan, `oto-duraklat`): egzersizde ve yolculukta (araba dahil) durunca kayıt
-  kendiliğinden duraklar, hareket edince kaldığı yerden sürer. Karar `@lykiva/shared` > `otoDurak` (testli): türün süresi
-  boyunca 10 m içinde kalınırsa durulmuş sayılır (bisiklet 10 sn, dağ bisikleti / koşu 12, patika koşusu / yürüyüş 15,
-  doğa yürüyüşü 20); duraklama o yere varılan andan başlar. Elle duraklatmadan farkı: GPS açık kalır, yeni parça başlamaz
+  kendiliğinden duraklar, hareket edince kaldığı yerden sürer. Karar `@lykiva/shared` > `otoDurak` (testli).
+  **20 Kas, daha çabuk (`oto-duraklat-hizli`):** asıl ölçü artık cihaz hızı (Doppler; GPS kıpırtısından etkilenmez):
+  türün süresi boyunca eşiğin altında kalınca duraklar (bisiklet / araba 5 sn · 3,6 km/sa, koşu 5 sn · 2,9, dağ bisikleti
+  6 sn · 2,9, patika koşusu 6 sn · 2,2, yürüyüş 6 sn · 1,8, doğa yürüyüşü 8 sn · 1,4). Cihaz hızı yoksa 8 m yarıçapa
+  bakılır. Devam: cihaz hızı art arda iki konumda eşiğin 1,5 katını geçince. Otomatik duraklatma açıkken konum durunca da
+  saniyede bir alınır (`distanceInterval` 0; kapalıyken eskisi gibi 3 m), duraklatma ekran kapalıyken / arka planda da
+  hemen olur. Zamanlayıcı 1 sn. İlk sürümde 10 m içinde 10–20 sn bekliyordu, kıpırtı 10 m'yi aşınca hiç duraklamıyordu.
+  Duraklama yavaşlanan andan başlar. Elle duraklatmadan farkı: GPS açık kalır, yeni parça başlamaz
   (durulan yerden devam edilen yere yol sayılır), canlı ekran açık kalır ve üstte "Otomatik duraklatıldı" bandı çıkar;
   kilit ekranında da "Otomatik duraklatıldı" yazar. "Duraklat"a basılırsa elle duraklatmaya döner. Tünelde sinyal
   kesilince duraklama sonradan geri alınır (çıkılan yere yürüme hızından hızlı varıldıysa). iOS'ta arka planda uygulama

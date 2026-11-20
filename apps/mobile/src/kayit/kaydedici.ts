@@ -146,10 +146,17 @@ function durustanSonrakileriAt(segments: TrackPoint[][], baslangic: number): Tra
   return kopya;
 }
 
-// Yerinde dururken konum hiç gelmeyebilir (konum ancak birkaç metre ilerleyince geliyor): kayıt sürerken birkaç
-// saniyede bir konumsuz karar istenir. Uygulama arka planda uyurken çalışmayabilir; o zaman mola, sonraki konum
-// geldiğinde geriye dönük işlenir (bkz. otoDurak).
-const OTO_KONTROL_MS = 2000;
+// Konum kesilirse (tünel, GPS yok; ayar kayıt ortasında açıldıysa yerinde dururken de) kayıt sürerken saniyede bir
+// konumsuz karar istenir. Uygulama arka planda uyurken çalışmayabilir; o zaman mola, sonraki konum geldiğinde geriye
+// dönük işlenir (bkz. otoDurak).
+const OTO_KONTROL_MS = 1000;
+
+/**
+ * Konum en az bu kadar ilerleyince gelir (m). Otomatik duraklatma açıkken 0: yerinde dururken de saniyede bir konum
+ * ve cihaz hızı gelsin, duraklatma ekran kapalıyken / arka planda da hemen olsun. Durulan yerdeki kıpırtı kayda
+ * girmez (duraklatılmışken nokta eklenmez). Ayar kayıt başlarken / devam edince okunur.
+ */
+const konumAraligi = () => (otoDuraklatAcik() ? 0 : LOCATION_DISTANCE_INTERVAL_M);
 let otoZamanlayici: ReturnType<typeof setInterval> | null = null;
 
 function otoZamanlayiciyiAyarla() {
@@ -320,7 +327,7 @@ if (Platform.OS !== 'web') {
 const IZLEME = (): Location.LocationTaskOptions => ({
   accuracy: Location.Accuracy.BestForNavigation,
   timeInterval: 1000,
-  distanceInterval: LOCATION_DISTANCE_INTERVAL_M,
+  distanceInterval: konumAraligi(),
   activityType: Location.ActivityType.Fitness,
   pausesUpdatesAutomatically: false,
   showsBackgroundLocationIndicator: true,
@@ -336,7 +343,7 @@ const IZLEME = (): Location.LocationTaskOptions => ({
 async function onPlanIzle() {
   onPlanAboneligi?.remove();
   onPlanAboneligi = await Location.watchPositionAsync(
-    { accuracy: Location.Accuracy.BestForNavigation, timeInterval: 1000, distanceInterval: LOCATION_DISTANCE_INTERVAL_M },
+    { accuracy: Location.Accuracy.BestForNavigation, timeInterval: 1000, distanceInterval: konumAraligi() },
     (l) => noktalarEkle([l]),
   );
 }
