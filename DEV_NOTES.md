@@ -10,7 +10,18 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
-| Gökhan | Haritada tarihi yürüyüş yolları (`components/map/tarihiYollar.ts`, katman penceresi) | `gokhan/tarihi-yollar` |
+
+## İsmail için: tarihi yürüyüş yolları (20 Kasım 2026, Gökhan)
+
+Main'de (#139), yalnızca JS: yeni derleme, migration ya da sunucu işi gerekmez.
+- Haritanın katman düğmesinde yeni bölüm **Tarihi yürüyüş yolları** (Kapalı / Göster). Likya, Karia, Frig, Hitit,
+  Evliya Çelebi, Aziz Paul, Sultanlar ve Efeler yolu bütün haritalarda kesikli renkli çizgi + adıyla. Gökhan'ın
+  telefonunda göründü (20 Kas 2026).
+- Veri OpenStreetMap'ten bir kez indirilip uygulamaya gömüldü (`components/map/tarihiYollar.json`, ~74 KB); yenilemek
+  için `node scripts/tarihi-yollar.mjs`. Kod: `components/map/tarihiYollar.ts`, çizim `TopoMap.tsx`, pencere `HaritaTuruSecici.tsx`.
+- **Frig, Hitit ve Evliya Çelebi OSM'de eksik** (110 / 141 / 36 km); yalnızca işlenmiş kısımları çiziliyor.
+- Bu özellik üzerinde çalışmaya devam edeceğiz (yola dokununca bilgi kartı, yolu rota olarak kaydetme / başlatma,
+  eksik yolların verisi). Ayrıntılar "Yapılacaklar" > Keşif.
 
 ## Gökhan için: 15 Kasım 2026'da değişenler (İsmail)
 
@@ -140,7 +151,8 @@ Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
 - Tarihi yürüyüş yolları (20 Kas 2026, Gökhan, `tarihi-yollar`; yalnızca JS): katman düğmesi > Tarihi yürüyüş yolları >
   Göster. Sekiz yol kesikli renkli çizgiyle bütün haritalarda (Harita, kayıt, rota) çıkıyor mu, adları (6. yakınlaştırmadan
   sonra, ~25 km'de bir) okunuyor mu, uydu ve koyu haritada seçiliyor mu, kendi rotanın altında mı kalıyor? Açınca harita
-  takılıyor mu (veri ilk açılışta yükleniyor)? Pencere küçük ekranda kayıyor mu? Tarayıcıda (maplibre-gl) denendi.
+  takılıyor mu (veri ilk açılışta yükleniyor)? Pencere küçük ekranda kayıyor mu? Tarayıcıda (maplibre-gl) denendi;
+  Gökhan'ın telefonunda çizgiler göründü (20 Kas 2026). Kalan: iOS, uydu / koyu harita, kayıt ekranı.
 - 15 Kas 2026 (İsmail; yalnızca JS): **Harita** paneli (tutamağa inme, kısa özet ↔ açık panel geçişi, yol hesaplanmışken
   karttaki yükselti profili, haplar), son aramalar (klavye açıkken çarpı), harita görünümü seçimi (gerçek MapLibre'de),
   Egzersiz panelinin şerit durağı. **Rota oluşturma** paneli ve durak silme (yanına yeni durak eklenmemeli).
@@ -661,7 +673,8 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
   494 km, Efeler 491 km, Sultanlar 340 km tam görünüyor; **Frig 110 km, Hitit 141 km, Evliya Çelebi 36 km** resmi
   uzunluklarının çok altında (yalnızca OSM'ye işlenmiş kısımlar çiziliyor). Kalan: bu üçünün eksiği OSM'ye
   işlenince betiği yeniden çalıştır (ya da Kültür Rotaları Derneği'nden GPX kullanım izni). Sonra: yola dokununca bilgi
-  kartı (ad, uzunluk, web sitesi), "bu yolu rota olarak kaydet / başlat".
+  kartı (ad, uzunluk, web sitesi), "bu yolu rota olarak kaydet / başlat". Main'de (#139), telefonda göründü; üzerinde
+  çalışmaya devam edilecek.
 - [ ] Rota üzerinde önerilen noktalar: su kaynağı, kamp yeri, manzara (fotoğraf + not; Komoot "Highlights" gibi).
 - [ ] Rota kartında fotoğraf ve gerçek "kaç kişi yaptı" (şu an yalnızca örnek veride).
 - [~] Harita katmanı seçimi: standart, uydu, hibrit, kış yapıldı (haritadaki katman düğmesi). Kalan: topoğrafik
