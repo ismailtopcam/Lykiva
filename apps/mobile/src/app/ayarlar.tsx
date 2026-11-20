@@ -2,9 +2,10 @@ import { formatBytes } from '@lykiva/shared';
 import { router, useFocusEffect } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useCallback, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Header } from '@/components/Header';
+import { Icon } from '@/components/Icon';
 import { Txt } from '@/components/Txt';
 import { Button, Card, Chip, Label, ListRow, ToggleRow } from '@/components/ui';
 import { kuyruguGonder, yerelKayitlariTemizle } from '@/kayit/kuyruk';
@@ -14,9 +15,10 @@ import { cikisYap, useHesap, type Saglayici } from '@/lib/giris';
 import { hesabiSil } from '@/lib/hesap';
 import { pushAc, pushDurumu, pushKapat, type PushDurumu } from '@/lib/push';
 import { otoDuraklatAyarla, useOtoDuraklatAcik } from '@/kayit/otoDuraklat';
+import { pilAyariniAnlat, pilAyariVar } from '@/kayit/pilOptimizasyonu';
 import { rotaUyarisiAyarla, useRotaUyarisiAcik } from '@/kayit/rotaUyarisi';
 import { supabaseHazir } from '@/lib/supabase';
-import { aktifSema, colors, GORUNUMLER, gorunumSecimi, gorunumSecimiYap, space, temaliStil, type GorunumSecimi } from '@/theme';
+import { aktifSema, colors, fontFamily, GORUNUMLER, gorunumSecimi, gorunumSecimiYap, space, temaliStil, type GorunumSecimi } from '@/theme';
 import { $t, cihazDili, DIL_ADLARI, DILLER, dilSecimi, dilSecimiYap, type Dil } from '@/i18n';
 
 const adlar = (): Record<Saglayici, string> => ({ google: 'Google', apple: 'Apple', email: $t('ayarlar.e_posta') });
@@ -196,6 +198,21 @@ export default function AyarlarScreen() {
           <Label>{$t('ayarlar.kayit_baslik')}</Label>
           <Card style={{ paddingHorizontal: space.lg }}>
             <ToggleRow title={$t('ayarlar.oto_duraklat')} subtitle={$t('ayarlar.oto_duraklat_alt')} value={otoDuraklatAcik} onChange={otoDuraklatAyarla} />
+            {pilAyariVar ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityHint={$t('pil_optimizasyonu.ayari_ac')}
+                onPress={() => void pilAyariniAnlat()}
+                style={({ pressed }) => [styles.satir, pressed && { opacity: 0.7 }]}>
+                <View style={{ flex: 1 }}>
+                  <Txt style={{ fontFamily: fontFamily.bodySemiBold, fontSize: 14 }}>{$t('pil_optimizasyonu.baslik')}</Txt>
+                  <Txt variant="small" color={colors.inkMuted}>
+                    {$t('pil_optimizasyonu.ayar_alt')}
+                  </Txt>
+                </View>
+                <Icon name="chevron" size={20} color={colors.inkMuted} strokeWidth={2} />
+              </Pressable>
+            ) : null}
           </Card>
         </View>
 
@@ -277,4 +294,5 @@ export default function AyarlarScreen() {
 
 const styles = temaliStil(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
+  satir: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.sm },
 }));

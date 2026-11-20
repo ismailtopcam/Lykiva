@@ -30,6 +30,7 @@ import { kilitEkrani, kilitEkraniIzniIste, kilitEkraniniYenile } from './kilitEk
 import { otoDuraklatAcik } from './otoDuraklat';
 import { kuyrugaEkle, kuyruguGonder, sunucuIdsi } from './kuyruk';
 import { paketOlustur } from './paket';
+import { pilAyariniBirKezSor } from './pilOptimizasyonu';
 import { rotaUyarisiIzni, rotaUyarisiniKaldir, rotaUyarisiVer } from './rotaUyarisi';
 import { $t } from '@/i18n';
 
@@ -434,10 +435,15 @@ export async function baslat(activity: ActivityType | 'car', rota: KayitRotasi |
   kilitEkraniniYenile(1500);
   // İzin yeni verildiyse bildirim ancak yeniden gönderilince görünür. Rota takip ediliyorsa rotadan çıkma uyarısı için
   // de bildirim izni gerekir (iOS'ta burada sorulur; Android 13+'ta kilit ekranı için zaten soruldu)
-  void kilitEkraniIzniIste().then(() => {
-    kilitEkraniniYenile();
-    if (rota) return rotaUyarisiIzni();
-  });
+  // Android: ekran kapalıyken de kesilmesin diye pil ayarı, ilk arka plan kaydında bir kez (izin pencerelerinden sonra;
+  // üst üste binmesinler)
+  void kilitEkraniIzniIste()
+    .then(() => {
+      kilitEkraniniYenile();
+      if (rota) return rotaUyarisiIzni();
+    })
+    .then(() => (arkaPlan ? pilAyariniBirKezSor() : undefined))
+    .catch(() => undefined);
 }
 
 /** Elle duraklatır. Otomatik duraklatılmışsa elle duraklatmaya çevirir (GPS kapanır; duraklama başı aynı kalır) */

@@ -10,6 +10,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
+| Gökhan | Android pil optimizasyonu penceresi ve ayarı (`kayit/pilOptimizasyonu.ts`, `app/ayarlar.tsx`, i18n) | `gokhan/pil-optimizasyonu` |
 
 ## İsmail için: tarihi yürüyüş yolları (20 Kasım 2026, Gökhan)
 
@@ -515,6 +516,17 @@ Kalan:
   seçiliyse de) kayıt ekranının haritasında konum işareti yuvarlak yerine aynı boyda bisiklet (`components/map/BisikletImleci.tsx`,
   açık kenarlı; renk yuvarlakla aynı). Gerçek haritada `ViewAnnotation`, Expo Go'da SVG. Bisiklet hep sağa bakar (gidiş yönüne
   dönmez). Yalnızca JS, yeni derleme gerekmez. Telefonda denenecek: açık / koyu haritada görünürlük, takipte kayma.
+- [x] Android pil optimizasyonu (20 Kas 2026, Gökhan, `pil-optimizasyonu`): bazı telefonlar (Xiaomi, Samsung, Huawei,
+  Oppo…) ekran kapalıyken ön plan servisini bile durdurup kaydı yarıda kesebiliyor. İlk arka plan kaydında, izin
+  pencerelerinden sonra bir kez "Kayıt yarıda kesilmesin" penceresi çıkıyor (sorulduğu telefonda saklanır): "Pil" >
+  "Kısıtlamasız" (Xiaomi'de ayrıca "Otomatik başlatma") anlatılıyor, "Ayarı aç" uygulama bilgisi sayfasını açıyor
+  (`Linking.openSettings`; açılamazsa pil optimizasyonu listesi). Ayarlar > Kayıt'ta da aynı satır var (yalnızca Android).
+  Kod: `kayit/pilOptimizasyonu.ts`. Durumu okuyacak yerel modül yok, bu yüzden ayar yapıldı mı bilinmiyor; doğrudan istisna
+  isteyen izin (`REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`) Play'de kısıtlı ve yeni derleme istediği için kullanılmadı.
+  Yalnızca JS, yeni derleme gerekmez. Telefonda denenecek: pencere ilk kayıtta bir kez mi çıkıyor, bildirim izniyle üst üste
+  biniyor mu, "Ayarı aç" doğru sayfayı açıyor mu (Xiaomi / Samsung), ayar sonrası ekran kapalı uzun kayıt kesiliyor mu.
+- [ ] Pil optimizasyonu durumu: `expo-battery` (`isBatteryOptimizationEnabledAsync`) eklenirse ayar yapılmışsa pencere hiç
+  çıkmaz, Ayarlar'da "Açık / Kısıtlamasız" durumu gösterilir. Yeni yerel modül: İsmail derleme alacak.
 - [x] Kayıt sürerken ana sayfaya dönüş, iOS (13 Kas 2026, Gökhan, `kayit-ana-sayfa-ios`): canlı ve duraklatıldı ekranlarında
   iOS'ta geri kaydırma kapalı olduğu için (haritada yanlışlıkla çıkılmasın) çıkış yolu yoktu; Android'de donanım geri tuşu
   çalışıyordu. Sol üste ev simgeli düğme eklendi (`components/AnaSayfaDugmesi.tsx`): kayıt arka planda sürer, alt menüdeki
