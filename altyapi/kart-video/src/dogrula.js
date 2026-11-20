@@ -5,10 +5,10 @@
  */
 
 export const TEMALAR = {
-  yorunge: { bicimler: ['hikaye', 'gonderi'], sure: 12 },
-  'sehir-gece': { bicimler: ['hikaye', 'gonderi'], sure: 12 },
-  'sehir-maket': { bicimler: ['gonderi', 'hikaye'], sure: 12 },
-  takip: { bicimler: ['gonderi', 'hikaye'], sure: 16 },
+  yorunge: { bicimler: ['hikaye', 'gonderi'], sure: 15 },
+  'sehir-gece': { bicimler: ['hikaye', 'gonderi'], sure: 15 },
+  'sehir-maket': { bicimler: ['gonderi', 'hikaye'], sure: 15 },
+  takip: { bicimler: ['gonderi', 'hikaye'], sure: 20 },
 };
 
 /** Tasarım pikseli (CSS) ve çıkış ölçüsü */
@@ -26,7 +26,7 @@ function metin(v, enFazla, ad) {
   return v;
 }
 
-/** @returns {{ tema: string, bicim: string, sure: number, rota: [number, number][], metin: object }} */
+/** @returns {{ tema: string, bicim: string, sure: number, rota: [number, number][], hiz: number[] | null, metin: object }} */
 export function dogrula(g) {
   if (!g || typeof g !== 'object') throw new Error('gövde JSON nesnesi olmalı');
   const tema = TEMALAR[g.tema] ? g.tema : null;
@@ -42,6 +42,19 @@ export function dogrula(g) {
     return [Math.round(lng * 1e6) / 1e6, Math.round(lat * 1e6) / 1e6];
   });
 
+  // İsteğe bağlı: her noktadaki hız (km/sa). Varsa animasyon rotada kullanıcının hızıyla ilerler;
+  // yoksa (eski uygulama, hızı gizli aktivite) düz hızla. Kullanıcı hızını gizlediyse telefon göndermez.
+  let hiz = null;
+  if (g.hiz != null) {
+    if (!Array.isArray(g.hiz) || g.hiz.length !== rota.length) throw new Error('hiz rotayla aynı uzunlukta dizi olmalı');
+    hiz = g.hiz.map((v, i) => {
+      const n = Number(v);
+      if (!Number.isFinite(n) || n < 0 || n > 400) throw new Error(`hiz[${i}] 0–400 km/sa olmalı`);
+      return Math.round(n * 10) / 10;
+    });
+    if (!hiz.some((v) => v > 0)) hiz = null;
+  }
+
   const m = g.metin && typeof g.metin === 'object' ? g.metin : {};
   const degerler = Array.isArray(m.degerler) ? m.degerler.slice(0, 3) : [];
   const kmSayi = Number(m.kmSayi);
@@ -50,6 +63,7 @@ export function dogrula(g) {
     bicim,
     sure: TEMALAR[tema].sure,
     rota,
+    hiz,
     metin: {
       ust: metin(m.ust, 60, 'metin.ust'),
       baslik: metin(m.baslik, 80, 'metin.baslik'),

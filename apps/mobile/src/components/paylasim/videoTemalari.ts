@@ -12,7 +12,7 @@ import yorungeResmi from '@/assets/paylasim/video-yorunge.jpg';
 import type { Activity, LngLat } from '@/data/ornek';
 import { $t, yerel } from '@/i18n';
 import type { VideoBicim, VideoGovdesi, VideoTema } from '@/lib/kartVideo';
-import { buyuk, degerler, gun, tur } from './ortak';
+import { buyuk, degerler, gun, noktaHizlari, tur } from './ortak';
 
 /** Şehir şablonları kısa rotalar için: uzun rotada kamera uzaklaşınca binalar çizilmez */
 const SEHIR_EN_FAZLA_KM = 20;
@@ -43,21 +43,28 @@ export function sayiyaCevir(s: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-/** En fazla n noktaya seyreltir (sunucu 5000'e kadar kabul eder; gövde küçük kalsın) */
-function seyrelt(r: LngLat[], n: number): LngLat[] {
-  if (r.length <= n) return r;
-  const adim = (r.length - 1) / (n - 1);
-  return Array.from({ length: n }, (_, i) => r[Math.round(i * adim)]);
+/** En fazla n noktaya seyreltmek için alınacak sıralar (sunucu 5000'e kadar kabul eder; gövde küçük kalsın) */
+function seyrekSiralar(uzunluk: number, n: number): number[] {
+  if (uzunluk <= n) return Array.from({ length: uzunluk }, (_, i) => i);
+  const adim = (uzunluk - 1) / (n - 1);
+  return Array.from({ length: n }, (_, i) => Math.round(i * adim));
 }
 
-/** Sunucuya giden gövde: iz (gizlilik ayarına göre uçları kırpılmış) ve kullanıcının dilindeki metinler */
+/**
+ * Sunucuya giden gövde: iz (gizlilik ayarına göre uçları kırpılmış), her noktadaki hız ve kullanıcının dilindeki metinler.
+ * Hız, animasyonun rotada kullanıcının hızıyla ilerlemesi için; sahibi hızı gizlediyse gönderilmez (video düz hızla akar).
+ */
 export function videoGovdesi(a: Activity, route: LngLat[], tema: VideoTema, bicim: VideoBicim): VideoGovdesi {
   const ond = ondalikAyirici();
   const kesir = a.distanceKm.split(ond)[1]?.length ?? 0;
+  const siralar = seyrekSiralar(route.length, 2000);
+  const hizlar = a.hizGizli ? null : noktaHizlari(a, route);
+  const hiz = hizlar && hizlar.some((v) => v > 0) ? siralar.map((i) => Math.round(Math.min(400, Math.max(0, hizlar[i] || 0)) * 10) / 10) : undefined;
   return {
     tema,
     bicim,
-    rota: seyrelt(route, 2000).map(([lng, lat]) => [Math.round(lng * 1e6) / 1e6, Math.round(lat * 1e6) / 1e6]),
+    rota: siralar.map((i) => [Math.round(route[i][0] * 1e6) / 1e6, Math.round(route[i][1] * 1e6) / 1e6]),
+    hiz,
     metin: {
       ust: buyuk(`${tur(a)} · ${gun(a)}`).slice(0, 60),
       baslik: a.title.slice(0, 80),

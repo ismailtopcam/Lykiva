@@ -26,10 +26,21 @@ Aşamalar: DEV_NOTES > "Paylaşım kartları — tasarım aktarımı".
 
 | Tema | Tasarım | Biçim (varsayılan) | Süre | Ne olur |
 | --- | --- | --- | --- | --- |
-| `yorunge` | 11, 12, 16 | hikâye, gönderi | 12 sn | 0–4 düz haritada rota çizilir · 4–7 eğilir, arazi yükselir · 7–11 kamera döner · 11–12 bekler |
-| `sehir-gece` | 13 | hikâye, gönderi | 12 sn | Koyu harita; eğilirken binalar yükselir |
-| `sehir-maket` | 14 (15) | gönderi, hikâye | 12 sn | Beyaz maket şehir (15'in uydu görüntüsü lisans gerektirdiği için açık harita) |
-| `takip` | 17 | gönderi, hikâye | 16 sn | 0–2 üstten · 2–4 kamera rotanın arkasına iner · 4–13 izler · 13–15 geri çekilir |
+| `yorunge` | 11, 12, 16 | hikâye, gönderi | 15 sn | 0–0,8 düz harita · 0,8–7,3 rota çizilir · 6,8–9,8 eğilir, arazi yükselir · 8,8–13,3 kamera döner · 13,3–15 bekler |
+| `sehir-gece` | 13 | hikâye, gönderi | 15 sn | Koyu harita; eğilirken binalar yükselir (zamanlama yörüngeyle aynı) |
+| `sehir-maket` | 14 (15) | gönderi, hikâye | 15 sn | Beyaz maket şehir (15'in uydu görüntüsü lisans gerektirdiği için açık harita) |
+| `takip` | 17 | gönderi, hikâye | 20 sn | 0–1,5 üstten · 1,5–4 kamera rotanın arkasına iner · 4–16 izler · 16–18,2 geri çekilir · 18,2–20 bekler |
+
+Zamanlama (20 Kas 2026): rota çizimi ve izleme uçlarda yumuşak, ortada en çok ortalamanın 1,5 katı hızda (`akici`;
+eskiden kübik eğriyle ortası 3 kat hızlıydı ve 26 km 4 sn'de çiziliyordu). Evreler yarım saniye örtüşür; sonda
+değerlerin okunması için ~1,7 sn bekleme var. Sondaki bekleme kare çizdirmez (son kare tekrarlanır), üretim süresine
+yalnız hareketli kısım eklenir: yörüngede çizilen süre 11 → 12,5 sn, takipte 15 → 18,2 sn.
+
+Hıza göre akış: gövdede `hiz` (her noktada km/sa) varsa çizgi ve takip kamerası rotada kullanıcının hızıyla ilerler,
+km sayacı da onunla artar (`zamanTablosu`, `izOrani`). İzlenebilir kalsın diye hız rota boyunca yumuşatılır
+(±%3 rota, 150–600 m) ve hareketli ortalamanın 0,4–2,5 katına sıkıştırılır: molada animasyon durmaz, hızlı iniş bir
+anda geçip gitmez. Toplam süre değişmez. `hiz` yoksa (eski uygulama, hızı gizli aktivite) düz hızla akar.
+Örnek aktivitenin hız profiliyle (12–44 km/sa) rotanın her %10'u animasyonun %3,6–14,7'sini alıyor.
 
 Harita kabı iki kat CSS boyutunda çizilip yarıya küçültülür (`sahne.css > #harita`): kart 360 pt genişlikte olduğu
 için aksi hâlde harita bir seviye uzak kalıyor, binalar (z14+) gelmiyordu.
@@ -37,7 +48,8 @@ için aksi hâlde harita bir seviye uzak kalıyor, binalar (z14+) gelmiyordu.
 ## API
 
 ```
-POST /video          { tema, bicim?, rota: [[boylam, enlem], …], metin: { ust, baslik, kmSayi, kmBasamak, ondalik,
+POST /video          { tema, bicim?, rota: [[boylam, enlem], …], hiz?: [km/sa, …] (rotayla aynı uzunlukta),
+                       metin: { ust, baslik, kmSayi, kmBasamak, ondalik,
                        kmBirim, degerler: [{ etiket, deger }] (en fazla 3), kaynak } }        → 202 { id }
 GET  /video/:id      → { durum: sirada | uretiliyor | hazir | hata, ilerleme: 0–1, sira?, hata? }
 GET  /video/:id/mp4  → video/mp4
