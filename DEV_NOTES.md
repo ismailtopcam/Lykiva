@@ -10,6 +10,7 @@ Bir işe başlarken buraya adınla ve dalınla bir satır ekle; merge edince kal
 
 | Kim | İş | Dal |
 | --- | --- | --- |
+| Gökhan | Haritada tarihi yürüyüş yolları (`components/map/tarihiYollar.ts`, katman penceresi) | `gokhan/tarihi-yollar` |
 
 ## Gökhan için: 15 Kasım 2026'da değişenler (İsmail)
 
@@ -136,6 +137,10 @@ Kalan: telefonlarda deneme. Yeni yerel modüller (fotoğraf, bildirim, kilit ekr
 
 ### [ ] Telefonda ve gerçek sunucuda denenmemiş özellikler
 Kod ve SQL testleri geçti, ama gerçek ortamda henüz çalıştırılmadı:
+- Tarihi yürüyüş yolları (20 Kas 2026, Gökhan, `tarihi-yollar`; yalnızca JS): katman düğmesi > Tarihi yürüyüş yolları >
+  Göster. Sekiz yol kesikli renkli çizgiyle bütün haritalarda (Harita, kayıt, rota) çıkıyor mu, adları (6. yakınlaştırmadan
+  sonra, ~25 km'de bir) okunuyor mu, uydu ve koyu haritada seçiliyor mu, kendi rotanın altında mı kalıyor? Açınca harita
+  takılıyor mu (veri ilk açılışta yükleniyor)? Pencere küçük ekranda kayıyor mu? Tarayıcıda (maplibre-gl) denendi.
 - 15 Kas 2026 (İsmail; yalnızca JS): **Harita** paneli (tutamağa inme, kısa özet ↔ açık panel geçişi, yol hesaplanmışken
   karttaki yükselti profili, haplar), son aramalar (klavye açıkken çarpı), harita görünümü seçimi (gerçek MapLibre'de),
   Egzersiz panelinin şerit durağı. **Rota oluşturma** paneli ve durak silme (yanına yeni durak eklenmemeli).
@@ -629,6 +634,16 @@ Strava, Komoot, AllTrails, Wikiloc ve Garmin Connect ile karşılaştırıldı. 
 - [ ] Segmentler ve liderlik tablosu (büyük iş, sonraya).
 
 **Keşif**
+- [~] Tarihi yürüyüş yolları (20 Kas 2026, Gökhan): katman penceresinde "Tarihi yürüyüş yolları" (Kapalı / Göster, renk
+  açıklaması). Likya, Karia (+ İç Karia), Frig, Hitit, Evliya Çelebi, Aziz Paul, Sultanlar (Sultans Trail 6. bölüm,
+  Edirne – İstanbul) ve Efeler yolu bütün haritalarda kesikli renkli çizgi + ad. Veri OpenStreetMap'teki yürüyüş rotası
+  ilişkilerinden `scripts/tarihi-yollar.mjs` ile çıkarılıp uygulamaya gömüldü (`components/map/tarihiYollar.json`,
+  ~74 KB, 20 m sadeleştirme, Google polyline); internet gerekmez. Yenilemek için betiği yeniden çalıştır. Yalnızca JS.
+  **OSM'de eksik olanlar** (20 Kas 2026'daki uzunluklar, alternatifler dahil): Likya 629 km, Karia 873 km, Aziz Paul
+  494 km, Efeler 491 km, Sultanlar 340 km tam görünüyor; **Frig 110 km, Hitit 141 km, Evliya Çelebi 36 km** resmi
+  uzunluklarının çok altında (yalnızca OSM'ye işlenmiş kısımlar çiziliyor). Kalan: bu üçünün eksiği OSM'ye
+  işlenince betiği yeniden çalıştır (ya da Kültür Rotaları Derneği'nden GPX kullanım izni). Sonra: yola dokununca bilgi
+  kartı (ad, uzunluk, web sitesi), "bu yolu rota olarak kaydet / başlat".
 - [ ] Rota üzerinde önerilen noktalar: su kaynağı, kamp yeri, manzara (fotoğraf + not; Komoot "Highlights" gibi).
 - [ ] Rota kartında fotoğraf ve gerçek "kaç kişi yaptı" (şu an yalnızca örnek veride).
 - [~] Harita katmanı seçimi: standart, uydu, hibrit, kış yapıldı (haritadaki katman düğmesi). Kalan: topoğrafik
@@ -836,6 +851,11 @@ Uygulamada kayıt başında, akış ve paylaşım kartında, etkinlik tahmininde
   World Imagery (anahtarsız döşeme); hibrit = uydu + Liberty'nin yol, sınır ve yazı katmanları (stil JSON'u bir kez indirilip
   uygulamada türetilir); kış = Liberty karlı renklerle + OpenSnowMap pist döşemeleri. Seçim telefonda saklanır, bütün
   haritalara uygulanır. Koşullar mağaza öncesi kontrol edilecek (bkz. Mağazaya çıkmadan önce).
+- **Tarihi yürüyüş yolları OSM'den, uygulamaya gömülü** (20 Kas 2026): Waymarked Trails gibi bir döşeme sunucusuna
+  bağlanmak yerine sekiz yolun çizgisi bir kez indirilip pakete kondu (çevrimdışında da var, dış servise bağımlılık yok).
+  Veri ODbL: standart / hibrit / kış haritadaki OpenStreetMap atfı karşılıyor; `tarihiYollar.json` aynı lisansla kalır.
+  Eksik: yalnızca uydu seçiliyken atıfta OSM yok (yalnızca Esri); GeoJSONSource'un atıf özelliği yok, gerekirse uydu
+  stilinin atfına eklenmeli.
 - **Derleme: EAS Build** (bulutta; Windows'tan da başlatılır). Mac'te yerel derleme de mümkün.
   EAS projesi ve bütün derleme / gönderimler İsmail'in hesabından ve bilgisayarından (12 Kas 2026); Gökhan EAS'a eklenmez.
 - **Yönetim paneli** tam yetkili anahtar kullanmaz; her işlem yöneticinin kendi oturumuyla, yetkiyi veritabanı denetler.
