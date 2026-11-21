@@ -835,6 +835,7 @@ export const ru: Sozluk = {
     bisiklet_turu: 'велопрогулка',
     doga_yuruyusu: 'прогулка в горы',
     patika_kosusu: 'трейловая пробежка',
+    tarihi_yuruyus: 'исторический поход',
     dag_bisikleti_turu: 'поездка на маунтинбайке',
     baslik: '{zaman} {tur}',
   },
@@ -1457,6 +1458,8 @@ export const ru: Sozluk = {
   harita: {
     harita: 'Карта',
     nereye_gidiyorsun: 'Куда?',
+    tarihi_yol_alt: 'Историческая пешая тропа',
+    tarihi_yolu_kaldir: 'Убрать историческую тропу',
     hedef_ara: 'Найти место назначения',
     nereye_gitmek_istiyorsun: 'Куда вы хотите пойти?',
     haritaya_dokun_ya_da_ara: 'Нажмите на карте место назначения или найдите его выше, чтобы проложить маршрут от вашего местоположения.',
@@ -1544,9 +1547,6 @@ export const ru: Sozluk = {
     isi_gece_aciklama: 'Публичные активности после заката. Видна при приближении.',
     isi_kisisel_aciklama: 'Все ваши активности, включая скрытые. Видите только вы.',
     isi_gizlilik: 'Скрытые точки старта и финиша не учитываются; отказаться можно в Настройки > Конфиденциальность.',
-    tarihi_yollar: 'Исторические тропы',
-    tarihi_goster: 'Показать',
-    tarihi_aciklama: 'Маркированные пешие маршруты, пунктиром на карте. Данные: OpenStreetMap.',
   },
   tarihiYollar: {
     likya: 'Ликийская тропа',

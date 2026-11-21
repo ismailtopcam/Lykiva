@@ -29,6 +29,7 @@ export type IconName =
   | 'calendar'
   | 'clock'
   | 'mountain'
+  | 'antik'
   | 'bike'
   | 'run'
   | 'walk'
@@ -223,6 +224,9 @@ function render(name: IconName, p: Record<string, unknown>, color: string) {
       );
     case 'mountain':
       return <Path d="M3 20l6-10 4 6 3-4 5 8z" {...p} />;
+    case 'antik':
+      // Sütunlu antik yapı (tarihi yürüyüş): alınlık, üç sütun, basamak
+      return <Path d="M3 9l9-5 9 5zM5.5 11.5v6M12 11.5v6M18.5 11.5v6M3.5 20.5h17M4.5 18h15" {...p} />;
     case 'bike':
       return (
         <>

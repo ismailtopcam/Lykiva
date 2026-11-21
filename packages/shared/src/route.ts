@@ -203,6 +203,7 @@ export function estimateDuration(activity: ActivityType, distanceM: number, gain
   const p: Record<ActivityType, { kmh: number; secPerMUp: number }> = {
     walk: { kmh: 4.5, secPerMUp: 6 },
     hike: { kmh: 4, secPerMUp: 6 },
+    historic_hike: { kmh: 4, secPerMUp: 6 },
     run: { kmh: 9.5, secPerMUp: 3 },
     trail_run: { kmh: 7, secPerMUp: 3.6 },
     bike: { kmh: 18, secPerMUp: 3.6 },

@@ -71,7 +71,7 @@ export const paylasilanAktivite = cache(async (anahtar: string): Promise<Sonuc> 
 /* Metinler                                                            */
 /* ------------------------------------------------------------------ */
 
-const TEMPOLU: ActivityType[] = ['run', 'trail_run', 'walk', 'hike'];
+const TEMPOLU: ActivityType[] = ['run', 'trail_run', 'walk', 'hike', 'historic_hike'];
 
 export const baslik = (a: Pick<PaylasilanAktivite, 'title' | 'activity'>, dil: Dil) => a.title?.trim() || activityLabel(a.activity, dil);
 

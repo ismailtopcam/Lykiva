@@ -135,6 +135,7 @@ const SIMGELER: Record<string, Simge> = {
   walk: 'figure.walk',
   hike: 'figure.hiking',
   trail_run: 'figure.run',
+  historic_hike: 'figure.hiking',
 };
 
 export const kilitEkraniVar = requireOptionalNativeModule('ExpoWidgets') != null;

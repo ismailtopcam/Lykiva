@@ -835,6 +835,7 @@ export const de: Sozluk = {
     bisiklet_turu: 'radtour',
     doga_yuruyusu: 'wanderung',
     patika_kosusu: 'traillauf',
+    tarihi_yuruyus: 'kulturwanderung',
     dag_bisikleti_turu: 'mountainbiketour',
     baslik: '{zaman}{tur}',
   },
@@ -1457,6 +1458,8 @@ export const de: Sozluk = {
   harita: {
     harita: 'Karte',
     nereye_gidiyorsun: 'Wohin?',
+    tarihi_yol_alt: 'Historischer Wanderweg',
+    tarihi_yolu_kaldir: 'Historischen Weg entfernen',
     hedef_ara: 'Ziel suchen',
     nereye_gitmek_istiyorsun: 'Wohin möchtest du?',
     haritaya_dokun_ya_da_ara: 'Tippe auf der Karte auf dein Ziel oder suche oben, um eine Wegbeschreibung von deinem Standort zu erhalten.',
@@ -1544,9 +1547,6 @@ export const de: Sozluk = {
     isi_gece_aciklama: 'Öffentliche Aktivitäten nach Sonnenuntergang. Beim Hineinzoomen sichtbar.',
     isi_kisisel_aciklama: 'Alle deine Aktivitäten, auch private. Nur du siehst sie.',
     isi_gizlilik: 'Verborgene Start- und Endpunkte werden nicht gezählt; abmelden unter Einstellungen > Privatsphäre.',
-    tarihi_yollar: 'Historische Wanderwege',
-    tarihi_goster: 'Anzeigen',
-    tarihi_aciklama: 'Markierte Fernwanderwege, als gestrichelte Linien. Daten: OpenStreetMap.',
   },
   tarihiYollar: {
     likya: 'Lykischer Weg',

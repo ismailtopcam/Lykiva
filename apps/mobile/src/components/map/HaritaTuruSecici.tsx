@@ -1,7 +1,7 @@
 /**
  * Harita üstündeki katman düğmesi ve seçim penceresi: harita türü (standart, uydu, hibrit, kış), görünüm
- * (sistemle aynı, açık, karanlık), tarihi yürüyüş yolları ve ısı haritası (küresel, haftalık, gece, kişisel).
- * Seçimler bütün haritalara uygulanır (bkz. haritaTurleri.ts, gunduzGece.ts, tarihiYollar.ts, isiHaritasi.ts).
+ * (sistemle aynı, açık, karanlık) ve ısı haritası (küresel, haftalık, gece, kişisel). Seçimler bütün haritalara
+ * uygulanır (bkz. haritaTurleri.ts, gunduzGece.ts, isiHaritasi.ts).
  */
 import { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
@@ -16,7 +16,6 @@ import { colors, fontFamily, space, temaliStil } from '@/theme';
 import { HARITA_GORUNUMLERI, haritaGorunumuSec, useHaritaGorunumu, type HaritaGorunumu } from './gunduzGece';
 import { HARITA_TURLERI, haritaTuruSec, useHaritaTuru, type HaritaTuru } from './haritaTurleri';
 import { ISI_TURLERI, isiTuruSec, useIsiTuru, type IsiTuru } from './isiHaritasi';
-import { TARIHI_YOL_RENGI, TARIHI_YOLLAR, tarihiYolAdi, tarihiYollariSec, useTarihiYollar } from './tarihiYollar';
 
 function turAdi(t: HaritaTuru): string {
   switch (t) {
@@ -93,7 +92,6 @@ export function HaritaTuruDugmesi({ style, koyu }: { style?: StyleProp<ViewStyle
   const tur = useHaritaTuru();
   const isi = useIsiTuru();
   const gorunum = useHaritaGorunumu();
-  const tarihi = useTarihiYollar();
   const insets = useSafeAreaInsets();
   return (
     <>
@@ -139,7 +137,7 @@ export function HaritaTuruDugmesi({ style, koyu }: { style?: StyleProp<ViewStyle
                 })}
               </View>
               {tur === 'kis' ? <Txt variant="small" style={{ marginTop: space.md }}>{$t('haritaTuru.kis_aciklama')}</Txt> : null}
-  
+
               <Txt accessibilityRole="header" style={styles.bolum}>
                 {$t('haritaTuru.gorunum')}
               </Txt>
@@ -152,33 +150,7 @@ export function HaritaTuruDugmesi({ style, koyu }: { style?: StyleProp<ViewStyle
               <Txt variant="small" style={{ marginTop: space.sm }}>
                 {tur !== 'standart' ? $t('haritaTuru.gorunum_yalniz_standart') : gorunum === 'sistem' ? $t('haritaTuru.gorunum_sistem_aciklama') : ''}
               </Txt>
-  
-              <Txt accessibilityRole="header" style={styles.bolum}>
-                {$t('haritaTuru.tarihi_yollar')}
-              </Txt>
-              <View accessibilityRole="radiogroup" style={styles.cipler}>
-                <Chip label={$t('haritaTuru.isi_kapali')} role="radio" selected={!tarihi} onPress={() => tarihiYollariSec(false)} />
-                <Chip label={$t('haritaTuru.tarihi_goster')} role="radio" selected={tarihi} onPress={() => tarihiYollariSec(true)} />
-              </View>
-              {tarihi ? (
-                <>
-                  {/* Renk açıklaması: haritadaki kesikli çizgilerin hangi yol olduğu */}
-                  <View style={styles.lejant}>
-                    {TARIHI_YOLLAR.map((y) => (
-                      <View key={y} style={styles.lejantSatir}>
-                        <View style={[styles.lejantCizgi, { backgroundColor: TARIHI_YOL_RENGI[y] }]} />
-                        <Txt variant="small" numberOfLines={1} style={{ color: colors.ink }}>
-                          {tarihiYolAdi(y)}
-                        </Txt>
-                      </View>
-                    ))}
-                  </View>
-                  <Txt variant="small" style={{ marginTop: space.sm }}>
-                    {$t('haritaTuru.tarihi_aciklama')}
-                  </Txt>
-                </>
-              ) : null}
-  
+
               {supabaseHazir ? (
                 <>
                   <Txt accessibilityRole="header" style={styles.bolum}>
@@ -216,9 +188,6 @@ const styles = temaliStil(() => StyleSheet.create({
   tur: { flex: 1, alignItems: 'center', gap: 6 },
   bolum: { fontFamily: fontFamily.bodyBold, fontSize: 15, marginTop: space.lg, marginBottom: space.sm },
   cipler: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  lejant: { flexDirection: 'row', flexWrap: 'wrap', rowGap: 4, marginTop: space.sm },
-  lejantSatir: { width: '50%', flexDirection: 'row', alignItems: 'center', gap: 8, paddingRight: 8 },
-  lejantCizgi: { width: 16, height: 4, borderRadius: 2 },
   cerceve: { width: '100%', aspectRatio: 1, borderRadius: 16, padding: 3, borderWidth: 2, borderColor: 'transparent' },
   cerceveOn: { borderColor: colors.sea },
   onizleme: { flex: 1, borderRadius: 12, overflow: 'hidden' },

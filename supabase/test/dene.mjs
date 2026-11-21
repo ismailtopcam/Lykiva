@@ -1336,5 +1336,29 @@ console.log('\nCanlı konum bağlantısı (aileyle paylaşım)');
   await db.query(`delete from live_locations where user_id = $1`, [A]);
 }
 
+// --------------------------------------------------------------------------
+// Tarihi yürüyüş türü (20261120000000_tarihi_yuruyus.sql)
+// --------------------------------------------------------------------------
+console.log('\nTarihi yürüyüş türü');
+{
+  const pts = iz(29.3, 36.5).map((p) => ({ ...p, t: p.t + 40 * 86400000 }));
+  const p = {
+    title: 'Likya Yolu etabı', activity: 'historic_hike', started_at: new Date(pts[0].t).toISOString(), ended_at: new Date(pts.at(-1).t).toISOString(),
+    moving_time_s: 590, elapsed_time_s: 600, distance_m: 2500, elevation_gain_m: 59, elevation_loss_m: 0, max_elevation_m: 159,
+    avg_speed_mps: 1.2, max_speed_mps: 2, min_moving_speed_mps: 0.5, visibility: 'private', hide_endpoints: false, points: pts, stops: [],
+  };
+  const id = (await olarak(A, `select kaydet_aktivite($1::jsonb) as id`, [JSON.stringify(p)])).rows[0].id;
+  const t = (await db.query(`select activity::text as t from activities where id = $1`, [id])).rows[0]?.t;
+  bekle('Tarihi yürüyüş (historic_hike) aktivite olarak kaydedilir', t === 'historic_hike', t);
+  const rp = { name: 'Likya Yolu Kaş – Kalkan', activity: 'historic_hike', distance_m: 1500, elevation_gain_m: 30, elevation_loss_m: 0, visibility: 'private', points: iz(29.4, 36.2, 30).map((x) => ({ lng: x.lng, lat: x.lat, alt: x.alt })) };
+  const rid = (await olarak(A, `select kaydet_rota($1::jsonb) as id`, [JSON.stringify(rp)])).rows[0].id;
+  const rt = (await db.query(`select activity::text as t from routes where id = $1`, [rid])).rows[0]?.t;
+  bekle('Tarihi yürüyüş türünde rota kaydedilir', rt === 'historic_hike', rt);
+  const m = await hataMesaji(() => olarak(A, `select kaydet_aktivite($1::jsonb)`, [JSON.stringify({ ...p, activity: 'uydurma_tur' })]));
+  bekle('Bilinmeyen tür hâlâ reddedilir', /invalid input value for enum/.test(m ?? ''), m);
+  await db.query(`delete from activities where id = $1`, [id]);
+  await db.query(`delete from routes where id = $1`, [rid]);
+}
+
 console.log(hata ? `\n${hata} senaryo başarısız` : '\nTüm senaryolar geçti');
 process.exit(hata ? 1 : 0);

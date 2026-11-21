@@ -1,15 +1,18 @@
 import { aktifDil, dileGoreTablo, type Dil } from './dil';
 
-/** Desteklenen aktivite türleri — veritabanındaki `activity_type` enum'u ile aynı */
-export const ACTIVITY_TYPES = ['bike', 'mtb', 'run', 'walk', 'hike', 'trail_run'] as const;
+/**
+ * Desteklenen aktivite türleri — veritabanındaki `activity_type` enum'u ile aynı.
+ * historic_hike: tarihi yürüyüş (Likya, Karia… gibi işaretli tarihi yollarda); haritada tarihi yollar görünür.
+ */
+export const ACTIVITY_TYPES = ['bike', 'mtb', 'run', 'walk', 'hike', 'trail_run', 'historic_hike'] as const;
 
 export type ActivityType = (typeof ACTIVITY_TYPES)[number];
 
 const ACTIVITY_SOZLUK: Record<Dil, Record<ActivityType, string>> = {
-  tr: { bike: 'Bisiklet', mtb: 'Dağ bisikleti', run: 'Koşu', walk: 'Yürüyüş', hike: 'Doğa yürüyüşü', trail_run: 'Patika koşusu' },
-  en: { bike: 'Cycling', mtb: 'Mountain biking', run: 'Running', walk: 'Walking', hike: 'Hiking', trail_run: 'Trail running' },
-  de: { bike: 'Radfahren', mtb: 'Mountainbiken', run: 'Laufen', walk: 'Gehen', hike: 'Wandern', trail_run: 'Traillauf' },
-  ru: { bike: 'Велосипед', mtb: 'Маунтинбайк', run: 'Бег', walk: 'Ходьба', hike: 'Пеший поход', trail_run: 'Трейлраннинг' },
+  tr: { bike: 'Bisiklet', mtb: 'Dağ bisikleti', run: 'Koşu', walk: 'Yürüyüş', hike: 'Doğa yürüyüşü', trail_run: 'Patika koşusu', historic_hike: 'Tarihi yürüyüş' },
+  en: { bike: 'Cycling', mtb: 'Mountain biking', run: 'Running', walk: 'Walking', hike: 'Hiking', trail_run: 'Trail running', historic_hike: 'Heritage hiking' },
+  de: { bike: 'Radfahren', mtb: 'Mountainbiken', run: 'Laufen', walk: 'Gehen', hike: 'Wandern', trail_run: 'Traillauf', historic_hike: 'Kulturwandern' },
+  ru: { bike: 'Велосипед', mtb: 'Маунтинбайк', run: 'Бег', walk: 'Ходьба', hike: 'Пеший поход', trail_run: 'Трейлраннинг', historic_hike: 'Исторический поход' },
 };
 
 /** Telefonda o anki dilde; web sunucusunda activityLabel(t, dil) kullan */

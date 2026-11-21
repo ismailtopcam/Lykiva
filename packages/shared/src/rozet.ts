@@ -32,7 +32,7 @@ export type RozetTanimi = { id: string; kategori: RozetKategori; kademe: RozetKa
 
 const BISIKLET = ['bike', 'mtb'] as const;
 const KOSU = ['run', 'trail_run'] as const;
-const YURUYUS = ['walk', 'hike'] as const;
+const YURUYUS = ['walk', 'hike', 'historic_hike'] as const;
 
 /** Ekranda bu sırayla görünür */
 export const ROZETLER: readonly RozetTanimi[] = [
@@ -67,7 +67,7 @@ export const ROZETLER: readonly RozetTanimi[] = [
 ];
 
 /** Tek aktivite rozetlerinde güvenilir sayılan en yüksek ortalama hız (km/sa); üstü araçta unutulmuş kayıt sayılır */
-export const ROZET_ORT_HIZ_SINIRI: Record<ActivityType, number> = { bike: 60, mtb: 45, run: 25, trail_run: 25, walk: 10, hike: 10 };
+export const ROZET_ORT_HIZ_SINIRI: Record<ActivityType, number> = { bike: 60, mtb: 45, run: 25, trail_run: 25, walk: 10, hike: 10, historic_hike: 10 };
 
 /** Sabah 4:00–6:59 arasında başlayan aktivite "erken kuş" */
 const ERKEN_BAS = 4;
